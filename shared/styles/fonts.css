@@ -1,4 +1,1 @@
-/*
-  Include @font-face declarations for shared fonts here.
-  Template projects can import this file from Vite entrypoints as needed.
-*/
+@import url('../fonts/fonts.css');
