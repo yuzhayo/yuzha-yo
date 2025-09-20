@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Minimal launcher shell for the Yuzha template.",
+  "description": "Simple landing screen for the Yuzha template.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -12,8 +12,6 @@
   },
   "dependencies": {
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "three": "^0.169.0",
-    "@react-three/fiber": "^8.17.10"
+    "react-dom": "^18.2.0"
   }
 }

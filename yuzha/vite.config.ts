@@ -4,19 +4,16 @@ import { fileURLToPath } from "node:url";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
-const r = (p: string) => path.resolve(path.dirname(fileURLToPath(import.meta.url)), p);
-const monorepoRoot = r("..");
+const resolveFromConfig = (relativePath: string) =>
+  path.resolve(path.dirname(fileURLToPath(import.meta.url)), relativePath);
 
 export default defineConfig({
-  root: r("."),
+  root: resolveFromConfig("."),
   plugins: [react()],
   resolve: {
     alias: {
-      "@shared": path.resolve(monorepoRoot, "shared"),
+      "@": resolveFromConfig("./src"),
     },
-  },
-  optimizeDeps: {
-    include: ["three", "@react-three/fiber"],
   },
   server: {
     host: "0.0.0.0",
@@ -34,7 +31,6 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          three: ["three"],
           react: ["react", "react-dom"],
         },
       },
