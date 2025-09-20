@@ -29,6 +29,11 @@ const modules: ModuleDescriptor[] = [
 
 function buildModuleUrl(module: ModuleDescriptor) {
   if (import.meta.env.DEV) {
+    // In Replit environment, use the dev domain instead of localhost
+    const replitDomain = import.meta.env.VITE_REPLIT_DEV_DOMAIN;
+    if (replitDomain) {
+      return `https://${replitDomain.replace(':5000', `:${module.port}`)}`;
+    }
     return `http://localhost:${module.port}`;
   }
 

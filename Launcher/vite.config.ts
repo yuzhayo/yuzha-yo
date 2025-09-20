@@ -15,10 +15,14 @@ export default defineConfig({
       '@shared': path.resolve(monorepoRoot, 'shared'),
     },
   },
+  optimizeDeps: {
+    include: ['three', '@react-three/fiber']
+  },
   server: {
     host: '0.0.0.0',
     port: 5000,
     strictPort: true,
+    allowedHosts: true,
   },
   preview: {
     host: '0.0.0.0',
@@ -27,5 +31,13 @@ export default defineConfig({
   build: {
     target: 'es2020',
     sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'three': ['three'],
+          'react': ['react', 'react-dom']
+        }
+      }
+    }
   },
 });
