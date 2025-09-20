@@ -1,4 +1,4 @@
-@import '../../shared/styles/fonts.css';
+@import '@shared/styles/fonts.css';
 
 :root {
   color: #0f172a;
