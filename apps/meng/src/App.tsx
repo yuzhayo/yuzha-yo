@@ -1,14 +1,14 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState } from "react";
 
-import { LauncherButton } from '@shared/screen';
+import { LauncherButton } from "@shared/screen";
 
-import './index.css';
+import "./index.css";
 
 type Product = {
   id: string;
   name: string;
   price: number;
-  category: 'Beverages' | 'Food' | 'Snacks';
+  category: "Beverages" | "Food" | "Snacks";
   badge: string;
 };
 
@@ -18,18 +18,18 @@ type OrderLine = {
 };
 
 const products: Product[] = [
-  { id: 'kopi-susu', name: 'Kopi Susu', price: 25000, category: 'Beverages', badge: 'KS' },
-  { id: 'es-teh', name: 'Es Teh Manis', price: 12000, category: 'Beverages', badge: 'ET' },
-  { id: 'nasi-goreng', name: 'Nasi Goreng', price: 32000, category: 'Food', badge: 'NG' },
-  { id: 'mi-ayam', name: 'Mi Ayam', price: 28000, category: 'Food', badge: 'MA' },
-  { id: 'risoles', name: 'Risoles Mayo', price: 10000, category: 'Snacks', badge: 'RM' },
-  { id: 'pisang-goreng', name: 'Pisang Goreng', price: 8000, category: 'Snacks', badge: 'PG' },
+  { id: "kopi-susu", name: "Kopi Susu", price: 25000, category: "Beverages", badge: "KS" },
+  { id: "es-teh", name: "Es Teh Manis", price: 12000, category: "Beverages", badge: "ET" },
+  { id: "nasi-goreng", name: "Nasi Goreng", price: 32000, category: "Food", badge: "NG" },
+  { id: "mi-ayam", name: "Mi Ayam", price: 28000, category: "Food", badge: "MA" },
+  { id: "risoles", name: "Risoles Mayo", price: 10000, category: "Snacks", badge: "RM" },
+  { id: "pisang-goreng", name: "Pisang Goreng", price: 8000, category: "Snacks", badge: "PG" },
 ];
 
 function formatCurrency(value: number) {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
     maximumFractionDigits: 0,
   }).format(value);
 }
@@ -107,7 +107,9 @@ export function App() {
       <section className="meng-pos__ticket">
         <header className="meng-pos__section-heading">
           <h2>Pesanan Aktif</h2>
-          <p>{orderLines.length ? 'Sesuaikan jumlah dan selesaikan pembayaran.' : 'Belum ada item.'}</p>
+          <p>
+            {orderLines.length ? "Sesuaikan jumlah dan selesaikan pembayaran." : "Belum ada item."}
+          </p>
         </header>
 
         <div className="meng-pos__ticket-lines" role="list">

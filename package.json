@@ -15,7 +15,7 @@
     "dev": "npm run dev:launcher",
     "dev:launcher": "npm run dev --workspace Launcher",
     "dev:meng": "npm run dev --workspace apps/meng",
-    "dev:all": "concurrently \"npm:dev:launcher\" \"npm:dev:meng\"",
+    "dev:a": "concurrently \"npm:dev:launcher\" \"npm:dev:meng\"",
     "build": "npm run build:launcher && npm run build:meng",
     "build:launcher": "npm run build --workspace Launcher",
     "build:meng": "npm run build --workspace apps/meng",

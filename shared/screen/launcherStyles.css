@@ -11,7 +11,10 @@
   color: #0f172a;
   text-align: left;
   text-decoration: none;
-  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    border-color 120ms ease;
   cursor: pointer;
 }
 
@@ -27,7 +30,7 @@
   transform: translateY(0);
 }
 
-.launcher-button[aria-disabled='true'],
+.launcher-button[aria-disabled="true"],
 .launcher-button[disabled] {
   opacity: 0.55;
   cursor: not-allowed;

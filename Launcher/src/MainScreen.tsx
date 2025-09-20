@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState } from "react";
 
-import { LauncherButton, LauncherGesture } from '@shared/screen';
+import { LauncherButton, LauncherGesture } from "@shared/screen";
 
 type ModuleDescriptor = {
   id: string;
@@ -15,15 +15,15 @@ type ModuleDescriptor = {
 
 const modules: ModuleDescriptor[] = [
   {
-    id: 'meng-pos',
-    name: 'Meng POS Cashier',
+    id: "meng-pos",
+    name: "Meng POS Cashier",
     description:
-      'Front-of-house cashier built for quick-service operators with keyboard-first controls.',
-    icon: '[POS]',
-    highlights: ['Fast tap ordering', 'Keyboard & touch friendly', 'Simple tax handling'],
-    command: 'npm run dev --workspace apps/meng',
+      "Front-of-house cashier built for quick-service operators with keyboard-first controls.",
+    icon: "[POS]",
+    highlights: ["Fast tap ordering", "Keyboard & touch friendly", "Simple tax handling"],
+    command: "npm run dev --workspace apps/meng",
     port: 5001,
-    productionPath: '/meng',
+    productionPath: "/meng",
   },
 ];
 
@@ -32,7 +32,7 @@ function buildModuleUrl(module: ModuleDescriptor) {
     // In Replit environment, use the dev domain instead of localhost
     const replitDomain = import.meta.env.VITE_REPLIT_DEV_DOMAIN;
     if (replitDomain) {
-      return `https://${replitDomain.replace(':5000', `:${module.port}`)}`;
+      return `https://${replitDomain.replace(":5000", `:${module.port}`)}`;
     }
     return `http://localhost:${module.port}`;
   }
@@ -43,10 +43,10 @@ function buildModuleUrl(module: ModuleDescriptor) {
 function MengPreview() {
   const previewItems = useMemo(
     () => [
-      { name: 'Kopi Susu', price: 'Rp25.000', badge: 'KS' },
-      { name: 'Nasi Goreng', price: 'Rp32.000', badge: 'NG' },
-      { name: 'Risoles Mayo', price: 'Rp10.000', badge: 'RM' },
-      { name: 'Es Teh Manis', price: 'Rp12.000', badge: 'ET' },
+      { name: "Kopi Susu", price: "Rp25.000", badge: "KS" },
+      { name: "Nasi Goreng", price: "Rp32.000", badge: "NG" },
+      { name: "Risoles Mayo", price: "Rp10.000", badge: "RM" },
+      { name: "Es Teh Manis", price: "Rp12.000", badge: "ET" },
     ],
     [],
   );
@@ -106,14 +106,11 @@ export function MainScreen() {
           <div>
             <h1 className="main-screen__title">Yuzha Yo Launcher</h1>
             <p className="main-screen__subtitle">
-              Pilih modul untuk dijalankan, optimalkan pengalaman kasir, dan kelola staging dari satu layar.
+              Pilih modul untuk dijalankan, optimalkan pengalaman kasir, dan kelola staging dari
+              satu layar.
             </p>
           </div>
-          <LauncherGesture
-            label="Navigasi"
-            keys={['Ctrl', 'K']}
-            hint="Buka palet aksi"
-          />
+          <LauncherGesture label="Navigasi" keys={["Ctrl", "K"]} hint="Buka palet aksi" />
         </div>
       </header>
 
@@ -155,13 +152,13 @@ export function MainScreen() {
               description="Jalankan modul secara lokal melalui CLI."
               icon="[cli]"
               onClick={() => {
-                if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                if (typeof navigator !== "undefined" && navigator.clipboard) {
                   void navigator.clipboard.writeText(activeModule.command);
                   return;
                 }
 
-                if (typeof window !== 'undefined') {
-                  window.prompt('Salin perintah berikut', activeModule.command);
+                if (typeof window !== "undefined") {
+                  window.prompt("Salin perintah berikut", activeModule.command);
                 }
               }}
             />
@@ -184,4 +181,3 @@ export function MainScreen() {
     </div>
   );
 }
-

@@ -9,7 +9,7 @@ export type Session = {
 };
 
 export function createPasskeySession(): never {
-  throw new Error('Implement passkey session helpers for your project.');
+  throw new Error("Implement passkey session helpers for your project.");
 }
 
 export function readPasskeySession(): null {
@@ -25,8 +25,11 @@ export function getActiveSession(moduleId?: string): Session | null {
   return null;
 }
 
-export async function signInWithPasskey(passkey: string, moduleId?: string): Promise<{ session?: Session; error?: string }> {
-  return { error: 'Passkey authentication not implemented' };
+export async function signInWithPasskey(
+  passkey: string,
+  moduleId?: string,
+): Promise<{ session?: Session; error?: string }> {
+  return { error: "Passkey authentication not implemented" };
 }
 
 export function signOut(moduleId?: string): Promise<void> {

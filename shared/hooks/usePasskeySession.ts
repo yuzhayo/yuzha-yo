@@ -1,13 +1,13 @@
-﻿import { useCallback, useEffect, useState } from 'react';
+﻿import { useCallback, useEffect, useState } from "react";
 import {
   getActiveSession,
   signInWithPasskey,
   signOut,
   subscribeToSessionChanges,
-  type Session
-} from '../auth/passkey';
+  type Session,
+} from "../auth/passkey";
 
-type Status = 'checking' | 'authenticated' | 'unauthenticated';
+type Status = "checking" | "authenticated" | "unauthenticated";
 
 type PasskeyState = {
   status: Status;
@@ -23,16 +23,16 @@ type Options = {
 };
 
 function translateValidationError(message: string | null | undefined): string {
-  if (!message) return 'Gagal memverifikasi passkey';
+  if (!message) return "Gagal memverifikasi passkey";
   return message;
 }
 
 export function usePasskeySession(options: Options = {}): PasskeyState {
   const { moduleId, requirePasskey = false } = options;
-  const [status, setStatus] = useState<Status>('checking');
+  const [status, setStatus] = useState<Status>("checking");
   const [session, setSession] = useState<Session | null>(() => getActiveSession(moduleId));
   const [error, setError] = useState<string | null>(null);
-  const autoPasskey = requirePasskey ? null : `auto-${moduleId ?? 'global'}`;
+  const autoPasskey = requirePasskey ? null : `auto-${moduleId ?? "global"}`;
 
   useEffect(() => {
     let active = true;
@@ -45,7 +45,7 @@ export function usePasskeySession(options: Options = {}): PasskeyState {
       }
       if (!active) return;
       setSession(current);
-      setStatus(current ? 'authenticated' : 'unauthenticated');
+      setStatus(current ? "authenticated" : "unauthenticated");
       if (!current) {
         setError(null);
       }
@@ -63,30 +63,33 @@ export function usePasskeySession(options: Options = {}): PasskeyState {
     };
   }, [moduleId, requirePasskey, autoPasskey]);
 
-  const signInHandler = useCallback(async (passkey: string) => {
-    setStatus('checking');
-    setError(null);
+  const signInHandler = useCallback(
+    async (passkey: string) => {
+      setStatus("checking");
+      setError(null);
 
-    const result = await signInWithPasskey(passkey, moduleId);
-    if (!result.session || result.error) {
-      setStatus('unauthenticated');
-      setSession(null);
-      setError(translateValidationError(result.error));
-      return;
-    }
+      const result = await signInWithPasskey(passkey, moduleId);
+      if (!result.session || result.error) {
+        setStatus("unauthenticated");
+        setSession(null);
+        setError(translateValidationError(result.error));
+        return;
+      }
 
-    setSession(result.session);
-    setStatus('authenticated');
-  }, [moduleId]);
+      setSession(result.session);
+      setStatus("authenticated");
+    },
+    [moduleId],
+  );
 
   const signOutHandler = useCallback(async () => {
     await signOut(moduleId);
     setSession(null);
-    setStatus(requirePasskey ? 'unauthenticated' : 'checking');
+    setStatus(requirePasskey ? "unauthenticated" : "checking");
     setError(null);
   }, [moduleId, requirePasskey]);
 
   return { status, session, error, signIn: signInHandler, signOut: signOutHandler };
 }
 
-export type { Session } from '../auth/passkey';
+export type { Session } from "../auth/passkey";

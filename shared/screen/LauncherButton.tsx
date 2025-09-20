@@ -1,6 +1,6 @@
-import { type ReactNode } from 'react';
+import { type ReactNode } from "react";
 
-import '@shared/screen/launcherStyles.css';
+import "@shared/screen/launcherStyles.css";
 
 export type LauncherButtonProps = {
   title: string;
@@ -16,7 +16,7 @@ export type LauncherButtonProps = {
 };
 
 function buildClassName(className?: string) {
-  return [className, 'launcher-button'].filter(Boolean).join(' ');
+  return [className, "launcher-button"].filter(Boolean).join(" ");
 }
 
 export function LauncherButton(props: LauncherButtonProps) {
@@ -28,7 +28,7 @@ export function LauncherButton(props: LauncherButtonProps) {
         className={buildClassName(className)}
         href={href}
         target={target}
-        rel={rel ?? 'noopener noreferrer'}
+        rel={rel ?? "noopener noreferrer"}
         aria-disabled={disabled}
         onClick={(event) => {
           if (disabled) {

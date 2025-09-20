@@ -2,36 +2,36 @@
  * Reusable Panel component for UI overlays
  */
 
-import React from 'react'
+import React from "react";
 
 export interface PanelProps {
-  children: React.ReactNode
-  title?: string
-  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center'
-  className?: string
-  onClose?: () => void
-  visible?: boolean
+  children: React.ReactNode;
+  title?: string;
+  position?: "top-left" | "top-right" | "bottom-left" | "bottom-right" | "center";
+  className?: string;
+  onClose?: () => void;
+  visible?: boolean;
 }
 
 const positionClasses = {
-  'top-left': 'top-4 left-4',
-  'top-right': 'top-4 right-4',
-  'bottom-left': 'bottom-4 left-4',
-  'bottom-right': 'bottom-4 right-4',
-  'center': 'top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2'
-}
+  "top-left": "top-4 left-4",
+  "top-right": "top-4 right-4",
+  "bottom-left": "bottom-4 left-4",
+  "bottom-right": "bottom-4 right-4",
+  center: "top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2",
+};
 
 export function Panel({
   children,
   title,
-  position = 'top-left',
-  className = '',
+  position = "top-left",
+  className = "",
   onClose,
-  visible = true
+  visible = true,
 }: PanelProps) {
-  if (!visible) return null
+  if (!visible) return null;
 
-  const positionClass = positionClasses[position]
+  const positionClass = positionClasses[position];
 
   return (
     <div className={`absolute ${positionClass} pointer-events-auto z-20 ${className}`}>
@@ -46,16 +46,19 @@ export function Panel({
                 aria-label="Close panel"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             )}
           </div>
         )}
-        <div className="text-gray-700">
-          {children}
-        </div>
+        <div className="text-gray-700">{children}</div>
       </div>
     </div>
-  )
+  );
 }

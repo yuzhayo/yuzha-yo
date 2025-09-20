@@ -3,18 +3,18 @@
  * Re-exports core types from stages directory
  */
 
-export { EngineConfig, StageAdapter, PerformanceMetrics, EngineStatus } from '../stages/adapter'
+export { EngineConfig, StageAdapter, PerformanceMetrics, EngineStatus } from "../stages/adapter";
 
 export interface Transform3D {
-  position: { x: number; y: number; z: number }
-  rotation: { x: number; y: number; z: number }
-  scale: { x: number; y: number; z: number }
+  position: { x: number; y: number; z: number };
+  rotation: { x: number; y: number; z: number };
+  scale: { x: number; y: number; z: number };
 }
 
 export interface SceneObject {
-  id: string
-  type: 'mesh' | 'light' | 'camera' | 'group'
-  transform: Transform3D
-  visible: boolean
-  userData?: Record<string, any>
+  id: string;
+  type: "mesh" | "light" | "camera" | "group";
+  transform: Transform3D;
+  visible: boolean;
+  userData?: Record<string, any>;
 }

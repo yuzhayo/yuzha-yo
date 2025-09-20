@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react";
 
-import '@shared/screen/launcherStyles.css';
+import "@shared/screen/launcherStyles.css";
 
 export type LauncherGestureProps = {
   label: string;
@@ -11,7 +11,7 @@ export type LauncherGestureProps = {
 
 export function LauncherGesture({ label, keys, hint, className }: LauncherGestureProps) {
   return (
-    <span className={[className, 'launcher-gesture'].filter(Boolean).join(' ')}>
+    <span className={[className, "launcher-gesture"].filter(Boolean).join(" ")}>
       <span>{label}</span>
       <span className="launcher-gesture__keys">
         {keys.map((key, index) => (
