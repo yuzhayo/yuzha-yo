@@ -1,5 +1,5 @@
 // IMPORT SECTION
-import "../../fonts/taimingda.css";
+import "@shared/fonts/taimingda.css";
 
 // STYLE SECTION
 const STYLE_TAG = `

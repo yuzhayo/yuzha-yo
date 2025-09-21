@@ -23,7 +23,8 @@
     "format:fix": "prettier --write .",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest --passWithNoTests",
-    "test:cov": "vitest run --passWithNoTests --coverage"
+    "test:cov": "vitest run --passWithNoTests --coverage",
+    "dev:l": "npm run typecheck && npm run lint && npm run format:fix"
   },
   "devDependencies": {
     "@tailwindcss/aspect-ratio": "^0.4.2",

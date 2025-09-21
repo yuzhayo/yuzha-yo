@@ -13,6 +13,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": resolveFromConfig("./src"),
+      "@shared": resolveFromConfig("../shared"),
     },
   },
   server: {
@@ -20,6 +21,9 @@ export default defineConfig({
     port: 5000,
     strictPort: true,
     allowedHosts: true,
+    fs: {
+      allow: [resolveFromConfig("."), resolveFromConfig("../shared")],
+    },
   },
   preview: {
     host: "0.0.0.0",

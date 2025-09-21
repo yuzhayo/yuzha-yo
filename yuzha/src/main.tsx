@@ -9,7 +9,7 @@ import "./index.css";
 const rootElement = document.getElementById("root");
 
 if (!rootElement) {
-  throw new Error("Root element with id \"root\" was not found.");
+  throw new Error('Root element with id "root" was not found.');
 }
 
 // RENDER SECTION
