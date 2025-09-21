@@ -192,7 +192,9 @@ class DeviceDetectionRules {
       const canvas = document.createElement("canvas");
       const gl =
         canvas.getContext("webgl") ||
-        (canvas.getContext("experimental-webgl") as WebGLRenderingContext | null);
+        (canvas.getContext(
+          "experimental-webgl",
+        ) as WebGLRenderingContext | null);
 
       if (!gl) return null;
 
@@ -211,7 +213,9 @@ class DeviceDetectionRules {
    */
   private isHighEndGPU(gpuInfo: { renderer: string; vendor: string }): boolean {
     return this.GPU_HIGH_INDICATORS.some(
-      (indicator) => gpuInfo.renderer.includes(indicator) || gpuInfo.vendor.includes(indicator),
+      (indicator) =>
+        gpuInfo.renderer.includes(indicator) ||
+        gpuInfo.vendor.includes(indicator),
     );
   }
 
@@ -221,7 +225,9 @@ class DeviceDetectionRules {
    */
   private isMidTierGPU(gpuInfo: { renderer: string; vendor: string }): boolean {
     return this.GPU_MID_INDICATORS.some(
-      (indicator) => gpuInfo.renderer.includes(indicator) || gpuInfo.vendor.includes(indicator),
+      (indicator) =>
+        gpuInfo.renderer.includes(indicator) ||
+        gpuInfo.vendor.includes(indicator),
     );
   }
 

@@ -265,7 +265,10 @@ export class StagesRendererMesh {
 
     // Clock hands - AI can add hour, minute, second hands
     if (metadata.showHands) {
-      const handGeometry = new THREE.PlaneGeometry(2, metadata.handLength || 80);
+      const handGeometry = new THREE.PlaneGeometry(
+        2,
+        metadata.handLength || 80,
+      );
       const handMaterial = new THREE.MeshLambertMaterial({
         color: metadata.handColor || 0x000000,
       });
@@ -300,7 +303,10 @@ export class StagesRendererMesh {
         positions[i * 3 + 2] = 0;
       }
 
-      geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+      geometry.setAttribute(
+        "position",
+        new THREE.BufferAttribute(positions, 3),
+      );
 
       const material = new THREE.PointsMaterial({
         color: 0x87ceeb,
@@ -328,7 +334,10 @@ export class StagesRendererMesh {
     }
 
     // Character body
-    const bodyGeometry = new THREE.CapsuleGeometry(metadata.radius || 20, metadata.height || 100);
+    const bodyGeometry = new THREE.CapsuleGeometry(
+      metadata.radius || 20,
+      metadata.height || 100,
+    );
     const bodyMaterial = new THREE.MeshLambertMaterial({
       color: metadata.color || 0x8b4513, // Brown
     });
@@ -370,7 +379,10 @@ export class StagesRendererMesh {
         colors[i * 3 + 2] = Math.random();
       }
 
-      geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+      geometry.setAttribute(
+        "position",
+        new THREE.BufferAttribute(positions, 3),
+      );
       geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
 
       const material = new THREE.PointsMaterial({
@@ -430,10 +442,13 @@ export class StagesRendererMesh {
   /**
    * Update material properties based on metadata
    */
-  private updateMaterialFromMetadata(mesh: THREE.Object3D, metadata: any): void {
+  private updateMaterialFromMetadata(
+    mesh: THREE.Object3D,
+    metadata: any,
+  ): void {
     if (!metadata) return;
 
-    mesh.traverse((child) => {
+    mesh.traverse((child: THREE.Object3D) => {
       if ("material" in child && child.material) {
         const material = child.material as THREE.Material;
 
@@ -460,7 +475,7 @@ export class StagesRendererMesh {
    * Dispose mesh and its resources
    */
   disposeMesh(mesh: THREE.Object3D): void {
-    mesh.traverse((child) => {
+    mesh.traverse((child: THREE.Object3D) => {
       if ("geometry" in child && child.geometry) {
         const geometry = child.geometry as THREE.BufferGeometry;
         if (geometry && typeof geometry.dispose === "function") {

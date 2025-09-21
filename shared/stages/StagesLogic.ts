@@ -4,7 +4,11 @@
  * AI should not modify the coordination logic - modify child modules instead
  */
 
-import { StagesLogicTransform, STAGE_WIDTH, STAGE_HEIGHT } from "./StagesLogicTransform";
+import {
+  StagesLogicTransform,
+  STAGE_WIDTH,
+  STAGE_HEIGHT,
+} from "./StagesLogicTransform";
 import { StagesLogicDevice } from "./StagesLogicDevice";
 import { StagesLogicPerformance } from "./StagesLogicPerformance";
 import type {
@@ -120,7 +124,9 @@ export class StagesLogic {
     };
 
     // Performance changes need to propagate to renderer
-    this.performanceRules.onQualityAdjustment = (adjustment: Partial<RenderQuality>) => {
+    this.performanceRules.onQualityAdjustment = (
+      adjustment: Partial<RenderQuality>,
+    ) => {
       this.updateCallback?.onPerformanceChange?.(adjustment);
     };
 
@@ -175,14 +181,19 @@ export class StagesLogic {
   /**
    * Transform viewport coordinates to stage coordinates
    */
-  transformCoordinates(clientX: number, clientY: number): StageCoordinates | null {
+  transformCoordinates(
+    clientX: number,
+    clientY: number,
+  ): StageCoordinates | null {
     return this.transformRules.transformCoordinates(clientX, clientY);
   }
 
   /**
    * Transform event to stage coordinates
    */
-  transformEvent(event: PointerEvent | MouseEvent | TouchEvent): StageCoordinates | null {
+  transformEvent(
+    event: PointerEvent | MouseEvent | TouchEvent,
+  ): StageCoordinates | null {
     return this.transformRules.transformEvent(event);
   }
 

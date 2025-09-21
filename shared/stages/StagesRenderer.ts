@@ -112,6 +112,10 @@ export class StagesRenderer {
       }
     });
 
+    if (!this.canvas) {
+      throw new Error("Failed to create canvas element");
+    }
+
     return this.canvas;
   }
 
