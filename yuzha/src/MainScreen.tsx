@@ -1,10 +1,12 @@
+// IMPORT SECTION
 import React, { useState, useCallback } from 'react';
-import { StagesCanvas } from './components/StagesCanvas';
-import { sampleObjects, animationPresets } from './config/sampleAnimations';
-import type { StageObject } from '@shared/stages/StagesTypes';
+import StagesCanvasLayer from './StagesCanvasLayer';
+import { mainScreenConfigs, configPresets } from './MainScreenConfig';
+import type { LibraryConfig } from '@shared/layer/LayerTypes';
 import "@shared/fonts/taimingda.css";
 
-const STYLE_TAG = `
+// STYLE SECTION
+const MAIN_STYLES = `
 :root {
   color-scheme: dark;
   font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
@@ -23,7 +25,7 @@ body,
   min-height: 100vh;
 }
 
-.app {
+.main-app {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -33,25 +35,25 @@ body,
   gap: 2rem;
 }
 
-.header {
+.main-header {
   text-align: center;
   max-width: 560px;
 }
 
-.header__title {
+.main-header__title {
   font-size: clamp(2rem, 4vw, 2.6rem);
   font-weight: 600;
   font-family: "Taimingda", "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
   margin-bottom: 1rem;
 }
 
-.header__subtitle {
+.main-header__subtitle {
   font-size: 1rem;
   line-height: 1.6;
   color: rgba(203, 213, 225, 0.8);
 }
 
-.graphics-container {
+.main-canvas-container {
   background: rgba(15, 23, 42, 0.85);
   border: 1px solid rgba(148, 163, 184, 0.18);
   border-radius: 16px;
@@ -59,7 +61,7 @@ body,
   box-shadow: 0 35px 80px -45px rgba(15, 23, 42, 0.9);
 }
 
-.controls {
+.main-controls {
   display: flex;
   gap: 1rem;
   align-items: center;
@@ -67,19 +69,19 @@ body,
   flex-wrap: wrap;
 }
 
-.control-group {
+.main-control-group {
   display: flex;
   gap: 0.5rem;
   align-items: center;
 }
 
-.control-label {
+.main-control-label {
   font-size: 0.875rem;
   color: rgba(203, 213, 225, 0.9);
   font-weight: 500;
 }
 
-.control-button {
+.main-control-button {
   padding: 0.5rem 1rem;
   border: 1px solid rgba(148, 163, 184, 0.3);
   border-radius: 6px;
@@ -90,17 +92,17 @@ body,
   transition: all 0.2s ease;
 }
 
-.control-button:hover {
+.main-control-button:hover {
   background: rgba(59, 130, 246, 0.2);
   border-color: rgba(59, 130, 246, 0.5);
 }
 
-.control-button.active {
+.main-control-button.active {
   background: rgba(59, 130, 246, 0.3);
   border-color: rgba(59, 130, 246, 0.7);
 }
 
-.status {
+.main-status {
   display: flex;
   gap: 1rem;
   font-size: 0.875rem;
@@ -108,69 +110,122 @@ body,
   align-items: center;
 }
 
-.status-item {
+.main-status-item {
   display: flex;
   align-items: center;
   gap: 0.25rem;
 }
 
-.status-dot {
+.main-status-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: #10b981;
 }
 
-.status-dot.error {
+.main-status-dot.error {
   background: #ef4444;
+}
+
+.main-status-dot.warning {
+  background: #f59e0b;
 }
 `;
 
-function MainScreen() {
-  const [currentPreset, setCurrentPreset] = useState(0);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [objects, setObjects] = useState<StageObject[]>(sampleObjects);
+// STATE SECTION
+interface MainScreenState {
+  currentConfigIndex: number;
+  isInitialized: boolean;
+  error: string | null;
+  warnings: string[];
+  currentConfig: LibraryConfig;
+}
 
-  const handlePresetChange = useCallback((presetIndex: number) => {
-    const preset = animationPresets[presetIndex];
-    if (preset && presetIndex >= 0 && presetIndex < animationPresets.length) {
-      setCurrentPreset(presetIndex);
-      setObjects(preset.objects);
+// LOGIC SECTION
+function MainScreen() {
+  const [state, setState] = useState<MainScreenState>({
+    currentConfigIndex: 0,
+    isInitialized: false,
+    error: null,
+    warnings: [],
+    currentConfig: configPresets[0]?.config || mainScreenConfigs.minimal,
+  });
+
+  const handleConfigChange = useCallback((configIndex: number) => {
+    const preset = configPresets[configIndex];
+    if (preset && configIndex >= 0 && configIndex < configPresets.length) {
+      setState(prev => ({
+        ...prev,
+        currentConfigIndex: configIndex,
+        currentConfig: preset.config,
+        error: null,
+        warnings: [],
+      }));
     }
   }, []);
 
   const handleInitialized = useCallback(() => {
-    setIsInitialized(true);
-    setError(null);
+    setState(prev => ({
+      ...prev,
+      isInitialized: true,
+      error: null,
+    }));
   }, []);
 
   const handleError = useCallback((errorMsg: string) => {
-    setError(errorMsg);
-    setIsInitialized(false);
+    setState(prev => ({
+      ...prev,
+      error: errorMsg,
+      isInitialized: false,
+    }));
   }, []);
 
+  const handleWarning = useCallback((warnings: string[]) => {
+    setState(prev => ({
+      ...prev,
+      warnings,
+    }));
+  }, []);
+
+  const getStatusDotClass = useCallback(() => {
+    if (state.error) return 'main-status-dot error';
+    if (state.warnings.length > 0) return 'main-status-dot warning';
+    return 'main-status-dot';
+  }, [state.error, state.warnings]);
+
+  const getStatusMessage = useCallback(() => {
+    if (state.error) return `Error: ${state.error}`;
+    if (state.warnings.length > 0) return `Warnings: ${state.warnings.length}`;
+    if (state.isInitialized) return 'Graphics Ready';
+    return 'Initializing...';
+  }, [state.error, state.warnings, state.isInitialized]);
+
+  const getLayerCount = useCallback(() => {
+    return state.currentConfig.layers.length;
+  }, [state.currentConfig]);
+
+  // UI SECTION
   return (
     <>
-      <style>{STYLE_TAG}</style>
-      <div className="app">
-        <header className="header">
-          <h1 className="header__title">Yuzha Graphics Demo</h1>
-          <p className="header__subtitle">
-            Interactive Three.js graphics powered by the Stages system. 
-            Try different animation presets below.
+      <style>{MAIN_STYLES}</style>
+      <div className="main-app">
+        <header className="main-header">
+          <h1 className="main-header__title">Yuzha Layer System Demo</h1>
+          <p className="main-header__subtitle">
+            Interactive layer-based animations powered by the unified layer → stages → display workflow. 
+            Try different animation configurations below.
           </p>
         </header>
 
-        <div className="graphics-container">
-          <div className="controls">
-            <div className="control-group">
-              <span className="control-label">Animation:</span>
-              {animationPresets.map((preset, index) => (
+        <div className="main-canvas-container">
+          <div className="main-controls">
+            <div className="main-control-group">
+              <span className="main-control-label">Configuration:</span>
+              {configPresets.map((preset, index) => (
                 <button
                   key={preset.name}
-                  className={`control-button ${currentPreset === index ? 'active' : ''}`}
-                  onClick={() => handlePresetChange(index)}
+                  className={`main-control-button ${state.currentConfigIndex === index ? 'active' : ''}`}
+                  onClick={() => handleConfigChange(index)}
                   title={preset.description}
                 >
                   {preset.name}
@@ -179,12 +234,13 @@ function MainScreen() {
             </div>
           </div>
 
-          <StagesCanvas
+          <StagesCanvasLayer
             width={800}
             height={600}
-            objects={objects}
+            config={state.currentConfig}
             onInitialized={handleInitialized}
             onError={handleError}
+            onWarning={handleWarning}
             quality={{
               dpr: Math.min(window.devicePixelRatio, 2),
               antialias: true,
@@ -193,18 +249,19 @@ function MainScreen() {
             }}
           />
 
-          <div className="status">
-            <div className="status-item">
-              <div className={`status-dot ${error ? 'error' : ''}`}></div>
-              <span>
-                {error ? `Error: ${error}` : isInitialized ? 'Graphics Ready' : 'Initializing...'}
-              </span>
+          <div className="main-status">
+            <div className="main-status-item">
+              <div className={getStatusDotClass()}></div>
+              <span>{getStatusMessage()}</span>
             </div>
-            <div className="status-item">
-              <span>Objects: {objects.length}</span>
+            <div className="main-status-item">
+              <span>Layers: {getLayerCount()}</span>
             </div>
-            <div className="status-item">
-              <span>Preset: {animationPresets[currentPreset]?.name || 'Unknown'}</span>
+            <div className="main-status-item">
+              <span>Config: {configPresets[state.currentConfigIndex]?.name || 'Unknown'}</span>
+            </div>
+            <div className="main-status-item">
+              <span>Canvas: 2048×2048</span>
             </div>
           </div>
         </div>
@@ -213,4 +270,7 @@ function MainScreen() {
   );
 }
 
+// EFFECT SECTION (unused)
+
+// EXPORT SECTION
 export default MainScreen;

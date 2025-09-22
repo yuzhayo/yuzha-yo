@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import type React from 'react';
 import { StagesRenderer } from '@shared/stages/StagesRenderer';
 import { StagesLogic } from '@shared/stages/StagesLogic';
 import type { RenderQuality, StageObject } from '@shared/stages/StagesTypes';

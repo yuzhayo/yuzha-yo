@@ -23,3 +23,4 @@ These instructions apply to any AI agent that writes or edits project source fil
 - Legacy files that predate this structure should be migrated into the sectioned layout the next time they are changed.
 - Configuration-only formats (such as JSON or TOML) are exempt, but any accompanying script modules must follow the sectioning convention.
 - Tests may use a simplified set of sections (`IMPORT`, `SETUP`, `ASSERT`, `EXPORT`) when that improves clarity while still keeping the labelled-section pattern.
+- Keep structure flat as possible, no unnessesary subfolder, use naming pattern to replace subfolder.
