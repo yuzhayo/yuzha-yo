@@ -1,9 +1,9 @@
 // IMPORT SECTION
-import TestScreen from "./testscreen";
+import MainScreen from "./MainScreen";
 
 // UI SECTION
 function App() {
-  return <TestScreen />;
+  return <MainScreen />;
 }
 
 // EXPORT SECTION
