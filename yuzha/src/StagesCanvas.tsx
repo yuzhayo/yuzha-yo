@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useStages } from '../hooks/useStages';
+import { useStages } from './useStages';
 import type { StageObject, RenderQuality } from '@shared/stages/StagesTypes';
 
 export interface StagesCanvasProps {
