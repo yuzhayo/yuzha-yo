@@ -12,8 +12,12 @@
   ],
   "scripts": {
     "dev": "npm run dev --workspace yuzha",
-    "build": "npm run build --workspace yuzha",
+    "dev:3000": "npm run dev:3000 --workspace yuzha",
+    "dev:5000": "npm run dev:5000 --workspace yuzha",
     "preview": "npm run preview --workspace yuzha",
+    "preview:3000": "npm run preview:3000 --workspace yuzha",
+    "preview:5000": "npm run preview:5000 --workspace yuzha",
+    "build": "npm run build --workspace yuzha",
     "clean": "rimraf \"yuzha/dist\" \"yuzha/node_modules/.vite\"",
     "typecheck": "npm run typecheck --workspace yuzha && tsc --noEmit --project tsconfig.base.json",
     "typecheck:shared": "tsc --noEmit --project tsconfig.base.json",
@@ -27,9 +31,6 @@
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest --passWithNoTests",
     "test:cov": "vitest run --passWithNoTests --coverage",
-    "test:shared": "vitest run shared/**/*.test.ts --passWithNoTests",
-    "test:shared:watch": "vitest shared/**/*.test.ts --passWithNoTests",
-    "test:shared:cov": "vitest run shared/**/*.test.ts --passWithNoTests --coverage",
     "dev:l": "npm run typecheck && npm run lint && npm run format:fix",
     "dev:shared": "npm run typecheck:shared && npm run lint:shared && npm run test:shared",
     "dev:shared:fix": "npm run typecheck:shared && npm run lint:shared:fix && npm run format:fix && npm run test:shared"
@@ -59,10 +60,10 @@
     "vite": "^7.0.4",
     "@types/three": "^0.180.0",
     "vitest": "^3.2.4",
-    "three": "^0.180.0"
+    "three": "^0.180.0",
+    "cross-env": "^7.0.3"
   },
   "dependencies": {
-    "@types/three": "^0.180.0",
-    "three": "^0.180.0"
+  
   }
 }
