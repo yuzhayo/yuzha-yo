@@ -1,5 +1,5 @@
-﻿import React from 'react'
-import LauncherScreen from './launcher/LauncherScreen'
+import React from 'react'
+import LauncherScreen from './LauncherScreen'
 
 const App: React.FC = () => <LauncherScreen />
 
