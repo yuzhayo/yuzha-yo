@@ -48,18 +48,27 @@ export class StagesLogicTransform {
   updateTransform(): void {
     if (!this.container || !this.canvas) return;
 
-    const rect = this.container.getBoundingClientRect();
-    const viewportWidth = rect.width;
-    const viewportHeight = rect.height;
+    const parent = this.container.parentElement;
+    const parentRect = parent?.getBoundingClientRect();
+    const viewportWidth =
+      parentRect?.width ||
+      window.innerWidth ||
+      document.documentElement.clientWidth ||
+      this.container.clientWidth;
+    const viewportHeight =
+      parentRect?.height ||
+      window.innerHeight ||
+      document.documentElement.clientHeight ||
+      this.container.clientHeight;
 
-    const newTransform = this.transformRules.calculateTransform(viewportWidth, viewportHeight);
+    const newTransform = this.transformRules.calculateTransform(
+      viewportWidth,
+      viewportHeight,
+    );
 
-    // Only update if transform actually changed
     if (!this.transform || this.hasTransformChanged(this.transform, newTransform)) {
       this.transform = newTransform;
       this.applyTransformToCanvas();
-
-      // Notify parent of transform change
       this.onTransformChange?.(this.transform);
     }
   }
@@ -80,25 +89,42 @@ export class StagesLogicTransform {
    * Apply CSS transforms to canvas based on current transform
    */
   private applyTransformToCanvas(): void {
-    if (!this.canvas || !this.transform) return;
+    if (!this.canvas || !this.transform || !this.container) return;
 
-    this.canvas.style.transform = `translate(-50%, -50%) scale(${this.transform.scale})`;
+    const { scale } = this.transform;
+    const { width, height } = this.transformRules.getStageDimensions();
+    const scaledWidth = width * scale;
+    const scaledHeight = height * scale;
+
+    const container = this.container;
+    container.style.position = "absolute";
+    container.style.top = "50%";
+    container.style.left = "50%";
+    container.style.transform = "translate(-50%, -50%)";
+    container.style.width = `${scaledWidth}px`;
+    container.style.height = `${scaledHeight}px`;
+    container.style.overflow = "hidden";
+
     this.canvas.style.position = "absolute";
-    this.canvas.style.top = "50%";
-    this.canvas.style.left = "50%";
+    this.canvas.style.top = "0";
+    this.canvas.style.left = "0";
+    this.canvas.style.width = `${width}px`;
+    this.canvas.style.height = `${height}px`;
+    this.canvas.style.transformOrigin = "0 0";
+    this.canvas.style.transform = `scale(${scale})`;
   }
 
   /**
    * Transform viewport coordinates to stage coordinates
    */
   transformCoordinates(clientX: number, clientY: number): StageCoordinates | null {
-    if (!this.transform || !this.container) return null;
+    if (!this.transform) return null;
 
-    const rect = this.container.getBoundingClientRect();
-    const viewportX = clientX - rect.left;
-    const viewportY = clientY - rect.top;
-
-    return this.transformRules.transformCoordinates(viewportX, viewportY, this.transform);
+    return this.transformRules.transformCoordinates(
+      clientX,
+      clientY,
+      this.transform,
+    );
   }
 
   /**
@@ -347,3 +373,8 @@ class TransformRules {
     };
   }
 }
+
+
+
+
+

@@ -52,9 +52,12 @@ export function StagesCanvasLayer({
     try {
       setError(null);
 
+      const stageWidth = config.stage?.width ?? width;
+      const stageHeight = config.stage?.height ?? height;
+
       const engine = new StagesEngine({
-        width: 2048,
-        height: 2048,
+        width: stageWidth,
+        height: stageHeight,
         debug: false,
       });
 
@@ -172,12 +175,18 @@ export function StagesCanvasLayer({
   }, [stopAnimation]);
 
   // UI SECTION
-  const containerStyle: React.CSSProperties = {
-    width: `${width}px`,
-    height: `${height}px`,
+  const rootStyle: React.CSSProperties = {
     position: "relative",
+    width: "100vw",
+    height: "100vh",
     overflow: "hidden",
     background: "transparent",
+  };
+
+  const stageContainerStyle: React.CSSProperties = {
+    position: "relative",
+    width: "100%",
+    height: "100%",
   };
 
   // EFFECT SECTION
@@ -221,8 +230,20 @@ export function StagesCanvasLayer({
     };
   }, []);
 
-  return <div ref={containerRef} style={containerStyle} data-testid="stages-canvas-layer" />;
+  return (
+    <div style={rootStyle}>
+      <div
+        ref={containerRef}
+        style={stageContainerStyle}
+        data-testid="stages-canvas-layer"
+      />
+    </div>
+  );
 }
 
 // EXPORT SECTION
 export default StagesCanvasLayer;
+
+
+
+
