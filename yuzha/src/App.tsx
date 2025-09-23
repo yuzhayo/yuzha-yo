@@ -1,10 +1,6 @@
-// IMPORT SECTION
+import React from "react";
 import MainScreen from "./MainScreen";
 
-// UI SECTION
-function App() {
-  return <MainScreen />;
-}
+const App: React.FC = () => <MainScreen />;
 
-// EXPORT SECTION
 export default App;
