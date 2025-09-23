@@ -33,7 +33,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run dev"
+args = "npm run dev:5000"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
@@ -45,7 +45,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run dev"
+args = "npm run dev:5000"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
