@@ -1,4 +1,7 @@
+/* eslint-env node */
+// vite.config.ts
 import path from "node:path";
+import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 import react from "@vitejs/plugin-react";
@@ -6,6 +9,16 @@ import { defineConfig } from "vite";
 
 const resolveFromConfig = (relativePath: string) =>
   path.resolve(path.dirname(fileURLToPath(import.meta.url)), relativePath);
+
+// Auto-port:
+// - PORT env menang
+// - Replit default 5000
+// - Lainnya default 3000
+const isReplit =
+  !!process.env.REPL_ID || !!process.env.REPL_SLUG || !!process.env.REPLIT_DB_URL;
+
+const DEFAULT_PORT = isReplit ? 5000 : 3000;
+const PORT = Number(process.env.PORT) || DEFAULT_PORT;
 
 export default defineConfig({
   root: resolveFromConfig("."),
@@ -18,7 +31,7 @@ export default defineConfig({
   },
   server: {
     host: "0.0.0.0",
-    port: 5000,
+    port: PORT,
     strictPort: true,
     allowedHosts: true,
     fs: {
@@ -27,7 +40,7 @@ export default defineConfig({
   },
   preview: {
     host: "0.0.0.0",
-    port: 5000,
+    port: PORT,
   },
   build: {
     target: "es2020",
