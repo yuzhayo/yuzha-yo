@@ -3,12 +3,7 @@
  * AI can modify this file to adjust performance thresholds, monitoring rules, and quality adjustments
  */
 
-import type {
-  PerformanceMetrics,
-  RenderQuality,
-  DeviceTier,
-  StageConfig,
-} from "./StagesTypes";
+import type { PerformanceMetrics, RenderQuality, DeviceTier, StageConfig } from "./StagesTypes";
 
 export class StagesLogicPerformance {
   private frameCount = 0;
@@ -28,9 +23,7 @@ export class StagesLogicPerformance {
   };
 
   // Callback for notifying parent of quality adjustments
-  public onQualityAdjustment:
-    | ((adjustment: Partial<RenderQuality>) => void)
-    | null = null;
+  public onQualityAdjustment: ((adjustment: Partial<RenderQuality>) => void) | null = null;
 
   constructor(config: StageConfig = {}) {
     this.performanceRules = new PerformanceRules(config);
@@ -117,10 +110,7 @@ export class StagesLogicPerformance {
       return { dpr: 1.0, antialias: false, shadows: false, textureScale: 0.5 };
     }
 
-    const actualDPR = Math.min(
-      this.deviceTier.maxDPR,
-      window.devicePixelRatio || 1,
-    );
+    const actualDPR = Math.min(this.deviceTier.maxDPR, window.devicePixelRatio || 1);
     return {
       dpr: actualDPR,
       antialias: this.deviceTier.antialias,
@@ -167,10 +157,7 @@ export class StagesLogicPerformance {
    */
   getAverageFPS(): number {
     if (this.fpsHistory.length === 0) return 60;
-    return (
-      this.fpsHistory.reduce((sum, fps) => sum + fps, 0) /
-      this.fpsHistory.length
-    );
+    return this.fpsHistory.reduce((sum, fps) => sum + fps, 0) / this.fpsHistory.length;
   }
 
   /**
@@ -181,9 +168,7 @@ export class StagesLogicPerformance {
       metrics: this.metrics,
       fpsHistory: [...this.fpsHistory],
       averageFPS: this.getAverageFPS(),
-      performanceGrade: this.performanceRules.getPerformanceGrade(
-        this.getAverageFPS(),
-      ),
+      performanceGrade: this.performanceRules.getPerformanceGrade(this.getAverageFPS()),
       rules: this.performanceRules.getStats(),
     };
   }
@@ -258,8 +243,7 @@ class PerformanceRules {
       return {};
     }
 
-    const avgFPS =
-      fpsHistory.reduce((sum, fps) => sum + fps, 0) / fpsHistory.length;
+    const avgFPS = fpsHistory.reduce((sum, fps) => sum + fps, 0) / fpsHistory.length;
 
     // Check for quality reduction
     if (this.shouldReduceQuality(avgFPS, fpsHistory, metrics)) {
@@ -287,9 +271,7 @@ class PerformanceRules {
   ): boolean {
     // Multiple criteria for quality reduction
     const fpsLow = avgFPS < this.minFPS;
-    const consistentlyLow = fpsHistory
-      .slice(-5)
-      .every((fps) => fps < this.minFPS + 5);
+    const consistentlyLow = fpsHistory.slice(-5).every((fps) => fps < this.minFPS + 5);
     const memoryPressure = metrics.memoryUsage > 200; // 200MB threshold
     const highObjectCount = this.deviceTier
       ? metrics.objectCount > this.deviceTier.maxObjects * 0.8
@@ -309,8 +291,7 @@ class PerformanceRules {
   ): boolean {
     // Conservative criteria for quality increase
     const fpsHigh = avgFPS > this.maxFPS;
-    const stablePerformance =
-      fpsHistory.length >= 10 && this.isPerformanceStable(fpsHistory);
+    const stablePerformance = fpsHistory.length >= 10 && this.isPerformanceStable(fpsHistory);
     const lowMemory = metrics.memoryUsage < 100; // Low memory usage
     const reasonableObjectCount = this.deviceTier
       ? metrics.objectCount < this.deviceTier.maxObjects * 0.6
@@ -323,9 +304,7 @@ class PerformanceRules {
    * Calculate quality reduction adjustments
    * AI can modify reduction strategies
    */
-  private calculateQualityReduction(
-    currentQuality: RenderQuality,
-  ): Partial<RenderQuality> {
+  private calculateQualityReduction(currentQuality: RenderQuality): Partial<RenderQuality> {
     const adjustment: Partial<RenderQuality> = {};
 
     // Reduce DPR first (biggest performance impact)
@@ -344,10 +323,7 @@ class PerformanceRules {
 
     // Reduce texture quality
     if (currentQuality.textureScale > 0.3) {
-      adjustment.textureScale = Math.max(
-        0.3,
-        currentQuality.textureScale * 0.8,
-      );
+      adjustment.textureScale = Math.max(0.3, currentQuality.textureScale * 0.8);
     }
 
     return adjustment;
@@ -357,9 +333,7 @@ class PerformanceRules {
    * Calculate quality increase adjustments
    * AI can modify increase strategies
    */
-  private calculateQualityIncrease(
-    currentQuality: RenderQuality,
-  ): Partial<RenderQuality> {
+  private calculateQualityIncrease(currentQuality: RenderQuality): Partial<RenderQuality> {
     const adjustment: Partial<RenderQuality> = {};
     const deviceLimits = this.deviceTier;
 
@@ -384,11 +358,7 @@ class PerformanceRules {
     }
 
     // Enable shadows last (highest performance impact)
-    if (
-      !currentQuality.shadows &&
-      deviceLimits.shadowsEnabled &&
-      currentQuality.dpr >= 1.5
-    ) {
+    if (!currentQuality.shadows && deviceLimits.shadowsEnabled && currentQuality.dpr >= 1.5) {
       adjustment.shadows = true;
     }
 

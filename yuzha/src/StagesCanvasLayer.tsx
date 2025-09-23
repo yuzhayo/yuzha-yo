@@ -1,9 +1,12 @@
 // IMPORT SECTION
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { StagesEngine } from '@shared/stages/StagesEngine';
-import { processLibraryConfigToStageObjects, updateStageObjectsFromLayers } from '@shared/stages/StagesEngineLayer';
-import type { LibraryConfig } from '@shared/layer/LayerTypes';
-import type { StageObject, RenderQuality } from '@shared/stages/StagesTypes';
+import React, { useEffect, useRef, useState, useCallback } from "react";
+import { StagesEngine } from "@shared/stages/StagesEngine";
+import {
+  processLibraryConfigToStageObjects,
+  updateStageObjectsFromLayers,
+} from "@shared/stages/StagesEngineLayer";
+import type { LibraryConfig } from "@shared/layer2/LayerTypes";
+import type { StageObject, RenderQuality } from "@shared/stages/StagesTypes";
 
 // STYLE SECTION (unused)
 
@@ -38,7 +41,7 @@ export function StagesCanvasLayer({
   const objectsMapRef = useRef<Map<string, StageObject>>(new Map());
   const animationFrameRef = useRef<number | null>(null);
   const startTimeRef = useRef<number>(Date.now());
-  
+
   const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,7 +51,7 @@ export function StagesCanvasLayer({
 
     try {
       setError(null);
-      
+
       const engine = new StagesEngine({
         width: 2048,
         height: 2048,
@@ -61,7 +64,7 @@ export function StagesCanvasLayer({
       // Process initial config
       const currentTime = (Date.now() - startTimeRef.current) / 1000;
       const result = processLibraryConfigToStageObjects(config, currentTime);
-      
+
       if (result.warnings.length > 0) {
         onWarning?.(result.warnings);
       }
@@ -74,12 +77,12 @@ export function StagesCanvasLayer({
 
       setIsInitialized(true);
       onInitialized?.();
-      
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to initialize stages engine';
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to initialize stages engine";
       setError(errorMessage);
       onError?.(errorMessage);
-      console.error('[StagesCanvasLayer] Initialization failed:', err);
+      console.error("[StagesCanvasLayer] Initialization failed:", err);
     }
   }, [config, onInitialized, onError, onWarning]);
 
@@ -89,14 +92,10 @@ export function StagesCanvasLayer({
 
     try {
       const currentTime = (Date.now() - startTimeRef.current) / 1000;
-      
+
       // Update objects with new animation state
-      const result = updateStageObjectsFromLayers(
-        config,
-        objectsMapRef.current,
-        currentTime
-      );
-      
+      const result = updateStageObjectsFromLayers(config, objectsMapRef.current, currentTime);
+
       // Update engine with new object states
       for (const obj of result.updatedObjects) {
         engineRef.current.updateObject(obj.id, obj);
@@ -105,7 +104,7 @@ export function StagesCanvasLayer({
 
       animationFrameRef.current = requestAnimationFrame(animate);
     } catch (err) {
-      console.error('[StagesCanvasLayer] Animation loop error:', err);
+      console.error("[StagesCanvasLayer] Animation loop error:", err);
     }
   }, [config, isInitialized]);
 
@@ -132,7 +131,7 @@ export function StagesCanvasLayer({
     try {
       // Reset time reference for new config
       startTimeRef.current = Date.now();
-      
+
       // Clear existing objects
       for (const [id] of objectsMapRef.current) {
         engineRef.current.removeObject(id);
@@ -141,7 +140,7 @@ export function StagesCanvasLayer({
 
       // Process new config
       const result = processLibraryConfigToStageObjects(config, 0);
-      
+
       if (result.warnings.length > 0) {
         onWarning?.(result.warnings);
       }
@@ -151,10 +150,9 @@ export function StagesCanvasLayer({
         engineRef.current.setObject(obj.id, obj);
         objectsMapRef.current.set(obj.id, obj);
       }
-      
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update config';
-      console.error('[StagesCanvasLayer] Config update failed:', err);
+      const errorMessage = err instanceof Error ? err.message : "Failed to update config";
+      console.error("[StagesCanvasLayer] Config update failed:", err);
       onError?.(errorMessage);
     }
   }, [config, isInitialized, onError, onWarning]);
@@ -162,12 +160,12 @@ export function StagesCanvasLayer({
   // Cleanup function
   const cleanup = useCallback(() => {
     stopAnimation();
-    
+
     if (engineRef.current) {
       engineRef.current.dispose();
       engineRef.current = null;
     }
-    
+
     objectsMapRef.current.clear();
     setIsInitialized(false);
     setError(null);
@@ -177,9 +175,9 @@ export function StagesCanvasLayer({
   const containerStyle: React.CSSProperties = {
     width: `${width}px`,
     height: `${height}px`,
-    position: 'relative',
-    overflow: 'hidden',
-    background: 'transparent',
+    position: "relative",
+    overflow: "hidden",
+    background: "transparent",
   };
 
   // EFFECT SECTION
@@ -203,7 +201,7 @@ export function StagesCanvasLayer({
     } else {
       stopAnimation();
     }
-    
+
     return stopAnimation;
   }, [isInitialized, error, startAnimation, stopAnimation]);
 
@@ -217,19 +215,13 @@ export function StagesCanvasLayer({
     });
 
     resizeObserver.observe(container);
-    
+
     return () => {
       resizeObserver.disconnect();
     };
   }, []);
 
-  return (
-    <div 
-      ref={containerRef} 
-      style={containerStyle}
-      data-testid="stages-canvas-layer"
-    />
-  );
+  return <div ref={containerRef} style={containerStyle} data-testid="stages-canvas-layer" />;
 }
 
 // EXPORT SECTION

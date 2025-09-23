@@ -1,60 +1,81 @@
-/**
- * LayerConverter.ts (final)
- * - Converter JSON ⇄ UI values (deg↔slider, rpm↔speed, opacity 0–1, scale 0.1–10).
- * - Tidak dipakai di runtime pipeline (khusus editor/Config Screen).
- * - Bekerja di atas *normalized* model agar UI konsisten: LayerConfigNormalized.
- */
-
 import type {
-  FadeConfig,
-  OrbitConfig,
-  PulseConfig,
-  SpinConfig,
+  ClockConfig,
+  ClockState,
+  LayerConfig,
   LayerConfigNormalized,
+  LibraryConfig,
+  OrbitConfig,
+  SpinConfig,
+  StageConfig,
 } from "./LayerTypes";
+import registryJson from "./LayerConfigRegistry.json";
+interface LayerRegistryFile {
+  ASSET_BASE_PATH: string;
+  registry: Record<string, string>;
+}
 
-/* ==============================
- * UI Control Models & Options
- * ============================== */
+const layerRegistryFile = registryJson as LayerRegistryFile;
 
+const resolveRegistryTemplate = (template: string): string =>
+  template.replace(/\$\{ASSET_BASE_PATH\}/g, layerRegistryFile.ASSET_BASE_PATH);
+
+export const ASSET_REGISTRY: Record<string, string> = Object.fromEntries(
+  Object.entries(layerRegistryFile.registry).map(([key, template]) => [
+    key,
+    resolveRegistryTemplate(template),
+  ]),
+);
+
+export type AssetRegistryKey = keyof typeof ASSET_REGISTRY;
+export const ASSET_KEYS = Object.keys(ASSET_REGISTRY) as AssetRegistryKey[];
+
+export interface HumanLayerConfig extends Omit<LayerConfig, "imagePath" | "registryKey"> {
+  assetKey: AssetRegistryKey;
+}
+
+export interface HumanLibraryConfig {
+  stage?: StageConfig;
+  layers: HumanLayerConfig[];
+}
+
+export function humanToRuntimeConfig(config: HumanLibraryConfig): LibraryConfig {
+  return {
+    stage: config.stage,
+    layers: config.layers.map((layer) => {
+      const { assetKey, ...rest } = layer;
+      return {
+        ...rest,
+        registryKey: assetKey,
+      } as LayerConfig;
+    }),
+  };
+}
 export interface AngleOptions {
-  wrap?: boolean; // default true, wrap to [0..360)
+  wrap?: boolean;
 }
 export interface RpmOptions {
-  min?: number; // default 0
-  max?: number; // default 60
+  min?: number;
+  max?: number;
 }
 export interface ScaleOptions {
-  min?: number; // default 0.1
-  max?: number; // default 10
+  min?: number;
+  max?: number;
 }
 export interface OpacityOptions {
-  min?: number; // default 0
-  max?: number; // default 1
+  min?: number;
+  max?: number;
 }
 
-/**
- * Snapshot nilai yang ramah editor/slider.
- * Catatan:
- * - UI pakai uniform scale (single knob). Balikannya kita pecah jadi {x,y} uniform.
- * - tilt dipisah tiltX/tiltY (deg) biar mudah buat slider 0..360.
- */
 export interface UILayerControls {
-  angle: number; // deg 0..360
-  tiltX: number; // deg 0..360
-  tiltY: number; // deg 0..360
-  opacity: number; // 0..1
-  scale: number; // uniform control 0.1..10
-
+  angle: number;
+  tiltX: number;
+  tiltY: number;
+  opacity: number;
+  scale: number;
   spin: Pick<SpinConfig, "enabled" | "rpm" | "direction">;
   orbit: Pick<OrbitConfig, "enabled" | "rpm" | "radius">;
-  pulse: Pick<PulseConfig, "enabled" | "amplitude" | "rpm">;
-  fade: Pick<FadeConfig, "enabled" | "from" | "to" | "rpm">;
+  clock: Pick<ClockConfig, "enabled" | "mode" | "speedMultiplier">;
 }
-
-/* ==============================
- * Helpers
- * ============================== */
 
 const DEF_RPM: Required<RpmOptions> = { min: 0, max: 60 };
 const DEF_SCALE: Required<ScaleOptions> = { min: 0.1, max: 10 };
@@ -100,10 +121,6 @@ export const fromUIScaleUniform = (ui: number, opts: ScaleOptions = {}) => {
   return { x: s, y: s };
 };
 
-/* ==============================
- * JSON (normalized) → UI controls
- * ============================== */
-
 export function toUILayerControls(
   layer: LayerConfigNormalized,
   rpmOpts: RpmOptions = {},
@@ -116,7 +133,6 @@ export function toUILayerControls(
     tiltY: toUIDeg(layer.tilt.y),
     opacity: toUIOpacity(layer.opacity, opacityOpts),
     scale: toUIScaleUniform(layer.scale.x, layer.scale.y, scaleOpts),
-
     spin: {
       enabled: layer.behaviors.spin.enabled,
       rpm: toUIRpm(layer.behaviors.spin.rpm, rpmOpts),
@@ -127,23 +143,13 @@ export function toUILayerControls(
       rpm: toUIRpm(layer.behaviors.orbit.rpm, rpmOpts),
       radius: layer.behaviors.orbit.radius,
     },
-    pulse: {
-      enabled: layer.behaviors.pulse.enabled,
-      amplitude: layer.behaviors.pulse.amplitude,
-      rpm: toUIRpm(layer.behaviors.pulse.rpm, rpmOpts),
-    },
-    fade: {
-      enabled: layer.behaviors.fade.enabled,
-      from: toUIOpacity(layer.behaviors.fade.from, { min: 0, max: 1 }),
-      to: toUIOpacity(layer.behaviors.fade.to, { min: 0, max: 1 }),
-      rpm: toUIRpm(layer.behaviors.fade.rpm, rpmOpts),
+    clock: {
+      enabled: layer.behaviors.clock.enabled,
+      mode: layer.behaviors.clock.mode,
+      speedMultiplier: layer.behaviors.clock.speedMultiplier ?? 1,
     },
   };
 }
-
-/* ==============================
- * UI controls → JSON (normalized)
- * ============================== */
 
 export function fromUILayerControls(
   base: LayerConfigNormalized,
@@ -169,27 +175,16 @@ export function fromUILayerControls(
     enabled: ui.orbit?.enabled ?? base.behaviors.orbit.enabled,
     rpm: ui.orbit?.rpm !== undefined ? fromUIRpm(ui.orbit.rpm, rpmOpts) : base.behaviors.orbit.rpm,
     radius: ui.orbit?.radius !== undefined ? ui.orbit.radius : base.behaviors.orbit.radius,
-    center: base.behaviors.orbit.center, // default: tidak diedit via UI sederhana
+    center: base.behaviors.orbit.center,
   };
 
-  const pulse: PulseConfig = {
-    enabled: ui.pulse?.enabled ?? base.behaviors.pulse.enabled,
-    amplitude:
-      ui.pulse?.amplitude !== undefined ? ui.pulse.amplitude : base.behaviors.pulse.amplitude,
-    rpm: ui.pulse?.rpm !== undefined ? fromUIRpm(ui.pulse.rpm, rpmOpts) : base.behaviors.pulse.rpm,
-  };
-
-  const fade: FadeConfig = {
-    enabled: ui.fade?.enabled ?? base.behaviors.fade.enabled,
-    from:
-      ui.fade?.from !== undefined
-        ? fromUIOpacity(ui.fade.from, { min: 0, max: 1 })
-        : base.behaviors.fade.from,
-    to:
-      ui.fade?.to !== undefined
-        ? fromUIOpacity(ui.fade.to, { min: 0, max: 1 })
-        : base.behaviors.fade.to,
-    rpm: ui.fade?.rpm !== undefined ? fromUIRpm(ui.fade.rpm, rpmOpts) : base.behaviors.fade.rpm,
+  const clock: ClockState = {
+    enabled: ui.clock?.enabled ?? base.behaviors.clock.enabled,
+    mode: ui.clock?.mode ?? base.behaviors.clock.mode,
+    speedMultiplier:
+      ui.clock?.speedMultiplier !== undefined
+        ? Math.max(0.01, ui.clock.speedMultiplier)
+        : base.behaviors.clock.speedMultiplier,
   };
 
   return {
@@ -201,8 +196,7 @@ export function fromUILayerControls(
     behaviors: {
       spin,
       orbit,
-      pulse,
-      fade,
+      clock,
     },
   };
 }

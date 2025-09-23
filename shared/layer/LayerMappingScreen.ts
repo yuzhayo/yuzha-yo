@@ -17,8 +17,7 @@ export function createScreenMapping(stage: StageConfigNormalized) {
   const toTopLeft = (p: Vec2): Vec2 =>
     origin === "top-left" ? { ...p } : { x: p.x + half.x, y: p.y + half.y };
 
-  const center = (): Vec2 =>
-    origin === "center" ? { x: 0, y: 0 } : { ...half };
+  const center = (): Vec2 => (origin === "center" ? { x: 0, y: 0 } : { ...half });
 
   const bounds = () => ({ w: width, h: height });
 
@@ -29,7 +28,5 @@ export function createScreenMapping(stage: StageConfigNormalized) {
  * Posisi default layer baru pada koordinat origin aktif.
  */
 export function defaultPlacement(stage: StageConfigNormalized): Vec2 {
-  return stage.origin === "center"
-    ? { x: 0, y: 0 }
-    : { x: stage.width / 2, y: stage.height / 2 };
+  return stage.origin === "center" ? { x: 0, y: 0 } : { x: stage.width / 2, y: stage.height / 2 };
 }

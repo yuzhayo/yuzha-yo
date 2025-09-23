@@ -3,11 +3,7 @@
  * AI can modify this file to adjust dimensions, scaling behavior, and coordinate transformation
  */
 
-import type {
-  StageCoordinates,
-  ViewportTransform,
-  StageConfig,
-} from "./StagesTypes";
+import type { StageCoordinates, ViewportTransform, StageConfig } from "./StagesTypes";
 
 // Export constants for backward compatibility
 export const STAGE_WIDTH = 2048;
@@ -21,8 +17,7 @@ export class StagesLogicTransform {
   private transformRules: TransformRules;
 
   // Callback for notifying parent of transform changes
-  public onTransformChange: ((transform: ViewportTransform) => void) | null =
-    null;
+  public onTransformChange: ((transform: ViewportTransform) => void) | null = null;
 
   constructor(config: StageConfig = {}) {
     this.transformRules = new TransformRules(config);
@@ -57,16 +52,10 @@ export class StagesLogicTransform {
     const viewportWidth = rect.width;
     const viewportHeight = rect.height;
 
-    const newTransform = this.transformRules.calculateTransform(
-      viewportWidth,
-      viewportHeight,
-    );
+    const newTransform = this.transformRules.calculateTransform(viewportWidth, viewportHeight);
 
     // Only update if transform actually changed
-    if (
-      !this.transform ||
-      this.hasTransformChanged(this.transform, newTransform)
-    ) {
+    if (!this.transform || this.hasTransformChanged(this.transform, newTransform)) {
       this.transform = newTransform;
       this.applyTransformToCanvas();
 
@@ -78,10 +67,7 @@ export class StagesLogicTransform {
   /**
    * Check if transform has meaningfully changed
    */
-  private hasTransformChanged(
-    old: ViewportTransform,
-    new_: ViewportTransform,
-  ): boolean {
+  private hasTransformChanged(old: ViewportTransform, new_: ViewportTransform): boolean {
     const threshold = 0.001;
     return (
       Math.abs(old.scale - new_.scale) > threshold ||
@@ -105,29 +91,20 @@ export class StagesLogicTransform {
   /**
    * Transform viewport coordinates to stage coordinates
    */
-  transformCoordinates(
-    clientX: number,
-    clientY: number,
-  ): StageCoordinates | null {
+  transformCoordinates(clientX: number, clientY: number): StageCoordinates | null {
     if (!this.transform || !this.container) return null;
 
     const rect = this.container.getBoundingClientRect();
     const viewportX = clientX - rect.left;
     const viewportY = clientY - rect.top;
 
-    return this.transformRules.transformCoordinates(
-      viewportX,
-      viewportY,
-      this.transform,
-    );
+    return this.transformRules.transformCoordinates(viewportX, viewportY, this.transform);
   }
 
   /**
    * Transform event to stage coordinates
    */
-  transformEvent(
-    event: PointerEvent | MouseEvent | TouchEvent,
-  ): StageCoordinates | null {
+  transformEvent(event: PointerEvent | MouseEvent | TouchEvent): StageCoordinates | null {
     let clientX: number, clientY: number;
 
     if ("touches" in event && event.touches.length > 0) {
@@ -217,10 +194,7 @@ class TransformRules {
    * Calculate viewport transform for specified behavior
    * AI can modify scaling algorithms here
    */
-  calculateTransform(
-    viewportWidth: number,
-    viewportHeight: number,
-  ): ViewportTransform {
+  calculateTransform(viewportWidth: number, viewportHeight: number): ViewportTransform {
     switch (this.scalingBehavior) {
       case "cover":
         return this.calculateCoverTransform(viewportWidth, viewportHeight);
@@ -280,10 +254,7 @@ class TransformRules {
    * Fill behavior: stretch to fill viewport exactly
    * AI can add this behavior
    */
-  private calculateFillTransform(
-    viewportWidth: number,
-    viewportHeight: number,
-  ): ViewportTransform {
+  private calculateFillTransform(viewportWidth: number, viewportHeight: number): ViewportTransform {
     // For uniform scaling, use average of X and Y scales
     const scaleX = viewportWidth / this.stageWidth;
     const scaleY = viewportHeight / this.stageHeight;
@@ -318,12 +289,7 @@ class TransformRules {
    * AI can modify stage boundary logic
    */
   isWithinStage(stageX: number, stageY: number): boolean {
-    return (
-      stageX >= 0 &&
-      stageX <= this.stageWidth &&
-      stageY >= 0 &&
-      stageY <= this.stageHeight
-    );
+    return stageX >= 0 && stageX <= this.stageWidth && stageY >= 0 && stageY <= this.stageHeight;
   }
 
   /**

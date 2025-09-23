@@ -1,5 +1,5 @@
 /**
- * LayerTypes.ts (v0.2)
+ * LayerTypes.ts (layer2 baseline)
  * Truth source untuk logic library:
  * - Input JSON schema (LibraryConfig)
  * - Normalized types (LibraryConfigNormalized)
@@ -56,41 +56,51 @@ export interface StageConfigNormalized {
 export interface SpinConfig {
   enabled: boolean;
   rpm: number;
-  direction: Direction; // default cw (di validator)
+  direction: Direction;
 }
 
 export interface OrbitConfig {
   enabled: boolean;
   rpm: number;
-  radius: number; // px
-  center?: Vec2; // default: base position
+  radius: number;
+  center?: Vec2;
 }
 
-export interface PulseConfig {
+export interface ClockConfig {
   enabled: boolean;
-  amplitude: number; // additional scale (e.g., 0.2)
-  rpm: number;
-}
-
-export interface FadeConfig {
-  enabled: boolean;
-  from: number; // 0..1
-  to: number; // 0..1
-  rpm: number;
+  mode: "hour" | "minute" | "second";
+  speedMultiplier?: number;
 }
 
 export interface BehaviorsConfig {
   spin?: Partial<SpinConfig>;
   orbit?: Partial<OrbitConfig>;
-  pulse?: Partial<PulseConfig>;
-  fade?: Partial<FadeConfig>;
+  clock?: Partial<ClockConfig>;
+}
+
+export interface SpinState {
+  enabled: boolean;
+  rpm: number;
+  direction: Direction;
+}
+
+export interface OrbitState {
+  enabled: boolean;
+  rpm: number;
+  radius: number;
+  center?: Vec2;
+}
+
+export interface ClockState {
+  enabled: boolean;
+  mode: "hour" | "minute" | "second";
+  speedMultiplier: number;
 }
 
 export interface BehaviorsConfigNormalized {
-  spin: SpinConfig;
-  orbit: OrbitConfig;
-  pulse: PulseConfig;
-  fade: FadeConfig;
+  spin: SpinState;
+  orbit: OrbitState;
+  clock: ClockState;
 }
 
 /* ==============================
@@ -105,16 +115,12 @@ export interface EventActionOrbit {
   action: "orbit";
   set?: Partial<OrbitConfig>;
 }
-export interface EventActionPulse {
-  action: "pulse";
-  set?: Partial<PulseConfig>;
-}
-export interface EventActionFade {
-  action: "fade";
-  set?: Partial<FadeConfig>;
+export interface EventActionClock {
+  action: "clock";
+  set?: Partial<ClockConfig>;
 }
 
-export type EventAction = EventActionSpin | EventActionOrbit | EventActionPulse | EventActionFade;
+export type EventAction = EventActionSpin | EventActionOrbit | EventActionClock;
 
 export interface EventHooks {
   onPress?: EventAction[];
@@ -129,10 +135,10 @@ export interface EventHooks {
 export type AssetRef = { type: "path"; path: string } | { type: "registry"; key: string };
 
 export interface AssetMeta {
-  src: string; // resolved path/URL
-  width: number; // px
-  height: number; // px
-  anchor?: Vec2; // optional pixel or normalized (renderer bebas)
+  src: string;
+  width: number;
+  height: number;
+  anchor?: Vec2;
   dpi?: number;
 }
 
@@ -145,18 +151,18 @@ export interface LayerConfig {
   imagePath?: string;
   registryKey?: string;
 
-  position?: Vec2; // px
-  scale?: number | Vec2; // uniform or per-axis
-  angle?: number; // deg (Z)
-  tilt?: Vec2; // deg (X,Y)
-  anchor?: Vec2; // normalized [0..1]
-  opacity?: number; // 0..1
+  position?: Vec2;
+  scale?: number | Vec2;
+  angle?: number;
+  tilt?: Vec2;
+  anchor?: Vec2;
+  opacity?: number;
 
   behaviors?: BehaviorsConfig;
   events?: EventHooks;
 
-  layerWidth?: number; // px
-  layerHeight?: number; // px
+  layerWidth?: number;
+  layerHeight?: number;
   fitMode?: FitMode;
   alignment?: Alignment;
 }
@@ -202,17 +208,17 @@ export interface LibraryConfigNormalized {
  * ============================== */
 
 export interface LayerData {
-  id: string; // layerId
-  zIndex: number; // derived (sorting)
+  id: string;
+  zIndex: number;
   asset: AssetRef;
 
   transform: {
     position: Vec2;
     scale: Vec2;
-    angle: number; // deg
-    tilt: Vec2; // deg
-    anchor: Vec2; // normalized [0..1]
-    opacity: number; // 0..1
+    angle: number;
+    tilt: Vec2;
+    anchor: Vec2;
+    opacity: number;
   };
 
   container?: {
@@ -239,7 +245,7 @@ export interface LayerData {
 
 export interface ProcessingContext {
   stage: StageConfigNormalized;
-  time: number; // ms or s (renderer bebas, konsisten saja)
+  time: number;
   registry: Map<string, AssetMeta>;
   eventState?: Map<string, LayerData["state"]>;
 }

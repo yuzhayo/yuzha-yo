@@ -264,11 +264,7 @@ export class StagesRendererMaterial {
    * Create animated material
    * AI can add time-based material animations
    */
-  createAnimatedMaterial(
-    type: string,
-    config: any,
-    animationConfig: any,
-  ): THREE.Material {
+  createAnimatedMaterial(type: string, config: any, animationConfig: any): THREE.Material {
     const material = this.createMaterial(type, config);
 
     // AI can add animation logic here
@@ -287,11 +283,7 @@ export class StagesRendererMaterial {
       if ("color" in material) {
         const time = Date.now() * 0.001;
         const hue = (time * config.speed || 0.5) % 1;
-        (material as any).color.setHSL(
-          hue,
-          config.saturation || 1,
-          config.lightness || 0.5,
-        );
+        (material as any).color.setHSL(hue, config.saturation || 1, config.lightness || 0.5);
       }
       requestAnimationFrame(animate);
     };

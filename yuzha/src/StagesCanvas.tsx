@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
-import { useStages } from './useStages';
-import type { StageObject, RenderQuality } from '@shared/stages/StagesTypes';
+import React, { useEffect } from "react";
+import { useStages } from "./useStages";
+import type { StageObject, RenderQuality } from "@shared/stages/StagesTypes";
 
 export interface StagesCanvasProps {
   width?: number;
@@ -23,26 +23,20 @@ export function StagesCanvas({
   onInitialized,
   onError,
 }: StagesCanvasProps) {
-  const {
-    canvasRef,
-    isInitialized,
-    error,
-    addObject,
-    removeObject,
-  } = useStages({ quality });
+  const { canvasRef, isInitialized, error, addObject, removeObject } = useStages({ quality });
 
   // Handle objects changes
   useEffect(() => {
     if (!isInitialized) return;
 
     // Add all objects
-    objects.forEach(obj => {
+    objects.forEach((obj) => {
       addObject(obj);
     });
 
     // Cleanup function to remove objects when they change
     return () => {
-      objects.forEach(obj => {
+      objects.forEach((obj) => {
         removeObject(obj.id);
       });
     };
@@ -65,29 +59,27 @@ export function StagesCanvas({
   const containerStyle: React.CSSProperties = {
     width,
     height,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: '#000',
-    borderRadius: '8px',
-    overflow: 'hidden',
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "#000",
+    borderRadius: "8px",
+    overflow: "hidden",
     ...style,
   };
 
   const canvasStyle: React.CSSProperties = {
-    maxWidth: '100%',
-    maxHeight: '100%',
-    display: 'block',
+    maxWidth: "100%",
+    maxHeight: "100%",
+    display: "block",
   };
 
   if (error) {
     return (
       <div className={className} style={containerStyle}>
-        <div style={{ color: '#ff6b6b', textAlign: 'center', padding: '20px' }}>
+        <div style={{ color: "#ff6b6b", textAlign: "center", padding: "20px" }}>
           <div>Graphics Error</div>
-          <div style={{ fontSize: '14px', marginTop: '8px', opacity: 0.8 }}>
-            {error}
-          </div>
+          <div style={{ fontSize: "14px", marginTop: "8px", opacity: 0.8 }}>{error}</div>
         </div>
       </div>
     );
@@ -96,9 +88,7 @@ export function StagesCanvas({
   if (!isInitialized) {
     return (
       <div className={className} style={containerStyle}>
-        <div style={{ color: '#64b5f6', textAlign: 'center' }}>
-          Initializing Graphics...
-        </div>
+        <div style={{ color: "#64b5f6", textAlign: "center" }}>Initializing Graphics...</div>
       </div>
     );
   }

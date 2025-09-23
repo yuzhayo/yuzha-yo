@@ -9,12 +9,7 @@ export function applyPulse(
   cfg: PulseConfig,
   timeSeconds: number,
 ): { scale: { x: number; y: number } } {
-  if (
-    !cfg.enabled ||
-    cfg.rpm <= 0 ||
-    cfg.amplitude <= 0 ||
-    !Number.isFinite(timeSeconds)
-  ) {
+  if (!cfg.enabled || cfg.rpm <= 0 || cfg.amplitude <= 0 || !Number.isFinite(timeSeconds)) {
     return { scale: { ...prev.scale } };
   }
 

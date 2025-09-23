@@ -1,15 +1,38 @@
 // IMPORT SECTION
-import { produceLayers } from '../layer/LayerProducer';
-import type { 
-  LibraryConfig, 
-  LayerData, 
-  ProcessingContext 
-} from '../layer/LayerTypes';
-import type { StageObject } from './StagesTypes';
+import { produceLayers } from "../layer2/LayerProducer";
+import type { LibraryConfig, LayerData, ProcessingContext, AssetMeta } from "../layer2/LayerTypes";
+import registryJson from "../layer2/LayerConfigRegistry.json";
+import type { StageObject } from "./StagesTypes";
 
 // STATE SECTION
 const DEFAULT_TEXTURE_SIZE = 256;
 const DEFAULT_COLOR = 0xffffff;
+
+interface LayerRegistryFile {
+  ASSET_BASE_PATH: string;
+  registry: Record<string, string>;
+}
+
+const layerRegistryFile = registryJson as LayerRegistryFile;
+
+const resolveRegistryTemplate = (template: string): string =>
+  template.replace(/\$\{ASSET_BASE_PATH\}/g, layerRegistryFile.ASSET_BASE_PATH);
+
+const STATIC_ASSET_REGISTRY = new Map<string, AssetMeta>(
+  Object.entries(layerRegistryFile.registry).map(([key, template]) => [
+    key,
+    {
+      src: resolveRegistryTemplate(template),
+      width: Number.NaN,
+      height: Number.NaN,
+    },
+  ]),
+);
+
+const resolveRegistryKey = (key: string): string | undefined => {
+  const template = layerRegistryFile.registry[key];
+  return template ? resolveRegistryTemplate(template) : undefined;
+};
 
 // LOGIC SECTION
 /**
@@ -19,7 +42,7 @@ function convertPosition(layerData: LayerData): [number, number, number] {
   return [
     layerData.transform.position.x,
     layerData.transform.position.y,
-    0 // Z coordinate, always 0 for 2D layers
+    0, // Z coordinate, always 0 for 2D layers
   ];
 }
 
@@ -28,17 +51,17 @@ function convertPosition(layerData: LayerData): [number, number, number] {
  */
 function createMetadataFromLayer(layerData: LayerData): any {
   const metadata: any = {
-    type: 'sprite',
+    type: "sprite",
     layerId: layerData.id,
     asset: layerData.asset,
     container: layerData.container,
     behaviors: layerData.behaviors,
     events: layerData.events,
-    
+
     // Transform properties for rendering
     anchor: layerData.transform.anchor,
     tilt: layerData.transform.tilt,
-    
+
     // Visual properties
     width: DEFAULT_TEXTURE_SIZE,
     height: DEFAULT_TEXTURE_SIZE,
@@ -73,27 +96,27 @@ function layerDataToStageObject(layerData: LayerData): StageObject {
 /**
  * Create asset registry from LibraryConfig layers
  */
-function createAssetRegistry(config: LibraryConfig): Map<string, any> {
-  const registry = new Map();
-  
+function createAssetRegistry(config: LibraryConfig): Map<string, AssetMeta> {
+  const registry = new Map<string, AssetMeta>();
+
+  // Seed with static registry entries
+  for (const [key, meta] of STATIC_ASSET_REGISTRY.entries()) {
+    registry.set(key, { ...meta });
+  }
+
   for (const layer of config.layers) {
-    if ('imagePath' in layer && layer.imagePath) {
-      registry.set(layer.layerId, {
-        src: layer.imagePath,
-        width: NaN, // Will be determined by renderer
-        height: NaN, // Will be determined by renderer
-      });
-    } else if ('registryKey' in layer && layer.registryKey) {
-      // For registry-based assets, we'd need to resolve them
-      // For now, create a placeholder
-      registry.set(layer.layerId, {
-        src: layer.registryKey,
-        width: NaN,
-        height: NaN,
-      });
+    if ("registryKey" in layer && layer.registryKey) {
+      const resolvedSrc = resolveRegistryKey(layer.registryKey);
+      if (resolvedSrc) {
+        registry.set(layer.registryKey, {
+          src: resolvedSrc,
+          width: Number.NaN,
+          height: Number.NaN,
+        });
+      }
     }
   }
-  
+
   return registry;
 }
 
@@ -102,7 +125,7 @@ function createAssetRegistry(config: LibraryConfig): Map<string, any> {
  */
 export function processLibraryConfigToStageObjects(
   config: LibraryConfig,
-  timeSeconds: number = 0
+  timeSeconds: number = 0,
 ): { objects: StageObject[]; warnings: string[] } {
   try {
     // Create processing context
@@ -111,7 +134,7 @@ export function processLibraryConfigToStageObjects(
       stage: {
         width: config.stage?.width || 2048,
         height: config.stage?.height || 2048,
-        origin: config.stage?.origin || 'center',
+        origin: config.stage?.origin || "center",
       },
       time: timeSeconds,
       registry: assetRegistry,
@@ -119,16 +142,16 @@ export function processLibraryConfigToStageObjects(
 
     // Process through layer system
     const layerResult = produceLayers(config, context);
-    
+
     // Convert LayerData to StageObjects
     const stageObjects = layerResult.layers.map(layerDataToStageObject);
-    
+
     return {
       objects: stageObjects,
       warnings: layerResult.warnings,
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return {
       objects: [],
       warnings: [`Failed to process library config: ${errorMessage}`],
@@ -142,13 +165,13 @@ export function processLibraryConfigToStageObjects(
 export function updateStageObjectsFromLayers(
   config: LibraryConfig,
   existingObjects: Map<string, StageObject>,
-  timeSeconds: number
+  timeSeconds: number,
 ): { updatedObjects: StageObject[]; warnings: string[] } {
   const result = processLibraryConfigToStageObjects(config, timeSeconds);
-  
+
   // Update existing objects with new transform data
   const updatedObjects: StageObject[] = [];
-  
+
   for (const newObject of result.objects) {
     const existing = existingObjects.get(newObject.id);
     if (existing) {
@@ -170,7 +193,7 @@ export function updateStageObjectsFromLayers(
       updatedObjects.push(newObject);
     }
   }
-  
+
   return {
     updatedObjects,
     warnings: result.warnings,

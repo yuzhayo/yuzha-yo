@@ -17,5 +17,5 @@
       "@shared/*": ["shared/*"]
     }
   },
-  "exclude": ["node_modules", "dist", "attached_assets"]
+  "exclude": ["node_modules", "dist", "attached_assets", "shared/contoh stages dari module lama"]
 }

@@ -1,23 +1,24 @@
 import type { LayerConfigNormalized, StageConfigNormalized, Vec2 } from "./LayerTypes";
+import { postProcessBasicTransform } from "./LayerLogicBasicScreenMapping";
 
 export interface BasicTransform {
   position: Vec2;
   scale: Vec2;
-  angle: number; // deg
-  tilt: Vec2; // deg
-  anchor: Vec2; // normalized [0..1]
-  opacity: number; // 0..1
+  angle: number;
+  tilt: Vec2;
+  anchor: Vec2;
+  opacity: number;
 }
 
 /**
- * Pass-through transform statis dari layer normalized.
- * (Validator sudah beri default; di sini cukup meneruskan.)
+ * Base transform yang stabil: pass-through dari layer normalized.
+ * Hook tambahan bisa ditangani di child file lewat postProcessBasicTransform.
  */
 export function applyBasicTransform(
   layer: LayerConfigNormalized,
-  _stage: StageConfigNormalized,
+  stage: StageConfigNormalized,
 ): BasicTransform {
-  return {
+  const base: BasicTransform = {
     position: { ...layer.position },
     scale: { ...layer.scale },
     angle: layer.angle,
@@ -25,4 +26,6 @@ export function applyBasicTransform(
     anchor: { ...layer.anchor },
     opacity: layer.opacity,
   };
+
+  return postProcessBasicTransform(base, layer, stage);
 }

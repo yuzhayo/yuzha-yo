@@ -5,10 +5,7 @@ import type { AssetRef, AssetMeta } from "./LayerTypes";
  * - path: kembalikan minimal meta (src=path, width/height=NaN)
  * - registry: ambil dari registry (throw jika tidak ada)
  */
-export function resolveAsset(
-  ref: AssetRef,
-  registry: Map<string, AssetMeta>,
-): AssetMeta {
+export function resolveAsset(ref: AssetRef, registry: Map<string, AssetMeta>): AssetMeta {
   if (ref.type === "path") {
     return { src: ref.path, width: Number.NaN, height: Number.NaN };
   }

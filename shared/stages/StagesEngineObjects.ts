@@ -54,9 +54,7 @@ export class StagesEngineObjects {
    * Process metadata into visual properties
    * AI can extend this method for new object types
    */
-  private processMetadata(
-    objectData: Partial<StageObject>,
-  ): Partial<StageObject> {
+  private processMetadata(objectData: Partial<StageObject>): Partial<StageObject> {
     if (!objectData.metadata) return objectData;
 
     const { metadata } = objectData;
@@ -105,8 +103,7 @@ export class StagesEngineObjects {
     // Rotation animation
     if (metadata.animationType === "rotate") {
       const speed = metadata.rotationSpeed || 0.01;
-      const currentRotation =
-        typeof object.rotation === "number" ? object.rotation : 0;
+      const currentRotation = typeof object.rotation === "number" ? object.rotation : 0;
       object.rotation = currentRotation + speed;
     }
 
@@ -158,12 +155,7 @@ export class StagesEngineObjects {
   /**
    * Get objects in area
    */
-  getObjectsInArea(
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-  ): StageObject[] {
+  getObjectsInArea(x: number, y: number, width: number, height: number): StageObject[] {
     const results: StageObject[] = [];
     for (const object of this.objects.values()) {
       const [objX, objY] = object.position;
@@ -224,9 +216,7 @@ export class StagesEngineObjects {
   /**
    * Batch update multiple objects
    */
-  batchUpdate(
-    updates: Array<{ id: string; data: Partial<StageObject> }>,
-  ): StageObject[] {
+  batchUpdate(updates: Array<{ id: string; data: Partial<StageObject> }>): StageObject[] {
     const updatedObjects: StageObject[] = [];
 
     for (const update of updates) {
@@ -261,9 +251,7 @@ export class StagesEngineObjects {
     return {
       totalObjects: this.objects.size,
       dirtyObjects: this.dirtyObjects.size,
-      visibleObjects: Array.from(this.objects.values()).filter(
-        (obj) => obj.visible,
-      ).length,
+      visibleObjects: Array.from(this.objects.values()).filter((obj) => obj.visible).length,
       objectTypes: this.getObjectTypeStats(),
     };
   }

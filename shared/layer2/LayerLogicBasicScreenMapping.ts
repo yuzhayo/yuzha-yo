@@ -1,25 +1,69 @@
-import type { AssetMeta, Vec2, FitMode, Alignment } from "./LayerTypes";
+import type {
+  Alignment,
+  AssetMeta,
+  AssetRef,
+  FitMode,
+  LayerConfigNormalized,
+  StageConfigNormalized,
+  Vec2,
+} from "./LayerTypes";
+import type { BasicTransform } from "./LayerLogicBasic";
+
+/**
+ * Hook bawaan: default tidak mengubah transform.
+ * Child file ini boleh dimodifikasi untuk menyesuaikan perilaku.
+ */
+export function postProcessBasicTransform(
+  transform: BasicTransform,
+  _layer: LayerConfigNormalized,
+  _stage: StageConfigNormalized,
+): BasicTransform {
+  return transform;
+}
+
+/* ==============================
+ * Screen Mapping Utilities
+ * ============================== */
+
+export function createScreenMapping(stage: StageConfigNormalized) {
+  const { width, height, origin } = stage;
+  const half: Vec2 = { x: width / 2, y: height / 2 };
+
+  const toCenter = (p: Vec2): Vec2 =>
+    origin === "center" ? { ...p } : { x: p.x - half.x, y: p.y - half.y };
+
+  const toTopLeft = (p: Vec2): Vec2 =>
+    origin === "top-left" ? { ...p } : { x: p.x + half.x, y: p.y + half.y };
+
+  const center = (): Vec2 => (origin === "center" ? { x: 0, y: 0 } : { ...half });
+
+  const bounds = () => ({ w: width, h: height });
+
+  return { toCenter, toTopLeft, center, bounds };
+}
+
+export function defaultPlacement(stage: StageConfigNormalized): Vec2 {
+  return stage.origin === "center" ? { x: 0, y: 0 } : { x: stage.width / 2, y: stage.height / 2 };
+}
+
+/* ==============================
+ * Image Mapping Utilities
+ * ============================== */
 
 export interface ContainerSpec {
   width?: number;
   height?: number;
-  fitMode: FitMode; // required jika container ada
-  alignment: Alignment; // required jika container ada
+  fitMode: FitMode;
+  alignment: Alignment;
 }
 
 export interface ImageMappingResult {
   displayWidth: number;
   displayHeight: number;
-  offset: Vec2; // relatif center container
-  anchor: Vec2; // asset.anchor ?? anchor argumen (pass-through)
+  offset: Vec2;
+  anchor: Vec2;
 }
 
-/**
- * Map ukuran image ke dalam container (origin center-based).
- * - container undefined → ukuran asli, offset (0,0)
- * - asset dimensi invalid & container ada → 0×0, offset (0,0)
- * - container w/h tidak lengkap → 0×0 (fail-safe)
- */
 export function mapImageIntoContainer(
   asset: AssetMeta,
   container: ContainerSpec | undefined,
@@ -27,7 +71,6 @@ export function mapImageIntoContainer(
 ): ImageMappingResult {
   const finalAnchor = asset.anchor ?? anchor;
 
-  // tanpa container: pass-through
   if (!container || (container.width === undefined && container.height === undefined)) {
     return {
       displayWidth: Number.isFinite(asset.width) ? asset.width : 0,
@@ -40,7 +83,6 @@ export function mapImageIntoContainer(
   const cw = container.width;
   const ch = container.height;
 
-  // container harus punya w & h valid
   if (
     !Number.isFinite(cw as number) ||
     !Number.isFinite(ch as number) ||
@@ -58,7 +100,6 @@ export function mapImageIntoContainer(
   const aw = asset.width;
   const ah = asset.height;
 
-  // asset dimensi invalid → fail-safe
   if (!Number.isFinite(aw) || !Number.isFinite(ah) || aw <= 0 || ah <= 0) {
     return {
       displayWidth: 0,
@@ -77,9 +118,9 @@ export function mapImageIntoContainer(
   } else {
     const sx = (cw as number) / aw;
     const sy = (ch as number) / ah;
-    const s = container.fitMode === "contain" ? Math.min(sx, sy) : Math.max(sx, sy);
-    displayWidth = aw * s;
-    displayHeight = ah * s;
+    const scale = container.fitMode === "contain" ? Math.min(sx, sy) : Math.max(sx, sy);
+    displayWidth = aw * scale;
+    displayHeight = ah * scale;
   }
 
   const offset = alignmentOffset(container.alignment, cw as number, ch as number);
@@ -112,4 +153,22 @@ function alignmentOffset(alignment: Alignment, cw: number, ch: number): Vec2 {
     default:
       return { x: 0, y: 0 };
   }
+}
+
+/* ==============================
+ * Asset Resolver
+ * ============================== */
+
+export function resolveAsset(ref: AssetRef, registry: Map<string, AssetMeta>): AssetMeta {
+  if (ref.type === "path") {
+    return { src: ref.path, width: Number.NaN, height: Number.NaN };
+  }
+  if (ref.type === "registry") {
+    const meta = registry.get(ref.key);
+    if (!meta) {
+      throw new Error(`registry key "${ref.key}" not found`);
+    }
+    return { ...meta };
+  }
+  throw new Error(`unknown asset ref type: ${(ref as any).type}`);
 }

@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
-import type React from 'react';
-import { StagesRenderer } from '@shared/stages/StagesRenderer';
-import { StagesLogic } from '@shared/stages/StagesLogic';
-import type { RenderQuality, StageObject } from '@shared/stages/StagesTypes';
+import { useEffect, useRef, useState, useCallback } from "react";
+import type React from "react";
+import { StagesRenderer } from "@shared/stages/StagesRenderer";
+import { StagesLogic } from "@shared/stages/StagesLogic";
+import type { RenderQuality, StageObject } from "@shared/stages/StagesTypes";
 
 export interface UseStagesOptions {
   quality?: Partial<RenderQuality>;
@@ -32,11 +32,11 @@ const DEFAULT_QUALITY: RenderQuality = {
 
 export function useStages(options: UseStagesOptions = {}): UseStagesReturn {
   const { quality: qualityOverrides = {}, autoStart = true } = options;
-  
+
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<StagesRenderer | null>(null);
   const logicRef = useRef<StagesLogic | null>(null);
-  
+
   const [isInitialized, setIsInitialized] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,33 +50,33 @@ export function useStages(options: UseStagesOptions = {}): UseStagesReturn {
     const initialize = async () => {
       try {
         setError(null);
-        
+
         // Create logic instance
         const logic = new StagesLogic();
         logicRef.current = logic;
-        
+
         // Create renderer instance
         const renderer = new StagesRenderer(logic);
         rendererRef.current = renderer;
-        
+
         // Initialize renderer and get canvas
         const canvas = await renderer.initialize(quality);
-        
+
         if (!mounted) {
           renderer.dispose();
           return;
         }
-        
+
         canvasRef.current = canvas;
         setIsInitialized(true);
-        
+
         if (autoStart) {
           renderer.start();
           setIsRunning(true);
         }
       } catch (err) {
         if (mounted) {
-          setError(err instanceof Error ? err.message : 'Failed to initialize Stages');
+          setError(err instanceof Error ? err.message : "Failed to initialize Stages");
         }
       }
     };

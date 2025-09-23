@@ -55,13 +55,11 @@ export interface ValidationResult {
 }
 
 // ---------- Guards/Helpers ----------
-const isNum = (n: unknown): n is number =>
-  typeof n === "number" && Number.isFinite(n);
+const isNum = (n: unknown): n is number => typeof n === "number" && Number.isFinite(n);
 const isVec2 = (v: unknown): v is Vec2 =>
   !!v && typeof v === "object" && isNum((v as any).x) && isNum((v as any).y);
 
-const isFitMode = (m: unknown): m is FitMode =>
-  m === "contain" || m === "cover" || m === "stretch";
+const isFitMode = (m: unknown): m is FitMode => m === "contain" || m === "cover" || m === "stretch";
 
 const isAlignment = (a: unknown): a is Alignment =>
   a === "center" ||
@@ -74,8 +72,7 @@ const isAlignment = (a: unknown): a is Alignment =>
   a === "bottom" ||
   a === "bottom-right";
 
-const isOrigin = (o: unknown): o is StageOrigin =>
-  o === "center" || o === "top-left";
+const isOrigin = (o: unknown): o is StageOrigin => o === "center" || o === "top-left";
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 
@@ -86,10 +83,8 @@ const normalizeScale = (scale: LayerConfig["scale"]): Vec2 => {
 };
 
 const toAssetRef = (layer: LayerConfig): AssetRef | null => {
-  const hasPath =
-    typeof layer.imagePath === "string" && layer.imagePath.length > 0;
-  const hasKey =
-    typeof layer.registryKey === "string" && layer.registryKey.length > 0;
+  const hasPath = typeof layer.imagePath === "string" && layer.imagePath.length > 0;
+  const hasKey = typeof layer.registryKey === "string" && layer.registryKey.length > 0;
   if (hasPath && hasKey) return null; // conflict
   if (!hasPath && !hasKey) return null; // missing
   return hasPath
@@ -97,47 +92,30 @@ const toAssetRef = (layer: LayerConfig): AssetRef | null => {
     : { type: "registry", key: layer.registryKey! };
 };
 
-const normalizeBehaviors = (
-  b?: BehaviorsConfig,
-): BehaviorsConfigNormalized => ({
+const normalizeBehaviors = (b?: BehaviorsConfig): BehaviorsConfigNormalized => ({
   spin: {
     enabled: b?.spin?.enabled ?? DEFAULT_BEHAVIORS.spin.enabled,
-    rpm: isNum(b?.spin?.rpm)
-      ? (b!.spin!.rpm as number)
-      : DEFAULT_BEHAVIORS.spin.rpm,
+    rpm: isNum(b?.spin?.rpm) ? (b!.spin!.rpm as number) : DEFAULT_BEHAVIORS.spin.rpm,
     direction: b?.spin?.direction ?? "cw",
   },
   orbit: {
     enabled: b?.orbit?.enabled ?? DEFAULT_BEHAVIORS.orbit.enabled,
-    rpm: isNum(b?.orbit?.rpm)
-      ? (b!.orbit!.rpm as number)
-      : DEFAULT_BEHAVIORS.orbit.rpm,
-    radius: isNum(b?.orbit?.radius)
-      ? (b!.orbit!.radius as number)
-      : DEFAULT_BEHAVIORS.orbit.radius,
-    center:
-      b?.orbit?.center && isVec2(b.orbit.center) ? b.orbit.center : undefined,
+    rpm: isNum(b?.orbit?.rpm) ? (b!.orbit!.rpm as number) : DEFAULT_BEHAVIORS.orbit.rpm,
+    radius: isNum(b?.orbit?.radius) ? (b!.orbit!.radius as number) : DEFAULT_BEHAVIORS.orbit.radius,
+    center: b?.orbit?.center && isVec2(b.orbit.center) ? b.orbit.center : undefined,
   },
   pulse: {
     enabled: b?.pulse?.enabled ?? DEFAULT_BEHAVIORS.pulse.enabled,
     amplitude: isNum(b?.pulse?.amplitude)
       ? (b!.pulse!.amplitude as number)
       : DEFAULT_BEHAVIORS.pulse.amplitude,
-    rpm: isNum(b?.pulse?.rpm)
-      ? (b!.pulse!.rpm as number)
-      : DEFAULT_BEHAVIORS.pulse.rpm,
+    rpm: isNum(b?.pulse?.rpm) ? (b!.pulse!.rpm as number) : DEFAULT_BEHAVIORS.pulse.rpm,
   },
   fade: {
     enabled: b?.fade?.enabled ?? DEFAULT_BEHAVIORS.fade.enabled,
-    from: isNum(b?.fade?.from)
-      ? clamp01(b!.fade!.from as number)
-      : DEFAULT_BEHAVIORS.fade.from,
-    to: isNum(b?.fade?.to)
-      ? clamp01(b!.fade!.to as number)
-      : DEFAULT_BEHAVIORS.fade.to,
-    rpm: isNum(b?.fade?.rpm)
-      ? (b!.fade!.rpm as number)
-      : DEFAULT_BEHAVIORS.fade.rpm,
+    from: isNum(b?.fade?.from) ? clamp01(b!.fade!.from as number) : DEFAULT_BEHAVIORS.fade.from,
+    to: isNum(b?.fade?.to) ? clamp01(b!.fade!.to as number) : DEFAULT_BEHAVIORS.fade.to,
+    rpm: isNum(b?.fade?.rpm) ? (b!.fade!.rpm as number) : DEFAULT_BEHAVIORS.fade.rpm,
   },
 });
 
@@ -167,12 +145,7 @@ function validateEvents(
     list.forEach((entry, idx) => {
       const path = `${basePath}.${k}[${idx}]`;
       const action = (entry as any)?.action;
-      if (
-        action !== "spin" &&
-        action !== "orbit" &&
-        action !== "pulse" &&
-        action !== "fade"
-      ) {
+      if (action !== "spin" && action !== "orbit" && action !== "pulse" && action !== "fade") {
         errors.push({
           code: "events.action.unknown",
           path,
@@ -239,11 +212,7 @@ function validateEvents(
           });
         }
       }
-      if (
-        action === "pulse" &&
-        set?.amplitude !== undefined &&
-        !isNum(set.amplitude)
-      ) {
+      if (action === "pulse" && set?.amplitude !== undefined && !isNum(set.amplitude)) {
         errors.push({
           code: "events.set.amplitude",
           path,
@@ -291,9 +260,7 @@ export function validateLibraryConfig(input: LibraryConfig): ValidationResult {
       isNum(input.stage?.height) && input.stage!.height! > 0
         ? input.stage!.height!
         : DEFAULT_STAGE.height,
-    origin: isOrigin(input.stage?.origin)
-      ? input.stage!.origin!
-      : DEFAULT_STAGE.origin,
+    origin: isOrigin(input.stage?.origin) ? input.stage!.origin! : DEFAULT_STAGE.origin,
   };
   if (input.stage?.origin !== undefined && !isOrigin(input.stage.origin)) {
     warnings.push({
@@ -363,16 +330,12 @@ export function validateLibraryConfig(input: LibraryConfig): ValidationResult {
     }
 
     // transforms (defaults)
-    const position = isVec2(layer.position)
-      ? layer.position!
-      : DEFAULT_POSITION;
+    const position = isVec2(layer.position) ? layer.position! : DEFAULT_POSITION;
     const scale = normalizeScale(layer.scale);
     const angle = isNum(layer.angle) ? (layer.angle as number) : 0;
     const tilt = isVec2(layer.tilt) ? layer.tilt! : DEFAULT_TILT;
     const anchor = isVec2(layer.anchor) ? layer.anchor! : DEFAULT_ANCHOR;
-    const opacity = isNum(layer.opacity)
-      ? (layer.opacity as number)
-      : DEFAULT_OPACITY;
+    const opacity = isNum(layer.opacity) ? (layer.opacity as number) : DEFAULT_OPACITY;
 
     if (opacity < 0 || opacity > 1) {
       warnings.push({
@@ -392,12 +355,8 @@ export function validateLibraryConfig(input: LibraryConfig): ValidationResult {
     }
 
     // container
-    const width = isNum(layer.layerWidth)
-      ? (layer.layerWidth as number)
-      : undefined;
-    const height = isNum(layer.layerHeight)
-      ? (layer.layerHeight as number)
-      : undefined;
+    const width = isNum(layer.layerWidth) ? (layer.layerWidth as number) : undefined;
+    const height = isNum(layer.layerHeight) ? (layer.layerHeight as number) : undefined;
     const fitMode = layer.fitMode;
     const alignment = layer.alignment;
 
@@ -417,10 +376,7 @@ export function validateLibraryConfig(input: LibraryConfig): ValidationResult {
         severity: "error",
       });
     }
-    if (
-      (fitMode !== undefined || alignment !== undefined) &&
-      (!width || !height)
-    ) {
+    if ((fitMode !== undefined || alignment !== undefined) && (!width || !height)) {
       errors.push({
         code: "layer.container.missing",
         path: base,
@@ -428,10 +384,7 @@ export function validateLibraryConfig(input: LibraryConfig): ValidationResult {
         severity: "error",
       });
     }
-    if (
-      (width !== undefined && width <= 0) ||
-      (height !== undefined && height <= 0)
-    ) {
+    if ((width !== undefined && width <= 0) || (height !== undefined && height <= 0)) {
       errors.push({
         code: "layer.container.nonPositive",
         path: base,
@@ -476,12 +429,7 @@ export function validateLibraryConfig(input: LibraryConfig): ValidationResult {
     }
 
     // events
-    const events = validateEvents(
-      layer.events,
-      errors,
-      warnings,
-      `${base}.events`,
-    );
+    const events = validateEvents(layer.events, errors, warnings, `${base}.events`);
 
     // pack normalized
     const normalized: LayerConfigNormalized = {

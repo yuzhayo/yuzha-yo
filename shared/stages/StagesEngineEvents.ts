@@ -6,10 +6,7 @@
 import type { StageEvent } from "./StagesTypes";
 
 export class StagesEngineEvents {
-  private eventListeners = new Map<
-    string,
-    Array<(event: StageEvent) => void>
-  >();
+  private eventListeners = new Map<string, Array<(event: StageEvent) => void>>();
   private eventHistory: StageEvent[] = [];
   private maxHistorySize = 100;
 
@@ -26,10 +23,7 @@ export class StagesEngineEvents {
   /**
    * Remove event listener
    */
-  removeEventListener(
-    type: string,
-    listener: (event: StageEvent) => void,
-  ): void {
+  removeEventListener(type: string, listener: (event: StageEvent) => void): void {
     const listeners = this.eventListeners.get(type);
     if (listeners) {
       const index = listeners.indexOf(listener);
@@ -120,9 +114,7 @@ export class StagesEngineEvents {
   private getRecentEvents(type: string, timeWindow: number): StageEvent[] {
     const now = Date.now();
     return this.eventHistory.filter(
-      (event) =>
-        event.type === type &&
-        now - ((event as any).timestamp || 0) <= timeWindow,
+      (event) => event.type === type && now - ((event as any).timestamp || 0) <= timeWindow,
     );
   }
 
@@ -198,32 +190,19 @@ export class StagesEngineEvents {
     ) => { stageX: number; stageY: number } | null,
     getObjectsAt: (x: number, y: number) => any[],
   ): void {
-    const handleEvent = (
-      type: string,
-      originalEvent: PointerEvent | MouseEvent,
-    ) => {
+    const handleEvent = (type: string, originalEvent: PointerEvent | MouseEvent) => {
       const coords = transformCoordinates(originalEvent);
       if (!coords) return;
 
       const objectsAt = getObjectsAt(coords.stageX, coords.stageY);
       const objectId = objectsAt.length > 0 ? objectsAt[0].id : undefined;
 
-      this.processEvent(
-        type,
-        coords.stageX,
-        coords.stageY,
-        originalEvent,
-        objectId,
-      );
+      this.processEvent(type, coords.stageX, coords.stageY, originalEvent, objectId);
     };
 
     // Standard pointer events
-    container.addEventListener("pointerdown", (e) =>
-      handleEvent("pointerdown", e),
-    );
-    container.addEventListener("pointermove", (e) =>
-      handleEvent("pointermove", e),
-    );
+    container.addEventListener("pointerdown", (e) => handleEvent("pointerdown", e));
+    container.addEventListener("pointermove", (e) => handleEvent("pointermove", e));
     container.addEventListener("pointerup", (e) => handleEvent("pointerup", e));
     container.addEventListener("click", (e) => handleEvent("click", e));
 
@@ -284,10 +263,7 @@ export class StagesEngineEvents {
    * Add custom event processor
    * AI can use this to add completely new event types
    */
-  addCustomEventProcessor(
-    eventType: string,
-    processor: (event: StageEvent) => void,
-  ): void {
+  addCustomEventProcessor(eventType: string, processor: (event: StageEvent) => void): void {
     this.addEventListener(eventType, processor);
   }
 }

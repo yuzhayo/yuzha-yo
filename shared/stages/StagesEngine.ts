@@ -170,9 +170,7 @@ export class StagesEngine {
   /**
    * Transform screen coordinates to stage coordinates
    */
-  transformCoordinates(
-    event: PointerEvent | MouseEvent | TouchEvent,
-  ): StageCoordinates | null {
+  transformCoordinates(event: PointerEvent | MouseEvent | TouchEvent): StageCoordinates | null {
     return this.logic.transformEvent(event);
   }
 
@@ -212,10 +210,7 @@ export class StagesEngine {
   /**
    * Remove event listener (delegated to event manager)
    */
-  removeEventListener(
-    type: string,
-    listener: (event: StageEvent) => void,
-  ): void {
+  removeEventListener(type: string, listener: (event: StageEvent) => void): void {
     this.eventManager.removeEventListener(type, listener);
   }
 
@@ -325,19 +320,14 @@ export class StagesEngine {
   /**
    * Process metadata transformations (delegated to object manager)
    */
-  processMetadata(
-    id: string,
-    processor: (metadata: any) => Partial<StageObject>,
-  ): void {
+  processMetadata(id: string, processor: (metadata: any) => Partial<StageObject>): void {
     this.objectManager.processComplexMetadata(id, processor);
   }
 
   /**
    * Batch process multiple objects (delegated to object manager)
    */
-  batchUpdate(
-    updates: Array<{ id: string; data: Partial<StageObject> }>,
-  ): void {
+  batchUpdate(updates: Array<{ id: string; data: Partial<StageObject> }>): void {
     const updatedObjects = this.objectManager.batchUpdate(updates);
 
     // Update renderer for all changed objects

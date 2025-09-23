@@ -1,0 +1,26 @@
+{
+  "ASSET_BASE_PATH": "/shared/Asset",
+  "registry": {
+    "SAMPLE": "${ASSET_BASE_PATH}/SAMPLE.png",
+    "NOON": "${ASSET_BASE_PATH}/UI_ClockIcon_Noon.png",
+    "DAWN": "${ASSET_BASE_PATH}/UI_ClockIcon_Morning.png",
+    "DUSK": "${ASSET_BASE_PATH}/UI_ClockIcon_Dusk.png",
+    "NIGHT": "${ASSET_BASE_PATH}/UI_ClockIcon_Night.png",
+    "STARBGHOLE": "${ASSET_BASE_PATH}/STARBGHOLE1.png",
+    "STARBG": "${ASSET_BASE_PATH}/STARBG.png",
+    "STAR1": "${ASSET_BASE_PATH}/Enviro_Stars.png",
+    "STAR2": "${ASSET_BASE_PATH}/Enviro_Stars_Big.png",
+    "GEAR1": "${ASSET_BASE_PATH}/GEAR1.png",
+    "GEAR2": "${ASSET_BASE_PATH}/GEAR2.png",
+    "GEAR3": "${ASSET_BASE_PATH}/GEAR3.png",
+    "GEARMOON": "${ASSET_BASE_PATH}/GEARMOON.png",
+    "CLOCKGLOW": "${ASSET_BASE_PATH}/CLOCKGLOW.png",
+    "CLOCKBG": "${ASSET_BASE_PATH}/CLOCKBG.png",
+    "HAND1": "${ASSET_BASE_PATH}/UI_Clock_HourHand.png",
+    "HAND2": "${ASSET_BASE_PATH}/UI_Clock_MinuteHand.png",
+    "BUBBLE": "${ASSET_BASE_PATH}/BUBBLE.png",
+    "DESK": "${ASSET_BASE_PATH}/AchieveMedal_Desk_Short02.png",
+    "SYSHEAD": "${ASSET_BASE_PATH}/SystemMessageBg.png",
+    "LOCK": "${ASSET_BASE_PATH}/V3_LockIcon.png"
+  }
+}

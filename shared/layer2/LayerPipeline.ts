@@ -1,33 +1,29 @@
-// LayerPipeline.ts
-// Composer untuk jalur parsial tanpa mengubah pipeline inti.
-// Pure, deterministic, ES2020, tanpa I/O atau side-effects.
-
 import type {
+  LayerConfigNormalized,
+  LayerData,
   LibraryConfig,
   ProcessingContext,
-  LayerData,
-  LayerConfigNormalized,
   StageConfigNormalized,
 } from "./LayerTypes";
 import { validateLibraryConfig } from "./LayerValidator";
 import { applyBasicTransform } from "./LayerLogicBasic";
 import { applySpin } from "./LayerLogicSpin";
 import { applyOrbit } from "./LayerLogicOrbit";
-import { applyPulse } from "./LayerLogicPulse";
-import { applyFade } from "./LayerLogicFade";
-import { produceLayers } from "./LayerProducer";
+import { applyClock } from "./LayerLogicClock";
 
-/**
- * Helper: validasi + normalisasi, kembalikan stage & layers normalized.
- * Melempar error jika invalid (konsisten dengan Producer).
- */
+interface WrapperOptions {
+  doSpin: boolean;
+  doOrbit: boolean;
+  doClock: boolean;
+}
+
 function normalizeInput(input: LibraryConfig) {
   const res = validateLibraryConfig(input);
   if (!res.ok || !res.normalized) {
     const reason =
       (res as any).errors?.map((e: any) => `${e.path}: ${e.message}`).join("; ") ||
       "invalid config";
-    throw new Error(`LayerPipeline: validation failed: ${reason}`);
+    throw new Error(`LayerPipeline(layer2): validation failed: ${reason}`);
   }
   return {
     stage: res.normalized.stage,
@@ -36,28 +32,15 @@ function normalizeInput(input: LibraryConfig) {
   };
 }
 
-/**
- * Helper: build LayerData untuk satu layer normalized dengan wrapper terpilih.
- * Urutan wrapper mengikuti pipeline utama:
- *   spin → orbit → pulse → fade
- * Hanya wrapper yang di-enable oleh composer yang diaplikasikan (behavior.enabled tetap dihormati).
- */
 function buildLayerData(
   norm: LayerConfigNormalized,
   idx: number,
   ctx: ProcessingContext,
-  options: {
-    doSpin: boolean;
-    doOrbit: boolean;
-    doPulse: boolean;
-    doFade: boolean;
-  },
+  options: WrapperOptions,
   stage: StageConfigNormalized,
 ): LayerData {
-  // 1) basic transform (pass-through normalized ke bentuk dasar)
   const basic = applyBasicTransform(norm, stage);
 
-  // 2) wrappers sesuai pilihan composer
   const spinRes = options.doSpin
     ? applySpin({ angle: basic.angle }, norm.behaviors.spin, ctx.time)
     : { angle: basic.angle };
@@ -66,28 +49,22 @@ function buildLayerData(
     ? applyOrbit({ position: basic.position }, norm.behaviors.orbit, ctx.time, basic.position)
     : { position: basic.position };
 
-  const pulseRes = options.doPulse
-    ? applyPulse({ scale: basic.scale }, norm.behaviors.pulse, ctx.time)
-    : { scale: basic.scale };
+  const clockRes = options.doClock
+    ? applyClock({ angle: spinRes.angle }, norm.behaviors.clock, ctx.time)
+    : { angle: spinRes.angle };
 
-  const fadeRes = options.doFade
-    ? applyFade({ opacity: basic.opacity }, norm.behaviors.fade, ctx.time)
-    : { opacity: basic.opacity };
-
-  // 3) final transform
   const finalTransform = {
     position: orbitRes.position,
-    scale: pulseRes.scale,
-    angle: spinRes.angle,
+    scale: basic.scale,
+    angle: clockRes.angle,
     tilt: basic.tilt,
     anchor: basic.anchor,
-    opacity: fadeRes.opacity,
+    opacity: basic.opacity,
   };
 
-  // 4) bentuk LayerData (konsisten dengan SPEC v0.2)
-  const ld: LayerData = {
+  return {
     id: norm.layerId,
-    zIndex: idx, // stabil: fallback urutan input
+    zIndex: idx,
     asset: norm.assetRef,
     transform: finalTransform,
     container: norm.container
@@ -107,20 +84,14 @@ function buildLayerData(
       isVisible: finalTransform.opacity > 0,
     },
   };
-
-  return ld;
 }
 
-/**
- * Generic composer: pilih wrapper yang aktif.
- */
-export function compose(wrappers: Array<"spin" | "orbit" | "pulse" | "fade">) {
+export function compose(wrappers: Array<"spin" | "orbit" | "clock">) {
   const set = new Set(wrappers);
-  const opts = {
+  const opts: WrapperOptions = {
     doSpin: set.has("spin"),
     doOrbit: set.has("orbit"),
-    doPulse: set.has("pulse"),
-    doFade: set.has("fade"),
+    doClock: set.has("clock"),
   };
   return (
     input: LibraryConfig,
@@ -132,25 +103,13 @@ export function compose(wrappers: Array<"spin" | "orbit" | "pulse" | "fade">) {
   };
 }
 
-/**
- * Jalur convenience — sesuai yang kamu mau (basic > render, dst).
- * Semua mengembalikan { layers, warnings } agar konsisten dengan produceLayers.
- */
-
 export function produceBasic(
   input: LibraryConfig,
   ctx: ProcessingContext,
 ): { layers: LayerData[]; warnings: string[] } {
-  // no wrappers
   const { stage, layers, warnings } = normalizeInput(input);
   const out = layers.map((norm, idx) =>
-    buildLayerData(
-      norm,
-      idx,
-      ctx,
-      { doSpin: false, doOrbit: false, doPulse: false, doFade: false },
-      stage,
-    ),
+    buildLayerData(norm, idx, ctx, { doSpin: false, doOrbit: false, doClock: false }, stage),
   );
   return { layers: out, warnings };
 }
@@ -161,13 +120,7 @@ export function produceBasicSpin(
 ): { layers: LayerData[]; warnings: string[] } {
   const { stage, layers, warnings } = normalizeInput(input);
   const out = layers.map((norm, idx) =>
-    buildLayerData(
-      norm,
-      idx,
-      ctx,
-      { doSpin: true, doOrbit: false, doPulse: false, doFade: false },
-      stage,
-    ),
+    buildLayerData(norm, idx, ctx, { doSpin: true, doOrbit: false, doClock: false }, stage),
   );
   return { layers: out, warnings };
 }
@@ -178,53 +131,28 @@ export function produceBasicOrbit(
 ): { layers: LayerData[]; warnings: string[] } {
   const { stage, layers, warnings } = normalizeInput(input);
   const out = layers.map((norm, idx) =>
-    buildLayerData(
-      norm,
-      idx,
-      ctx,
-      { doSpin: false, doOrbit: true, doPulse: false, doFade: false },
-      stage,
-    ),
+    buildLayerData(norm, idx, ctx, { doSpin: false, doOrbit: true, doClock: false }, stage),
   );
   return { layers: out, warnings };
 }
 
-export function produceBasicPulse(
+export function produceBasicClock(
   input: LibraryConfig,
   ctx: ProcessingContext,
 ): { layers: LayerData[]; warnings: string[] } {
   const { stage, layers, warnings } = normalizeInput(input);
   const out = layers.map((norm, idx) =>
-    buildLayerData(
-      norm,
-      idx,
-      ctx,
-      { doSpin: false, doOrbit: false, doPulse: true, doFade: false },
-      stage,
-    ),
+    buildLayerData(norm, idx, ctx, { doSpin: false, doOrbit: false, doClock: true }, stage),
   );
   return { layers: out, warnings };
 }
 
-export function produceBasicFade(
+export function produceBasicSpinOrbitClock(
   input: LibraryConfig,
   ctx: ProcessingContext,
 ): { layers: LayerData[]; warnings: string[] } {
   const { stage, layers, warnings } = normalizeInput(input);
-  const out = layers.map((norm, idx) =>
-    buildLayerData(
-      norm,
-      idx,
-      ctx,
-      { doSpin: false, doOrbit: false, doPulse: false, doFade: true },
-      stage,
-    ),
-  );
+  const opts: WrapperOptions = { doSpin: true, doOrbit: true, doClock: true };
+  const out = layers.map((norm, idx) => buildLayerData(norm, idx, ctx, opts, stage));
   return { layers: out, warnings };
 }
-
-/**
- * Alias ke pipeline penuh yang sudah ada.
- * Ini cuma mem-forward ke LayerProducer.produceLayers agar tidak duplikasi logic.
- */
-export const produceFull = produceLayers;
