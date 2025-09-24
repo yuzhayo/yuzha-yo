@@ -1,15 +1,15 @@
-﻿import React from 'react'
+﻿import React from "react";
 
 export type LogicRendererBadgeProps = {
-  visible: boolean
-  label: string
-}
+  visible: boolean;
+  label: string;
+};
 
 export default function LogicRendererBadge(props: LogicRendererBadgeProps) {
-  if (!props.visible) return null
+  if (!props.visible) return null;
   return (
     <div className="launcher-badge-status" aria-live="polite">
       {props.label}
     </div>
-  )
+  );
 }

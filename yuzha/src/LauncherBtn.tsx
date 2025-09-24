@@ -1,57 +1,59 @@
-﻿import React from 'react'
-import { useLauncherBtnEffect, type LauncherBtnEffectConfig } from './LauncherBtnEffect'
-import { useLauncherBtnGesture } from './LauncherBtnGesture'
+﻿import React from "react";
+import { useLauncherBtnEffect, type LauncherBtnEffectConfig } from "./LauncherBtnEffect";
+import { useLauncherBtnGesture } from "./LauncherBtnGesture";
 
-export type ModuleLink = { id: string; label: string; url: string }
+export type ModuleLink = { id: string; label: string; url: string };
 
 function getDefaultModuleLinks(): ModuleLink[] {
-  const env = import.meta.env as Record<string, string | undefined>
+  const env = import.meta.env as Record<string, string | undefined>;
   return [
-    { id: '0setting',  label: '0Setting',   url: env.VITE_URL_0SETTING  ?? 'http://localhost:5001' },
-    { id: '1meng',     label: '1Meng',      url: env.VITE_URL_1MENG     ?? 'http://localhost:5002' },
-    { id: '3database', label: '3Database',  url: env.VITE_URL_3DATABASE ?? 'http://localhost:5003' },
-    { id: '4extra',    label: '4Extra',     url: env.VITE_URL_4EXTRA    ?? 'http://localhost:5004' },
-    { id: '5rara',     label: '5Rara',      url: env.VITE_URL_5RARA     ?? 'http://localhost:5005' }
-  ]
+    { id: "0setting", label: "0Setting", url: env.VITE_URL_0SETTING ?? "http://localhost:5001" },
+    { id: "1meng", label: "1Meng", url: env.VITE_URL_1MENG ?? "http://localhost:5002" },
+    { id: "3database", label: "3Database", url: env.VITE_URL_3DATABASE ?? "http://localhost:5003" },
+    { id: "4extra", label: "4Extra", url: env.VITE_URL_4EXTRA ?? "http://localhost:5004" },
+    { id: "5rara", label: "5Rara", url: env.VITE_URL_5RARA ?? "http://localhost:5005" },
+  ];
 }
 
 export type LauncherBtnProps = {
-  open: boolean
-  onToggle?: () => void
-  links?: ModuleLink[]
-  effect?: LauncherBtnEffectConfig
-  title?: string
-  target?: '_self' | '_blank'
-}
+  open: boolean;
+  onToggle?: () => void;
+  links?: ModuleLink[];
+  effect?: LauncherBtnEffectConfig;
+  title?: string;
+  target?: "_self" | "_blank";
+};
 
 export function LauncherBtnPanel(props: LauncherBtnProps) {
-  const { open, onToggle, title = 'Modules', target = '_self' } = props
-  const [hovering, setHovering] = React.useState(false)
-  const [pressing, setPressing] = React.useState(false)
+  const { open, onToggle, title = "Modules", target = "_self" } = props;
+  const [hovering, setHovering] = React.useState(false);
+  const [pressing, setPressing] = React.useState(false);
 
-  const vis = useLauncherBtnEffect({ open, hovering, pressing }, props.effect)
+  const vis = useLauncherBtnEffect({ open, hovering, pressing }, props.effect);
 
-  const links = React.useMemo(() => props.links ?? getDefaultModuleLinks(), [props.links])
+  const links = React.useMemo(() => props.links ?? getDefaultModuleLinks(), [props.links]);
 
   React.useEffect(() => {
-    if (!open) return
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onToggle?.() }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [open, onToggle])
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onToggle?.();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onToggle]);
 
-  if (!open) return null
+  if (!open) return null;
 
   return (
     <div className={vis.panelClass} style={vis.panelStyle}>
       <span className={vis.badgeClass}>{title}</span>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        {links.map(link => (
+      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+        {links.map((link) => (
           <a
             key={link.id}
             href={link.url}
             target={target}
-            rel={target === '_blank' ? 'noreferrer' : undefined}
+            rel={target === "_blank" ? "noreferrer" : undefined}
             className={vis.buttonClass}
             style={vis.buttonStyle}
             onMouseEnter={() => setHovering(true)}
@@ -79,16 +81,19 @@ export function LauncherBtnPanel(props: LauncherBtnProps) {
         </button>
       </div>
     </div>
-  )
+  );
 }
 
 export function LauncherBtnDock(
-  props: Omit<LauncherBtnProps, 'open' | 'onToggle'> & { overlayClassName?: string }
+  props: Omit<LauncherBtnProps, "open" | "onToggle"> & { overlayClassName?: string },
 ) {
-  const gesture = useLauncherBtnGesture()
+  const gesture = useLauncherBtnGesture();
   return (
     <>
-      <div {...gesture.bindTargetProps()} className={props.overlayClassName ?? 'launcher-overlay'} />
+      <div
+        {...gesture.bindTargetProps()}
+        className={props.overlayClassName ?? "launcher-overlay"}
+      />
       <LauncherBtnPanel
         open={gesture.open}
         onToggle={gesture.toggle}
@@ -98,5 +103,5 @@ export function LauncherBtnDock(
         target={props.target}
       />
     </>
-  )
+  );
 }

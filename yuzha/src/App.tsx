@@ -1,6 +1,6 @@
-import React from 'react'
-import LauncherScreen from './LauncherScreen'
+import React from "react";
+import LauncherScreen from "./LauncherScreen";
 
-const App: React.FC = () => <LauncherScreen />
+const App: React.FC = () => <LauncherScreen />;
 
-export default App
+export default App;
