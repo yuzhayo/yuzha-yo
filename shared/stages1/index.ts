@@ -1,15 +1,12 @@
 /**
  * Fixed Canvas System - Entry Point
  * 
- * A renderer-agnostic 2048×2048 fixed canvas system with plugin-based architecture.
+ * A WebGL-focused 2048×2048 fixed canvas system with responsive scaling.
  * 
  * Core Features:
  * - Fixed 2048×2048 design coordinate system
  * - Responsive scaling with "cover" behavior  
- * - Plugin-based renderer system
- * - Dynamic renderer switching
- * - Multiple built-in adapters (Pixi.js, DOM, WebGL, Canvas2D)
- * - Hot-swappable renderers
+ * - WebGL renderer system
  * - Auto-fallback system
  * 
  * Usage:
@@ -18,20 +15,17 @@
  * 
  * // Simple usage with auto-registration
  * const { renderer, context } = await createCanvasAdapter(rootElement, {
- *   renderer: 'pixi',
+ *   renderer: 'webgl',
  *   autoFallback: true,
  *   debug: true
  * })
  * 
  * // Manual manager usage
  * const manager = new CanvasAdapterManager({ 
- *   renderer: 'pixi',
+ *   renderer: 'webgl',
  *   autoFallback: true 
  * })
  * const result = await manager.mount(rootElement)
- * 
- * // Register custom adapter
- * CanvasAdapterManager.registerAdapter('custom', MyCustomAdapter)
  * ```
  */
 
@@ -44,35 +38,31 @@ export {
   createCoordinateTransformer,
   CANVAS_WIDTH,
   CANVAS_HEIGHT
-} from './FixedCanvas'
+} from './Canvas'
 
-// Plugin system
+// Adapter system (stable parent)
 export {
   CanvasAdapterManager,
+  BaseAdapter,
   createCanvasAdapter,
   detectBestRenderer
-} from './CanvasAdapterManager'
+} from './CanvasAdapter'
 
 // Auto-register default adapters and export utilities
 export {
   registerDefaultAdapters
-} from './registerDefaultAdapters'
+} from './CanvasAdapterRegister'
 
-// Built-in adapters
-export {
-  BaseAdapter,
-  PixiAdapter,
-  DOMAdapter,
-  Canvas2DAdapter,
-  WebGLAdapter
-} from './adapters'
+// Built-in adapters (dynamic children)
+export { WebGLAdapter } from './AdapterWebGL'
+export { ThreeAdapter } from './AdapterThree'
 
 // Type definitions
 export type {
   CanvasTransform,
   CanvasCoordinates,
   FixedCanvasOptions
-} from './FixedCanvas'
+} from './Canvas'
 
 export type {
   RendererType,
@@ -80,13 +70,13 @@ export type {
   RendererContext,
   RendererAdapter,
   AdapterManagerResult
-} from './CanvasAdapterManager'
+} from './CanvasAdapter'
 
 export type {
-  PixiAdapterOptions,
-  DOMAdapterOptions,
-  DOMElementPosition,
-  DOMRenderer,
-  Canvas2DAdapterOptions,
   WebGLAdapterOptions
-} from './adapters'
+} from './AdapterWebGL'
+
+export type {
+  ThreeAdapterOptions,
+  ThreeRenderer
+} from './AdapterThree'

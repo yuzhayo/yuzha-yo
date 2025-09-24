@@ -1,8 +1,12 @@
 /**
- * Canvas Adapter Manager - Universal Parent Adapter
+ * Canvas Adapter System - Stable Parent Components
  * 
- * A plugin-based architecture that manages multiple renderer adapters dynamically.
- * Add new renderers without changing parent code - just register new adapters.
+ * This file contains the stable core components that rarely change:
+ * - Canvas Adapter Manager (orchestrates the system)
+ * - Base Adapter Interface (contract for all adapters)
+ * 
+ * Dynamic child adapters (WebGL, etc.) are kept in separate files
+ * for independent updates without touching the stable parent system.
  * 
  * Features:
  * - Dynamic renderer registration
@@ -12,9 +16,13 @@
  * - Hot-swappable renderers
  */
 
-import { FixedCanvasManager, createCoordinateTransformer, type CanvasTransform, type CanvasCoordinates } from './FixedCanvas'
+import { FixedCanvasManager, createCoordinateTransformer, type CanvasTransform, type CanvasCoordinates } from './Canvas'
 
-export type RendererType = 'pixi' | 'dom' | 'webgl' | 'canvas2d' | 'three' | 'svg' | string
+// ===========================================================================================
+// SECTION 1: TYPE DEFINITIONS & INTERFACES (Stable)
+// ===========================================================================================
+
+export type RendererType = 'webgl' | 'three' | string
 
 export interface CanvasAdapterOptions {
   /** Renderer type to use */
@@ -70,11 +78,95 @@ export interface AdapterManagerResult<T = any> {
   context: RendererContext
 }
 
+// ===========================================================================================
+// SECTION 2: BASE ADAPTER ABSTRACT CLASS (Stable)
+// ===========================================================================================
+
+/**
+ * Base Adapter Interface
+ * 
+ * Abstract base class that all renderer adapters must extend.
+ * Provides common functionality and enforces adapter contract.
+ * This is stable and should rarely change.
+ */
+export abstract class BaseAdapter<T = any> implements RendererAdapter<T> {
+  protected renderer: T | null = null
+  protected isInitialized = false
+  
+  constructor(protected options: any = {}) {}
+
+  abstract readonly name: string
+
+  /**
+   * Check if this adapter can run in current environment
+   * Override this method to add specific capability checks
+   */
+  canRun(): boolean {
+    return true
+  }
+
+  /**
+   * Initialize the renderer with canvas context
+   * Override this method to implement renderer-specific initialization
+   */
+  abstract initialize(context: RendererContext, options?: any): Promise<T> | T
+
+  /**
+   * Get the renderer instance
+   */
+  getRenderer(): T | null {
+    return this.renderer
+  }
+
+  /**
+   * Update renderer (called on resize, etc.)
+   * Override if renderer needs updates
+   */
+  update?(context: RendererContext): void
+
+  /**
+   * Clean up renderer resources
+   * Override this method to implement renderer-specific cleanup
+   */
+  abstract dispose(): void
+
+  /**
+   * Mark adapter as initialized
+   */
+  protected setInitialized(): void {
+    this.isInitialized = true
+  }
+
+  /**
+   * Check if adapter is initialized
+   */
+  isReady(): boolean {
+    return this.isInitialized && this.renderer !== null
+  }
+
+  /**
+   * Validate context before use
+   */
+  protected validateContext(context: RendererContext): void {
+    if (!context.canvas) {
+      throw new Error(`${this.name} adapter: Canvas element not found in context`)
+    }
+    if (!context.container) {
+      throw new Error(`${this.name} adapter: Container element not found in context`)
+    }
+  }
+}
+
+// ===========================================================================================
+// SECTION 3: CANVAS ADAPTER MANAGER (Stable Parent)
+// ===========================================================================================
+
 /**
  * Canvas Adapter Manager
  * 
  * Central manager that handles multiple renderer adapters dynamically.
  * Provides a stable API while allowing hot-swappable renderer backends.
+ * This is the main parent class that orchestrates everything.
  */
 export class CanvasAdapterManager {
   private static adapters = new Map<string, new (...args: any[]) => RendererAdapter>()
@@ -202,7 +294,7 @@ export class CanvasAdapterManager {
       const AdapterClass = CanvasAdapterManager.adapters.get(rendererName.toLowerCase())
       
       if (!AdapterClass) {
-        console.warn(`[CanvasAdapterManager] Adapter '${rendererName}' not registered`)
+        console.warn(`[CanvasAdapter] Adapter '${rendererName}' not registered`)
         continue
       }
 
@@ -211,19 +303,19 @@ export class CanvasAdapterManager {
         
         // Check if adapter can run
         if (!adapter.canRun()) {
-          console.warn(`[CanvasAdapterManager] Adapter '${rendererName}' cannot run in this environment`)
+          console.warn(`[CanvasAdapter] Adapter '${rendererName}' cannot run in this environment`)
           continue
         }
 
         // Initialize adapter
         await adapter.initialize(this.context, this.options.rendererOptions)
         
-        console.log(`[CanvasAdapterManager] Successfully initialized '${rendererName}' renderer`)
+        console.log(`[CanvasAdapter] Successfully initialized '${rendererName}' renderer`)
         this.activeAdapter = adapter
         return adapter
         
       } catch (error) {
-        console.warn(`[CanvasAdapterManager] Failed to initialize '${rendererName}':`, error)
+        console.warn(`[CanvasAdapter] Failed to initialize '${rendererName}':`, error)
         continue
       }
     }
@@ -238,7 +330,7 @@ export class CanvasAdapterManager {
     const renderers = [this.options.renderer]
     
     if (this.options.autoFallback) {
-      const fallbacks = this.options.fallbackOrder || ['pixi', 'canvas2d', 'dom']
+      const fallbacks = this.options.fallbackOrder || ['three', 'webgl']
       renderers.push(...fallbacks.filter(r => r !== this.options.renderer))
     }
     
@@ -259,6 +351,10 @@ export class CanvasAdapterManager {
   }
 }
 
+// ===========================================================================================
+// SECTION 4: UTILITY FUNCTIONS (Stable)
+// ===========================================================================================
+
 /**
  * Create canvas adapter manager with automatic setup
  */
@@ -276,24 +372,17 @@ export async function createCanvasAdapter<T = any>(
 export function detectBestRenderer(): RendererType {
   const canvas = document.createElement('canvas')
   
-  // Check WebGL support
+  // Check WebGL support (prefer Three.js if available)
   try {
     if (canvas.getContext('webgl2') || canvas.getContext('webgl')) {
-      // Check if Pixi is available
-      if (typeof window !== 'undefined' && (window as any).PIXI) {
-        return 'pixi'
+      // Check if Three.js is available
+      if (typeof window !== 'undefined' && (window as any).THREE) {
+        return 'three'
       }
       return 'webgl'
     }
   } catch {}
   
-  // Check Canvas 2D
-  try {
-    if (canvas.getContext('2d')) {
-      return 'canvas2d'
-    }
-  } catch {}
-  
-  // Fallback to DOM
-  return 'dom'
+  // Fallback to WebGL
+  return 'webgl'
 }

@@ -5,8 +5,6 @@
  * to any viewport while maintaining design integrity.
  * 
  * This is a renderer-agnostic canvas system that can be used with:
- * - Pixi.js applications
- * - DOM-based renderers  
  * - WebGL contexts
  * - Canvas 2D contexts
  * - Any other rendering system

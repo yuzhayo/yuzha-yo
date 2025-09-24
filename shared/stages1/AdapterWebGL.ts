@@ -4,9 +4,9 @@
  * Provides WebGL rendering context for the fixed canvas system.
  */
 
-import { BaseAdapter } from './BaseAdapter'
-import { CANVAS_WIDTH, CANVAS_HEIGHT } from '../FixedCanvas'
-import type { RendererContext } from '../CanvasAdapterManager'
+import { BaseAdapter } from './CanvasAdapter'
+import { CANVAS_WIDTH, CANVAS_HEIGHT } from './Canvas'
+import type { RendererContext } from './CanvasAdapter'
 
 export interface WebGLAdapterOptions {
   /** Use WebGL2 if available */

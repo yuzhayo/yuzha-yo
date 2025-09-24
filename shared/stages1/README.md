@@ -1,16 +1,16 @@
 # Fixed Canvas System
 
-A renderer-agnostic 2048×2048 fixed canvas system with responsive scaling for consistent cross-device experiences.
+A WebGL-focused 2048×2048 fixed canvas system with responsive scaling for consistent cross-device experiences.
 
 ## Overview
 
-The Fixed Canvas System provides a stable 2048×2048 coordinate space that scales intelligently to any viewport size while maintaining visual consistency and design integrity.
+The Fixed Canvas System provides a stable 2048×2048 coordinate space that scales intelligently to any viewport size while maintaining visual consistency and design integrity. This version is optimized for WebGL rendering.
 
 ## Key Features
 
 - **Fixed Coordinate System**: Always 2048×2048 regardless of device
 - **Responsive Scaling**: "Cover" behavior fills viewport while maintaining aspect ratio
-- **Renderer Agnostic**: Works with Pixi.js, DOM, WebGL, Canvas2D, or any rendering system
+- **WebGL Focused**: Optimized for WebGL rendering contexts
 - **Coordinate Transformation**: Automatic viewport-to-canvas coordinate conversion
 - **Touch/Mouse Support**: Event handling with coordinate transformation
 - **Debug Utilities**: Visual debugging and transform information
@@ -20,7 +20,7 @@ The Fixed Canvas System provides a stable 2048×2048 coordinate space that scale
 ### Basic Canvas Setup
 
 ```typescript
-import { FixedCanvasManager } from './FixedCanvas'
+import { FixedCanvasManager } from './Canvas'
 
 const manager = new FixedCanvasManager({
   debug: true,
@@ -29,47 +29,27 @@ const manager = new FixedCanvasManager({
 
 const { canvas, overlay } = manager.initialize(document.getElementById('root'))
 
-// Canvas is ready - use with any renderer
-const ctx = canvas.getContext('2d')
-// ... your rendering code
+// Canvas is ready - use with WebGL
+const gl = canvas.getContext('webgl2') || canvas.getContext('webgl')
+// ... your WebGL rendering code
 ```
 
-### With Pixi.js
+### With WebGL Adapter
 
 ```typescript
-import { PixiCanvasAdapter } from './PixiCanvasAdapter'
+import { CanvasAdapterManager, WebGLAdapter } from './index'
 
-const adapter = new PixiCanvasAdapter({
+const manager = new CanvasAdapterManager({
+  renderer: 'webgl',
   debug: true,
-  antialias: true,
-  backgroundAlpha: 0
+  autoFallback: true
 })
 
-const { app, coordinateTransformer } = await adapter.mount(document.getElementById('root'))
+const { renderer: gl, context } = await manager.mount(document.getElementById('root'))
 
-// Pixi app is ready with 2048×2048 stage
-app.stage.addChild(mySprite)
-```
-
-### With DOM Elements
-
-```typescript
-import { DOMCanvasAdapter } from './DOMCanvasAdapter'
-
-const adapter = new DOMCanvasAdapter({
-  debug: true
-})
-
-const { container, coordinateTransformer } = adapter.initialize(document.getElementById('root'))
-
-// Add elements with percentage-based positioning
-const element = document.createElement('div')
-adapter.addElement('my-element', element, {
-  xPct: 50,    // Center horizontally
-  yPct: 50,    // Center vertically  
-  scale: 1.5,  // 150% size
-  rotation: 45 // 45 degrees
-})
+// WebGL context is ready with 2048×2048 viewport
+gl.viewport(0, 0, 2048, 2048)
+// ... your WebGL rendering code
 ```
 
 ## Core Concepts
@@ -78,7 +58,6 @@ adapter.addElement('my-element', element, {
 
 - **Canvas Space**: Always 2048×2048 pixels
 - **Viewport Space**: Actual screen/window dimensions
-- **Percentage Space**: 0-100% for positioning (xPct, yPct)
 
 ### Scaling Behavior
 
@@ -126,77 +105,67 @@ interface FixedCanvasOptions {
 - `transformEventCoordinates(event)` - Transform event coordinates
 - `dispose()` - Clean up resources
 
+### WebGL Integration
+
+```typescript
+import { FixedCanvasManager, CANVAS_WIDTH, CANVAS_HEIGHT } from './Canvas'
+
+const manager = new FixedCanvasManager()
+const { canvas } = manager.initialize(document.getElementById('root'))
+
+const gl = canvas.getContext('webgl2') || canvas.getContext('webgl')
+gl.viewport(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
+// ... WebGL setup
+```
+
 ### Coordinate Functions
 
 - `calculateCanvasTransform(width, height)` - Calculate scaling transform
 - `transformCoordinatesToCanvas(x, y, transform)` - Convert coordinates
 - `isWithinCanvas(x, y)` - Check if coordinates are in bounds
 
-## Integration Examples
-
-### With Custom WebGL Renderer
-
-```typescript
-import { FixedCanvasManager, CANVAS_WIDTH, CANVAS_HEIGHT } from './FixedCanvas'
-
-const manager = new FixedCanvasManager()
-const { canvas } = manager.initialize(document.getElementById('root'))
-
-const gl = canvas.getContext('webgl2')
-gl.viewport(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
-// ... WebGL setup
-```
-
-### With Canvas 2D
-
-```typescript
-const { canvas } = manager.initialize(document.getElementById('root'))
-const ctx = canvas.getContext('2d')
-
-// Draw at canvas coordinates
-ctx.fillRect(100, 100, 200, 200) // Always consistent size
-```
-
-### With Three.js
-
-```typescript
-import * as THREE from 'three'
-
-const { canvas } = manager.initialize(document.getElementById('root'))
-
-const renderer = new THREE.WebGLRenderer({ 
-  canvas: canvas,
-  antialias: true
-})
-renderer.setSize(CANVAS_WIDTH, CANVAS_HEIGHT, false)
-```
-
 ## Benefits
 
 - **Consistent Design**: Same visual appearance across all devices
 - **Simplified Development**: No responsive calculations needed
-- **Performance**: Fixed coordinate system is optimized
+- **Performance**: Fixed coordinate system is optimized for WebGL
 - **Cross-Platform**: Identical behavior everywhere
-- **Future-Proof**: Works with any rendering technology
+- **WebGL Optimized**: Tailored for modern graphics applications
 
 ## File Structure
 
 ```
-apps/stages/
-├── FixedCanvas.ts       # Core canvas system
-├── PixiCanvasAdapter.ts # Pixi.js integration
-├── DOMCanvasAdapter.ts  # DOM rendering integration
-├── index.ts            # Public exports
-└── README.md          # This file
+stages1/
+├── Canvas.ts                    # Core canvas system (2048×2048)
+├── CanvasAdapter.ts             # Stable parent: Manager + Base adapter (consolidated)
+├── CanvasAdapterRegister.ts     # Adapter registration utilities
+├── AdapterWebGL.ts              # Dynamic child: WebGL implementation
+├── index.ts                     # Public exports
+└── README.md                    # This file
 ```
 
-## Migration from Existing Code
+## Architecture Design
 
-If you have existing canvas code, the migration is straightforward:
+### **Stable Parent Components** (CanvasAdapter.ts)
+- **CanvasAdapterManager**: Main orchestrator and controller
+- **BaseAdapter**: Abstract interface for all adapters
+- **Type definitions**: Interfaces and contracts
 
-1. Replace canvas creation with `FixedCanvasManager`
-2. Update coordinate calculations to use 1024×1024 space
-3. Use coordinate transformers for event handling
-4. Remove manual scaling/resize logic
+These are consolidated in one file because they're stable and work together.
 
-The system handles all scaling and coordinate transformation automatically.
+### **Dynamic Child Components** (Separate files)
+- **AdapterWebGL.ts**: WebGL-specific implementation
+- **Future adapters**: Can be added without touching parent components
+
+This separation ensures updates only touch child adapters, never the stable parent system.
+
+## Migration from Multi-Renderer Version
+
+If you were using the previous multi-renderer version:
+
+1. Replace imports from `adapters/` to root level
+2. Only WebGL adapter is available now
+3. Update renderer type to 'webgl'
+4. Remove references to other renderer types
+
+The system handles all scaling and coordinate transformation automatically with WebGL focus.
