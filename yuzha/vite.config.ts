@@ -29,6 +29,9 @@ export default defineConfig({
       "@shared": resolveFromConfig("../shared"),
     },
   },
+  define: {
+    __SHARED_ASSETS_PATH__: JSON.stringify(resolveFromConfig("../shared/Asset")),
+  },
   server: {
     host: "0.0.0.0",
     port: PORT,
@@ -38,6 +41,7 @@ export default defineConfig({
       allow: [resolveFromConfig("."), resolveFromConfig("../shared")],
     },
   },
+  assetsInclude: ['**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.gif', '**/*.svg'],
   preview: {
     host: "0.0.0.0",
     port: PORT,

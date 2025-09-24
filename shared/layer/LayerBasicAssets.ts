@@ -8,22 +8,40 @@
 import * as THREE from 'three'
 import type { LogicConfig, ImageRef } from './LayerBasicTypes'
 
-// Asset resolution logic from LogicConfig.ts lines 14-35
-const assetManifest: Record<string, string> = {}
+// Asset resolution logic using dynamic imports
+import starbgUrl from '@shared/Asset/STARBG.png?url'
+import gear1Url from '@shared/Asset/GEAR1.png?url'
+import gear2Url from '@shared/Asset/GEAR2.png?url'
+import gear3Url from '@shared/Asset/GEAR3.png?url'
 
-const SHARED_ASSET_PREFIXES = ['@shared/Asset/', 'shared/Asset/']
+const assetManifest: Record<string, string> = {
+  'STARBG.png': starbgUrl,
+  'GEAR1.png': gear1Url,
+  'GEAR2.png': gear2Url,
+  'GEAR3.png': gear3Url,
+  // Legacy path support
+  'shared/Asset/STARBG.png': starbgUrl,
+  'shared/Asset/GEAR1.png': gear1Url,
+  'shared/Asset/GEAR2.png': gear2Url,
+  'shared/Asset/GEAR3.png': gear3Url,
+  '/shared/Asset/STARBG.png': starbgUrl,
+  '/shared/Asset/GEAR1.png': gear1Url,
+  '/shared/Asset/GEAR2.png': gear2Url,
+  '/shared/Asset/GEAR3.png': gear3Url,
+}
 
 function resolveBundledAsset(path: string): string | null {
-  for (const prefix of SHARED_ASSET_PREFIXES) {
-    if (path.startsWith(prefix)) {
-      const relative = path.slice(prefix.length)
-      const manifestKey = `@shared/Asset/${relative}`
-      const mapped = assetManifest[manifestKey]
-      if (mapped) return mapped
-      console.warn('[LayerBasicAssets] Missing bundled asset for', path)
-      return null
-    }
+  // Direct lookup in manifest
+  const mapped = assetManifest[path]
+  if (mapped) return mapped
+  
+  // Extract filename and try lookup
+  const filename = path.split('/').pop()
+  if (filename && assetManifest[filename]) {
+    return assetManifest[filename]
   }
+  
+  console.warn('[LayerBasicAssets] Missing bundled asset for', path)
   return null
 }
 

@@ -1,10 +1,10 @@
 {
   "layersID": ["bg", "gear1", "gear2", "gear3"],
   "imageRegistry": {
-    "bg": "shared/Asset/STARBG.png",
-    "gear1": "shared/Asset/GEAR1.png",
-    "gear2": "shared/Asset/GEAR2.png",
-    "gear3": "shared/Asset/GEAR3.png"
+    "bg": "/shared/Asset/STARBG.png",
+    "gear1": "/shared/Asset/GEAR1.png",
+    "gear2": "/shared/Asset/GEAR2.png",
+    "gear3": "/shared/Asset/GEAR3.png"
   },
   "layers": [
     {
