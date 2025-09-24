@@ -1,11 +1,11 @@
-﻿import React from "react";
+import React from "react";
 
-export type LauncherBtnGestureOptions = {
+export type MainScreenGestureOptions = {
   holdMs?: number;
   moveTolerancePx?: number;
 };
 
-export type LauncherBtnGesture = {
+export type MainScreenGesture = {
   open: boolean;
   setOpen: (v: boolean) => void;
   toggle: () => void;
@@ -22,7 +22,7 @@ type PressState = {
   consumed: boolean;
 };
 
-export function useLauncherBtnGesture(opts?: LauncherBtnGestureOptions): LauncherBtnGesture {
+export function useMainScreenGesture(opts?: MainScreenGestureOptions): MainScreenGesture {
   const holdMs = Math.max(120, Math.floor(opts?.holdMs ?? 450));
   const tol = Math.max(2, Math.floor(opts?.moveTolerancePx ?? 8));
 
@@ -117,16 +117,16 @@ export function useLauncherBtnGesture(opts?: LauncherBtnGestureOptions): Launche
   return { open, setOpen, toggle, bindTargetProps };
 }
 
-export type LauncherBtnGestureAreaProps = {
+export type MainScreenGestureAreaProps = {
   className?: string;
   style?: React.CSSProperties;
   children?: React.ReactNode | ((ctx: { open: boolean; toggle: () => void }) => React.ReactNode);
-  options?: LauncherBtnGestureOptions;
+  options?: MainScreenGestureOptions;
   onOpenChange?: (open: boolean) => void;
 };
 
-export function LauncherBtnGestureArea(props: LauncherBtnGestureAreaProps) {
-  const g = useLauncherBtnGesture(props.options);
+export function MainScreenGestureArea(props: MainScreenGestureAreaProps) {
+  const g = useMainScreenGesture(props.options);
   React.useEffect(() => {
     props.onOpenChange?.(g.open);
   }, [g.open, props]);
@@ -139,7 +139,7 @@ export function LauncherBtnGestureArea(props: LauncherBtnGestureAreaProps) {
   return (
     <div
       {...g.bindTargetProps()}
-      className={props.className ?? "launcher-overlay"}
+      className={props.className ?? "main-screen-overlay"}
       style={props.style}
     >
       {content}

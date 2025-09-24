@@ -1,6 +1,6 @@
-﻿import React from "react";
+import React from "react";
 
-export type LauncherUpdaterProps = {
+export type MainScreenUpdaterProps = {
   visible: boolean;
 };
 
@@ -29,13 +29,13 @@ async function clearCachesAndReload() {
   }
 }
 
-export default function LauncherUpdater(props: LauncherUpdaterProps) {
+export default function MainScreenUpdater(props: MainScreenUpdaterProps) {
   if (!props.visible) return null;
   return (
     <button
       type="button"
       onClick={clearCachesAndReload}
-      className="launcher-updater"
+      className="main-screen-updater"
       aria-label="Force update and reload"
     >
       Update

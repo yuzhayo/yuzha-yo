@@ -1,6 +1,5 @@
-﻿import React from "react";
-import { useLauncherBtnEffect, type LauncherBtnEffectConfig } from "./LauncherBtnEffect";
-import { useLauncherBtnGesture } from "./LauncherBtnGesture";
+import React, { type CSSProperties } from "react";
+import { useMainScreenGesture } from "./MainScreenGesture";
 
 export type ModuleLink = { id: string; label: string; url: string };
 
@@ -15,21 +14,77 @@ function getDefaultModuleLinks(): ModuleLink[] {
   ];
 }
 
-export type LauncherBtnProps = {
+export type MainScreenBtnEffectKind = "none" | "fade" | "pulse" | "glow";
+
+export type MainScreenBtnEffectConfig = {
+  kind?: MainScreenBtnEffectKind;
+  intensity?: number;
+};
+
+export type MainScreenBtnEffectState = {
+  open: boolean;
+  hovering?: boolean;
+  pressing?: boolean;
+};
+
+export type MainScreenBtnVisual = {
+  panelClass: string;
+  panelStyle?: CSSProperties;
+  buttonClass: string;
+  buttonStyle?: CSSProperties;
+  badgeClass: string;
+};
+
+function useMainScreenBtnEffect(
+  state: MainScreenBtnEffectState,
+  cfg?: MainScreenBtnEffectConfig,
+): MainScreenBtnVisual {
+  const kind = cfg?.kind ?? "none";
+
+  const basePanel: string[] = ["main-screen-panel"];
+  const panelStyle: CSSProperties = {};
+
+  if (kind === "fade") {
+    basePanel.push(state.open ? "main-screen-panel--fade-open" : "main-screen-panel--fade-closed");
+  }
+
+  if (kind === "glow") {
+    basePanel.push("main-screen-panel--glow");
+    if (state.open) panelStyle.boxShadow = "0 24px 48px rgba(236,72,153,0.28)";
+  }
+
+  if (kind === "pulse" && state.open) {
+    panelStyle.animation = "pulse 1.6s ease-in-out infinite";
+  }
+
+  const buttonStyle: CSSProperties | undefined = state.pressing
+    ? { transform: "translateY(1px) scale(0.98)" }
+    : undefined;
+
+  return {
+    panelClass: basePanel.join(" "),
+    panelStyle: Object.keys(panelStyle).length > 0 ? panelStyle : undefined,
+    buttonClass: "main-screen-button",
+    buttonStyle,
+    badgeClass: "main-screen-badge",
+  };
+}
+
+export type MainScreenBtnProps = {
   open: boolean;
   onToggle?: () => void;
   links?: ModuleLink[];
-  effect?: LauncherBtnEffectConfig;
+  effect?: MainScreenBtnEffectConfig;
   title?: string;
   target?: "_self" | "_blank";
 };
 
-export function LauncherBtnPanel(props: LauncherBtnProps) {
+export function MainScreenBtnPanel(props: MainScreenBtnProps) {
   const { open, onToggle, title = "Modules", target = "_self" } = props;
   const [hovering, setHovering] = React.useState(false);
   const [pressing, setPressing] = React.useState(false);
 
-  const vis = useLauncherBtnEffect({ open, hovering, pressing }, props.effect);
+  const vis = useMainScreenBtnEffect({ open, hovering, pressing }, props.effect);
 
   const links = React.useMemo(() => props.links ?? getDefaultModuleLinks(), [props.links]);
 
@@ -84,17 +139,17 @@ export function LauncherBtnPanel(props: LauncherBtnProps) {
   );
 }
 
-export function LauncherBtnDock(
-  props: Omit<LauncherBtnProps, "open" | "onToggle"> & { overlayClassName?: string },
+export function MainScreenBtnDock(
+  props: Omit<MainScreenBtnProps, "open" | "onToggle"> & { overlayClassName?: string },
 ) {
-  const gesture = useLauncherBtnGesture();
+  const gesture = useMainScreenGesture();
   return (
     <>
       <div
         {...gesture.bindTargetProps()}
-        className={props.overlayClassName ?? "launcher-overlay"}
+        className={props.overlayClassName ?? "main-screen-overlay"}
       />
-      <LauncherBtnPanel
+      <MainScreenBtnPanel
         open={gesture.open}
         onToggle={gesture.toggle}
         links={props.links}
