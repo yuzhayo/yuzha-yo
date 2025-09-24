@@ -60,10 +60,9 @@
     "vite": "^7.0.4",
     "@types/three": "^0.180.0",
     "vitest": "^3.2.4",
-    "three": "^0.180.0",
     "cross-env": "^7.0.3"
   },
   "dependencies": {
-  
+    "three": "^0.180.0"
   }
 }
