@@ -14,7 +14,7 @@
 
 import { FixedCanvasManager, createCoordinateTransformer, type CanvasTransform, type CanvasCoordinates } from './FixedCanvas'
 
-export type RendererType = 'webgl' | 'three' | string
+export type RendererType = 'pixi' | 'dom' | 'webgl' | 'canvas2d' | 'three' | 'svg' | string
 
 export interface CanvasAdapterOptions {
   /** Renderer type to use */
@@ -238,8 +238,7 @@ export class CanvasAdapterManager {
     const renderers = [this.options.renderer]
     
     if (this.options.autoFallback) {
-      const fallbacks = this.options.fallbackOrder
-      ?? (this.options.renderer === 'three' ? ['webgl'] : ['three'])
+      const fallbacks = this.options.fallbackOrder || ['pixi', 'canvas2d', 'dom']
       renderers.push(...fallbacks.filter(r => r !== this.options.renderer))
     }
     
@@ -276,21 +275,25 @@ export async function createCanvasAdapter<T = any>(
  */
 export function detectBestRenderer(): RendererType {
   const canvas = document.createElement('canvas')
-
-  const hasWebGL = (() => {
-    try {
-      return !!(canvas.getContext('webgl2') || canvas.getContext('webgl'))
-    } catch {
-      return false
+  
+  // Check WebGL support
+  try {
+    if (canvas.getContext('webgl2') || canvas.getContext('webgl')) {
+      // Check if Pixi is available
+      if (typeof window !== 'undefined' && (window as any).PIXI) {
+        return 'pixi'
+      }
+      return 'webgl'
     }
-  })()
-
-  if (hasWebGL) {
-    if (typeof window !== 'undefined' && (window as any).THREE) {
-      return 'three'
+  } catch {}
+  
+  // Check Canvas 2D
+  try {
+    if (canvas.getContext('2d')) {
+      return 'canvas2d'
     }
-    return 'webgl'
-  }
-
-  return 'webgl'
+  } catch {}
+  
+  // Fallback to DOM
+  return 'dom'
 }

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2048×2048 Fixed Canvas Demo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #222;
+            color: white;
+            font-family: monospace;
+        }
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <div>Canvas: 2048×2048 (fixed)</div>
+        <div id="viewport"></div>
+        <div id="scale"></div>
+        <div id="coords"></div>
+    </div>
+    <div id="root"></div>
+
+    <script type="module">
+        // Simulate the Fixed Canvas System (simplified for demo)
+        const CANVAS_WIDTH = 2048;
+        const CANVAS_HEIGHT = 2048;
+
+        function calculateTransform(viewportWidth, viewportHeight) {
+            const scaleX = viewportWidth / CANVAS_WIDTH;
+            const scaleY = viewportHeight / CANVAS_HEIGHT;
+            const scale = Math.max(scaleX, scaleY);
+            
+            const scaledWidth = CANVAS_WIDTH * scale;
+            const scaledHeight = CANVAS_HEIGHT * scale;
+            
+            const offsetX = (viewportWidth - scaledWidth) / 2;
+            const offsetY = (viewportHeight - scaledHeight) / 2;
+            
+            return { scale, offsetX, offsetY, scaledWidth, scaledHeight };
+        }
+
+        // Create canvas
+        const root = document.getElementById('root');
+        const container = document.createElement('div');
+        const canvas = document.createElement('canvas');
+        
+        canvas.width = CANVAS_WIDTH;
+        canvas.height = CANVAS_HEIGHT;
+        
+        // Style container
+        container.style.position = 'absolute';
+        container.style.top = '50%';
+        container.style.left = '50%';
+        container.style.transform = 'translate(-50%, -50%)';
+        container.style.overflow = 'hidden';
+        
+        // Style canvas
+        canvas.style.display = 'block';
+        canvas.style.transformOrigin = '0 0';
+        canvas.style.width = CANVAS_WIDTH + 'px';
+        canvas.style.height = CANVAS_HEIGHT + 'px';
+        
+        root.style.position = 'relative';
+        root.style.width = '100vw';
+        root.style.height = '100vh';
+        root.style.overflow = 'hidden';
+        
+        root.appendChild(container);
+        container.appendChild(canvas);
+
+        // Get 2D context and draw demo content
+        const ctx = canvas.getContext('2d');
+        
+        function drawDemo() {
+            // Clear canvas
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            // Draw border
+            ctx.strokeStyle = '#00ff00';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(2, 2, CANVAS_WIDTH-4, CANVAS_HEIGHT-4);
+            
+            // Draw center crosshairs
+            ctx.beginPath();
+            ctx.moveTo(CANVAS_WIDTH/2 - 100, CANVAS_HEIGHT/2);
+            ctx.lineTo(CANVAS_WIDTH/2 + 100, CANVAS_HEIGHT/2);
+            ctx.moveTo(CANVAS_WIDTH/2, CANVAS_HEIGHT/2 - 100);
+            ctx.lineTo(CANVAS_WIDTH/2, CANVAS_HEIGHT/2 + 100);
+            ctx.stroke();
+            
+            // Draw corner markers
+            const corners = [
+                [100, 100], [CANVAS_WIDTH-100, 100],
+                [100, CANVAS_HEIGHT-100], [CANVAS_WIDTH-100, CANVAS_HEIGHT-100]
+            ];
+            
+            ctx.fillStyle = '#ff6600';
+            corners.forEach(([x, y]) => {
+                ctx.fillRect(x-20, y-20, 40, 40);
+            });
+            
+            // Draw text labels
+            ctx.fillStyle = 'white';
+            ctx.font = '48px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('2048×2048 Canvas', CANVAS_WIDTH/2, CANVAS_HEIGHT/2 - 200);
+            ctx.fillText('Fixed Coordinate System', CANVAS_WIDTH/2, CANVAS_HEIGHT/2 + 200);
+            
+            // Draw coordinate text
+            ctx.font = '24px monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText('(0,0)', 20, 40);
+            ctx.textAlign = 'right';
+            ctx.fillText(`(${CANVAS_WIDTH},${CANVAS_HEIGHT})`, CANVAS_WIDTH-20, CANVAS_HEIGHT-20);
+        }
+
+        function updateTransform() {
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            const transform = calculateTransform(vw, vh);
+            
+            // Apply transform
+            canvas.style.transform = `scale(${transform.scale})`;
+            container.style.width = transform.scaledWidth + 'px';
+            container.style.height = transform.scaledHeight + 'px';
+            
+            // Update info display
+            document.getElementById('viewport').textContent = `Viewport: ${vw}×${vh}`;
+            document.getElementById('scale').textContent = `Scale: ${transform.scale.toFixed(3)}`;
+        }
+
+        // Handle mouse movement for coordinate display
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const transform = calculateTransform(window.innerWidth, window.innerHeight);
+            
+            // Transform screen coordinates to canvas coordinates
+            const canvasX = ((e.clientX - transform.offsetX) / transform.scale);
+            const canvasY = ((e.clientY - transform.offsetY) / transform.scale);
+            
+            document.getElementById('coords').textContent = 
+                `Canvas: ${Math.round(canvasX)}, ${Math.round(canvasY)}`;
+        });
+
+        // Initial setup
+        drawDemo();
+        updateTransform();
+        
+        // Handle resize
+        window.addEventListener('resize', updateTransform);
+    </script>
+</body>
+</html>

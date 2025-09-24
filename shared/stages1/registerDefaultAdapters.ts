@@ -1,18 +1,21 @@
 /**
  * Register Default Adapters
- *
- * Automatically registers the built-in adapters with the Canvas Adapter Manager.
+ * 
+ * Automatically registers all built-in adapters with the Canvas Adapter Manager.
+ * Import this file to have all default adapters available.
  */
 
 import { CanvasAdapterManager } from './CanvasAdapterManager'
-import { WebGLAdapter, ThreeAdapter } from './adapters'
+import { PixiAdapter, DOMAdapter, Canvas2DAdapter, WebGLAdapter } from './adapters'
 
 /**
- * Register built-in adapters
+ * Register all default adapters
  */
 export function registerDefaultAdapters(): void {
+  CanvasAdapterManager.registerAdapter('pixi', PixiAdapter)
+  CanvasAdapterManager.registerAdapter('dom', DOMAdapter)
+  CanvasAdapterManager.registerAdapter('canvas2d', Canvas2DAdapter)
   CanvasAdapterManager.registerAdapter('webgl', WebGLAdapter)
-  CanvasAdapterManager.registerAdapter('three', ThreeAdapter)
 }
 
 /**
