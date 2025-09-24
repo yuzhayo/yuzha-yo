@@ -3,8 +3,6 @@
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background-color: #0f172a;
-  background-image: url('@shared/Asset/MAINBG.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
