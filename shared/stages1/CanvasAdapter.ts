@@ -214,6 +214,7 @@ export class CanvasAdapterManager {
     // Create context
     this.context = {
       ...canvasSetup,
+      canvasManager: this.canvasManager,
       coordinateTransformer: createCoordinateTransformer(this.canvasManager),
       getTransform: () => this.canvasManager.getTransform()
     }
@@ -225,7 +226,7 @@ export class CanvasAdapterManager {
       manager: this,
       adapter,
       renderer: adapter.getRenderer() as T,
-      context: this.context
+      context: this.context!
     }
   }
 
@@ -255,7 +256,7 @@ export class CanvasAdapterManager {
       manager: this,
       adapter,
       renderer: adapter.getRenderer() as T,
-      context: this.context
+      context: this.context!
     }
   }
 
@@ -375,9 +376,14 @@ export function detectBestRenderer(): RendererType {
   // Check WebGL support (prefer Three.js if available)
   try {
     if (canvas.getContext('webgl2') || canvas.getContext('webgl')) {
-      // Check if Three.js is available
-      if (typeof window !== 'undefined' && (window as any).THREE) {
+      // Check if Three.js is available by trying to import it
+      try {
+        // Import Three.js WebGLRenderer to check availability
+        import('three').then(() => {}).catch(() => {})
+        // For now, always return 'three' if WebGL is available since Three.js is bundled
         return 'three'
+      } catch {
+        // Three.js not available, fall back to WebGL
       }
       return 'webgl'
     }

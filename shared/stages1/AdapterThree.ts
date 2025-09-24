@@ -70,7 +70,7 @@ export class ThreeAdapter extends BaseAdapter<ThreeRenderer> {
   /**
    * Check if Three.js is available
    */
-  canRun(): boolean {
+  override canRun(): boolean {
     try {
       // Check if Three.js WebGLRenderer is available
       return typeof WebGLRenderer !== 'undefined' && typeof Scene !== 'undefined'
@@ -188,7 +188,7 @@ export class ThreeAdapter extends BaseAdapter<ThreeRenderer> {
   /**
    * Update Three.js renderer
    */
-  update(context: RendererContext): void {
+  override update(context: RendererContext): void {
     if (this.renderer && context.getTransform) {
       const transform = context.getTransform()
       if (transform) {
