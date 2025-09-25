@@ -1,5 +1,5 @@
 // IMPORT SECTION
-import { LayerEngine, type LayerConfig, type Layer } from './EngineLayer-Parent.js';
+import type { LayerEngine, LayerConfig, Layer } from './EngineLayer-Parent.js';
 import type { Vector3 } from './EngineLayer-Types.js';
 
 // STYLE SECTION (unused)

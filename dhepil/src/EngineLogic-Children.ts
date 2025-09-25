@@ -1,5 +1,5 @@
 // IMPORT SECTION
-import { BaseBehavior, LogicEngine, type LogicConfig, type BehaviorState } from './EngineLogic-Parent.js';
+import { BaseBehavior, type BehaviorState } from './EngineLogic-Parent.js';
 
 // STYLE SECTION (unused)
 
@@ -317,7 +317,7 @@ export class ClockBehavior extends BaseBehavior {
     this.markDirty();
   }
 
-  public update(deltaTime: number): void {
+  public update(_deltaTime: number): void {
     if (!this.enabled) return;
 
     this.updateClock();

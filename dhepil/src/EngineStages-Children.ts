@@ -1,6 +1,6 @@
 // IMPORT SECTION
 import * as THREE from 'three';
-import { BaseStage, StagesEngine, type Stage, type StageMetrics } from './EngineStages-Parent.js';
+import { BaseStage } from './EngineStages-Parent.js';
 
 // STYLE SECTION (unused)
 
@@ -193,7 +193,7 @@ export class SpriteStage extends BaseStage {
     return Array.from(this.sprites.values());
   }
 
-  public override render(deltaTime: number): void {
+  public override render(_deltaTime: number): void {
     if (!this.enabled) return;
 
     const startTime = performance.now();
@@ -351,7 +351,7 @@ export class MeshStage extends BaseStage {
     return true;
   }
 
-  public override render(deltaTime: number): void {
+  public override render(_deltaTime: number): void {
     if (!this.enabled) return;
 
     const startTime = performance.now();
@@ -503,8 +503,8 @@ export class LightingStage extends BaseStage {
   /**
    * Update light properties
    */
-  public updateLight(id: string, updates: any): boolean {
-    const light = this.lights.get(id);
+  public updateLight(_id: string, updates: any): boolean {
+    const light = this.lights.get(_id);
     if (!light) return false;
 
     if (updates.color !== undefined) {
@@ -525,19 +525,19 @@ export class LightingStage extends BaseStage {
   /**
    * Remove light
    */
-  public removeLight(id: string): boolean {
-    const light = this.lights.get(id);
-    if (!light || id === 'ambient' || id === 'directional') {
+  public removeLight(_id: string): boolean {
+    const light = this.lights.get(_id);
+    if (!light || _id === 'ambient' || _id === 'directional') {
       return false; // Can't remove main lights
     }
 
     this.scene.remove(light);
-    this.lights.delete(id);
+    this.lights.delete(_id);
 
     return true;
   }
 
-  public override render(deltaTime: number): void {
+  public override render(_deltaTime: number): void {
     if (!this.enabled) return;
 
     const startTime = performance.now();
@@ -551,7 +551,7 @@ export class LightingStage extends BaseStage {
 
   protected override onDispose(): void {
     // Remove all lights
-    this.lights.forEach((light, id) => {
+    this.lights.forEach((light, _id) => {
       this.scene.remove(light);
     });
     this.lights.clear();
@@ -575,7 +575,7 @@ export class PostProcessingStage extends BaseStage {
     );
   }
 
-  public override render(deltaTime: number): void {
+  public override render(_deltaTime: number): void {
     if (!this.enabled) return;
 
     const startTime = performance.now();

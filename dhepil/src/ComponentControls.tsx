@@ -95,7 +95,6 @@ export default function ComponentControls({
     createRotationBehavior,
     createClockBehavior,
     createOrbitBehavior,
-    createAnimationBehavior,
     removeBehavior,
     getBehaviorState
   } = useAnimationBehaviors(logicEngine);
@@ -106,10 +105,7 @@ export default function ComponentControls({
     loadedScenes,
     loadGearScene,
     loadClockScene,
-    createSpriteLayer,
-    updateSpritePosition,
-    updateSpriteRotation,
-    updateSpriteScale
+    createSpriteLayer
   } = useAssetSprites(layerEngine, sceneManager);
 
   // Scene management handlers

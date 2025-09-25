@@ -71,7 +71,7 @@ export interface BatchResult {
 export class LayerEngine {
   private layers: Map<string, Layer> = new Map();
   private groups: Map<string, LayerGroup> = new Map();
-  private eventHandlers: Map<string, Function[]> = new Map();
+  private eventHandlers: Map<string, ((...args: any[]) => void)[]> = new Map();
 
   /**
    * Add a new layer to the engine
@@ -149,17 +149,19 @@ export class LayerEngine {
       case 'add':
         if (!op.config) throw new Error('Config required for add operation');
         return this.addLayer(op.config);
-      case 'update':
+      case 'update': {
         if (!op.id || !op.updates) throw new Error('ID and updates required for update operation');
         const updated = this.updateLayer(op.id, op.updates);
         if (!updated) throw new Error(`Layer ${op.id} not found`);
         return updated;
-      case 'remove':
+      }
+      case 'remove': {
         if (!op.id) throw new Error('ID required for remove operation');
         const success = this.removeLayer(op.id);
         if (!success) throw new Error(`Failed to remove layer ${op.id}`);
         // Return a dummy layer for type consistency
         return new LayerImpl({ id: op.id, type: 'mesh', position: { x: 0, y: 0, z: 0 }, properties: {} });
+      }
       default:
         throw new Error(`Unknown operation type: ${op.type}`);
     }
@@ -176,7 +178,7 @@ export class LayerEngine {
     });
   }
 
-  public on(event: string, handler: Function): void {
+  public on(event: string, handler: (...args: any[]) => void): void {
     if (!this.eventHandlers.has(event)) {
       this.eventHandlers.set(event, []);
     }

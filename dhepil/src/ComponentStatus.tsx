@@ -122,7 +122,6 @@ export default function ComponentStatus({
   layerEngine,
   updateInterval = 1000,
   showDetailed = false,
-  showGraphs = false,
   style,
   className
 }: ComponentStatusProps) {
@@ -222,13 +221,14 @@ export default function ComponentStatus({
     return num.toFixed(decimals);
   };
 
-  const formatMemory = (bytes: number) => {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-  };
+  // Helper function for memory formatting (currently unused)
+  // const formatMemory = (bytes: number) => {
+  //   if (bytes === 0) return '0 B';
+  //   const k = 1024;
+  //   const sizes = ['B', 'KB', 'MB', 'GB'];
+  //   const i = Math.floor(Math.log(bytes) / Math.log(k));
+  //   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  // };
 
   return (
     <div

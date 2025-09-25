@@ -155,10 +155,7 @@ const App: React.FC = () => {
     layerEngine,
     logicEngine,
     stagesEngine,
-    sceneManager,
-    start,
-    stop,
-    reset
+    sceneManager
   } = engineSystem;
 
   // Load default scene when engines are ready

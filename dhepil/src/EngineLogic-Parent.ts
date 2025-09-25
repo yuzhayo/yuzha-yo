@@ -129,7 +129,7 @@ export class LogicEngine {
   private behaviors: Map<string, Behavior> = new Map();
   private ticker: RafTicker;
   private config: LogicConfig;
-  private eventHandlers: Map<string, Function[]> = new Map();
+  private eventHandlers: Map<string, ((...args: any[]) => void)[]> = new Map();
 
   constructor(config: LogicConfig) {
     this.config = config;
@@ -175,7 +175,7 @@ export class LogicEngine {
    * Process all behaviors for frame
    */
   public update(deltaTime: number): void {
-    this.behaviors.forEach((behavior, id) => {
+    this.behaviors.forEach((behavior, _id) => {
       if (behavior.enabled) {
         behavior.update(deltaTime);
       }
@@ -278,20 +278,20 @@ export class LogicEngine {
     };
   }
 
-  public on(event: string, handler: Function): void {
+  public on(event: string, handler: (...args: any[]) => void): void {
     if (!this.eventHandlers.has(event)) {
       this.eventHandlers.set(event, []);
     }
     this.eventHandlers.get(event)!.push(handler);
   }
 
-  private emitEvent(event: string, data: any): void {
-    const handlers = this.eventHandlers.get(event) || [];
+  private emitEvent(_event: string, _data: any): void {
+    const handlers = this.eventHandlers.get(_event) || [];
     handlers.forEach(handler => {
       try {
-        handler(data);
+        handler(_data);
       } catch (error) {
-        console.error(`Error in event handler for ${event}:`, error);
+        console.error(`Error in event handler for ${_event}:`, error);
       }
     });
   }
