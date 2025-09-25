@@ -310,6 +310,8 @@ export function useAssetSprites(layerEngine: LayerEngine, sceneManager: LayerSce
         if (response.ok) {
           const registry = await response.json();
           setAssetRegistry(registry);
+          // Update the scene manager's asset registry
+          sceneManager.updateAssetRegistry(registry);
         }
       } catch (error) {
         console.error('Failed to load asset registry:', error);
@@ -317,7 +319,7 @@ export function useAssetSprites(layerEngine: LayerEngine, sceneManager: LayerSce
     };
 
     loadAssetRegistry();
-  }, []);
+  }, [sceneManager]);
 
   const loadGearScene = useCallback(() => {
     if (loadedScenes.includes('gear')) return;

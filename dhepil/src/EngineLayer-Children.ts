@@ -48,10 +48,20 @@ export class LayerSceneManager {
   }
 
   /**
+   * Update the asset registry with new entries
+   */
+  public updateAssetRegistry(newRegistry: AssetRegistry): void {
+    this.assetRegistry = { ...this.assetRegistry, ...newRegistry };
+  }
+
+  /**
    * Load scene from configuration with shared assets
    */
   public loadScene(sceneConfig: SceneConfig): Layer[] {
     const layers: Layer[] = [];
+
+    // Merge scene's imageRegistry with current registry
+    this.updateAssetRegistry(sceneConfig.imageRegistry);
 
     sceneConfig.layers.forEach(layerConfig => {
       const layer = this.createLayerFromConfig(layerConfig);

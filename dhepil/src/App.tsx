@@ -1,5 +1,5 @@
 // IMPORT SECTION
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import ComponentCanvas from './ComponentCanvas.js';
 import ComponentControls from './ComponentControls.js';
 import ComponentStatus from './ComponentStatus.js';
@@ -141,13 +141,16 @@ const App: React.FC = () => {
     // TODO: Show user-friendly error message
   }, []);
 
-  // Initialize main engine system for all components to share
-  const engineSystem = useEngineSystem(appState.engineConfig, {
+  // Memoize hookConfig to prevent re-initialization
+  const hookConfig = useMemo(() => ({
     autoStart: true,
     enablePerformanceMonitoring: true,
     onInitialized: handleEngineInitialized,
     onError: handleEngineError
-  });
+  }), [handleEngineInitialized, handleEngineError]);
+
+  // Initialize main engine system for all components to share
+  const engineSystem = useEngineSystem(appState.engineConfig, hookConfig);
 
   const {
     canvasRef,
@@ -159,16 +162,18 @@ const App: React.FC = () => {
   } = engineSystem;
 
   // Load default scene when engines are ready
+  const sceneLoadedRef = useRef(false);
   useEffect(() => {
-    if (engineState.isInitialized && sceneManager) {
+    if (engineState.isInitialized && sceneManager && !sceneLoadedRef.current) {
       try {
         const gearScene = sceneManager.createGearScene();
         sceneManager.loadScene(gearScene);
+        sceneLoadedRef.current = true;
       } catch (error) {
         console.warn('Failed to load default gear scene:', error);
       }
     }
-  }, [engineState.isInitialized, sceneManager]);
+  }, [engineState.isInitialized]); // Removed sceneManager from dependency array
 
   const handlePerformanceUpdate = useCallback((metrics: any) => {
     // Handle performance metrics if needed
