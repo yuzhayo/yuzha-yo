@@ -1,19 +1,28 @@
 [
   {
-    "layerId": "clock-bg",
+    "layerId": "stars-background",
     "renderer": "2D",
-    "order": 100,
-    "imageId": "CLOCKBG",
+    "order": 50,
+    "imageId": "STARBG",
     "scale": [1, 1],
     "position": [1024, 1024],
     "angle": null
   },
   {
-    "layerId": "stars-overlay",
+    "layerId": "clock-bg",
     "renderer": "2D",
-    "order": 200,
-    "imageId": "STARBG",
-    "scale": [1, 1],
+    "order": 100,
+    "imageId": "CLOCKBG",
+    "scale": [1.5, 1.5],
+    "position": [1024, 1024],
+    "angle": null
+  },
+  {
+    "layerId": "clock-glow",
+    "renderer": "2D",
+    "order": 150,
+    "imageId": "CLOCKGLOW",
+    "scale": [1.5, 1.5],
     "position": [1024, 1024],
     "angle": null
   }

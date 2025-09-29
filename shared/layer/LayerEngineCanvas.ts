@@ -45,11 +45,20 @@ export async function mountCanvasLayers(
       const image = await loadImage(resolveAssetUrl(assetPath));
       const { position, scale } = compute2DTransform(entry, STAGE_SIZE);
 
+      console.log(`[LayerEngineCanvas] Loaded layer "${entry.layerId}" (order: ${entry.order}):`, {
+        imageId: entry.imageId,
+        imageDimensions: `${image.width}x${image.height}`,
+        position,
+        scale,
+      });
+
       layers.push({ image, position, scale });
     } catch (error) {
       console.error(`[LayerEngineCanvas] Failed to load image for "${entry.imageId}"`, error);
     }
   }
+
+  console.log(`[LayerEngineCanvas] Total layers loaded: ${layers.length}`);
 
   const render = () => {
     ctx.clearRect(0, 0, STAGE_SIZE, STAGE_SIZE);
