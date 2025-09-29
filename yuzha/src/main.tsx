@@ -1,19 +1,15 @@
-// IMPORT SECTION
+import "@pixi/unsafe-eval";
 import React from "react";
-import ReactDOM from "react-dom/client";
-
+import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
-// BOOTSTRAP SECTION
-const rootElement = document.getElementById("root");
-
-if (!rootElement) {
-  throw new Error('Root element with id "root" was not found.');
+const rootEl = document.getElementById("root");
+if (!rootEl) {
+  throw new Error("Root element #root tidak ditemukan");
 }
 
-// RENDER SECTION
-ReactDOM.createRoot(rootElement).render(
+createRoot(rootEl).render(
   <React.StrictMode>
     <App />
   </React.StrictMode>,

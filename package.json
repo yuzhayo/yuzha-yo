@@ -77,6 +77,8 @@
     "cross-env": "^7.0.3"
   },
   "dependencies": {
-    "three": "^0.180.0"
+    "three": "^0.180.0",
+    "@pixi/unsafe-eval": "^7.4.0",
+    "pixi.js": "^7.4.0"
   }
 }
