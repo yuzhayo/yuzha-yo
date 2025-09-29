@@ -1,5 +1,4 @@
 import React from "react";
-import StagePixi from "@shared/stages/StagePixi";
 import StageThree from "@shared/stages/StageThree";
 import {
   MainScreenBtnPanel,
@@ -42,7 +41,6 @@ export default function MainScreen({ children }: MainScreenProps) {
   return (
     <div className="relative w-screen h-screen overflow-hidden">
       <StageThree />
-      <StagePixi />
       {children ?? <MainScreenOverlay />}
     </div>
   );

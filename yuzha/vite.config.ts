@@ -22,12 +22,6 @@ export default defineConfig({
       "@": resolveFromConfig("./src"),
       "@shared": resolveFromConfig("../shared"),
     },
-    // Avoid multiple Pixi instances when HMR/monorepo linking
-    dedupe: ["pixi.js"],
-  },
-  optimizeDeps: {
-    // Ensure Pixi is pre-bundled for faster dev startup
-    include: ["pixi.js"],
   },
   define: {
     __SHARED_ASSETS_PATH__: JSON.stringify(resolveFromConfig("../shared/asset")),
@@ -53,7 +47,6 @@ export default defineConfig({
       output: {
         manualChunks: {
           react: ["react", "react-dom"],
-          pixi: ["pixi.js"],
         },
       },
     },

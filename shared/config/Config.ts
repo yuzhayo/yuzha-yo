@@ -14,9 +14,9 @@ export type LayerConfigEntry = {
 
 export type LayerConfig = LayerConfigEntry[];
 
-const config: LayerConfig = (rawConfig as LayerConfigEntry[]).slice().sort(
-  (a, b) => (a.order ?? 0) - (b.order ?? 0),
-);
+const config: LayerConfig = (rawConfig as LayerConfigEntry[])
+  .slice()
+  .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
 export function loadLayerConfig(): LayerConfig {
   return config;
