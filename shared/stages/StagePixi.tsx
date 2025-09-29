@@ -1,4 +1,8 @@
 import React, { useEffect, useRef } from "react";
+import type { Application as PixiApplication } from "pixi.js";
+import { loadLayerConfig } from "../config/Config";
+import { is2DLayer } from "../layer/LayerCore";
+import { mountPixiLayers } from "../layer/LayerEnginePixi";
 
 const STAGE_SIZE = 2048;
 
@@ -22,6 +26,35 @@ export default function StagePixi() {
     const canvas = canvasRef.current;
     if (!container || !canvas) return;
 
+    let app: PixiApplication | null = null;
+    let cleanupLayers: (() => void) | undefined;
+    let cancelled = false;
+
+    const run = async () => {
+      const { Application } = await import("pixi.js");
+      const instance = await Application.init({
+        view: canvas,
+        width: STAGE_SIZE,
+        height: STAGE_SIZE,
+        backgroundAlpha: 0,
+        antialias: true,
+      });
+
+      if (cancelled) {
+        instance.destroy(true, { children: true, texture: true, baseTexture: true });
+        return;
+      }
+
+      app = instance;
+      const config = loadLayerConfig();
+      const twoDLayers = config.filter(is2DLayer);
+      cleanupLayers = await mountPixiLayers(instance, twoDLayers);
+    };
+
+    run().catch((error) => {
+      console.error("Failed to initialise Pixi stage", error);
+    });
+
     const applyTransform = () => {
       const { innerWidth, innerHeight } = window;
       const { scale, offsetX, offsetY } = computeCoverTransform(innerWidth, innerHeight);
@@ -39,7 +72,14 @@ export default function StagePixi() {
 
     applyTransform();
     window.addEventListener("resize", applyTransform);
-    return () => window.removeEventListener("resize", applyTransform);
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("resize", applyTransform);
+      cleanupLayers?.();
+      app?.destroy(true, { children: true, texture: true, baseTexture: true });
+      app = null;
+    };
   }, []);
 
   return (

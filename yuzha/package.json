@@ -12,7 +12,9 @@
     "preview": "vite preview",
     "preview:3000": "cross-env PORT=3000 vite preview",
     "preview:5000": "cross-env PORT=5000 vite preview",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint \"src/**/*.{ts,tsx}\" --max-warnings=0",
+    "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix"
   },
   "dependencies": {
     "cross-env": "^7.0.3",
