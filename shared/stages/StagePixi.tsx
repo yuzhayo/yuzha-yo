@@ -32,7 +32,7 @@ export default function StagePixi() {
 
     const run = async () => {
       const { Application } = await import("pixi.js");
-      const instance = await Application.init({
+      const instance = new Application({
         view: canvas,
         width: STAGE_SIZE,
         height: STAGE_SIZE,
@@ -53,6 +53,10 @@ export default function StagePixi() {
 
     run().catch((error) => {
       console.error("Failed to initialise Pixi stage", error);
+      if (error instanceof Error) {
+        console.error("Error message:", error.message);
+        console.error("Error stack:", error.stack);
+      }
     });
 
     const applyTransform = () => {
