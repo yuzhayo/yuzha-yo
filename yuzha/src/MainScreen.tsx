@@ -1,5 +1,5 @@
 import React from "react";
-import StageThree from "@shared/stages/StageThree";
+import StageCanvas from "@shared/stages/StageCanvas";
 import {
   MainScreenBtnPanel,
   useMainScreenBtnGesture,
@@ -14,7 +14,7 @@ export type MainScreenProps = {
 
 function MainScreenOverlay() {
   const gesture = useMainScreenBtnGesture();
-  const label = "Yuzha Module";
+  const label = "Canvas 2D Renderer";
 
   return (
     <>
@@ -40,7 +40,7 @@ function MainScreenOverlay() {
 export default function MainScreen({ children }: MainScreenProps) {
   return (
     <div className="relative w-screen h-screen overflow-hidden">
-      <StageThree />
+      <StageCanvas />
       {children ?? <MainScreenOverlay />}
     </div>
   );
