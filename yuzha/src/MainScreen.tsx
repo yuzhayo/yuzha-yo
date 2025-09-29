@@ -1,4 +1,5 @@
 import React from "react";
+import StagePixi from "./StagePixi";
 import {
   MainScreenBtnPanel,
   useMainScreenBtnGesture,
@@ -6,27 +7,18 @@ import {
   MainScreenUpdater,
   MainScreenApiTester,
 } from "./MainScreenUtils";
-import Stage2048System from "./Stage2048System";
 
-export type MainScreenProps = Record<string, never>;
+export type MainScreenProps = {
+  children?: React.ReactNode;
+};
 
-/**
- * Layar utama yuzha - simplified module display.
- * Simple display without complex logic system.
- */
-export default function MainScreen(_props: MainScreenProps) {
+function MainScreenOverlay() {
   const gesture = useMainScreenBtnGesture();
   const label = "Yuzha Module";
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-black">
-      {/* Stage2048 System - Exact launcher implementation */}
-      <Stage2048System />
-
-      {/* Invisible gesture target */}
+    <>
       <div {...gesture.bindTargetProps()} className="absolute inset-0 pointer-events-auto z-10" />
-
-      {/* Navigation dock */}
       <MainScreenBtnPanel
         open={gesture.open}
         onToggle={gesture.toggle}
@@ -34,11 +26,24 @@ export default function MainScreen(_props: MainScreenProps) {
         title="Modules"
         target="_self"
       />
-
-      {/* Status displays */}
       <MainScreenRendererBadge visible={gesture.open} label={label} />
       <MainScreenApiTester visible={gesture.open} />
       <MainScreenUpdater visible={gesture.open} />
+    </>
+  );
+}
+
+/**
+ * Container host untuk stage dan overlay lain.
+ * Bertugas menyediakan kanvas full-screen 2048x2048.
+ */
+export default function MainScreen({ children }: MainScreenProps) {
+  return (
+    <div className="relative w-screen h-screen overflow-hidden">
+      <StagePixi />
+      {children ?? <MainScreenOverlay />}
     </div>
   );
 }
+
+export { MainScreenOverlay };

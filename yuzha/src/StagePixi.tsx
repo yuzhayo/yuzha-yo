@@ -13,7 +13,7 @@ function computeCoverTransform(viewportWidth: number, viewportHeight: number) {
   };
 }
 
-export default function Stage2048System() {
+export default function StagePixi() {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
