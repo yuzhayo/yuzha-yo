@@ -13,7 +13,7 @@ body,
 
 /* App shell */
 .app-shell {
-  @apply w-screen h-screen overflow-hidden bg-black text-neutral-100 select-none;
+  @apply w-screen h-screen overflow-hidden text-neutral-100 select-none;
 }
 
 /* Simple toolbar (optional, used later) */

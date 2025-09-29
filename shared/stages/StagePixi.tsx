@@ -43,10 +43,8 @@ export default function StagePixi() {
   }, []);
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden">
-      <div ref={containerRef} className="absolute top-0 left-0">
-        <canvas ref={canvasRef} />
-      </div>
+    <div ref={containerRef} className="absolute inset-0 z-10" style={{ pointerEvents: "auto" }}>
+      <canvas ref={canvasRef} className="block" />
     </div>
   );
 }

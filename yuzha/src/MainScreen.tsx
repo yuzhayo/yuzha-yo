@@ -1,5 +1,6 @@
 import React from "react";
-import StagePixi from "./StagePixi";
+import StagePixi from "@shared/stages/StagePixi";
+import StageThree from "@shared/stages/StageThree";
 import {
   MainScreenBtnPanel,
   useMainScreenBtnGesture,
@@ -18,7 +19,7 @@ function MainScreenOverlay() {
 
   return (
     <>
-      <div {...gesture.bindTargetProps()} className="absolute inset-0 pointer-events-auto z-10" />
+      <div {...gesture.bindTargetProps()} className="absolute inset-0 pointer-events-auto z-20" />
       <MainScreenBtnPanel
         open={gesture.open}
         onToggle={gesture.toggle}
@@ -40,6 +41,7 @@ function MainScreenOverlay() {
 export default function MainScreen({ children }: MainScreenProps) {
   return (
     <div className="relative w-screen h-screen overflow-hidden">
+      <StageThree />
       <StagePixi />
       {children ?? <MainScreenOverlay />}
     </div>
