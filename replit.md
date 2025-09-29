@@ -83,3 +83,41 @@ Animations are built as composable "behaviors" that can be combined:
 - **Concurrently**: Parallel script execution for monorepo workflows
 
 The system is designed to be self-contained with no external APIs or database dependencies for core animation functionality, though it includes infrastructure for potential database integration via Drizzle ORM patterns.
+
+# Replit Environment Setup
+
+## Project Structure
+
+This is a **monorepo** with a single workspace:
+- **yuzha**: Main application workspace containing the template launcher
+
+The project was originally configured with a second workspace (dhepil) that was removed as it doesn't exist in the codebase.
+
+## Development Configuration
+
+- **Dev Server**: Runs on port 5000 (Replit standard)
+- **Vite Config**: Pre-configured for Replit with host 0.0.0.0 and allowedHosts enabled
+- **Workflow**: Single "Frontend" workflow running `npm run dev:5000`
+- **Build System**: Vite 7.x with TypeScript support
+
+## Deployment Setup
+
+- **Target**: Autoscale (stateless frontend)
+- **Build Command**: `npm run build` (builds yuzha workspace)
+- **Start Command**: `npm run start` (runs preview on port 5000)
+
+## Known Limitations
+
+- **WebGL Context**: Replit's headless browser environment has limited WebGL support. The Three.js renderer (StageThree) will show WebGL context errors, but this doesn't affect functionality as the application uses Pixi.js for primary rendering
+- **Pixi.js Version**: Using v7.4.0 with constructor-based initialization (`new Application()` instead of `Application.init()`)
+
+## Configuration Flow
+
+The layer rendering system follows this dependency chain:
+
+1. **Config JSON** (`shared/config/ConfigYuzha.json`) - Layer definitions
+2. **Config.ts** (`shared/config/Config.ts`) - Type validation and sorting
+3. **LayerCore** (`shared/layer/LayerCore.ts`) - Transform calculations
+4. **LayerEnginePixi** (`shared/layer/LayerEnginePixi.ts`) - Sprite creation with ImageRegistry
+5. **StagePixi** (`shared/stages/StagePixi.tsx`) - Canvas mounting
+6. **MainScreen** (`yuzha/src/MainScreen.tsx`) - Component integration
