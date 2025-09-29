@@ -414,15 +414,40 @@ export function MainScreenApiTester(props: MainScreenApiTesterProps) {
 
 export function MainScreenUpdater(props: MainScreenUpdaterProps) {
   if (!props.visible) return null;
+
+  const handleSyncAssets = React.useCallback(() => {
+    const command = "npm run sync:image-registry";
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(command)
+        .then(() => {
+          window.alert("Sync command copied. Run it in your terminal.");
+        })
+        .catch(() => {
+          window.prompt("Run this command to sync assets:", command);
+        });
+    } else {
+      window.prompt("Run this command to sync assets:", command);
+    }
+  }, []);
+
   return (
-    <button
-      type="button"
-      onClick={clearCachesAndReload}
-      className="fixed top-9 right-3 z-[9998] text-[10px] px-2 py-0.5 rounded bg-pink-600/80 hover:bg-pink-500/80 active:bg-pink-600 text-white shadow-sm border border-white/10"
-      aria-label="Force update and reload"
-    >
-      Update
-    </button>
+    <div className="fixed top-9 right-3 z-[9998] flex flex-col gap-1">
+      <button
+        type="button"
+        onClick={clearCachesAndReload}
+        className="text-[10px] px-2 py-0.5 rounded bg-pink-600/80 hover:bg-pink-500/80 active:bg-pink-600 text-white shadow-sm border border-white/10"
+        aria-label="Force update and reload"
+      >
+        Update
+      </button>
+      <button
+        type="button"
+        onClick={handleSyncAssets}
+        className="text-[10px] px-2 py-0.5 rounded bg-indigo-600/80 hover:bg-indigo-500/80 active:bg-indigo-600 text-white shadow-sm border border-white/10"
+      >
+        Sync Assets
+      </button>
+    </div>
   );
 }
 

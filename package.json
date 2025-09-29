@@ -47,7 +47,8 @@
     "dev:dhepil:l": "npm run typecheck:dhepil && npm run lint:dhepil && npm run format:fix",
     "dev:dhepil:fix": "npm run typecheck:dhepil && npm run lint:dhepil:fix && npm run format:fix",
     "dev:shared": "npm run typecheck:shared && npm run lint:shared && npm run test:shared",
-    "dev:shared:fix": "npm run typecheck:shared && npm run lint:shared:fix && npm run format:fix && npm run test:shared"
+    "dev:shared:fix": "npm run typecheck:shared && npm run lint:shared:fix && npm run format:fix && npm run test:shared",
+    "sync:image": "node -e \"import(\\\"./shared/config/ImageRegistry.mjs\\\").then(m => m.syncImageRegistry())\""
   },
   "devDependencies": {
     "@tailwindcss/aspect-ratio": "^0.4.2",
