@@ -15,7 +15,8 @@ This is a **monorepo** with a single workspace:
 - **React 18**: UI framework
 - **TypeScript**: Type safety and development experience
 - **Vite 7**: Build tool and development server
-- **Canvas 2D**: Rendering engine
+- **Three.js**: 3D/WebGL rendering engine (main renderer)
+- **Canvas 2D**: 2D rendering engine (AI agent fallback)
 - **Tailwind CSS**: Styling
 
 ## Development
@@ -107,7 +108,10 @@ The build script originally had `tsc` without `--noEmit`, which created `.js` an
 - ✅ Updated .gitignore to prevent compiled files from being committed
 - ✅ Created centralized stage2048 module for reusable 2048×2048 coordinate system
 - ✅ Refactored StageCanvas and StageThree to use stage2048 module (removed duplication)
-- ✅ Application running successfully with animated canvas layer system
+- ✅ Implemented dual-renderer system with auto-detection
+- ✅ Added RendererDetector for AI agent environment detection
+- ✅ Fixed LayerEngineThree.ts asset path resolution
+- ✅ Application running with Three.js for users, Canvas 2D fallback for AI agents
 
 ## Architecture
 
@@ -140,14 +144,40 @@ const { scale, offsetX, offsetY } = computeCoverTransform(width, height);
 - `StageCanvas.tsx` - Canvas 2D rendering
 - `StageThree.tsx` - Three.js rendering
 
+### Dual Renderer System
+The project uses an intelligent dual-renderer system with auto-detection:
+
+**For Normal Users (Production):**
+- Three.js WebGL renderer (`StageThree.tsx`)
+- High performance, hardware-accelerated
+- Full 3D capabilities
+
+**For AI Agents/Screenshot Tools:**
+- Canvas 2D renderer (`StageCanvas.tsx`)
+- Headless browser compatible
+- Reliable screenshot capture
+
+**Auto-Detection (`RendererDetector.ts`):**
+- Detects headless browsers (HeadlessChrome, PhantomJS)
+- Checks WebGL availability
+- Falls back to Canvas 2D when needed
+
+**Architecture Flow:**
+1. `MainScreen.tsx` → Detects environment
+2. Selects `StageThree` (WebGL) or `StageCanvas` (2D)
+3. Both use `LayerCore` for consistent transform calculations
+4. Visual output identical across renderers
+
 ### Layer System
 The project uses a config-based layer system:
 1. **Config JSON** (`shared/config/ConfigYuzha.json`) - Layer definitions
 2. **Config.ts** (`shared/config/Config.ts`) - Type validation and sorting
-3. **LayerCore** (`shared/layer/LayerCore.ts`) - Transform calculations
-4. **LayerEngineCanvas** (`shared/layer/LayerEngineCanvas.ts`) - Canvas 2D rendering
-5. **StageCanvas** (`shared/stages/StageCanvas.tsx`) - Canvas mounting
-6. **MainScreen** (`yuzha/src/MainScreen.tsx`) - Component integration
+3. **LayerCore** (`shared/layer/LayerCore.ts`) - Transform calculations (renderer-agnostic)
+4. **LayerEngineThree** (`shared/layer/LayerEngineThree.ts`) - Three.js WebGL rendering
+5. **LayerEngineCanvas** (`shared/layer/LayerEngineCanvas.ts`) - Canvas 2D rendering
+6. **StageThree** (`shared/stages/StageThree.tsx`) - Three.js mounting
+7. **StageCanvas** (`shared/stages/StageCanvas.tsx`) - Canvas mounting
+8. **MainScreen** (`yuzha/src/MainScreen.tsx`) - Auto-detection and renderer selection
 
 ### Animation Behaviors
 - **Spin**: Continuous rotation
