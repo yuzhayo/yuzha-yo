@@ -177,6 +177,41 @@ The project uses a config-based layer system:
 - **Fade**: Opacity oscillation
 - **Basic transforms**: Position, scale, rotation, tilt
 
+### UI Components
+
+#### DragScreen Component (`yuzha/src/DragScreen.tsx`)
+A fully-featured draggable and resizable popup modal component built with React and Tailwind CSS:
+
+**Features:**
+- **Draggable**: Click and drag the header to move the popup anywhere on screen
+- **Resizable**: 8 resize handles (all edges and corners) with minimum size constraints
+- **Animated Input**: Character-by-character label animation with staggered transitions
+- **Tailwind Styling**: Modern gradient design with smooth transitions
+- **Bounded Movement**: Keeps popup within viewport boundaries
+
+**Usage:**
+```tsx
+import DragScreen, { DragScreenExample } from './DragScreen';
+
+// Basic usage
+<DragScreen 
+  isOpen={isOpen} 
+  onClose={() => setIsOpen(false)}
+  title="Custom Title"
+>
+  {/* Your custom content */}
+</DragScreen>
+
+// Or use the example with default content
+<DragScreenExample />
+```
+
+**Props:**
+- `isOpen`: boolean - Controls visibility
+- `onClose`: () => void - Callback when close button is clicked
+- `title`: string (optional) - Header title, defaults to "Popup Window"
+- `children`: ReactNode (optional) - Custom content, defaults to animated input form
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
