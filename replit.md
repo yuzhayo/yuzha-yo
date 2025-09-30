@@ -70,6 +70,29 @@ npm run start
 - ✅ Favicon: Added to prevent 404 errors
 - ✅ Vite already configured for Replit proxy (host: 0.0.0.0, allowedHosts: true)
 
+## TypeScript Compilation Strategy
+
+**This project uses Vite for compilation, NOT `tsc` directly:**
+
+### ✅ Correct Commands:
+- **Development:** `npm run dev` - Vite compiles TypeScript in-memory
+- **Type Checking:** `npm run typecheck` - Uses `tsc --noEmit` (checks only, no files created)
+- **Production Build:** `npm run build` - Runs `tsc --noEmit` then `vite build`
+
+### ❌ Never Run:
+- `tsc` (without --noEmit) - Creates scattered .js/.d.ts files next to sources
+- `tsc --project .` - Same problem
+- Any direct TypeScript compilation to source folders
+
+### Why Vite, Not tsc?
+1. **In Development:** Vite compiles TypeScript on-the-fly using esbuild (faster)
+2. **In Production:** Vite bundles everything into `dist/` folder
+3. **Type Safety:** `tsc --noEmit` checks types without creating files
+4. **Prevention:** `.gitignore` blocks any accidentally created .js files in source folders
+
+### What Caused the Scattered JS Files?
+The build script originally had `tsc` without `--noEmit`, which created `.js` and `.d.ts` files alongside source files. These were then committed to Git. This has been fixed - the build now uses `tsc --noEmit && vite build`.
+
 ### Recent Changes (Sept 30, 2025)
 - ✅ Imported from GitHub and configured for Replit environment
 - ✅ Installed all npm dependencies for the monorepo
@@ -80,6 +103,7 @@ npm run start
 - ✅ Added favicon to yuzha/index.html to prevent 404 error
 - ✅ Cleaned up compiled JS/d.ts files from TypeScript sources
 - ✅ Converted all config files to TypeScript (.ts) for consistency
+- ✅ Fixed build script to use `tsc --noEmit` (prevents creating scattered .js files)
 - ✅ Updated .gitignore to prevent compiled files from being committed
 - ✅ Application running successfully with animated canvas layer system
 
