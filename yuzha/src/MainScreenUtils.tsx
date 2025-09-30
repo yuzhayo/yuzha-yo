@@ -27,7 +27,7 @@ export const STAGE_WIDTH = 2048;
 export const STAGE_HEIGHT = 2048;
 
 /** Stage center coordinates */
-export const STAGE_CENTER_X = STAGE_WIDTH / 2;  // 1024
+export const STAGE_CENTER_X = STAGE_WIDTH / 2; // 1024
 export const STAGE_CENTER_Y = STAGE_HEIGHT / 2; // 1024
 
 /** Stage quadrants for positioning reference */
@@ -35,7 +35,12 @@ export const STAGE_QUADRANTS = {
   TOP_LEFT: { x: 0, y: 0, width: STAGE_CENTER_X, height: STAGE_CENTER_Y },
   TOP_RIGHT: { x: STAGE_CENTER_X, y: 0, width: STAGE_CENTER_X, height: STAGE_CENTER_Y },
   BOTTOM_LEFT: { x: 0, y: STAGE_CENTER_Y, width: STAGE_CENTER_X, height: STAGE_CENTER_Y },
-  BOTTOM_RIGHT: { x: STAGE_CENTER_X, y: STAGE_CENTER_Y, width: STAGE_CENTER_X, height: STAGE_CENTER_Y },
+  BOTTOM_RIGHT: {
+    x: STAGE_CENTER_X,
+    y: STAGE_CENTER_Y,
+    width: STAGE_CENTER_X,
+    height: STAGE_CENTER_Y,
+  },
 } as const;
 
 /** Common positioning zones within 2048×2048 stage */
@@ -418,7 +423,8 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
   const handleSyncAssets = React.useCallback(() => {
     const command = "npm run sync:image-registry";
     if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(command)
+      navigator.clipboard
+        .writeText(command)
         .then(() => {
           window.alert("Sync command copied. Run it in your terminal.");
         })

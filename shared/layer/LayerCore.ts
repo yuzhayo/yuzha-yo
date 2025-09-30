@@ -15,7 +15,11 @@ export function compute2DTransform(entry: LayerConfigEntry, stageSize: number): 
   };
 }
 
-function normalizePair(value: number[] | undefined, fallbackX: number, fallbackY: number): [number, number] {
+function normalizePair(
+  value: number[] | undefined,
+  fallbackX: number,
+  fallbackY: number,
+): [number, number] {
   if (!Array.isArray(value) || value.length === 0) return [fallbackX, fallbackY];
   const [first, second] = value;
   const x = typeof first === "number" && Number.isFinite(first) ? first : fallbackX;

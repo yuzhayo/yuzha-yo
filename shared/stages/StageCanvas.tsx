@@ -1,8 +1,7 @@
 import React, { useEffect, useRef } from "react";
-import type { Application as PixiApplication } from "pixi.js";
 import { loadLayerConfig } from "../config/Config";
 import { is2DLayer } from "../layer/LayerCore";
-import { mountPixiLayers } from "../layer/LayerEnginePixi";
+import { mountCanvasLayers } from "../layer/LayerEngineCanvas";
 
 const STAGE_SIZE = 2048;
 
@@ -17,7 +16,7 @@ function computeCoverTransform(viewportWidth: number, viewportHeight: number) {
   };
 }
 
-export default function StagePixi() {
+export default function StageCanvas() {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -26,45 +25,31 @@ export default function StagePixi() {
     const canvas = canvasRef.current;
     if (!container || !canvas) return;
 
-    let app: PixiApplication | null = null;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      console.error("Failed to get 2D context");
+      return;
+    }
+
+    canvas.width = STAGE_SIZE;
+    canvas.height = STAGE_SIZE;
+
     let cleanupLayers: (() => void) | undefined;
-    let cancelled = false;
 
     const run = async () => {
-      const { Application } = await import("pixi.js");
-      const instance = new Application({
-        view: canvas,
-        width: STAGE_SIZE,
-        height: STAGE_SIZE,
-        backgroundAlpha: 0,
-        antialias: true,
-      });
-
-      if (cancelled) {
-        instance.destroy(true, { children: true, texture: true, baseTexture: true });
-        return;
-      }
-
-      app = instance;
       const config = loadLayerConfig();
       const twoDLayers = config.filter(is2DLayer);
-      cleanupLayers = await mountPixiLayers(instance, twoDLayers);
+      cleanupLayers = await mountCanvasLayers(ctx, twoDLayers);
     };
 
     run().catch((error) => {
-      console.error("Failed to initialise Pixi stage", error);
-      if (error instanceof Error) {
-        console.error("Error message:", error.message);
-        console.error("Error stack:", error.stack);
-      }
+      console.error("Failed to initialise Canvas stage", error);
     });
 
     const applyTransform = () => {
       const { innerWidth, innerHeight } = window;
       const { scale, offsetX, offsetY } = computeCoverTransform(innerWidth, innerHeight);
 
-      canvas.width = STAGE_SIZE;
-      canvas.height = STAGE_SIZE;
       canvas.style.width = `${STAGE_SIZE}px`;
       canvas.style.height = `${STAGE_SIZE}px`;
 
@@ -78,16 +63,13 @@ export default function StagePixi() {
     window.addEventListener("resize", applyTransform);
 
     return () => {
-      cancelled = true;
       window.removeEventListener("resize", applyTransform);
       cleanupLayers?.();
-      app?.destroy(true, { children: true, texture: true, baseTexture: true });
-      app = null;
     };
   }, []);
 
   return (
-    <div ref={containerRef} className="absolute inset-0 z-10" style={{ pointerEvents: "auto" }}>
+    <div ref={containerRef} className="absolute inset-0 z-0 pointer-events-none">
       <canvas ref={canvasRef} className="block" />
     </div>
   );

@@ -1,5 +1,8 @@
 import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
+import { loadLayerConfig } from "../config/Config";
+import { is2DLayer } from "../layer/LayerCore";
+import { mountThreeLayers } from "../layer/LayerEngineThree";
 
 const STAGE_SIZE = 2048;
 
@@ -40,28 +43,24 @@ export default function StageThree() {
 
     const scene = new THREE.Scene();
 
-    const geometry = new THREE.RingGeometry(300, 320, 64);
-    const material = new THREE.MeshBasicMaterial({ color: 0x4ad2ff, transparent: true, opacity: 0.6 });
-    const ring = new THREE.Mesh(geometry, material);
-    ring.position.set(0, 0, 0);
-
-    const planeGeometry = new THREE.PlaneGeometry(500, 500);
-    const planeMaterial = new THREE.MeshBasicMaterial({ color: 0x9b5ef7, transparent: true, opacity: 0.35 });
-    const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-    plane.position.set(-400, -400, 0);
-
-    scene.add(ring);
-    scene.add(plane);
-
+    let cleanupLayers: (() => void) | undefined;
     let animationId: number;
-    const animate = (time: number) => {
-      const t = time * 0.0005;
-      ring.rotation.z = t;
-      plane.rotation.z = -t * 1.5;
-      renderer.render(scene, camera);
-      animationId = requestAnimationFrame(animate);
+
+    const run = async () => {
+      const config = loadLayerConfig();
+      const twoDLayers = config.filter(is2DLayer);
+      cleanupLayers = await mountThreeLayers(scene, twoDLayers);
+
+      const animate = () => {
+        renderer.render(scene, camera);
+        animationId = requestAnimationFrame(animate);
+      };
+      animate();
     };
-    animate(0);
+
+    run().catch((error) => {
+      console.error("Failed to initialise Three.js stage", error);
+    });
 
     const applyTransform = () => {
       const { innerWidth, innerHeight } = window;
@@ -84,10 +83,7 @@ export default function StageThree() {
     return () => {
       window.removeEventListener("resize", applyTransform);
       cancelAnimationFrame(animationId);
-      geometry.dispose();
-      material.dispose();
-      planeGeometry.dispose();
-      planeMaterial.dispose();
+      cleanupLayers?.();
       renderer.dispose();
     };
   }, []);
