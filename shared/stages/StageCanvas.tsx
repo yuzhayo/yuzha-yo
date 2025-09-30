@@ -2,19 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { loadLayerConfig } from "../config/Config";
 import { is2DLayer } from "../layer/LayerCore";
 import { mountCanvasLayers } from "../layer/LayerEngineCanvas";
-
-const STAGE_SIZE = 2048;
-
-function computeCoverTransform(viewportWidth: number, viewportHeight: number) {
-  const scale = Math.max(viewportWidth / STAGE_SIZE, viewportHeight / STAGE_SIZE);
-  const width = STAGE_SIZE * scale;
-  const height = STAGE_SIZE * scale;
-  return {
-    scale,
-    offsetX: (viewportWidth - width) / 2,
-    offsetY: (viewportHeight - height) / 2,
-  };
-}
+import { STAGE_SIZE, createStageTransformer } from "../utils/stage2048";
 
 export default function StageCanvas() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -35,6 +23,7 @@ export default function StageCanvas() {
     canvas.height = STAGE_SIZE;
 
     let cleanupLayers: (() => void) | undefined;
+    let cleanupTransform: (() => void) | undefined;
 
     const run = async () => {
       const config = loadLayerConfig();
@@ -46,24 +35,10 @@ export default function StageCanvas() {
       console.error("Failed to initialise Canvas stage", error);
     });
 
-    const applyTransform = () => {
-      const { innerWidth, innerHeight } = window;
-      const { scale, offsetX, offsetY } = computeCoverTransform(innerWidth, innerHeight);
-
-      canvas.style.width = `${STAGE_SIZE}px`;
-      canvas.style.height = `${STAGE_SIZE}px`;
-
-      container.style.width = `${STAGE_SIZE}px`;
-      container.style.height = `${STAGE_SIZE}px`;
-      container.style.transformOrigin = "top left";
-      container.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
-    };
-
-    applyTransform();
-    window.addEventListener("resize", applyTransform);
+    cleanupTransform = createStageTransformer(canvas, container);
 
     return () => {
-      window.removeEventListener("resize", applyTransform);
+      cleanupTransform?.();
       cleanupLayers?.();
     };
   }, []);

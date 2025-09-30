@@ -105,9 +105,40 @@ The build script originally had `tsc` without `--noEmit`, which created `.js` an
 - ✅ Converted all config files to TypeScript (.ts) for consistency
 - ✅ Fixed build script to use `tsc --noEmit` (prevents creating scattered .js files)
 - ✅ Updated .gitignore to prevent compiled files from being committed
+- ✅ Created centralized stage2048 module for reusable 2048×2048 coordinate system
+- ✅ Refactored StageCanvas and StageThree to use stage2048 module (removed duplication)
 - ✅ Application running successfully with animated canvas layer system
 
 ## Architecture
+
+### Stage2048 System
+The project uses a fixed 2048×2048 coordinate system that scales consistently across all devices:
+
+**Core Module:** `shared/utils/stage2048.ts`
+
+**Key Features:**
+- Fixed 2048×2048 internal resolution (consistent coordinates)
+- CSS transform scaling for any screen size
+- "Cover" behavior (fills viewport, may overflow like CSS background-size: cover)
+- Responsive (auto-adjusts on resize)
+- Framework-agnostic (works with Canvas 2D, Three.js, or any renderer)
+
+**Main Functions:**
+```typescript
+import { STAGE_SIZE, createStageTransformer, computeCoverTransform } from '@shared/utils/stage2048';
+
+// Auto-setup with resize handling
+const cleanup = createStageTransformer(canvas, container);
+
+// Manual transform calculation
+const { scale, offsetX, offsetY } = computeCoverTransform(width, height);
+```
+
+**Usage Examples:** See `shared/utils/stage2048.example.ts`
+
+**Used By:**
+- `StageCanvas.tsx` - Canvas 2D rendering
+- `StageThree.tsx` - Three.js rendering
 
 ### Layer System
 The project uses a config-based layer system:
