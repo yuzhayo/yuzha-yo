@@ -10,6 +10,7 @@ import {
   MainScreenApiTester,
   MainScreenDragResizeDemo,
 } from "./MainScreenUtils";
+import { DragScreenButton } from "./DragScreenButton";
 
 export type MainScreenProps = {
   children?: React.ReactNode;
@@ -32,6 +33,9 @@ function MainScreenOverlay({ rendererLabel }: { rendererLabel: string }) {
       <MainScreenApiTester visible={gesture.open} />
       <MainScreenUpdater visible={gesture.open} />
       <MainScreenDragResizeDemo />
+      <div className="fixed top-32 right-3 z-[10001] pointer-events-auto">
+        <DragScreenButton />
+      </div>
     </>
   );
 }
