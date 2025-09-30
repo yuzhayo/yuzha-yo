@@ -128,12 +128,18 @@ export function DragResize({
   // DRAGGING LOGIC
   // ===================================================================
 
-  const handleDragStart = useCallback((e: React.MouseEvent) => {
+  const handleDragStart = useCallback((e: React.PointerEvent) => {
     // Don't drag if clicking close button
     if ((e.target as HTMLElement).closest(".close-btn")) return;
 
     if (!popupRef.current) return;
+    e.preventDefault();
+    e.stopPropagation();
+    
     const rect = popupRef.current.getBoundingClientRect();
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+
+    console.log('[DragResize] Drag start', { clientX: e.clientX, clientY: e.clientY });
 
     setDragState({
       isDragging: true,
@@ -143,11 +149,13 @@ export function DragResize({
   }, []);
 
   const handleDragMove = useCallback(
-    (e: MouseEvent) => {
+    (e: Event) => {
+      const pe = e as PointerEvent;
       if (!dragState.isDragging || !popupRef.current) return;
+      e.preventDefault();
 
-      const x = e.clientX - dragState.offsetX;
-      const y = e.clientY - dragState.offsetY;
+      const x = pe.clientX - dragState.offsetX;
+      const y = pe.clientY - dragState.offsetY;
 
       // Keep within viewport
       const maxX = window.innerWidth - position.width;
@@ -162,7 +170,8 @@ export function DragResize({
     [dragState, position.width, position.height]
   );
 
-  const handleDragEnd = useCallback(() => {
+  const handleDragEnd = useCallback((e: Event) => {
+    console.log('[DragResize] Drag end');
     setDragState((prev) => ({ ...prev, isDragging: false }));
   }, []);
 
@@ -170,14 +179,19 @@ export function DragResize({
   // RESIZING LOGIC
   // ===================================================================
 
-  const handleResizeStart = useCallback((e: React.MouseEvent, handle: string) => {
+  const handleResizeStart = useCallback((e: React.PointerEvent, handle: string) => {
     e.stopPropagation();
+    e.preventDefault();
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    console.log('[DragResize] Resize start', { handle });
     setResizeState({ isResizing: true, handle });
   }, []);
 
   const handleResizeMove = useCallback(
-    (e: MouseEvent) => {
+    (e: Event) => {
+      const pe = e as PointerEvent;
       if (!resizeState.isResizing || !popupRef.current) return;
+      e.preventDefault();
 
       const rect = popupRef.current.getBoundingClientRect();
       const handle = resizeState.handle;
@@ -189,24 +203,24 @@ export function DragResize({
 
       // East side (right edge)
       if (handle?.includes("e")) {
-        newWidth = Math.max(minWidth, e.clientX - rect.left);
+        newWidth = Math.max(minWidth, pe.clientX - rect.left);
       }
 
       // West side (left edge)
       if (handle?.includes("w")) {
-        const deltaX = e.clientX - rect.left;
+        const deltaX = pe.clientX - rect.left;
         newWidth = Math.max(minWidth, position.width - deltaX);
         newX = position.x + deltaX;
       }
 
       // South side (bottom edge)
       if (handle?.includes("s")) {
-        newHeight = Math.max(minHeight, e.clientY - rect.top);
+        newHeight = Math.max(minHeight, pe.clientY - rect.top);
       }
 
       // North side (top edge)
       if (handle?.includes("n")) {
-        const deltaY = e.clientY - rect.top;
+        const deltaY = pe.clientY - rect.top;
         newHeight = Math.max(minHeight, position.height - deltaY);
         newY = position.y + deltaY;
       }
@@ -216,32 +230,33 @@ export function DragResize({
     [resizeState, position, minWidth, minHeight]
   );
 
-  const handleResizeEnd = useCallback(() => {
+  const handleResizeEnd = useCallback((e: Event) => {
+    console.log('[DragResize] Resize end');
     setResizeState({ isResizing: false, handle: null });
   }, []);
 
   // ===================================================================
-  // MOUSE EVENT LISTENERS
+  // POINTER EVENT LISTENERS
   // ===================================================================
 
   useEffect(() => {
     if (dragState.isDragging) {
-      document.addEventListener("mousemove", handleDragMove);
-      document.addEventListener("mouseup", handleDragEnd);
+      document.addEventListener("pointermove", handleDragMove);
+      document.addEventListener("pointerup", handleDragEnd);
       return () => {
-        document.removeEventListener("mousemove", handleDragMove);
-        document.removeEventListener("mouseup", handleDragEnd);
+        document.removeEventListener("pointermove", handleDragMove);
+        document.removeEventListener("pointerup", handleDragEnd);
       };
     }
   }, [dragState.isDragging, handleDragMove, handleDragEnd]);
 
   useEffect(() => {
     if (resizeState.isResizing) {
-      document.addEventListener("mousemove", handleResizeMove);
-      document.addEventListener("mouseup", handleResizeEnd);
+      document.addEventListener("pointermove", handleResizeMove);
+      document.addEventListener("pointerup", handleResizeEnd);
       return () => {
-        document.removeEventListener("mousemove", handleResizeMove);
-        document.removeEventListener("mouseup", handleResizeEnd);
+        document.removeEventListener("pointermove", handleResizeMove);
+        document.removeEventListener("pointerup", handleResizeEnd);
       };
     }
   }, [resizeState.isResizing, handleResizeMove, handleResizeEnd]);
@@ -276,7 +291,7 @@ export function DragResize({
         {/* HEADER - Draggable */}
         <div
           className={`bg-gradient-to-r from-blue-400 to-cyan-400 text-white px-4 py-3 cursor-move select-none flex items-center justify-between ${headerClassName}`}
-          onMouseDown={handleDragStart}
+          onPointerDown={handleDragStart}
           style={{ cursor: dragState.isDragging ? "grabbing" : "move" }}
         >
           <div className="font-semibold text-sm">{title}</div>
@@ -300,46 +315,46 @@ export function DragResize({
           {children}
         </div>
 
-        {/* RESIZE HANDLES - 8 directions */}
+        {/* RESIZE HANDLES - 8 directions (larger touch targets) */}
         {/* North */}
         <div
-          className="absolute top-0 left-0 right-0 h-1 cursor-n-resize bg-transparent hover:bg-blue-400/30"
-          onMouseDown={(e) => handleResizeStart(e, "n")}
+          className="absolute top-0 left-0 right-0 h-2 cursor-n-resize bg-transparent hover:bg-blue-400/30 touch-none"
+          onPointerDown={(e) => handleResizeStart(e, "n")}
         />
         {/* South */}
         <div
-          className="absolute bottom-0 left-0 right-0 h-1 cursor-s-resize bg-transparent hover:bg-blue-400/30"
-          onMouseDown={(e) => handleResizeStart(e, "s")}
+          className="absolute bottom-0 left-0 right-0 h-2 cursor-s-resize bg-transparent hover:bg-blue-400/30 touch-none"
+          onPointerDown={(e) => handleResizeStart(e, "s")}
         />
         {/* East */}
         <div
-          className="absolute top-0 right-0 bottom-0 w-1 cursor-e-resize bg-transparent hover:bg-blue-400/30"
-          onMouseDown={(e) => handleResizeStart(e, "e")}
+          className="absolute top-0 right-0 bottom-0 w-2 cursor-e-resize bg-transparent hover:bg-blue-400/30 touch-none"
+          onPointerDown={(e) => handleResizeStart(e, "e")}
         />
         {/* West */}
         <div
-          className="absolute top-0 left-0 bottom-0 w-1 cursor-w-resize bg-transparent hover:bg-blue-400/30"
-          onMouseDown={(e) => handleResizeStart(e, "w")}
+          className="absolute top-0 left-0 bottom-0 w-2 cursor-w-resize bg-transparent hover:bg-blue-400/30 touch-none"
+          onPointerDown={(e) => handleResizeStart(e, "w")}
         />
         {/* Northeast */}
         <div
-          className="absolute top-0 right-0 w-3 h-3 cursor-ne-resize bg-transparent hover:bg-blue-400/50 rounded-bl"
-          onMouseDown={(e) => handleResizeStart(e, "ne")}
+          className="absolute top-0 right-0 w-6 h-6 cursor-ne-resize bg-transparent hover:bg-blue-400/50 rounded-bl touch-none"
+          onPointerDown={(e) => handleResizeStart(e, "ne")}
         />
         {/* Northwest */}
         <div
-          className="absolute top-0 left-0 w-3 h-3 cursor-nw-resize bg-transparent hover:bg-blue-400/50 rounded-br"
-          onMouseDown={(e) => handleResizeStart(e, "nw")}
+          className="absolute top-0 left-0 w-6 h-6 cursor-nw-resize bg-transparent hover:bg-blue-400/50 rounded-br touch-none"
+          onPointerDown={(e) => handleResizeStart(e, "nw")}
         />
         {/* Southeast */}
         <div
-          className="absolute bottom-0 right-0 w-3 h-3 cursor-se-resize bg-transparent hover:bg-blue-400/50 rounded-tl"
-          onMouseDown={(e) => handleResizeStart(e, "se")}
+          className="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize bg-transparent hover:bg-blue-400/50 rounded-tl touch-none"
+          onPointerDown={(e) => handleResizeStart(e, "se")}
         />
         {/* Southwest */}
         <div
-          className="absolute bottom-0 left-0 w-3 h-3 cursor-sw-resize bg-transparent hover:bg-blue-400/50 rounded-tr"
-          onMouseDown={(e) => handleResizeStart(e, "sw")}
+          className="absolute bottom-0 left-0 w-6 h-6 cursor-sw-resize bg-transparent hover:bg-blue-400/50 rounded-tr touch-none"
+          onPointerDown={(e) => handleResizeStart(e, "sw")}
         />
       </div>
     </div>
