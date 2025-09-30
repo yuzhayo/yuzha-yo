@@ -31,6 +31,7 @@ export async function mountThreeLayers(
     }
 
     const texture = await textureLoader.loadAsync(resolveAssetUrl(assetPath));
+    texture.colorSpace = THREE.SRGBColorSpace;
     const { position, scale } = compute2DTransform(entry, STAGE_SIZE);
 
     const planeGeometry = new THREE.PlaneGeometry(

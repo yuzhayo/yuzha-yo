@@ -18,6 +18,7 @@ export default function StageThree() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(STAGE_SIZE, STAGE_SIZE, false);
     renderer.setClearColor(0x000000, 0);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
 
     const camera = new THREE.OrthographicCamera(
       -STAGE_SIZE / 2,
