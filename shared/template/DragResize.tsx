@@ -1,42 +1,60 @@
 /**
- * DragResize.tsx - Standalone Draggable & Resizable Popup Component
+ * DragResize.tsx - Reusable Template for Button + Draggable/Resizable Screen
+ * 
+ * Architecture:
+ * - SECTION 1: Types & Interfaces (reusable)
+ * - SECTION 2: Button Component (image registry support)
+ * - SECTION 3: Screen Component (drag & resize with Portal)
+ * - SECTION 4: Composite Component (combines both)
  * 
  * Usage Example:
  * ```tsx
- * import { DragResize } from '@shared/template/DragResize';
+ * import { DragResizeButton } from '@shared/template/DragResize';
  * 
- * function MyScreen() {
- *   const [isOpen, setIsOpen] = useState(false);
- *   
- *   return (
- *     <>
- *       <button onClick={() => setIsOpen(true)}>Open Popup</button>
- *       <DragResize
- *         isOpen={isOpen}
- *         onClose={() => setIsOpen(false)}
- *         title="My Popup"
- *         initialWidth={400}
- *         initialHeight={300}
- *       >
- *         <div>Your custom content here</div>
- *       </DragResize>
- *     </>
- *   );
- * }
+ * // Use standalone button (recommended)
+ * <DragResizeButton 
+ *   bgNormal="/path/to/normal.png"
+ *   bgClick="/path/to/click.png"
+ *   width={120}
+ *   height={40}
+ * >
+ *   <div>Your screen content</div>
+ * </DragResizeButton>
+ * 
+ * // Or use default composite
+ * <DragResize title="My Window">
+ *   <div>Your screen content</div>
+ * </DragResize>
  * ```
  */
 
 import React, { useRef, useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 
-export type DragResizeProps = {
-  /** Control popup visibility */
-  isOpen: boolean;
-  /** Callback when popup should close */
-  onClose: () => void;
-  /** Popup title in header */
+// ===================================================================
+// SECTION 1: TYPES & INTERFACES (Reusable Template)
+// ===================================================================
+
+export type DragResizeButtonConfig = {
+  /** Background image for normal state (path to image registry) */
+  bgNormal?: string;
+  /** Background image for click/pressed state (path to image registry) */
+  bgClick?: string;
+  /** Button width in pixels */
+  width?: number;
+  /** Button height in pixels */
+  height?: number;
+  /** Button text label (if no bg image) */
+  label?: string;
+  /** Custom button class */
+  className?: string;
+  /** Click handler (optional, for custom behavior) */
+  onClick?: () => void;
+};
+
+export type DragResizeScreenConfig = {
+  /** Screen title in header */
   title?: string;
-  /** Custom content to display inside popup */
-  children?: React.ReactNode;
   /** Initial width in pixels */
   initialWidth?: number;
   /** Initial height in pixels */
@@ -45,12 +63,18 @@ export type DragResizeProps = {
   minWidth?: number;
   /** Minimum height in pixels */
   minHeight?: number;
-  /** Center popup on open */
+  /** Center screen on open */
   centerOnOpen?: boolean;
   /** Custom header class */
   headerClassName?: string;
   /** Custom content class */
   contentClassName?: string;
+  /** Screen content */
+  children?: React.ReactNode;
+  /** Is screen open */
+  isOpen?: boolean;
+  /** Close callback */
+  onClose?: () => void;
 };
 
 type DragState = {
@@ -71,19 +95,112 @@ type Position = {
   height: number;
 };
 
-export function DragResize({
-  isOpen,
-  onClose,
-  title = "Popup Window",
-  children,
-  initialWidth = 400,
-  initialHeight = 300,
-  minWidth = 200,
-  minHeight = 150,
-  centerOnOpen = true,
-  headerClassName = "",
-  contentClassName = "",
-}: DragResizeProps) {
+// ===================================================================
+// SECTION 2: BUTTON COMPONENT (Image Registry Support)
+// ===================================================================
+
+export function DragResizeButton(props: DragResizeButtonConfig & { children?: React.ReactNode }) {
+  const {
+    bgNormal,
+    bgClick,
+    width = 120,
+    height = 40,
+    label = "Open",
+    className = "",
+    children,
+  } = props;
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [isPressed, setIsPressed] = useState(false);
+
+  const handleClick = useCallback(() => {
+    if (props.onClick) {
+      props.onClick();
+    } else {
+      setIsOpen(true);
+    }
+  }, [props]);
+
+  const handleClose = useCallback(() => {
+    setIsOpen(false);
+  }, []);
+
+  // Determine button style
+  const hasImages = bgNormal || bgClick;
+  const currentBg = isPressed && bgClick ? bgClick : bgNormal;
+
+  const buttonStyle: React.CSSProperties = hasImages
+    ? {
+        width: `${width}px`,
+        height: `${height}px`,
+        backgroundImage: currentBg ? `url(${currentBg})` : undefined,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }
+    : {
+        width: `${width}px`,
+        height: `${height}px`,
+      };
+
+  const defaultClassName = hasImages
+    ? "border-0 bg-transparent cursor-pointer transition-transform active:scale-95"
+    : "text-[10px] px-2 py-0.5 rounded bg-emerald-600/80 hover:bg-emerald-500/80 active:bg-emerald-600 text-white shadow-sm border border-white/10 transition-all active:scale-95";
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={handleClick}
+        onPointerDown={() => setIsPressed(true)}
+        onPointerUp={() => setIsPressed(false)}
+        onPointerLeave={() => setIsPressed(false)}
+        className={className || defaultClassName}
+        style={buttonStyle}
+        aria-label={label}
+      >
+        {!hasImages && label}
+      </button>
+
+      {isOpen && (
+        <DragResizeScreen isOpen={isOpen} onClose={handleClose} title="Drag & Resize Demo">
+          {children || (
+            <div className="text-gray-800">
+              <h2 className="text-lg font-bold mb-3">Draggable & Resizable Window</h2>
+              <p className="mb-2">This is a demo of the DragResize template.</p>
+              <ul className="list-disc list-inside space-y-1 text-sm">
+                <li>Drag the header to move the window</li>
+                <li>Drag the edges to resize</li>
+                <li>Drag the corners for diagonal resize</li>
+                <li>Press ESC to close</li>
+              </ul>
+            </div>
+          )}
+        </DragResizeScreen>
+      )}
+    </>
+  );
+}
+
+// ===================================================================
+// SECTION 3: SCREEN COMPONENT (Drag & Resize with Portal)
+// ===================================================================
+
+export function DragResizeScreen(props: DragResizeScreenConfig) {
+  const {
+    title = "Window",
+    initialWidth = 500,
+    initialHeight = 400,
+    minWidth = 200,
+    minHeight = 150,
+    centerOnOpen = true,
+    headerClassName = "",
+    contentClassName = "",
+    children,
+    isOpen = true,
+    onClose,
+  } = props;
+
   const popupRef = useRef<HTMLDivElement>(null);
   const [dragState, setDragState] = useState<DragState>({
     isDragging: false,
@@ -118,28 +235,24 @@ export function DragResize({
   useEffect(() => {
     if (!isOpen) return;
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape" && onClose) onClose();
     };
     window.addEventListener("keydown", handleEsc);
     return () => window.removeEventListener("keydown", handleEsc);
   }, [isOpen, onClose]);
 
-  // ===================================================================
-  // DRAGGING LOGIC
-  // ===================================================================
-
+  // Dragging logic
   const handleDragStart = useCallback((e: React.PointerEvent) => {
-    // Don't drag if clicking close button
     if ((e.target as HTMLElement).closest(".close-btn")) return;
-
     if (!popupRef.current) return;
+
     e.preventDefault();
     e.stopPropagation();
-    
+
     const rect = popupRef.current.getBoundingClientRect();
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
 
-    console.log('[DragResize] Drag start', { clientX: e.clientX, clientY: e.clientY });
+    console.log("[DragResize] Drag start", { clientX: e.clientX, clientY: e.clientY });
 
     setDragState({
       isDragging: true,
@@ -157,7 +270,6 @@ export function DragResize({
       const x = pe.clientX - dragState.offsetX;
       const y = pe.clientY - dragState.offsetY;
 
-      // Keep within viewport
       const maxX = window.innerWidth - position.width;
       const maxY = window.innerHeight - position.height;
 
@@ -170,20 +282,17 @@ export function DragResize({
     [dragState, position.width, position.height]
   );
 
-  const handleDragEnd = useCallback((e: Event) => {
-    console.log('[DragResize] Drag end');
+  const handleDragEnd = useCallback(() => {
+    console.log("[DragResize] Drag end");
     setDragState((prev) => ({ ...prev, isDragging: false }));
   }, []);
 
-  // ===================================================================
-  // RESIZING LOGIC
-  // ===================================================================
-
+  // Resizing logic
   const handleResizeStart = useCallback((e: React.PointerEvent, handle: string) => {
     e.stopPropagation();
     e.preventDefault();
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    console.log('[DragResize] Resize start', { handle });
+    console.log("[DragResize] Resize start", { handle });
     setResizeState({ isResizing: true, handle });
   }, []);
 
@@ -201,24 +310,17 @@ export function DragResize({
       let newX = position.x;
       let newY = position.y;
 
-      // East side (right edge)
       if (handle?.includes("e")) {
         newWidth = Math.max(minWidth, pe.clientX - rect.left);
       }
-
-      // West side (left edge)
       if (handle?.includes("w")) {
         const deltaX = pe.clientX - rect.left;
         newWidth = Math.max(minWidth, position.width - deltaX);
         newX = position.x + deltaX;
       }
-
-      // South side (bottom edge)
       if (handle?.includes("s")) {
         newHeight = Math.max(minHeight, pe.clientY - rect.top);
       }
-
-      // North side (top edge)
       if (handle?.includes("n")) {
         const deltaY = pe.clientY - rect.top;
         newHeight = Math.max(minHeight, position.height - deltaY);
@@ -230,15 +332,12 @@ export function DragResize({
     [resizeState, position, minWidth, minHeight]
   );
 
-  const handleResizeEnd = useCallback((e: Event) => {
-    console.log('[DragResize] Resize end');
+  const handleResizeEnd = useCallback(() => {
+    console.log("[DragResize] Resize end");
     setResizeState({ isResizing: false, handle: null });
   }, []);
 
-  // ===================================================================
-  // POINTER EVENT LISTENERS
-  // ===================================================================
-
+  // Event listeners
   useEffect(() => {
     if (dragState.isDragging) {
       document.addEventListener("pointermove", handleDragMove);
@@ -261,7 +360,6 @@ export function DragResize({
     }
   }, [resizeState.isResizing, handleResizeMove, handleResizeEnd]);
 
-  // Prevent text selection during drag/resize
   useEffect(() => {
     const preventSelect = (e: Event) => {
       if (dragState.isDragging || resizeState.isResizing) {
@@ -274,8 +372,9 @@ export function DragResize({
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+  // Use Portal to render at document.body level (bypass all layer conflicts)
+  return createPortal(
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div
         ref={popupRef}
         className="absolute bg-white rounded-xl shadow-2xl overflow-hidden transition-shadow hover:shadow-3xl"
@@ -300,7 +399,7 @@ export function DragResize({
             className="close-btn w-4 h-4 rounded-full bg-red-500 hover:bg-red-600 active:bg-red-700 flex items-center justify-center text-white text-xs font-bold transition-all hover:scale-110"
             onClick={(e) => {
               e.stopPropagation();
-              onClose();
+              if (onClose) onClose();
             }}
             title="Close"
           >
@@ -309,56 +408,55 @@ export function DragResize({
         </div>
 
         {/* CONTENT */}
-        <div
-          className={`p-5 h-[calc(100%-48px)] bg-gray-100 overflow-auto ${contentClassName}`}
-        >
+        <div className={`p-5 h-[calc(100%-48px)] bg-gray-100 overflow-auto ${contentClassName}`}>
           {children}
         </div>
 
-        {/* RESIZE HANDLES - 8 directions (larger touch targets) */}
-        {/* North */}
+        {/* RESIZE HANDLES - 8 directions */}
         <div
           className="absolute top-0 left-0 right-0 h-2 cursor-n-resize bg-transparent hover:bg-blue-400/30 touch-none"
           onPointerDown={(e) => handleResizeStart(e, "n")}
         />
-        {/* South */}
         <div
           className="absolute bottom-0 left-0 right-0 h-2 cursor-s-resize bg-transparent hover:bg-blue-400/30 touch-none"
           onPointerDown={(e) => handleResizeStart(e, "s")}
         />
-        {/* East */}
         <div
           className="absolute top-0 right-0 bottom-0 w-2 cursor-e-resize bg-transparent hover:bg-blue-400/30 touch-none"
           onPointerDown={(e) => handleResizeStart(e, "e")}
         />
-        {/* West */}
         <div
           className="absolute top-0 left-0 bottom-0 w-2 cursor-w-resize bg-transparent hover:bg-blue-400/30 touch-none"
           onPointerDown={(e) => handleResizeStart(e, "w")}
         />
-        {/* Northeast */}
         <div
           className="absolute top-0 right-0 w-6 h-6 cursor-ne-resize bg-transparent hover:bg-blue-400/50 rounded-bl touch-none"
           onPointerDown={(e) => handleResizeStart(e, "ne")}
         />
-        {/* Northwest */}
         <div
           className="absolute top-0 left-0 w-6 h-6 cursor-nw-resize bg-transparent hover:bg-blue-400/50 rounded-br touch-none"
           onPointerDown={(e) => handleResizeStart(e, "nw")}
         />
-        {/* Southeast */}
         <div
           className="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize bg-transparent hover:bg-blue-400/50 rounded-tl touch-none"
           onPointerDown={(e) => handleResizeStart(e, "se")}
         />
-        {/* Southwest */}
         <div
           className="absolute bottom-0 left-0 w-6 h-6 cursor-sw-resize bg-transparent hover:bg-blue-400/50 rounded-tr touch-none"
           onPointerDown={(e) => handleResizeStart(e, "sw")}
         />
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
-export default DragResize;
+// ===================================================================
+// SECTION 4: COMPOSITE COMPONENT (Default Export)
+// ===================================================================
+
+export default function DragResize(
+  props: DragResizeButtonConfig & DragResizeScreenConfig & { children?: React.ReactNode }
+) {
+  return <DragResizeButton {...props}>{props.children}</DragResizeButton>;
+}
