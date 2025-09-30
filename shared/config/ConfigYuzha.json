@@ -13,7 +13,7 @@
     "renderer": "2D",
     "order": 100,
     "imageId": "CLOCKBG",
-    "scale": [1.5, 1.5],
+    "scale": [1, 1],
     "position": [1024, 1024],
     "angle": null
   },
@@ -22,7 +22,7 @@
     "renderer": "2D",
     "order": 150,
     "imageId": "CLOCKGLOW",
-    "scale": [1.5, 1.5],
+    "scale": [1, 1],
     "position": [1024, 1024],
     "angle": null
   }
