@@ -15,6 +15,10 @@ externalPort = 3000
 localPort = 5000
 externalPort = 80
 
+[[ports]]
+localPort = 41941
+externalPort = 3001
+
 [workflows]
 runButton = "Project"
 
@@ -25,10 +29,10 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Frontend"
+args = "Start Game"
 
 [[workflows.workflow]]
-name = "Frontend"
+name = "Start Game"
 author = "agent"
 
 [[workflows.workflow.tasks]]
