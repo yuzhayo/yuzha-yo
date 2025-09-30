@@ -28,19 +28,14 @@ class ErrorBoundary extends Component<Props, State> {
     };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Log error to console
+  override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('🚨 Application Error:', error);
     console.error('Error Info:', errorInfo);
     
-    // Update state with error details
     this.setState({
       error,
       errorInfo
     });
-
-    // You can also log to an error reporting service here
-    // Example: logErrorToService(error, errorInfo);
   }
 
   handleReset = () => {
@@ -51,7 +46,7 @@ class ErrorBoundary extends Component<Props, State> {
     });
   };
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       return (
         <div style={{
@@ -87,7 +82,7 @@ class ErrorBoundary extends Component<Props, State> {
               Please try reloading the page.
             </p>
             
-            {this.state.error && process.env.NODE_ENV === 'development' && (
+            {this.state.error && import.meta.env.DEV && (
               <details style={{
                 marginBottom: '24px',
                 textAlign: 'left',
