@@ -25,6 +25,23 @@ type ExpandedState = {
 const MIN_WIDTH = 400;
 const MIN_HEIGHT = 300;
 
+const SURFACE_BACKGROUND =
+  "linear-gradient(180deg, rgba(24, 28, 40, 0.96) 0%, rgba(12, 14, 22, 0.94) 100%)";
+const SURFACE_SHADOW = "0 24px 80px rgba(6, 8, 16, 0.65)";
+
+const BASE_PILL_BUTTON =
+  "inline-flex items-center justify-center rounded-full uppercase tracking-[0.18em] font-semibold transition-transform duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-0";
+const FROSTED_BUTTON =
+  `${BASE_PILL_BUTTON} px-4 py-1.5 text-[11px] text-sky-100 bg-white/10 border border-white/20 backdrop-blur-sm shadow-[0_6px_20px_rgba(0,0,0,0.45)] hover:-translate-y-0.5 hover:bg-white/16`;
+const FROSTED_BUTTON_SM =
+  `${BASE_PILL_BUTTON} px-3 py-1 text-[10px] text-sky-100 bg-white/8 border border-white/20 backdrop-blur-sm shadow-[0_4px_16px_rgba(0,0,0,0.4)] hover:-translate-y-0.5 hover:bg-white/12`;
+const PRIMARY_BUTTON =
+  `${BASE_PILL_BUTTON} px-4 py-1.5 text-[11px] text-white bg-gradient-to-br from-sky-400/90 via-indigo-500/85 to-purple-500/80 border border-white/20 shadow-[0_14px_34px_rgba(22,80,200,0.5)] hover:-translate-y-0.5 hover:shadow-[0_20px_46px_rgba(30,110,255,0.55)]`;
+const DANGER_BUTTON =
+  `${BASE_PILL_BUTTON} px-3 py-1.5 text-[11px] text-white bg-gradient-to-br from-rose-500/85 via-rose-600/80 to-amber-500/72 border border-rose-200/30 shadow-[0_14px_34px_rgba(140,30,70,0.5)] hover:-translate-y-0.5 hover:shadow-[0_20px_48px_rgba(170,45,90,0.55)]`;
+const DANGER_BUTTON_SM =
+  `${BASE_PILL_BUTTON} px-3 py-1 text-[10px] text-white bg-gradient-to-br from-rose-500/85 via-rose-600/80 to-amber-500/72 border border-rose-200/30 shadow-[0_10px_26px_rgba(150,40,80,0.4)] hover:-translate-y-0.5 hover:shadow-[0_16px_38px_rgba(180,55,95,0.48)]`;
+
 export function ConfigYuzhaPopup({ isOpen, onClose }: ConfigYuzhaPopupProps) {
   const [layers, setLayers] = useState<LayerConfigEntry[]>([]);
   const [imageRegistry, setImageRegistry] = useState<ImageRegistryEntry[]>([]);
@@ -212,85 +229,101 @@ export function ConfigYuzhaPopup({ isOpen, onClose }: ConfigYuzhaPopupProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center overflow-hidden">
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(1200px 800px at 50% 40%, rgba(79, 70, 229, 0.22), transparent), radial-gradient(900px 900px at 50% 70%, rgba(14, 165, 233, 0.18), transparent), #0b0f17",
+        }}
+      />
+      <div
+        className="absolute inset-0 bg-[#08090f]/70 backdrop-blur-[18px]"
+        onClick={onClose}
+      />
 
       <div
         ref={windowRef}
-        className="absolute bg-neutral-900/95 border border-neutral-700 rounded-lg shadow-2xl overflow-hidden"
+        className="absolute text-white/90 rounded-[28px] border border-white/10 ring-1 ring-white/10 backdrop-blur-xl overflow-hidden"
         style={{
           left: windowPos.x,
           top: windowPos.y,
           width: windowSize.width,
           height: windowSize.height,
+          background: SURFACE_BACKGROUND,
+          boxShadow: SURFACE_SHADOW,
         }}
       >
         <div
-          className="h-12 px-4 flex items-center justify-between cursor-move select-none"
+          className="relative h-14 px-6 flex items-center justify-between cursor-move select-none border-b border-white/10 bg-white/5 backdrop-blur-[10px]"
           style={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            background:
+              "linear-gradient(120deg, rgba(79, 70, 229, 0.24), rgba(14, 165, 233, 0.16))",
           }}
           onMouseDown={(e) => handleMouseDown(e, "drag")}
         >
-          <h2 className="text-white font-semibold text-lg">Config Editor</h2>
+          <div className="flex flex-col">
+            <span className="text-sm font-semibold tracking-[0.28em] uppercase text-white/80">
+              Layer Configurator
+            </span>
+            <span className="text-[11px] tracking-[0.2em] text-white/50 uppercase">
+              Swipe inspired control surface
+            </span>
+          </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={addLayer}
-              className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded transition-colors"
-            >
-              + Add Layer
+            <button type="button" onClick={addLayer} className={FROSTED_BUTTON}>
+              Add Layer
             </button>
-            <button
-              onClick={saveConfig}
-              className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition-colors"
-            >
+            <button type="button" onClick={saveConfig} className={PRIMARY_BUTTON}>
               Save
             </button>
-            <button
-              onClick={onClose}
-              className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-lg rounded transition-colors"
-            >
-              ×
+            <button type="button" onClick={onClose} className={DANGER_BUTTON}>
+              Close
             </button>
           </div>
         </div>
 
         {saveMessage && (
-          <div className="absolute top-14 left-1/2 transform -translate-x-1/2 px-4 py-2 bg-green-600 text-white rounded shadow-lg z-10">
+          <div className="absolute top-16 left-1/2 -translate-x-1/2 transform px-4 py-2 rounded-full border border-white/20 bg-gradient-to-r from-sky-500/80 via-indigo-500/80 to-purple-500/80 text-[11px] uppercase tracking-[0.2em] text-white shadow-[0_16px_36px_rgba(24,90,200,0.45)]">
             {saveMessage}
           </div>
         )}
 
-        <div
-          className="overflow-y-auto overflow-x-hidden p-4 bg-neutral-900 text-white custom-scrollbar"
-          style={{ height: "calc(100% - 48px)" }}
-        >
+        <div className="h-[calc(100%-56px)] overflow-y-auto overflow-x-hidden px-6 py-6 space-y-4 text-sm leading-relaxed custom-scrollbar">
           {layers.map((layer) => (
             <div
               key={layer.layerId}
-              className="mb-3 border border-neutral-700 rounded-lg overflow-hidden"
+              className="mb-2 rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-[6px] shadow-[0_18px_44px_rgba(6,10,26,0.5)] transition-all duration-200 hover:border-sky-400/40 hover:shadow-[0_26px_62px_rgba(12,24,44,0.6)]"
             >
               <div
-                className="flex items-center justify-between px-4 py-2 bg-neutral-800 hover:bg-neutral-750 cursor-pointer transition-colors"
+                className="flex items-center justify-between px-5 py-3 bg-white/5 hover:bg-white/8 transition-colors cursor-pointer"
                 onClick={() => toggleLayerExpanded(layer.layerId)}
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-xl">{expanded[layer.layerId]?.layer ? "▼" : "▶"}</span>
-                  <span className="font-medium">{layer.layerId}</span>
-                  <span className="px-2 py-0.5 bg-neutral-700 text-xs rounded">
-                    Order: {layer.order}
+                  <span className="text-white/60 text-base font-mono">
+                    {expanded[layer.layerId]?.layer ? "v" : ">"}
                   </span>
+                  <div className="flex flex-col">
+                    <span className="font-semibold tracking-[0.18em] uppercase text-white/80 text-xs">
+                      {layer.layerId}
+                    </span>
+                    <span className="text-[11px] tracking-[0.16em] text-white/50 uppercase">
+                      Order {layer.order}
+                    </span>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                   <button
+                    type="button"
                     onClick={() => copyLayer(layer.layerId)}
-                    className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors"
+                    className={FROSTED_BUTTON_SM}
                   >
                     Copy
                   </button>
                   <button
+                    type="button"
                     onClick={() => deleteLayer(layer.layerId)}
-                    className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded transition-colors"
+                    className={DANGER_BUTTON_SM}
                   >
                     Delete
                   </button>
@@ -298,81 +331,78 @@ export function ConfigYuzhaPopup({ isOpen, onClose }: ConfigYuzhaPopupProps) {
               </div>
 
               {expanded[layer.layerId]?.layer && (
-                <div className="p-4 bg-neutral-850">
-                  <div className="mb-2 border border-neutral-700 rounded overflow-hidden">
+                <div className="p-5 space-y-4 bg-[#0f1622]/80 border-t border-white/10">
+                  <div className="border border-white/10 rounded-2xl overflow-hidden">
                     <div
-                      className="px-3 py-2 bg-neutral-800 hover:bg-neutral-750 cursor-pointer transition-colors flex items-center gap-2"
+                      className="px-4 py-3 bg-white/5 hover:bg-white/10 transition-colors flex items-center gap-3 cursor-pointer"
                       onClick={() => toggleBasicExpanded(layer.layerId)}
                     >
-                      <span className="text-sm">{expanded[layer.layerId]?.basic ? "▼" : "▶"}</span>
-                      <span className="font-medium text-sm">BASIC</span>
+                      <span className="text-white/60 text-sm font-mono">
+                        {expanded[layer.layerId]?.basic ? "v" : ">"}
+                      </span>
+                      <span className="text-xs font-semibold tracking-[0.2em] uppercase text-white/70">
+                        Basic Settings
+                      </span>
                     </div>
 
                     {expanded[layer.layerId]?.basic && (
-                      <div className="p-3 space-y-3 bg-neutral-900">
-                        <div>
-                          <label className="block text-sm font-medium mb-1">Renderer</label>
-                          <select
-                            value={layer.renderer}
-                            onChange={(e) =>
-                              updateLayer(layer.layerId, {
-                                renderer: e.target.value as LayerRenderer,
-                              })
-                            }
-                            className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          >
-                            <option value="2D">2D</option>
-                            <option value="3D">3D</option>
-                          </select>
+                      <div className="p-5 space-y-4 bg-[#0b111b]/85">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-[11px] tracking-[0.16em] uppercase text-white/60 mb-1">
+                              Renderer
+                            </label>
+                            <select
+                              value={layer.renderer}
+                              onChange={(e) =>
+                                updateLayer(layer.layerId, {
+                                  renderer: e.target.value as LayerRenderer,
+                                })
+                              }
+                              className="w-full px-3 py-2 rounded-xl bg-[#121a28]/90 border border-white/10 text-white/90 focus:outline-none focus:ring-2 focus:ring-sky-400/70 focus:border-sky-300/60"
+                            >
+                              <option value="2D">2D</option>
+                              <option value="3D">3D</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-[11px] tracking-[0.16em] uppercase text-white/60 mb-1">
+                              Image ID
+                            </label>
+                            <select
+                              value={layer.imageId}
+                              onChange={(e) =>
+                                updateLayer(layer.layerId, {
+                                  imageId: e.target.value,
+                                })
+                              }
+                              className="w-full px-3 py-2 rounded-xl bg-[#121a28]/90 border border-white/10 text-white/90 focus:outline-none focus:ring-2 focus:ring-sky-400/70 focus:border-sky-300/60"
+                            >
+                              {imageRegistry.map((entry) => (
+                                <option key={entry.id} value={entry.id}>
+                                  {entry.id}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium mb-1">Image ID</label>
-                          <select
-                            value={layer.imageId}
-                            onChange={(e) =>
-                              updateLayer(layer.layerId, {
-                                imageId: e.target.value,
-                              })
-                            }
-                            className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          >
-                            {imageRegistry.map((img) => (
-                              <option key={img.id} value={img.id}>
-                                {img.id}
-                              </option>
-                            ))}
-                          </select>
-                          {layer.imageId && (
-                            <div className="mt-2 flex items-center gap-2">
-                              <img
-                                src={`/${imageRegistry.find((i) => i.id === layer.imageId)?.path || ""}`}
-                                alt={layer.imageId}
-                                className="w-8 h-8 object-contain bg-neutral-800 rounded border border-neutral-700"
-                              />
-                              <span className="text-xs text-neutral-400">Preview</span>
-                            </div>
-                          )}
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium mb-1">
-                            Scale: {((layer.scale?.[0] || 1) * 100).toFixed(0)}%
+                          <label className="block text-[11px] tracking-[0.16em] uppercase text-white/60 mb-2">
+                            Uniform Scale
                           </label>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-3">
                             <input
                               type="number"
-                              min="10"
-                              max="400"
-                              value={(layer.scale?.[0] || 1) * 100}
+                              step="0.01"
+                              value={layer.scale?.[0] ?? 1}
                               onChange={(e) => {
-                                const val = Math.max(10, Math.min(400, Number(e.target.value)));
-                                const scale = val / 100;
+                                const scale = Number(e.target.value) || 0;
                                 updateLayer(layer.layerId, {
                                   scale: [scale, scale],
                                 });
                               }}
-                              className="w-20 px-2 py-1 bg-neutral-800 border border-neutral-700 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="w-24 px-3 py-2 rounded-xl bg-[#121a28]/90 border border-white/10 text-white/90 focus:outline-none focus:ring-2 focus:ring-sky-400/70 focus:border-sky-300/60"
                             />
                             <input
                               type="range"
@@ -385,16 +415,20 @@ export function ConfigYuzhaPopup({ isOpen, onClose }: ConfigYuzhaPopupProps) {
                                   scale: [scale, scale],
                                 });
                               }}
-                              className="flex-1 accent-blue-600"
+                              className="flex-1 accent-sky-400"
                             />
                           </div>
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium mb-1">Position</label>
-                          <div className="flex items-center gap-2">
-                            <div className="flex-1">
-                              <label className="block text-xs text-neutral-400 mb-1">X</label>
+                          <label className="block text-[11px] tracking-[0.16em] uppercase text-white/60 mb-2">
+                            Position
+                          </label>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-[10px] tracking-[0.18em] uppercase text-white/40 mb-1">
+                                X
+                              </label>
                               <input
                                 type="number"
                                 value={layer.position?.[0] || 0}
@@ -403,11 +437,13 @@ export function ConfigYuzhaPopup({ isOpen, onClose }: ConfigYuzhaPopupProps) {
                                     position: [Number(e.target.value), layer.position?.[1] || 0],
                                   })
                                 }
-                                className="w-full px-2 py-1 bg-neutral-800 border border-neutral-700 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 rounded-xl bg-[#121a28]/90 border border-white/10 text-white/90 focus:outline-none focus:ring-2 focus:ring-sky-400/70 focus:border-sky-300/60"
                               />
                             </div>
-                            <div className="flex-1">
-                              <label className="block text-xs text-neutral-400 mb-1">Y</label>
+                            <div>
+                              <label className="block text-[10px] tracking-[0.18em] uppercase text-white/40 mb-1">
+                                Y
+                              </label>
                               <input
                                 type="number"
                                 value={layer.position?.[1] || 0}
@@ -416,21 +452,21 @@ export function ConfigYuzhaPopup({ isOpen, onClose }: ConfigYuzhaPopupProps) {
                                     position: [layer.position?.[0] || 0, Number(e.target.value)],
                                   })
                                 }
-                                className="w-full px-2 py-1 bg-neutral-800 border border-neutral-700 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 rounded-xl bg-[#121a28]/90 border border-white/10 text-white/90 focus:outline-none focus:ring-2 focus:ring-sky-400/70 focus:border-sky-300/60"
                               />
                             </div>
                           </div>
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium mb-1 text-neutral-500">
+                          <label className="block text-[11px] tracking-[0.16em] uppercase text-white/40 mb-1">
                             Angle (Reserved)
                           </label>
                           <input
                             type="text"
                             disabled
                             placeholder="Reserved for future use"
-                            className="w-full px-3 py-2 bg-neutral-800/50 border border-neutral-700 rounded text-neutral-500 cursor-not-allowed"
+                            className="w-full px-3 py-2 rounded-xl bg-[#121a28]/70 border border-white/10 text-white/40 cursor-not-allowed"
                           />
                         </div>
                       </div>
@@ -457,15 +493,15 @@ export function ConfigYuzhaPopup({ isOpen, onClose }: ConfigYuzhaPopupProps) {
           width: 8px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-          background: #262626;
+          background: rgba(20, 24, 36, 0.8);
           border-radius: 4px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #525252;
+          background: linear-gradient(180deg, rgba(79, 70, 229, 0.45), rgba(14, 165, 233, 0.45));
           border-radius: 4px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #737373;
+          background: linear-gradient(180deg, rgba(79, 70, 229, 0.6), rgba(14, 165, 233, 0.6));
         }
       `}</style>
     </div>
@@ -473,7 +509,7 @@ export function ConfigYuzhaPopup({ isOpen, onClose }: ConfigYuzhaPopupProps) {
 }
 
 function getResizeHandleClass(handle: ResizeHandle): string {
-  const baseClass = "bg-transparent hover:bg-blue-500/30 transition-colors";
+  const baseClass = "bg-transparent hover:bg-sky-400/40 transition-colors";
   switch (handle) {
     case "n":
       return `${baseClass} top-0 left-0 right-0 h-1`;
