@@ -21,8 +21,6 @@ export default defineConfig({
   root: resolveFromConfig("."),
   plugins: [
     react({
-      // Enable React Fast Refresh optimizations
-      fastRefresh: true,
       // Optimize JSX runtime
       jsxRuntime: "automatic",
       babel: {
