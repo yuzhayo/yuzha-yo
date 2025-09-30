@@ -56,11 +56,8 @@ export default defineConfig({
       "@": resolveFromConfig("./src"),
       "@shared": resolveFromConfig("../shared"),
     },
-<<<<<<< HEAD
     // Prevent multiple instances of three.js when using HMR or monorepo linking
     dedupe: ["react", "react-dom", "three"],
-=======
->>>>>>> f7946dacaa0df617b566b91a628ae5341d684937
   },
   define: {
     __SHARED_ASSETS_PATH__: JSON.stringify(resolveFromConfig("../shared/asset")),
@@ -95,7 +92,6 @@ export default defineConfig({
     // Rollup options for optimized builds
     rollupOptions: {
       output: {
-<<<<<<< HEAD
         // Improved manual chunking strategy
         manualChunks: (id) => {
           // Vendor chunks
@@ -115,10 +111,6 @@ export default defineConfig({
           if (id.includes("../shared")) {
             return "shared";
           }
-=======
-        manualChunks: {
-          react: ["react", "react-dom"],
->>>>>>> f7946dacaa0df617b566b91a628ae5341d684937
         },
         // Optimize chunk file names
         chunkFileNames: "assets/[name]-[hash].js",
@@ -160,10 +152,6 @@ export default defineConfig({
     target: "es2020",
   },
   assetsInclude: ["**/*.png", "**/*.jpg", "**/*.jpeg", "**/*.gif", "**/*.svg"],
-<<<<<<< HEAD
   // Enable caching
   cacheDir: "node_modules/.vite",
 });
-=======
-});
->>>>>>> f7946dacaa0df617b566b91a628ae5341d684937
