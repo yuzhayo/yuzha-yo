@@ -40,5 +40,15 @@ export function isAIAgentEnvironment(): boolean {
 }
 
 export function getRendererType(): 'three' | 'canvas' {
-  return isAIAgentEnvironment() ? 'canvas' : 'three';
+  const isAIAgent = isAIAgentEnvironment();
+  const rendererType = isAIAgent ? 'canvas' : 'three';
+  
+  console.log('[RendererDetector] Environment detection:', {
+    isAIAgent,
+    rendererType,
+    userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A',
+    hasWebGL: typeof window !== 'undefined' && 'WebGLRenderingContext' in window,
+  });
+  
+  return rendererType;
 }

@@ -9,10 +9,10 @@ const registry = registryData as Array<{ id: string; path: string }>;
 const pathMap = new Map(registry.map((entry) => [entry.id, entry.path]));
 
 function resolveAssetUrl(path: string): string {
-  if (!path.startsWith("shared/asset/")) {
+  if (!path.toLowerCase().startsWith("shared/asset/")) {
     throw new Error(`Unsupported asset path: ${path}`);
   }
-  const relative = path.replace(/^shared\//, "../");
+  const relative = path.replace(/^shared\/asset\//i, "../Asset/");
   return new URL(relative, import.meta.url).href;
 }
 
