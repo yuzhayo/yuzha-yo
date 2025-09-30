@@ -9,10 +9,12 @@ import viteCompression from "vite-plugin-compression";
 const resolveFromConfig = (relativePath: string) =>
   path.resolve(path.dirname(fileURLToPath(import.meta.url)), relativePath);
 
-// Auto-port detection: PORT env > Replit default 5000 > general default 3000
+// Environment auto-detection
+const isEmergent = !!process.env.KUBERNETES_SERVICE_HOST || !!process.env.EMERGENT_ENV;
 const isReplit = !!process.env.REPL_ID || !!process.env.REPL_SLUG || !!process.env.REPLIT_DB_URL;
 
-const DEFAULT_PORT = isReplit ? 5000 : 3000;
+// Port priority: PORT env > Platform default (Emergent: 3000, Replit: 5000) > General default: 3000
+const DEFAULT_PORT = isReplit ? 5000 : isEmergent ? 3000 : 3000;
 const PORT = Number(process.env.PORT) || DEFAULT_PORT;
 
 const isProd = process.env.NODE_ENV === "production";
@@ -73,6 +75,11 @@ export default defineConfig({
     hmr: {
       overlay: true,
     },
+    // Configure file watching for monorepo
+    watch: {
+      usePolling: false,
+      ignored: ["**/node_modules/**", "**/.git/**", "**/dist/**"],
+    },
   },
   preview: {
     host: "0.0.0.0",
@@ -80,7 +87,7 @@ export default defineConfig({
   },
   build: {
     target: "es2020",
-    sourcemap: false,
+    sourcemap: isProd ? false : "inline",
     // Enable minification with esbuild (faster than terser)
     minify: "esbuild",
     // CSS minification
