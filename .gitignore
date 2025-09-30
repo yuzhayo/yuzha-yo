@@ -13,6 +13,15 @@ dist/
 **/.vite/
 coverage/
 
+# TypeScript compiled files (keep .ts/.tsx sources only)
+# Exclude config files that are intentionally .js
+*.d.ts
+!yuzha/env.d.ts
+shared/**/*.js
+!shared/**/*.config.js
+yuzha/src/**/*.js
+!yuzha/src/**/*.config.js
+
 # Editor/OS files
 .DS_Store
 Thumbs.db
