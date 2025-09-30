@@ -17,6 +17,7 @@ import React from "react";
 import type { CSSProperties } from "react";
 import { ConfigYuzhaPopup } from "@shared/config/ConfigYuzhaPopup";
 import { DragResizeButton } from "@shared/template/DragResize";
+import DragResize2 from "@shared/template/DragResize2";
 
 // ===================================================================
 // 🔴 BLOCK 1: STAGE DIMENSIONS AND COORDINATE SYSTEM
@@ -558,7 +559,7 @@ export function MainScreenBtnGestureArea(props: MainScreenBtnGestureAreaProps) {
 
 export function MainScreenDragResizeDemo() {
   return (
-    <div className="fixed top-20 right-3 z-[10001] pointer-events-auto">
+    <div className="fixed top-20 right-3 z-[10001] pointer-events-auto flex flex-col gap-2">
       <DragResizeButton label="Drag Resize" width={80} height={24}>
         <div className="text-gray-800">
           <h2 className="text-lg font-bold mb-3">Draggable & Resizable Window</h2>
@@ -571,6 +572,24 @@ export function MainScreenDragResizeDemo() {
           </ul>
         </div>
       </DragResizeButton>
+      <DragResize2
+        buttonLabel="DragResize2"
+        title="New DragResize2 Window"
+        buttonClassName="text-[10px] px-2 py-0.5 rounded bg-emerald-600/80 hover:bg-emerald-500/80 active:bg-emerald-600 text-white shadow-sm border border-white/10 transition-all active:scale-95"
+      >
+        <div className="text-gray-800">
+          <h2 className="text-lg font-bold mb-3">DragResize2 Component</h2>
+          <p className="mb-2">This is the new simplified implementation based on our HTML analysis.</p>
+          <ul className="list-disc list-inside space-y-1 text-sm">
+            <li>✅ Button + Screen paired together</li>
+            <li>✅ Drag header to move</li>
+            <li>✅ Resize from 8 directions</li>
+            <li>✅ Clean TypeScript + Tailwind</li>
+            <li>✅ Portal rendering (no conflicts)</li>
+            <li>✅ ESC to close</li>
+          </ul>
+        </div>
+      </DragResize2>
     </div>
   );
 }
