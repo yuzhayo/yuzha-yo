@@ -16,7 +16,7 @@
 import React from "react";
 import type { CSSProperties } from "react";
 import { ConfigYuzhaPopup } from "@shared/config/ConfigYuzhaPopup";
-import { DragResize } from "@shared/template/DragResize";
+import { DragResizeButton } from "@shared/template/DragResize";
 
 // ===================================================================
 // 🔴 BLOCK 1: STAGE DIMENSIONS AND COORDINATE SYSTEM
@@ -421,7 +421,6 @@ export function MainScreenApiTester(props: MainScreenApiTesterProps) {
 
 export function MainScreenUpdater(props: MainScreenUpdaterProps) {
   const [isConfigOpen, setIsConfigOpen] = React.useState(false);
-  const [isDragResizeOpen, setIsDragResizeOpen] = React.useState(false);
 
   const handleSyncAssets = React.useCallback(() => {
     setIsConfigOpen(true);
@@ -431,15 +430,7 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
     setIsConfigOpen(false);
   }, []);
 
-  const handleOpenDragResize = React.useCallback(() => {
-    setIsDragResizeOpen(true);
-  }, []);
-
-  const handleCloseDragResize = React.useCallback(() => {
-    setIsDragResizeOpen(false);
-  }, []);
-
-  if (!props.visible && !isConfigOpen && !isDragResizeOpen) return null;
+  if (!props.visible && !isConfigOpen) return null;
 
   return (
     <>
@@ -460,34 +451,21 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
           >
             Sync Assets
           </button>
-          <button
-            type="button"
-            onClick={handleOpenDragResize}
-            className="text-[10px] px-2 py-0.5 rounded bg-emerald-600/80 hover:bg-emerald-500/80 active:bg-emerald-600 text-white shadow-sm border border-white/10"
-          >
-            Drag Resize
-          </button>
+          <DragResizeButton label="Drag Resize" width={80} height={24}>
+            <div className="text-gray-800">
+              <h2 className="text-lg font-bold mb-3">Draggable & Resizable Window</h2>
+              <p className="mb-2">This is a demo of the DragResize template.</p>
+              <ul className="list-disc list-inside space-y-1 text-sm">
+                <li>Drag the header to move the window</li>
+                <li>Drag the edges to resize</li>
+                <li>Drag the corners for diagonal resize</li>
+                <li>Press ESC to close</li>
+              </ul>
+            </div>
+          </DragResizeButton>
         </div>
       )}
       <ConfigYuzhaPopup isOpen={isConfigOpen} onClose={handleClosePopup} />
-      <DragResize
-        isOpen={isDragResizeOpen}
-        onClose={handleCloseDragResize}
-        title="Drag & Resize Demo"
-        initialWidth={500}
-        initialHeight={400}
-      >
-        <div className="text-gray-800">
-          <h2 className="text-lg font-bold mb-3">Draggable & Resizable Window</h2>
-          <p className="mb-2">This is a demo of the DragResize component.</p>
-          <ul className="list-disc list-inside space-y-1 text-sm">
-            <li>Drag the header to move the window</li>
-            <li>Drag the edges to resize</li>
-            <li>Drag the corners for diagonal resize</li>
-            <li>Press ESC to close</li>
-          </ul>
-        </div>
-      </DragResize>
     </>
   );
 }
