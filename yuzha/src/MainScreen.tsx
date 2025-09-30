@@ -8,6 +8,7 @@ import {
   MainScreenRendererBadge,
   MainScreenUpdater,
   MainScreenApiTester,
+  MainScreenDragResizeDemo,
 } from "./MainScreenUtils";
 
 export type MainScreenProps = {
@@ -30,6 +31,7 @@ function MainScreenOverlay({ rendererLabel }: { rendererLabel: string }) {
       <MainScreenRendererBadge visible={gesture.open} label={rendererLabel} />
       <MainScreenApiTester visible={gesture.open} />
       <MainScreenUpdater visible={gesture.open} />
+      <MainScreenDragResizeDemo />
     </>
   );
 }

@@ -451,18 +451,6 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
           >
             Sync Assets
           </button>
-          <DragResizeButton label="Drag Resize" width={80} height={24}>
-            <div className="text-gray-800">
-              <h2 className="text-lg font-bold mb-3">Draggable & Resizable Window</h2>
-              <p className="mb-2">This is a demo of the DragResize template.</p>
-              <ul className="list-disc list-inside space-y-1 text-sm">
-                <li>Drag the header to move the window</li>
-                <li>Drag the edges to resize</li>
-                <li>Drag the corners for diagonal resize</li>
-                <li>Press ESC to close</li>
-              </ul>
-            </div>
-          </DragResizeButton>
         </div>
       )}
       <ConfigYuzhaPopup isOpen={isConfigOpen} onClose={handleClosePopup} />
@@ -563,7 +551,32 @@ export function MainScreenBtnGestureArea(props: MainScreenBtnGestureAreaProps) {
 }
 
 // ===================================================================
-// 🟢 BLOCK 12: FACTORY EXPORTS AND CONVENIENCE FUNCTIONS
+// 🟡 BLOCK 12: STANDALONE DRAG RESIZE DEMO
+// ⚠️  AI AGENT: OPTIONAL BLOCK - Safe to delete (removes drag/resize demo)
+// Standalone DragResize button outside gesture system to avoid pointer conflicts
+// ===================================================================
+
+export function MainScreenDragResizeDemo() {
+  return (
+    <div className="fixed top-20 right-3 z-[10001] pointer-events-auto">
+      <DragResizeButton label="Drag Resize" width={80} height={24}>
+        <div className="text-gray-800">
+          <h2 className="text-lg font-bold mb-3">Draggable & Resizable Window</h2>
+          <p className="mb-2">This is a demo of the DragResize template.</p>
+          <ul className="list-disc list-inside space-y-1 text-sm">
+            <li>Drag the header to move the window</li>
+            <li>Drag the edges to resize</li>
+            <li>Drag the corners for diagonal resize</li>
+            <li>Press ESC to close</li>
+          </ul>
+        </div>
+      </DragResizeButton>
+    </div>
+  );
+}
+
+// ===================================================================
+// 🟢 BLOCK 13: FACTORY EXPORTS AND CONVENIENCE FUNCTIONS
 // ⚠️  AI AGENT: UTILITY BLOCK - Safe to delete (convenience only)
 // Main composite components and factory functions for external use
 // ===================================================================
