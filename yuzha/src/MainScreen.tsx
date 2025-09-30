@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useMemo } from "react";
 import StageCanvas from "@shared/stages/StageCanvas";
+import StageThree from "@shared/stages/StageThree";
+import { getRendererType } from "@shared/utils/RendererDetector";
 import {
   MainScreenBtnPanel,
   useMainScreenBtnGesture,
@@ -12,9 +14,8 @@ export type MainScreenProps = {
   children?: React.ReactNode;
 };
 
-function MainScreenOverlay() {
+function MainScreenOverlay({ rendererLabel }: { rendererLabel: string }) {
   const gesture = useMainScreenBtnGesture();
-  const label = "Canvas 2D Renderer";
 
   return (
     <>
@@ -26,7 +27,7 @@ function MainScreenOverlay() {
         title="Modules"
         target="_self"
       />
-      <MainScreenRendererBadge visible={gesture.open} label={label} />
+      <MainScreenRendererBadge visible={gesture.open} label={rendererLabel} />
       <MainScreenApiTester visible={gesture.open} />
       <MainScreenUpdater visible={gesture.open} />
     </>
@@ -36,12 +37,16 @@ function MainScreenOverlay() {
 /**
  * Container host untuk stage dan overlay lain.
  * Bertugas menyediakan kanvas full-screen 2048x2048.
+ * Auto-detect renderer: Three.js untuk user normal, Canvas 2D fallback untuk AI agent.
  */
 export default function MainScreen({ children }: MainScreenProps) {
+  const rendererType = useMemo(() => getRendererType(), []);
+  const rendererLabel = rendererType === 'three' ? 'Three.js WebGL Renderer' : 'Canvas 2D Renderer (AI Agent Fallback)';
+
   return (
     <div className="relative w-screen h-screen overflow-hidden">
-      <StageCanvas />
-      {children ?? <MainScreenOverlay />}
+      {rendererType === 'three' ? <StageThree /> : <StageCanvas />}
+      {children ?? <MainScreenOverlay rendererLabel={rendererLabel} />}
     </div>
   );
 }
