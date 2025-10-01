@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 
 export interface ConfigYuzhaPopupProps {
   isOpen: boolean;
@@ -48,7 +48,7 @@ function DefaultContent() {
 export function ConfigYuzhaPopup({
   isOpen,
   onClose,
-  title = "Popup Window",
+  title = "SETTING",
   children,
 }: ConfigYuzhaPopupProps) {
   // ---------------------------------------------------------------------------
@@ -247,6 +247,37 @@ export function ConfigYuzhaPopup({
   }, [isDragging, isResizing]);
 
   // ---------------------------------------------------------------------------
+  // Render helpers so header/body tweaks stay isolated
+  const renderHeader = () => (
+    <div
+      className="bg-gradient-to-r from-[#4facfe] to-[#00f2fe] text-white px-4 py-3 cursor-move select-none flex justify-between items-center active:cursor-grabbing"
+      onMouseDown={startDrag}
+    >
+      {/* Adjust title styling or add buttons here */}
+      <div className="font-semibold text-sm">{title}</div>
+      <div className="flex">
+        <button
+          className="w-4 h-4 rounded-full bg-[#ff5f57] text-white flex items-center justify-center text-[10px] font-bold transition-all duration-200 hover:scale-110 hover:opacity-80"
+          onClick={(event) => {
+            event.stopPropagation();
+            onClose();
+          }}
+          title="Close"
+        >
+          X
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderBody = () => (
+    <div className="p-5 bg-gray-200 flex flex-col items-center justify-center gap-5" style={{ height: "calc(100% - 48px)" }}>
+      {/* Drop in custom popup content below or replace DefaultContent */}
+      {children || <DefaultContent />}
+    </div>
+  );
+
+  // ---------------------------------------------------------------------------
   // Render
   if (!isOpen) return null;
 
@@ -273,28 +304,8 @@ export function ConfigYuzhaPopup({
         style={popupStyle}
         onMouseDown={(event) => event.stopPropagation()}
       >
-        <div
-          className="bg-gradient-to-r from-[#4facfe] to-[#00f2fe] text-white px-4 py-3 cursor-move select-none flex justify-between items-center active:cursor-grabbing"
-          onMouseDown={startDrag}
-        >
-          <div className="font-semibold text-sm">{title}</div>
-          <div className="flex">
-            <button
-              className="w-4 h-4 rounded-full bg-[#ff5f57] text-white flex items-center justify-center text-[10px] font-bold transition-all duration-200 hover:scale-110 hover:opacity-80"
-              onClick={(event) => {
-                event.stopPropagation();
-                onClose();
-              }}
-              title="Close"
-            >
-              Ã—
-            </button>
-          </div>
-        </div>
-
-        <div className="p-5 bg-gray-200 flex flex-col items-center justify-center gap-5" style={{ height: "calc(100% - 48px)" }}>
-          {children || <DefaultContent />}
-        </div>
+        {renderHeader()}
+        {renderBody()}
 
         <div className="absolute top-0 left-0 right-0 h-[5px] cursor-n-resize" onMouseDown={(event) => startResize(event, "n")} />
         <div className="absolute bottom-0 left-0 right-0 h-[5px] cursor-s-resize" onMouseDown={(event) => startResize(event, "s")} />
