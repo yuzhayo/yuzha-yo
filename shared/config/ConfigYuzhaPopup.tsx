@@ -232,8 +232,10 @@ export function ConfigYuzhaPopup({
   );
 
   const renderBody = () => (
-    <div className="p-5 bg-gray-200 flex flex-col items-center justify-center gap-5" style={{ height: "calc(100% - 48px)" }}>
-      {children ?? null}
+    <div className="relative bg-gray-100" style={{ height: "calc(100% - 48px)" }}>
+      <div className="accordion-scroll w-full h-full overflow-y-auto overflow-x-hidden scroll-smooth">
+        <div className="p-2">{children ?? null}</div>
+      </div>
     </div>
   );
 
