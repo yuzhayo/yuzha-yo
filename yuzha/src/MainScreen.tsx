@@ -8,7 +8,6 @@ import {
   MainScreenRendererBadge,
   MainScreenUpdater,
   MainScreenApiTester,
-  MainScreenDragResizeDemo,
 } from "./MainScreenUtils";
 import { DragScreenButton } from "./DragScreenButton";
 
@@ -32,7 +31,6 @@ function MainScreenOverlay({ rendererLabel }: { rendererLabel: string }) {
       <MainScreenRendererBadge visible={gesture.open} label={rendererLabel} />
       <MainScreenApiTester visible={gesture.open} />
       <MainScreenUpdater visible={gesture.open} />
-      <MainScreenDragResizeDemo />
       <div className="fixed top-32 right-3 z-[10001] pointer-events-auto">
         <DragScreenButton />
       </div>
