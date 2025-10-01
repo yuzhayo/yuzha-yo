@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+﻿import React, { useState, useRef, useEffect, useCallback } from "react";
 
 export interface ConfigYuzhaPopupProps {
   isOpen: boolean;
@@ -10,12 +10,49 @@ export interface ConfigYuzhaPopupProps {
 const MIN_WIDTH = 200;
 const MIN_HEIGHT = 150;
 
+// ---------------------------------------------------------------------------
+// Default fallback content rendered when no children are provided
+function DefaultContent() {
+  const [inputValue, setInputValue] = useState("");
+  const text = "Enter text";
+
+  return (
+    <>
+      <div className="relative">
+        <input
+          type="text"
+          className="text-base outline-none px-[15px] py-[10px] block w-[200px] border-2 border-gray-600 rounded-lg bg-transparent focus:border-[#3679ff] peer"
+          value={inputValue}
+          onChange={(event) => setInputValue(event.target.value)}
+          required
+        />
+        <label className="text-gray-600 text-base font-normal absolute pointer-events-none left-1/2 top-3 flex -translate-x-1/2">
+          {text.split("").map((char, index) => (
+            <span
+              key={index}
+              className="transition-all duration-200 ease-in-out peer-focus:-translate-y-5 peer-focus:text-sm peer-focus:text-[#3679ff] peer-focus:bg-gray-200 peer-valid:-translate-y-5 peer-valid:text-sm peer-valid:text-[#3679ff] peer-valid:bg-gray-200"
+              style={{ transitionDelay: `${index * 0.05}s` }}
+            >
+              {char === " " ? "\u00A0" : char}
+            </span>
+          ))}
+        </label>
+      </div>
+      <button className="bg-gradient-to-r from-[#3679ff] to-[#4f8fff] text-white border-none px-6 py-3 rounded-lg text-base font-semibold cursor-pointer transition-all duration-300 shadow-[0_4px_15px_rgba(54,121,255,0.3)] hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(54,121,255,0.4)]">
+        Submit
+      </button>
+    </>
+  );
+}
+
 export function ConfigYuzhaPopup({
   isOpen,
   onClose,
   title = "Popup Window",
   children,
 }: ConfigYuzhaPopupProps) {
+  // ---------------------------------------------------------------------------
+  // Popup runtime state and backing refs
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -36,6 +73,8 @@ export function ConfigYuzhaPopup({
     | null
   >(null);
 
+  // ---------------------------------------------------------------------------
+  // Sync state snapshots so drag/resize handlers always read latest values
   useEffect(() => {
     sizeRef.current = size;
   }, [size]);
@@ -48,8 +87,10 @@ export function ConfigYuzhaPopup({
     if (isOpen && isCentered) {
       setIsCentered(true);
     }
-  }, [isOpen]);
+  }, [isOpen, isCentered]);
 
+  // ---------------------------------------------------------------------------
+  // Pointer handlers for dragging and resizing
   const startDrag = useCallback((event: React.MouseEvent) => {
     if (!popupRef.current) return;
 
@@ -69,27 +110,24 @@ export function ConfigYuzhaPopup({
     };
   }, [isCentered]);
 
-  const drag = useCallback(
-    (event: MouseEvent) => {
-      if (!isDragging || !popupRef.current) return;
+  const drag = useCallback((event: MouseEvent) => {
+    if (!isDragging || !popupRef.current) return;
 
-      const currentSize = sizeRef.current;
-      const proposedX = event.clientX - dragOffsetRef.current.x;
-      const proposedY = event.clientY - dragOffsetRef.current.y;
+    const currentSize = sizeRef.current;
+    const proposedX = event.clientX - dragOffsetRef.current.x;
+    const proposedY = event.clientY - dragOffsetRef.current.y;
 
-      const maxX = Math.max(0, window.innerWidth - currentSize.width);
-      const maxY = Math.max(0, window.innerHeight - currentSize.height);
+    const maxX = Math.max(0, window.innerWidth - currentSize.width);
+    const maxY = Math.max(0, window.innerHeight - currentSize.height);
 
-      const next = {
-        x: Math.max(0, Math.min(proposedX, maxX)),
-        y: Math.max(0, Math.min(proposedY, maxY)),
-      };
+    const next = {
+      x: Math.max(0, Math.min(proposedX, maxX)),
+      y: Math.max(0, Math.min(proposedY, maxY)),
+    };
 
-      positionRef.current = next;
-      setPosition(next);
-    },
-    [isDragging],
-  );
+    positionRef.current = next;
+    setPosition(next);
+  }, [isDragging]);
 
   const stopDrag = useCallback(() => {
     setIsDragging(false);
@@ -115,57 +153,54 @@ export function ConfigYuzhaPopup({
     };
   }, [isCentered]);
 
-  const resize = useCallback(
-    (event: MouseEvent) => {
-      if (!isResizing) return;
+  const resize = useCallback((event: MouseEvent) => {
+    if (!isResizing) return;
 
-      const handle = resizeHandleRef.current;
-      const origin = resizeOriginRef.current;
-      if (!handle || !origin) return;
+    const handle = resizeHandleRef.current;
+    const origin = resizeOriginRef.current;
+    if (!handle || !origin) return;
 
-      const deltaX = event.clientX - origin.pointer.x;
-      const deltaY = event.clientY - origin.pointer.y;
+    const deltaX = event.clientX - origin.pointer.x;
+    const deltaY = event.clientY - origin.pointer.y;
 
-      let newWidth = origin.size.width;
-      let newHeight = origin.size.height;
-      let newX = origin.position.x;
-      let newY = origin.position.y;
+    let newWidth = origin.size.width;
+    let newHeight = origin.size.height;
+    let newX = origin.position.x;
+    let newY = origin.position.y;
 
-      if (handle.includes("e")) {
-        newWidth = Math.max(MIN_WIDTH, origin.size.width + deltaX);
-      }
+    if (handle.includes("e")) {
+      newWidth = Math.max(MIN_WIDTH, origin.size.width + deltaX);
+    }
 
-      if (handle.includes("w")) {
-        const candidateWidth = origin.size.width - deltaX;
-        newWidth = Math.max(MIN_WIDTH, candidateWidth);
-        newX = origin.position.x + (origin.size.width - newWidth);
-      }
+    if (handle.includes("w")) {
+      const candidateWidth = origin.size.width - deltaX;
+      newWidth = Math.max(MIN_WIDTH, candidateWidth);
+      newX = origin.position.x + (origin.size.width - newWidth);
+    }
 
-      if (handle.includes("s")) {
-        newHeight = Math.max(MIN_HEIGHT, origin.size.height + deltaY);
-      }
+    if (handle.includes("s")) {
+      newHeight = Math.max(MIN_HEIGHT, origin.size.height + deltaY);
+    }
 
-      if (handle.includes("n")) {
-        const candidateHeight = origin.size.height - deltaY;
-        newHeight = Math.max(MIN_HEIGHT, candidateHeight);
-        newY = origin.position.y + (origin.size.height - newHeight);
-      }
+    if (handle.includes("n")) {
+      const candidateHeight = origin.size.height - deltaY;
+      newHeight = Math.max(MIN_HEIGHT, candidateHeight);
+      newY = origin.position.y + (origin.size.height - newHeight);
+    }
 
-      const maxX = Math.max(0, window.innerWidth - newWidth);
-      const maxY = Math.max(0, window.innerHeight - newHeight);
-      newX = Math.max(0, Math.min(newX, maxX));
-      newY = Math.max(0, Math.min(newY, maxY));
+    const maxX = Math.max(0, window.innerWidth - newWidth);
+    const maxY = Math.max(0, window.innerHeight - newHeight);
+    newX = Math.max(0, Math.min(newX, maxX));
+    newY = Math.max(0, Math.min(newY, maxY));
 
-      const nextSize = { width: newWidth, height: newHeight };
-      const nextPosition = { x: newX, y: newY };
+    const nextSize = { width: newWidth, height: newHeight };
+    const nextPosition = { x: newX, y: newY };
 
-      sizeRef.current = nextSize;
-      positionRef.current = nextPosition;
-      setSize(nextSize);
-      setPosition(nextPosition);
-    },
-    [isResizing],
-  );
+    sizeRef.current = nextSize;
+    positionRef.current = nextPosition;
+    setSize(nextSize);
+    setPosition(nextPosition);
+  }, [isResizing]);
 
   const stopResize = useCallback(() => {
     setIsResizing(false);
@@ -211,6 +246,8 @@ export function ConfigYuzhaPopup({
     return () => document.removeEventListener("selectstart", preventSelect);
   }, [isDragging, isResizing]);
 
+  // ---------------------------------------------------------------------------
+  // Render
   if (!isOpen) return null;
 
   const popupStyle = isCentered
@@ -269,38 +306,5 @@ export function ConfigYuzhaPopup({
         <div className="absolute bottom-0 left-0 w-[10px] h-[10px] cursor-sw-resize" onMouseDown={(event) => startResize(event, "sw")} />
       </div>
     </div>
-  );
-}
-
-function DefaultContent() {
-  const [inputValue, setInputValue] = useState("");
-  const text = "Enter text";
-
-  return (
-    <>
-      <div className="relative">
-        <input
-          type="text"
-          className="text-base outline-none px-[15px] py-[10px] block w-[200px] border-2 border-gray-600 rounded-lg bg-transparent focus:border-[#3679ff] peer"
-          value={inputValue}
-          onChange={(event) => setInputValue(event.target.value)}
-          required
-        />
-        <label className="text-gray-600 text-base font-normal absolute pointer-events-none left-1/2 top-3 flex -translate-x-1/2">
-          {text.split("").map((char, index) => (
-            <span
-              key={index}
-              className="transition-all duration-200 ease-in-out peer-focus:-translate-y-5 peer-focus:text-sm peer-focus:text-[#3679ff] peer-focus:bg-gray-200 peer-valid:-translate-y-5 peer-valid:text-sm peer-valid:text-[#3679ff] peer-valid:bg-gray-200"
-              style={{ transitionDelay: `${index * 0.05}s` }}
-            >
-              {char === " " ? "\u00A0" : char}
-            </span>
-          ))}
-        </label>
-      </div>
-      <button className="bg-gradient-to-r from-[#3679ff] to-[#4f8fff] text-white border-none px-6 py-3 rounded-lg text-base font-semibold cursor-pointer transition-all duration-300 shadow-[0_4px_15px_rgba(54,121,255,0.3)] hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(54,121,255,0.4)]">
-        Submit
-      </button>
-    </>
   );
 }
