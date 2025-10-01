@@ -17,15 +17,15 @@ interface NestedAccordionProps {
 const getLevelStyles = (level: number) => {
   const styles = {
     1: {
-      trigger: "bg-blue-500 text-white font-semibold text-base px-4 py-3 border-l-4 border-blue-700",
+      trigger: "bg-blue-600 text-white font-bold text-lg px-4 py-4 border-l-4 border-blue-800",
       content: "bg-blue-50",
     },
     2: {
-      trigger: "bg-blue-300 text-gray-900 font-medium text-sm px-6 py-2.5 border-l-3 border-blue-500 ml-2",
-      content: "bg-blue-25",
+      trigger: "bg-blue-400 text-gray-900 font-semibold text-base px-6 py-3 border-l-2 border-blue-600 ml-2",
+      content: "bg-blue-100",
     },
     3: {
-      trigger: "bg-gray-100 text-gray-700 font-normal text-xs px-8 py-2 border-l-2 border-gray-400 ml-4",
+      trigger: "bg-gray-300 text-gray-900 font-medium text-sm px-8 py-2 border-l-2 border-gray-600 ml-4",
       content: "bg-white",
     },
   };
@@ -35,10 +35,14 @@ const getLevelStyles = (level: number) => {
 export function NestedAccordion({ data, level = 1 }: NestedAccordionProps) {
   const styles = getLevelStyles(level);
 
+  if (!data || data.length === 0) {
+    return <div className="p-4 text-red-500 font-bold">No data to display</div>;
+  }
+
   return (
-    <Accordion.Root type="multiple" className="w-full space-y-1">
+    <Accordion.Root type="multiple" className="w-full space-y-2">
       {data.map((item) => (
-        <Accordion.Item key={item.id} value={item.id} className="overflow-hidden">
+        <Accordion.Item key={item.id} value={item.id} className="border-2 border-gray-400 rounded-md overflow-hidden">
           <Accordion.Trigger
             className={`
               ${styles.trigger}
@@ -47,14 +51,26 @@ export function NestedAccordion({ data, level = 1 }: NestedAccordionProps) {
               hover:opacity-90
               transition-all duration-200
               group
+              cursor-pointer
             `}
+            style={{
+              minHeight: '48px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}
           >
-            <span>{item.label}</span>
+            <span className="text-left flex-1" style={{ fontSize: '16px', fontWeight: 600 }}>
+              {item.label}
+            </span>
             <ChevronDownIcon
               className="
                 transition-transform duration-300 ease-in-out
                 group-data-[state=open]:rotate-180
+                flex-shrink-0
+                ml-2
               "
+              style={{ width: '20px', height: '20px' }}
               aria-hidden
             />
           </Accordion.Trigger>
@@ -95,50 +111,88 @@ export function NestedAccordion({ data, level = 1 }: NestedAccordionProps) {
 export const sampleAccordionData: AccordionItem[] = [
   {
     id: "parent-1",
-    label: "PARENT 1",
+    label: "🎯 PARENT 1 - Configuration Settings",
     level: 1,
     children: [
       {
         id: "parent-1-sub-1",
-        label: "Sub Parent 1",
+        label: "⚙️ Sub Parent 1 - General Settings",
         level: 2,
         children: [
-          { id: "child-1", label: "Child 1", level: 3 },
-          { id: "child-2", label: "Child 2", level: 3 },
+          { id: "child-1", label: "📝 Child 1 - Theme Configuration", level: 3 },
+          { id: "child-2", label: "🌐 Child 2 - Language Settings", level: 3 },
+          { id: "child-1-3", label: "🔔 Child 3 - Notification Preferences", level: 3 },
         ],
       },
       {
         id: "parent-1-sub-2",
-        label: "Sub Parent 2",
+        label: "🔐 Sub Parent 2 - Security Settings",
         level: 2,
         children: [
-          { id: "child-3", label: "Child 3", level: 3 },
-          { id: "child-4", label: "Child 4", level: 3 },
+          { id: "child-3", label: "🔑 Child 3 - Password Policy", level: 3 },
+          { id: "child-4", label: "🛡️ Child 4 - Two-Factor Auth", level: 3 },
+          { id: "child-4-3", label: "📱 Child 5 - Device Management", level: 3 },
+        ],
+      },
+      {
+        id: "parent-1-sub-3",
+        label: "👤 Sub Parent 3 - User Preferences",
+        level: 2,
+        children: [
+          { id: "child-5-1", label: "🎨 Child 6 - Display Options", level: 3 },
+          { id: "child-5-2", label: "📊 Child 7 - Dashboard Layout", level: 3 },
         ],
       },
     ],
   },
   {
     id: "parent-2",
-    label: "PARENT 2",
+    label: "📦 PARENT 2 - Data Management",
     level: 1,
     children: [
       {
         id: "parent-2-sub-1",
-        label: "Sub Parent 1",
+        label: "💾 Sub Parent 1 - Storage Options",
         level: 2,
         children: [
-          { id: "child-5", label: "Child 5", level: 3 },
-          { id: "child-6", label: "Child 6", level: 3 },
+          { id: "child-5", label: "☁️ Child 5 - Cloud Storage", level: 3 },
+          { id: "child-6", label: "💽 Child 6 - Local Storage", level: 3 },
+          { id: "child-6-3", label: "🗄️ Child 7 - Backup Settings", level: 3 },
         ],
       },
       {
         id: "parent-2-sub-2",
-        label: "Sub Parent 2",
+        label: "📊 Sub Parent 2 - Data Export",
         level: 2,
         children: [
-          { id: "child-7", label: "Child 7", level: 3 },
-          { id: "child-8", label: "Child 8", level: 3 },
+          { id: "child-7", label: "📄 Child 7 - CSV Export", level: 3 },
+          { id: "child-8", label: "📋 Child 8 - JSON Export", level: 3 },
+          { id: "child-8-3", label: "📊 Child 9 - Excel Export", level: 3 },
+        ],
+      },
+    ],
+  },
+  {
+    id: "parent-3",
+    label: "🚀 PARENT 3 - Advanced Features",
+    level: 1,
+    children: [
+      {
+        id: "parent-3-sub-1",
+        label: "🔧 Sub Parent 1 - API Configuration",
+        level: 2,
+        children: [
+          { id: "child-9", label: "🔗 Child 10 - API Keys", level: 3 },
+          { id: "child-10", label: "⚡ Child 11 - Rate Limiting", level: 3 },
+        ],
+      },
+      {
+        id: "parent-3-sub-2",
+        label: "🎨 Sub Parent 2 - Customization",
+        level: 2,
+        children: [
+          { id: "child-11", label: "🖼️ Child 12 - Custom Branding", level: 3 },
+          { id: "child-12", label: "🎭 Child 13 - Widget Settings", level: 3 },
         ],
       },
     ],
