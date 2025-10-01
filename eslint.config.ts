@@ -37,16 +37,13 @@ export default [
       "@typescript-eslint": tseslint,
     },
     rules: {
-      ...js.configs.recommended.rules,
-      ...tseslint.configs.recommended.rules,
+      ...(js.configs?.recommended?.rules ?? {}),
+      ...(tseslint.configs?.recommended?.rules ?? {}),
       "@typescript-eslint/no-unused-vars": [
         "error",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
-      "@typescript-eslint/consistent-type-imports": [
-        "error",
-        { prefer: "type-imports" },
-      ],
+      "@typescript-eslint/consistent-type-imports": ["error", { prefer: "type-imports" }],
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/ban-ts-comment": "off",
       "no-empty": ["error", { allowEmptyCatch: true }],
@@ -56,11 +53,7 @@ export default [
   // -- OVERRIDE: Node env untuk file config & scripts --
   //  -> bikin 'process', '__dirname', dsb dikenali; matiin no-undef bila perlu
   {
-    files: [
-      "**/*.config.{ts,js}",
-      "vite.config.{ts,js}",
-      "**/scripts/**/*.{ts,js}",
-    ],
+    files: ["**/*.config.{ts,js}", "vite.config.{ts,js}", "**/scripts/**/*.{ts,js}"],
     languageOptions: {
       parser: tsparser,
       parserOptions: {
@@ -90,7 +83,7 @@ export default [
       globals: {
         ...globals.node,
         ...globals.jest, // cukup dekat utk vitest (describe,it,expect)
-        vi: "readonly",   // vitest mock/timer
+        vi: "readonly", // vitest mock/timer
       },
     },
   },

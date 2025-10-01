@@ -21,15 +21,14 @@ Create a modular layer system that displays images from JSON configuration in yu
 Result Files Structure
 
 shared/layer/
-├── LayerBasicCore.ts           # Main pipeline engine
-├── LayerBasicTypes.ts          # Type definitions  
-├── LayerBasicAssets.ts         # Asset loading/resolution
-├── LayerBasicTransform.ts      # Position/scale/rotation processing
-├── LayerBasicRenderer.ts       # Three.js rendering
-├── LayerBasicRegister.ts       # Plugin registration system
-├── LayerBasicMath.ts           # Mathematical utilities
-└── MainConfig.json             # Layer configuration preset
-
+├── LayerBasicCore.ts # Main pipeline engine
+├── LayerBasicTypes.ts # Type definitions  
+├── LayerBasicAssets.ts # Asset loading/resolution
+├── LayerBasicTransform.ts # Position/scale/rotation processing
+├── LayerBasicRenderer.ts # Three.js rendering
+├── LayerBasicRegister.ts # Plugin registration system
+├── LayerBasicMath.ts # Mathematical utilities
+└── MainConfig.json # Layer configuration preset
 
 Reference Files from rawcode
 LayerBasicCore.ts ← merge/rawcode/logicLoader.ts (lines 31-143)
@@ -39,31 +38,30 @@ LayerBasicTransform.ts ← merge/rawcode/LogicLoaderBasic.ts (lines 8-24)
 LayerBasicRenderer.ts ← merge/rawcode/LogicRendererPixi.ts (lines 17-58)
 LayerBasicMath.ts ← merge/rawcode/LogicMath.ts (lines 502-516)
 
-
 JSON Configuration Preset
 File: shared/layer/MainConfig.json
 {
-  "imageRegistry": {
-    "logo": "@shared/Asset/SAMPLE.png",
-    "bg": "@shared/Asset/MAINBG.png",
-    "gear": "@shared/Asset/GEAR1.png"
-  },
-  "layers": [
-    {
-      "id": "bg_layer",
-      "imageRef": { "kind": "urlId", "id": "bg" },
-      "position": { "xPct": 50, "yPct": 50 },
-      "scale": { "pct": 100 },
-      "angleDeg": 0
-    },
-    {
-      "id": "logo_layer", 
-      "imageRef": { "kind": "urlId", "id": "logo" },
-      "position": { "xPct": 50, "yPct": 30 },
-      "scale": { "pct": 50 },
-      "angleDeg": 15
-    }
-  ]
+"imageRegistry": {
+"logo": "@shared/Asset/SAMPLE.png",
+"bg": "@shared/Asset/MAINBG.png",
+"gear": "@shared/Asset/GEAR1.png"
+},
+"layers": [
+{
+"id": "bg_layer",
+"imageRef": { "kind": "urlId", "id": "bg" },
+"position": { "xPct": 50, "yPct": 50 },
+"scale": { "pct": 100 },
+"angleDeg": 0
+},
+{
+"id": "logo_layer",
+"imageRef": { "kind": "urlId", "id": "logo" },
+"position": { "xPct": 50, "yPct": 30 },
+"scale": { "pct": 50 },
+"angleDeg": 15
+}
+]
 }
 
 Integration with Yuzha
@@ -107,69 +105,66 @@ Integration test for full pipeline
 Visual regression test for rendering
 
 Success Criteria
- JSON config loads without errors
- Images display at correct positions/scales/rotations
- All TypeScript types resolve correctly
- ESLint passes with zero warnings
- Prettier formatting applied
- Test suite passes 100%
- Visual output matches expected layout
- Integration works in yuzha MainScreen
-
+JSON config loads without errors
+Images display at correct positions/scales/rotations
+All TypeScript types resolve correctly
+ESLint passes with zero warnings
+Prettier formatting applied
+Test suite passes 100%
+Visual output matches expected layout
+Integration works in yuzha MainScreen
 
 Mandatory Contracts
 
 #LayerBasicCore Interface
 interface LayerBasicCore {
-  loadFromConfig(configPath: string): Promise<void>;
-  attachToThreeScene(scene: THREE.Scene): void;
-  dispose(): void;
+loadFromConfig(configPath: string): Promise<void>;
+attachToThreeScene(scene: THREE.Scene): void;
+dispose(): void;
 }
 
 #Processor Interface
 interface LayerProcessor<T> {
-  process(data: LayerData): T;
-  getName(): string;
+process(data: LayerData): T;
+getName(): string;
 }
-
 
 Error Handling Contract
 All async operations must handle errors gracefully
 Missing assets should log warnings, not crash
 Invalid JSON should provide helpful error messages
 
-
 Test Requirements
 Unit Tests (shared/layer/tests/)
 // LayerBasicCore.test.ts
 describe('LayerBasicCore', () => {
-  it('loads valid JSON config');
-  it('handles missing image files');
-  it('processes transforms correctly');
+it('loads valid JSON config');
+it('handles missing image files');
+it('processes transforms correctly');
 });
 
 // LayerBasicTransform.test.ts  
 describe('LayerBasicTransform', () => {
-  it('converts percentage to world coords');
-  it('applies rotation correctly');
-  it('handles scale transforms');
+it('converts percentage to world coords');
+it('applies rotation correctly');
+it('handles scale transforms');
 });
-
-
 
 Integration Test
 // integration.test.ts
 describe('Full Pipeline', () => {
-  it('loads JSON and renders to Three.js scene');
-  it('matches visual snapshot');
+it('loads JSON and renders to Three.js scene');
+it('matches visual snapshot');
 });
 
 Code Quality Checks
+
 # Must pass all of these:
-npm run typecheck     # TypeScript compilation
-npm run lint         # ESLint with zero warnings  
-npm run format       # Prettier formatting
-npm run test         # Jest test suite
+
+npm run typecheck # TypeScript compilation
+npm run lint # ESLint with zero warnings  
+npm run format # Prettier formatting
+npm run test # Jest test suite
 
 Implementation Notes for AI Agent
 Start with types first - Define all interfaces before implementation
@@ -187,24 +182,3 @@ All tests pass
 TypeScript compiles without errors
 Code follows project formatting standards
 Integration works seamlessly with existing yuzha application
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

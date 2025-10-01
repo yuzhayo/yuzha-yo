@@ -8,10 +8,7 @@ import aspectRatio from "@tailwindcss/aspect-ratio";
 
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./yuzha/**/*.{html,ts,tsx}",
-    "./shared/**/*.{html,ts,tsx}",
-  ],
+  content: ["./yuzha/**/*.{html,ts,tsx}", "./shared/**/*.{html,ts,tsx}"],
   darkMode: "class",
   theme: {
     extend: {

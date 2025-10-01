@@ -10,20 +10,20 @@ Your ZIP file contains a more mature template with **Git hooks, code quality aut
 
 ## 📊 Feature Comparison Matrix
 
-| Feature | ZIP Template | Current Yuzha | Winner |
-|---------|--------------|---------------|---------|
-| **Git Hooks (Husky)** | ✅ v9.1.7 | ❌ Missing | 🏆 ZIP |
-| **Pre-commit Linting** | ✅ lint-staged | ❌ Missing | 🏆 ZIP |
-| **Editor Config** | ✅ .editorconfig | ❌ Missing | 🏆 ZIP |
-| **Prettier Config** | ✅ Explicit .prettierrc | ✅ Via package.json | 🏆 ZIP (explicit) |
-| **Cross-env Version** | ✅ v10.0.0 | ⚠️ v7.0.3 | 🏆 ZIP (newer) |
-| **React Version** | ⚠️ v18.2.0 | ✅ v18.3.1 | 🏆 Yuzha (newer) |
-| **Compression Plugins** | ❌ Missing | ✅ Gzip + Brotli | 🏆 Yuzha |
-| **TypeScript Incremental** | ❌ Missing | ✅ Enabled | 🏆 Yuzha |
-| **Advanced Chunk Splitting** | ❌ Basic | ✅ Advanced | 🏆 Yuzha |
-| **ESBuild Optimizations** | ❌ Missing | ✅ Comprehensive | 🏆 Yuzha |
-| **Vite Cache Strategy** | ⚠️ Basic | ✅ Optimized | 🏆 Yuzha |
-| **Build Scripts** | ⚠️ Basic | ✅ build:fast added | 🏆 Yuzha |
+| Feature                      | ZIP Template            | Current Yuzha       | Winner            |
+| ---------------------------- | ----------------------- | ------------------- | ----------------- |
+| **Git Hooks (Husky)**        | ✅ v9.1.7               | ❌ Missing          | 🏆 ZIP            |
+| **Pre-commit Linting**       | ✅ lint-staged          | ❌ Missing          | 🏆 ZIP            |
+| **Editor Config**            | ✅ .editorconfig        | ❌ Missing          | 🏆 ZIP            |
+| **Prettier Config**          | ✅ Explicit .prettierrc | ✅ Via package.json | 🏆 ZIP (explicit) |
+| **Cross-env Version**        | ✅ v10.0.0              | ⚠️ v7.0.3           | 🏆 ZIP (newer)    |
+| **React Version**            | ⚠️ v18.2.0              | ✅ v18.3.1          | 🏆 Yuzha (newer)  |
+| **Compression Plugins**      | ❌ Missing              | ✅ Gzip + Brotli    | 🏆 Yuzha          |
+| **TypeScript Incremental**   | ❌ Missing              | ✅ Enabled          | 🏆 Yuzha          |
+| **Advanced Chunk Splitting** | ❌ Basic                | ✅ Advanced         | 🏆 Yuzha          |
+| **ESBuild Optimizations**    | ❌ Missing              | ✅ Comprehensive    | 🏆 Yuzha          |
+| **Vite Cache Strategy**      | ⚠️ Basic                | ✅ Optimized        | 🏆 Yuzha          |
+| **Build Scripts**            | ⚠️ Basic                | ✅ build:fast added | 🏆 Yuzha          |
 
 ---
 
@@ -51,6 +51,7 @@ Your ZIP file contains a more mature template with **Git hooks, code quality aut
 ```
 
 **Benefits:**
+
 - Automatic linting on commit
 - Prevents bad code from entering repo
 - Team consistency enforcement
@@ -62,6 +63,7 @@ Your ZIP file contains a more mature template with **Git hooks, code quality aut
 **Why:** Ensures consistent coding style across editors/IDEs
 
 **File:** `.editorconfig`
+
 ```ini
 root = true
 
@@ -80,6 +82,7 @@ end_of_line = crlf
 ```
 
 **Benefits:**
+
 - Works with VS Code, WebStorm, Sublime, etc.
 - No manual configuration needed
 - Cross-platform consistency
@@ -91,6 +94,7 @@ end_of_line = crlf
 **Why:** Makes formatting rules explicit and visible
 
 **File:** `.prettierrc`
+
 ```json
 {
   "semi": true,
@@ -101,6 +105,7 @@ end_of_line = crlf
 ```
 
 **Benefits:**
+
 - Clear formatting rules
 - Easy to modify team preferences
 - Better IDE integration
@@ -117,6 +122,7 @@ npm install -D cross-env@^10.0.0
 ```
 
 **Benefits:**
+
 - Latest bug fixes
 - Better Windows compatibility
 - Performance improvements
@@ -128,6 +134,7 @@ npm install -D cross-env@^10.0.0
 **Why:** Prevents duplicate library instances (useful if you add large libraries)
 
 **Add to vite.config.ts:**
+
 ```typescript
 export default defineConfig({
   resolve: {
@@ -139,6 +146,7 @@ export default defineConfig({
 ```
 
 **When to use:**
+
 - If you experience duplicate React instances
 - When using large libraries like Three.js, Pixi.js
 - In monorepo setups with symlinks
@@ -150,12 +158,13 @@ export default defineConfig({
 **Why:** Faster dev server startup by pre-bundling specific dependencies
 
 **Already in your optimized config, but ZIP reminds us to be explicit:**
+
 ```typescript
 export default defineConfig({
   optimizeDeps: {
-    include: ["react", "react-dom", "three"],  // Explicit list
+    include: ["react", "react-dom", "three"], // Explicit list
   },
-})
+});
 ```
 
 ---
@@ -165,27 +174,32 @@ export default defineConfig({
 Your optimized Yuzha has many features the ZIP template lacks:
 
 ### 1. **Compression Plugins** (60-70% smaller bundles)
+
 - Gzip compression
 - Brotli compression
 - Smart threshold (>10KB)
 
 ### 2. **TypeScript Incremental Builds** (30-50% faster)
+
 - `incremental: true`
 - `composite: true`
 - `.tsbuildinfo` caching
 
 ### 3. **Advanced Chunk Splitting**
+
 - Separate React vendor chunk
 - Separate Three.js chunk
 - Optimized vendor chunking
 - Shared code chunking
 
 ### 4. **ESBuild Optimizations**
+
 - Fast minification
 - Tree shaking
 - Target optimizations
 
 ### 5. **Build Scripts**
+
 - `build:fast` for rapid builds
 - Enhanced `clean` script
 
@@ -194,6 +208,7 @@ Your optimized Yuzha has many features the ZIP template lacks:
 ## 🚀 Recommended Adoption Plan
 
 ### Phase 1: Quality Tools (High Impact, Low Risk)
+
 1. ✅ Add `.editorconfig`
 2. ✅ Add `.prettierrc`
 3. ✅ Upgrade `cross-env` to v10.0.0
@@ -203,6 +218,7 @@ Your optimized Yuzha has many features the ZIP template lacks:
 **Impact:** Better code quality, team consistency
 
 ### Phase 2: Conditional Optimizations (Medium Impact)
+
 5. ⚠️ Add `resolve.dedupe` if needed (check for duplicate instances)
 6. ✅ Review `optimizeDeps.include` (already optimized)
 
@@ -226,6 +242,7 @@ I can create these files for you:
 ## 🎯 Quick Wins Summary
 
 ### From ZIP → Yuzha (Quality Tools)
+
 - ✅ Husky (git hooks)
 - ✅ lint-staged (pre-commit checks)
 - ✅ .editorconfig (editor consistency)
@@ -233,6 +250,7 @@ I can create these files for you:
 - ✅ cross-env@10.0.0 (newer version)
 
 ### Keep from Yuzha (Performance)
+
 - ✅ All build optimizations I added
 - ✅ Compression plugins
 - ✅ Incremental TypeScript
@@ -258,6 +276,7 @@ I can create these files for you:
 **Would you like me to implement these additions?**
 
 I can create:
+
 - All quality tool files (.editorconfig, .prettierrc, husky setup)
 - Updated package.json with all improvements
 - Enhanced vite.config.ts with dedupe

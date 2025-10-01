@@ -1,6 +1,7 @@
 # Nested Accordion Implementation Plan for ConfigYuzhaPopup
 
 ## 🎯 Objective
+
 Implement a 3-level nested accordion system inside ConfigYuzhaPopup body that is fully scrollable and responsive to popup resize.
 
 ---
@@ -8,6 +9,7 @@ Implement a 3-level nested accordion system inside ConfigYuzhaPopup body that is
 ## 📋 Requirements Summary
 
 ### Visual Structure
+
 ```
 PARENT 1 (Level 1)
 ├── Sub Parent 1 (Level 2)
@@ -27,6 +29,7 @@ PARENT 2 (Level 1)
 ```
 
 ### Key Features
+
 - ✅ 3-level hierarchy (Parent → Sub Parent → Children)
 - ✅ Full-width bars that fill container
 - ✅ Expand/collapse functionality
@@ -40,11 +43,13 @@ PARENT 2 (Level 1)
 ## 🛠️ Technology Stack
 
 ### Library: Radix UI Accordion
+
 - **Why?** Production-ready, accessible, supports nesting, unstyled (full Tailwind control)
 - **Package:** `@radix-ui/react-accordion`
 - **Docs:** https://www.radix-ui.com/docs/primitives/components/accordion
 
 ### Optional: Tailwind Scrollbar Plugin
+
 - **Package:** `tailwind-scrollbar`
 - **Purpose:** Custom scrollbar styling
 - **Alternative:** Use native CSS scrollbar styling
@@ -54,25 +59,27 @@ PARENT 2 (Level 1)
 ## 📦 Installation Steps
 
 ### Step 1: Install Radix UI Accordion
+
 ```bash
 cd /app/frontend
 yarn add @radix-ui/react-accordion
 ```
 
 ### Step 2: Install Tailwind Scrollbar (Optional)
+
 ```bash
 yarn add tailwind-scrollbar
 ```
 
 ### Step 3: Configure Tailwind (if using scrollbar plugin)
+
 Edit `/app/frontend/tailwind.config.js`:
+
 ```javascript
 module.exports = {
   // ... existing config
-  plugins: [
-    require('tailwind-scrollbar')({ nocompatible: true }),
-  ],
-}
+  plugins: [require("tailwind-scrollbar")({ nocompatible: true })],
+};
 ```
 
 ---
@@ -80,10 +87,12 @@ module.exports = {
 ## 🏗️ File Structure
 
 ### Files to Modify
+
 1. `/app/shared/config/ConfigYuzhaPopup.tsx` - Add accordion content
 2. `/app/yuzha/src/MainScreenUtils.tsx` - Pass accordion data to popup
 
 ### New File to Create (Optional)
+
 - `/app/shared/config/AccordionContent.tsx` - Separate component for accordion logic
 
 ---
@@ -114,8 +123,8 @@ const accordionData: AccordionItem[] = [
         level: 2,
         children: [
           { id: "child-1", label: "Child 1", level: 3 },
-          { id: "child-2", label: "Child 2", level: 3 }
-        ]
+          { id: "child-2", label: "Child 2", level: 3 },
+        ],
       },
       {
         id: "parent-1-sub-2",
@@ -123,10 +132,10 @@ const accordionData: AccordionItem[] = [
         level: 2,
         children: [
           { id: "child-3", label: "Child 3", level: 3 },
-          { id: "child-4", label: "Child 4", level: 3 }
-        ]
-      }
-    ]
+          { id: "child-4", label: "Child 4", level: 3 },
+        ],
+      },
+    ],
   },
   {
     id: "parent-2",
@@ -139,8 +148,8 @@ const accordionData: AccordionItem[] = [
         level: 2,
         children: [
           { id: "child-5", label: "Child 5", level: 3 },
-          { id: "child-6", label: "Child 6", level: 3 }
-        ]
+          { id: "child-6", label: "Child 6", level: 3 },
+        ],
       },
       {
         id: "parent-2-sub-2",
@@ -148,11 +157,11 @@ const accordionData: AccordionItem[] = [
         level: 2,
         children: [
           { id: "child-7", label: "Child 7", level: 3 },
-          { id: "child-8", label: "Child 8", level: 3 }
-        ]
-      }
-    ]
-  }
+          { id: "child-8", label: "Child 8", level: 3 },
+        ],
+      },
+    ],
+  },
 ];
 ```
 
@@ -163,6 +172,7 @@ const accordionData: AccordionItem[] = [
 **File:** `/app/shared/config/ConfigYuzhaPopup.tsx`
 
 **Current code (lines 234-238):**
+
 ```typescript
 const renderBody = () => (
   <div className="p-5 bg-gray-200 flex flex-col items-center justify-center gap-5" style={{ height: "calc(100% - 48px)" }}>
@@ -172,14 +182,15 @@ const renderBody = () => (
 ```
 
 **Replace with:**
+
 ```typescript
 const renderBody = () => (
-  <div 
+  <div
     className="relative bg-gray-100"
     style={{ height: "calc(100% - 48px)" }}
   >
     {/* Scrollable Container */}
-    <div 
+    <div
       className="
         w-full h-full
         overflow-y-auto
@@ -200,6 +211,7 @@ const renderBody = () => (
 ```
 
 **Key Changes:**
+
 - Removed `flex items-center justify-center` (no longer centering)
 - Added scrollable wrapper with `overflow-y-auto`
 - Added custom scrollbar classes
@@ -381,22 +393,20 @@ module.exports = {
       keyframes: {
         slideDown: {
           from: { height: 0, opacity: 0 },
-          to: { height: 'var(--radix-accordion-content-height)', opacity: 1 },
+          to: { height: "var(--radix-accordion-content-height)", opacity: 1 },
         },
         slideUp: {
-          from: { height: 'var(--radix-accordion-content-height)', opacity: 1 },
+          from: { height: "var(--radix-accordion-content-height)", opacity: 1 },
           to: { height: 0, opacity: 0 },
         },
       },
       animation: {
-        slideDown: 'slideDown 300ms cubic-bezier(0.87, 0, 0.13, 1)',
-        slideUp: 'slideUp 300ms cubic-bezier(0.87, 0, 0.13, 1)',
+        slideDown: "slideDown 300ms cubic-bezier(0.87, 0, 0.13, 1)",
+        slideUp: "slideUp 300ms cubic-bezier(0.87, 0, 0.13, 1)",
       },
     },
   },
-  plugins: [
-    require('tailwind-scrollbar')({ nocompatible: true }),
-  ],
+  plugins: [require("tailwind-scrollbar")({ nocompatible: true })],
 };
 ```
 
@@ -407,11 +417,13 @@ module.exports = {
 **File:** `/app/yuzha/src/MainScreenUtils.tsx`
 
 **Find line 456 (current usage):**
+
 ```typescript
 <ConfigYuzhaPopup isOpen={isConfigOpen} onClose={handleClosePopup} />
 ```
 
 **Replace with:**
+
 ```typescript
 import { NestedAccordion, sampleAccordionData } from "@shared/config/AccordionContent";
 
@@ -428,18 +440,20 @@ import { NestedAccordion, sampleAccordionData } from "@shared/config/AccordionCo
 
 ### Level Differentiation
 
-| Level | Background | Text Size | Font Weight | Padding | Border |
-|-------|-----------|-----------|-------------|---------|--------|
-| **1 (Parent)** | `bg-blue-500` | `text-base` | `font-semibold` | `px-4 py-3` | `border-l-4 border-blue-700` |
-| **2 (Sub Parent)** | `bg-blue-300` | `text-sm` | `font-medium` | `px-6 py-2.5` | `border-l-3 border-blue-500` |
-| **3 (Children)** | `bg-gray-100` | `text-xs` | `font-normal` | `px-8 py-2` | `border-l-2 border-gray-400` |
+| Level              | Background    | Text Size   | Font Weight     | Padding       | Border                       |
+| ------------------ | ------------- | ----------- | --------------- | ------------- | ---------------------------- |
+| **1 (Parent)**     | `bg-blue-500` | `text-base` | `font-semibold` | `px-4 py-3`   | `border-l-4 border-blue-700` |
+| **2 (Sub Parent)** | `bg-blue-300` | `text-sm`   | `font-medium`   | `px-6 py-2.5` | `border-l-3 border-blue-500` |
+| **3 (Children)**   | `bg-gray-100` | `text-xs`   | `font-normal`   | `px-8 py-2`   | `border-l-2 border-gray-400` |
 
 ### Indentation
+
 - Level 1: No margin
 - Level 2: `ml-2` (8px)
 - Level 3: `ml-4` (16px)
 
 ### Hover Effects
+
 - All triggers: `hover:opacity-90`
 - Smooth transition: `transition-all duration-200`
 
@@ -448,6 +462,7 @@ import { NestedAccordion, sampleAccordionData } from "@shared/config/AccordionCo
 ## 📱 Responsive Behavior
 
 ### Scrollable Container
+
 ```typescript
 // Body height calculation
 height: calc(100% - 48px)  // 48px = header height
@@ -459,6 +474,7 @@ scroll-smooth              // Smooth scrolling behavior
 ```
 
 ### Resize Handling
+
 - Popup width changes → Accordion width auto-adjusts (100% of container)
 - Popup height changes → Scroll area height auto-adjusts
 - Content always fills container width
@@ -469,6 +485,7 @@ scroll-smooth              // Smooth scrolling behavior
 ## 🔧 Custom Scrollbar (Optional)
 
 ### With tailwind-scrollbar plugin:
+
 ```typescript
 className="
   scrollbar-thin              // 8px width
@@ -478,6 +495,7 @@ className="
 ```
 
 ### With native CSS (if not using plugin):
+
 Add to `/app/frontend/src/App.css`:
 
 ```css
@@ -501,6 +519,7 @@ Add to `/app/frontend/src/App.css`:
 ```
 
 Then add class to scrollable div:
+
 ```typescript
 <div className="accordion-scroll overflow-y-auto ...">
 ```
@@ -510,6 +529,7 @@ Then add class to scrollable div:
 ## ✅ Testing Checklist
 
 ### Functionality Tests
+
 - [ ] Level 1 (Parent) items can expand/collapse
 - [ ] Level 2 (Sub Parent) items can expand/collapse independently
 - [ ] Level 3 (Children) display correctly
@@ -517,6 +537,7 @@ Then add class to scrollable div:
 - [ ] Clicking expanded item collapses it
 
 ### Visual Tests
+
 - [ ] Level 1 has blue-500 background
 - [ ] Level 2 has blue-300 background
 - [ ] Level 3 has gray-100 background
@@ -525,6 +546,7 @@ Then add class to scrollable div:
 - [ ] Animations are smooth (300ms)
 
 ### Scrolling Tests
+
 - [ ] Scroll appears when content is long
 - [ ] Scroll works smoothly
 - [ ] Header stays fixed (doesn't scroll)
@@ -532,6 +554,7 @@ Then add class to scrollable div:
 - [ ] Scrollbar is styled (thin, colored)
 
 ### Responsive Tests
+
 - [ ] Accordion fills popup width
 - [ ] Resizing popup width → accordion adjusts
 - [ ] Resizing popup height → scroll area adjusts
@@ -543,18 +566,23 @@ Then add class to scrollable div:
 ## 🚨 Common Issues & Solutions
 
 ### Issue 1: Scrollbar not showing
+
 **Solution:** Check if content height > container height. Add more items to test.
 
 ### Issue 2: Accordion not nested properly
+
 **Solution:** Verify `level` prop is passed correctly in recursive calls.
 
 ### Issue 3: Animations not working
+
 **Solution:** Ensure Tailwind config has the custom animations added.
 
 ### Issue 4: Content overflow horizontally
+
 **Solution:** Add `overflow-x-hidden` to scrollable container.
 
 ### Issue 5: Header scrolls with content
+
 **Solution:** Check `renderBody` height calculation: `calc(100% - 48px)`
 
 ---
@@ -564,18 +592,22 @@ Then add class to scrollable div:
 ### Radix Accordion Components
 
 #### `<Accordion.Root>`
+
 - `type`: `"single"` | `"multiple"` - Control expand behavior
 - `collapsible`: `boolean` - Allow closing open items
 - `defaultValue`: `string | string[]` - Default open items
 
 #### `<Accordion.Item>`
+
 - `value`: `string` - Unique identifier (required)
 
 #### `<Accordion.Trigger>`
+
 - Auto-handles click events
 - `data-state`: `"open"` | `"closed"` - For styling
 
 #### `<Accordion.Content>`
+
 - Auto-animates expand/collapse
 - `data-state`: `"open"` | `"closed"` - For styling
 

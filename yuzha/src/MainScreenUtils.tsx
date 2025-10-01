@@ -18,7 +18,6 @@ import type { CSSProperties } from "react";
 import { ConfigYuzhaPopup } from "@shared/config/ConfigYuzhaPopup";
 import { NestedAccordion, sampleAccordionData } from "@shared/config/AccordionContent";
 
-
 // ===================================================================
 // 🔴 BLOCK 1: STAGE DIMENSIONS AND COORDINATE SYSTEM
 // ⚠️  AI AGENT: CRITICAL BLOCK - DO NOT DELETE
@@ -553,8 +552,6 @@ export function MainScreenBtnGestureArea(props: MainScreenBtnGestureAreaProps) {
   );
 }
 
-
-
 /**
  * MainScreenBtnDock - util opsional yang langsung menggabungkan gesture + panel.
  * - Pasang ini di App/LauncherScreen untuk pengalaman lengkap.
@@ -595,4 +592,3 @@ export function createMainScreenGesture(_opts?: MainScreenBtnGestureOptions): Ma
 
 // Export utility functions for external access
 export { getDefaultModuleLinks, clearCachesAndReload };
-

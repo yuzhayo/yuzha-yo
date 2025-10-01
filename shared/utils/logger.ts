@@ -1,4 +1,4 @@
-type LogLevel = 'info' | 'warn' | 'error' | 'debug' | 'success';
+type LogLevel = "info" | "warn" | "error" | "debug" | "success";
 
 interface LogOptions {
   timestamp?: boolean;
@@ -11,7 +11,7 @@ class Logger {
 
   constructor() {
     this.isDev = import.meta.env.DEV;
-    this.enableDebug = import.meta.env.DEBUG === 'true' || this.isDev;
+    this.enableDebug = import.meta.env.DEBUG === "true" || this.isDev;
   }
 
   private format(level: LogLevel, message: string, options: LogOptions = {}): string {
@@ -22,47 +22,47 @@ class Logger {
     }
 
     const levelEmoji = {
-      info: 'ℹ️',
-      warn: '⚠️',
-      error: '🚨',
-      debug: '🔍',
-      success: '✅'
+      info: "ℹ️",
+      warn: "⚠️",
+      error: "🚨",
+      debug: "🔍",
+      success: "✅",
     };
     parts.push(`${levelEmoji[level]} [${level.toUpperCase()}]`);
 
     parts.push(message);
 
-    return parts.join(' ');
+    return parts.join(" ");
   }
 
   info(message: string, ...args: any[]): void {
     if (this.isDev) {
-      console.log(this.format('info', message), ...args);
+      console.log(this.format("info", message), ...args);
     }
   }
 
   warn(message: string, ...args: any[]): void {
-    console.warn(this.format('warn', message), ...args);
+    console.warn(this.format("warn", message), ...args);
   }
 
   error(message: string, error?: Error | any, ...args: any[]): void {
-    console.error(this.format('error', message), ...args);
+    console.error(this.format("error", message), ...args);
     if (error instanceof Error && error.stack) {
-      console.error('Stack trace:', error.stack);
+      console.error("Stack trace:", error.stack);
     } else if (error) {
-      console.error('Error details:', error);
+      console.error("Error details:", error);
     }
   }
 
   debug(message: string, ...args: any[]): void {
     if (this.enableDebug) {
-      console.log(this.format('debug', message), ...args);
+      console.log(this.format("debug", message), ...args);
     }
   }
 
   success(message: string, ...args: any[]): void {
     if (this.isDev) {
-      console.log(this.format('success', message), ...args);
+      console.log(this.format("success", message), ...args);
     }
   }
 
@@ -78,9 +78,10 @@ class Logger {
     return {
       info: (msg: string, ...args: any[]) => this.info(`[${prefix}] ${msg}`, ...args),
       warn: (msg: string, ...args: any[]) => this.warn(`[${prefix}] ${msg}`, ...args),
-      error: (msg: string, err?: Error, ...args: any[]) => this.error(`[${prefix}] ${msg}`, err, ...args),
+      error: (msg: string, err?: Error, ...args: any[]) =>
+        this.error(`[${prefix}] ${msg}`, err, ...args),
       debug: (msg: string, ...args: any[]) => this.debug(`[${prefix}] ${msg}`, ...args),
-      success: (msg: string, ...args: any[]) => this.success(`[${prefix}] ${msg}`, ...args)
+      success: (msg: string, ...args: any[]) => this.success(`[${prefix}] ${msg}`, ...args),
     };
   }
 

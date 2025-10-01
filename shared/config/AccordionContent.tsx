@@ -21,11 +21,13 @@ const getLevelStyles = (level: number) => {
       content: "bg-blue-50",
     },
     2: {
-      trigger: "bg-blue-400 text-gray-900 font-semibold text-base px-6 py-3 border-l-2 border-blue-600 ml-2",
+      trigger:
+        "bg-blue-400 text-gray-900 font-semibold text-base px-6 py-3 border-l-2 border-blue-600 ml-2",
       content: "bg-blue-100",
     },
     3: {
-      trigger: "bg-gray-300 text-gray-900 font-medium text-sm px-8 py-2 border-l-2 border-gray-600 ml-4",
+      trigger:
+        "bg-gray-300 text-gray-900 font-medium text-sm px-8 py-2 border-l-2 border-gray-600 ml-4",
       content: "bg-white",
     },
   };
@@ -42,7 +44,11 @@ export function NestedAccordion({ data, level = 1 }: NestedAccordionProps) {
   return (
     <Accordion.Root type="multiple" className="w-full space-y-2">
       {data.map((item) => (
-        <Accordion.Item key={item.id} value={item.id} className="border-2 border-gray-400 rounded-md overflow-hidden">
+        <Accordion.Item
+          key={item.id}
+          value={item.id}
+          className="border-2 border-gray-400 rounded-md overflow-hidden"
+        >
           <Accordion.Trigger
             className={`
               ${styles.trigger}
@@ -54,13 +60,13 @@ export function NestedAccordion({ data, level = 1 }: NestedAccordionProps) {
               cursor-pointer
             `}
             style={{
-              minHeight: '48px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
+              minHeight: "48px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
             }}
           >
-            <span className="text-left flex-1" style={{ fontSize: '16px', fontWeight: 600 }}>
+            <span className="text-left flex-1" style={{ fontSize: "16px", fontWeight: 600 }}>
               {item.label}
             </span>
             <ChevronDownIcon
@@ -70,7 +76,7 @@ export function NestedAccordion({ data, level = 1 }: NestedAccordionProps) {
                 flex-shrink-0
                 ml-2
               "
-              style={{ width: '20px', height: '20px' }}
+              style={{ width: "20px", height: "20px" }}
               aria-hidden
             />
           </Accordion.Trigger>

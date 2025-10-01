@@ -31,14 +31,11 @@ export function ConfigYuzhaPopup({
   const resizeHandleRef = useRef<string | null>(null);
   const sizeRef = useRef(size);
   const positionRef = useRef(position);
-  const resizeOriginRef = useRef<
-    | {
-        pointer: { x: number; y: number };
-        size: { width: number; height: number };
-        position: { x: number; y: number };
-      }
-    | null
-  >(null);
+  const resizeOriginRef = useRef<{
+    pointer: { x: number; y: number };
+    size: { width: number; height: number };
+    position: { x: number; y: number };
+  } | null>(null);
 
   // Keep refs in sync so pointer callbacks always use the latest values
   useEffect(() => {
@@ -55,116 +52,128 @@ export function ConfigYuzhaPopup({
     }
   }, [isOpen, isCentered]);
 
-  const startDrag = useCallback((event: React.MouseEvent) => {
-    if (!popupRef.current) return;
+  const startDrag = useCallback(
+    (event: React.MouseEvent) => {
+      if (!popupRef.current) return;
 
-    setIsDragging(true);
-    const rect = popupRef.current.getBoundingClientRect();
+      setIsDragging(true);
+      const rect = popupRef.current.getBoundingClientRect();
 
-    if (isCentered) {
-      const next = { x: rect.left, y: rect.top };
+      if (isCentered) {
+        const next = { x: rect.left, y: rect.top };
+        positionRef.current = next;
+        setPosition(next);
+        setIsCentered(false);
+      }
+
+      dragOffsetRef.current = {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+      };
+    },
+    [isCentered],
+  );
+
+  const drag = useCallback(
+    (event: MouseEvent) => {
+      if (!isDragging || !popupRef.current) return;
+
+      const currentSize = sizeRef.current;
+      const proposedX = event.clientX - dragOffsetRef.current.x;
+      const proposedY = event.clientY - dragOffsetRef.current.y;
+
+      const maxX = Math.max(0, window.innerWidth - currentSize.width);
+      const maxY = Math.max(0, window.innerHeight - currentSize.height);
+
+      const next = {
+        x: Math.max(0, Math.min(proposedX, maxX)),
+        y: Math.max(0, Math.min(proposedY, maxY)),
+      };
+
       positionRef.current = next;
       setPosition(next);
-      setIsCentered(false);
-    }
-
-    dragOffsetRef.current = {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top,
-    };
-  }, [isCentered]);
-
-  const drag = useCallback((event: MouseEvent) => {
-    if (!isDragging || !popupRef.current) return;
-
-    const currentSize = sizeRef.current;
-    const proposedX = event.clientX - dragOffsetRef.current.x;
-    const proposedY = event.clientY - dragOffsetRef.current.y;
-
-    const maxX = Math.max(0, window.innerWidth - currentSize.width);
-    const maxY = Math.max(0, window.innerHeight - currentSize.height);
-
-    const next = {
-      x: Math.max(0, Math.min(proposedX, maxX)),
-      y: Math.max(0, Math.min(proposedY, maxY)),
-    };
-
-    positionRef.current = next;
-    setPosition(next);
-  }, [isDragging]);
+    },
+    [isDragging],
+  );
 
   const stopDrag = useCallback(() => {
     setIsDragging(false);
   }, []);
 
-  const startResize = useCallback((event: React.MouseEvent, handle: string) => {
-    event.stopPropagation();
-    setIsResizing(true);
-    resizeHandleRef.current = handle;
+  const startResize = useCallback(
+    (event: React.MouseEvent, handle: string) => {
+      event.stopPropagation();
+      setIsResizing(true);
+      resizeHandleRef.current = handle;
 
-    if (isCentered && popupRef.current) {
-      const rect = popupRef.current.getBoundingClientRect();
-      const next = { x: rect.left, y: rect.top };
-      positionRef.current = next;
-      setPosition(next);
-      setIsCentered(false);
-    }
+      if (isCentered && popupRef.current) {
+        const rect = popupRef.current.getBoundingClientRect();
+        const next = { x: rect.left, y: rect.top };
+        positionRef.current = next;
+        setPosition(next);
+        setIsCentered(false);
+      }
 
-    resizeOriginRef.current = {
-      pointer: { x: event.clientX, y: event.clientY },
-      size: sizeRef.current,
-      position: positionRef.current,
-    };
-  }, [isCentered]);
+      resizeOriginRef.current = {
+        pointer: { x: event.clientX, y: event.clientY },
+        size: sizeRef.current,
+        position: positionRef.current,
+      };
+    },
+    [isCentered],
+  );
 
-  const resize = useCallback((event: MouseEvent) => {
-    if (!isResizing) return;
+  const resize = useCallback(
+    (event: MouseEvent) => {
+      if (!isResizing) return;
 
-    const handle = resizeHandleRef.current;
-    const origin = resizeOriginRef.current;
-    if (!handle || !origin) return;
+      const handle = resizeHandleRef.current;
+      const origin = resizeOriginRef.current;
+      if (!handle || !origin) return;
 
-    const deltaX = event.clientX - origin.pointer.x;
-    const deltaY = event.clientY - origin.pointer.y;
+      const deltaX = event.clientX - origin.pointer.x;
+      const deltaY = event.clientY - origin.pointer.y;
 
-    let newWidth = origin.size.width;
-    let newHeight = origin.size.height;
-    let newX = origin.position.x;
-    let newY = origin.position.y;
+      let newWidth = origin.size.width;
+      let newHeight = origin.size.height;
+      let newX = origin.position.x;
+      let newY = origin.position.y;
 
-    if (handle.includes("e")) {
-      newWidth = Math.max(MIN_WIDTH, origin.size.width + deltaX);
-    }
+      if (handle.includes("e")) {
+        newWidth = Math.max(MIN_WIDTH, origin.size.width + deltaX);
+      }
 
-    if (handle.includes("w")) {
-      const candidateWidth = origin.size.width - deltaX;
-      newWidth = Math.max(MIN_WIDTH, candidateWidth);
-      newX = origin.position.x + (origin.size.width - newWidth);
-    }
+      if (handle.includes("w")) {
+        const candidateWidth = origin.size.width - deltaX;
+        newWidth = Math.max(MIN_WIDTH, candidateWidth);
+        newX = origin.position.x + (origin.size.width - newWidth);
+      }
 
-    if (handle.includes("s")) {
-      newHeight = Math.max(MIN_HEIGHT, origin.size.height + deltaY);
-    }
+      if (handle.includes("s")) {
+        newHeight = Math.max(MIN_HEIGHT, origin.size.height + deltaY);
+      }
 
-    if (handle.includes("n")) {
-      const candidateHeight = origin.size.height - deltaY;
-      newHeight = Math.max(MIN_HEIGHT, candidateHeight);
-      newY = origin.position.y + (origin.size.height - newHeight);
-    }
+      if (handle.includes("n")) {
+        const candidateHeight = origin.size.height - deltaY;
+        newHeight = Math.max(MIN_HEIGHT, candidateHeight);
+        newY = origin.position.y + (origin.size.height - newHeight);
+      }
 
-    const maxX = Math.max(0, window.innerWidth - newWidth);
-    const maxY = Math.max(0, Math.min(window.innerHeight - newHeight, window.innerHeight));
-    newX = Math.max(0, Math.min(newX, maxX));
-    newY = newY = Math.max(0, Math.min(newY, maxY));
+      const maxX = Math.max(0, window.innerWidth - newWidth);
+      const maxY = Math.max(0, Math.min(window.innerHeight - newHeight, window.innerHeight));
+      newX = Math.max(0, Math.min(newX, maxX));
+      newY = newY = Math.max(0, Math.min(newY, maxY));
 
-    const nextSize = { width: newWidth, height: newHeight };
-    const nextPosition = { x: newX, y: newY };
+      const nextSize = { width: newWidth, height: newHeight };
+      const nextPosition = { x: newX, y: newY };
 
-    sizeRef.current = nextSize;
-    positionRef.current = nextPosition;
-    setSize(nextSize);
-    setPosition(nextPosition);
-  }, [isResizing]);
+      sizeRef.current = nextSize;
+      positionRef.current = nextPosition;
+      setSize(nextSize);
+      setPosition(nextPosition);
+    },
+    [isResizing],
+  );
 
   const stopResize = useCallback(() => {
     setIsResizing(false);
@@ -234,7 +243,10 @@ export function ConfigYuzhaPopup({
   const renderBody = () => {
     return (
       <div className="relative bg-gray-50" style={{ height: "calc(100% - 48px)" }}>
-        <div className="accordion-scroll w-full h-full overflow-y-auto overflow-x-hidden scroll-smooth" style={{ maxHeight: "100%" }}>
+        <div
+          className="accordion-scroll w-full h-full overflow-y-auto overflow-x-hidden scroll-smooth"
+          style={{ maxHeight: "100%" }}
+        >
           <div className="p-3">
             {children ?? <div className="text-gray-500 p-4">No content</div>}
           </div>
@@ -261,7 +273,10 @@ export function ConfigYuzhaPopup({
       };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-[1000]" onMouseDown={(event) => event.stopPropagation()}>
+    <div
+      className="fixed inset-0 flex items-center justify-center z-[1000]"
+      onMouseDown={(event) => event.stopPropagation()}
+    >
       <div
         ref={popupRef}
         className="absolute bg-white rounded-xl shadow-[0_25px_50px_rgba(0,0,0,0.25)] overflow-hidden transition-shadow duration-300 hover:shadow-[0_35px_60px_rgba(0,0,0,0.3)]"
@@ -271,14 +286,38 @@ export function ConfigYuzhaPopup({
         {renderHeader()}
         {renderBody()}
 
-        <div className="absolute top-0 left-0 right-0 h-[5px] cursor-n-resize" onMouseDown={(event) => startResize(event, "n")} />
-        <div className="absolute bottom-0 left-0 right-0 h-[5px] cursor-s-resize" onMouseDown={(event) => startResize(event, "s")} />
-        <div className="absolute top-0 right-0 bottom-0 w-[5px] cursor-e-resize" onMouseDown={(event) => startResize(event, "e")} />
-        <div className="absolute top-0 left-0 bottom-0 w-[5px] cursor-w-resize" onMouseDown={(event) => startResize(event, "w")} />
-        <div className="absolute top-0 right-0 w-[10px] h-[10px] cursor-ne-resize" onMouseDown={(event) => startResize(event, "ne")} />
-        <div className="absolute top-0 left-0 w-[10px] h-[10px] cursor-nw-resize" onMouseDown={(event) => startResize(event, "nw")} />
-        <div className="absolute bottom-0 right-0 w-[10px] h-[10px] cursor-se-resize" onMouseDown={(event) => startResize(event, "se")} />
-        <div className="absolute bottom-0 left-0 w-[10px] h-[10px] cursor-sw-resize" onMouseDown={(event) => startResize(event, "sw")} />
+        <div
+          className="absolute top-0 left-0 right-0 h-[5px] cursor-n-resize"
+          onMouseDown={(event) => startResize(event, "n")}
+        />
+        <div
+          className="absolute bottom-0 left-0 right-0 h-[5px] cursor-s-resize"
+          onMouseDown={(event) => startResize(event, "s")}
+        />
+        <div
+          className="absolute top-0 right-0 bottom-0 w-[5px] cursor-e-resize"
+          onMouseDown={(event) => startResize(event, "e")}
+        />
+        <div
+          className="absolute top-0 left-0 bottom-0 w-[5px] cursor-w-resize"
+          onMouseDown={(event) => startResize(event, "w")}
+        />
+        <div
+          className="absolute top-0 right-0 w-[10px] h-[10px] cursor-ne-resize"
+          onMouseDown={(event) => startResize(event, "ne")}
+        />
+        <div
+          className="absolute top-0 left-0 w-[10px] h-[10px] cursor-nw-resize"
+          onMouseDown={(event) => startResize(event, "nw")}
+        />
+        <div
+          className="absolute bottom-0 right-0 w-[10px] h-[10px] cursor-se-resize"
+          onMouseDown={(event) => startResize(event, "se")}
+        />
+        <div
+          className="absolute bottom-0 left-0 w-[10px] h-[10px] cursor-sw-resize"
+          onMouseDown={(event) => startResize(event, "sw")}
+        />
       </div>
     </div>
   );

@@ -45,11 +45,12 @@ function MainScreenOverlay({ rendererLabel }: { rendererLabel: string }) {
  */
 export default function MainScreen({ children }: MainScreenProps) {
   const rendererType = useMemo(() => getRendererType(), []);
-  const rendererLabel = rendererType === 'three' ? 'Three.js WebGL Renderer' : 'Canvas 2D Renderer (AI Agent Fallback)';
+  const rendererLabel =
+    rendererType === "three" ? "Three.js WebGL Renderer" : "Canvas 2D Renderer (AI Agent Fallback)";
 
   return (
     <div className="relative w-screen h-screen overflow-hidden">
-      {rendererType === 'three' ? <StageThree /> : <StageCanvas />}
+      {rendererType === "three" ? <StageThree /> : <StageCanvas />}
       {children ?? <MainScreenOverlay rendererLabel={rendererLabel} />}
     </div>
   );

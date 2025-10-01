@@ -89,6 +89,7 @@ The system is designed to be self-contained with no external APIs or database de
 ## Project Structure
 
 This is a **monorepo** with a single workspace:
+
 - **yuzha**: Main application workspace containing the template launcher
 
 The project was originally configured with a second workspace (dhepil) that was removed as it doesn't exist in the codebase.
@@ -126,11 +127,13 @@ The layer rendering system follows this dependency chain:
 ## Recent Changes (Sept 29, 2025)
 
 ### Replit Environment Setup
+
 - ✅ Fixed cross-env dependency issue by removing it from workspace
 - ✅ Updated package.json scripts to use native PORT environment variable
 - ✅ Configured workflow to run on port 5000 with webview output
 
 ### Canvas 2D Migration
+
 - ✅ Created `LayerEngineCanvas.ts` - Canvas 2D layer rendering engine
 - ✅ Created `StageCanvas.tsx` - Canvas 2D stage component
 - ✅ Replaced Three.js (`StageThree`) with Canvas 2D (`StageCanvas`)

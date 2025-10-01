@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import DragScreen from './DragScreen';
+import React, { useState } from "react";
+import DragScreen from "./DragScreen";
 
 export function DragScreenButton() {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,11 +13,7 @@ export function DragScreenButton() {
         DragScreen
       </button>
 
-      <DragScreen 
-        isOpen={isOpen} 
-        onClose={() => setIsOpen(false)}
-        title="Drag & Resize Demo"
-      />
+      <DragScreen isOpen={isOpen} onClose={() => setIsOpen(false)} title="Drag & Resize Demo" />
     </>
   );
 }
