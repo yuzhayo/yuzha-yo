@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+﻿import React, { useState, useRef, useEffect, useCallback } from "react";
 
 export interface ConfigYuzhaPopupProps {
   isOpen: boolean;
@@ -11,48 +11,15 @@ const MIN_WIDTH = 200;
 const MIN_HEIGHT = 150;
 
 // ---------------------------------------------------------------------------
-// Default fallback content rendered when no children are provided
-function DefaultContent() {
-  const [inputValue, setInputValue] = useState("");
-  const text = "Enter text";
-
-  return (
-    <>
-      <div className="relative">
-        <input
-          type="text"
-          className="text-base outline-none px-[15px] py-[10px] block w-[200px] border-2 border-gray-600 rounded-lg bg-transparent focus:border-[#3679ff] peer"
-          value={inputValue}
-          onChange={(event) => setInputValue(event.target.value)}
-          required
-        />
-        <label className="text-gray-600 text-base font-normal absolute pointer-events-none left-1/2 top-3 flex -translate-x-1/2">
-          {text.split("").map((char, index) => (
-            <span
-              key={index}
-              className="transition-all duration-200 ease-in-out peer-focus:-translate-y-5 peer-focus:text-sm peer-focus:text-[#3679ff] peer-focus:bg-gray-200 peer-valid:-translate-y-5 peer-valid:text-sm peer-valid:text-[#3679ff] peer-valid:bg-gray-200"
-              style={{ transitionDelay: `${index * 0.05}s` }}
-            >
-              {char === " " ? "\u00A0" : char}
-            </span>
-          ))}
-        </label>
-      </div>
-      <button className="bg-gradient-to-r from-[#3679ff] to-[#4f8fff] text-white border-none px-6 py-3 rounded-lg text-base font-semibold cursor-pointer transition-all duration-300 shadow-[0_4px_15px_rgba(54,121,255,0.3)] hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(54,121,255,0.4)]">
-        Submit
-      </button>
-    </>
-  );
-}
-
+// ConfigYuzhaPopup (screen)
+// ---------------------------------------------------------------------------
 export function ConfigYuzhaPopup({
   isOpen,
   onClose,
-  title = "SETTING",
+  title = "Popup Window",
   children,
 }: ConfigYuzhaPopupProps) {
-  // ---------------------------------------------------------------------------
-  // Popup runtime state and backing refs
+  // Runtime state and refs for drag/resize behaviour
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -73,8 +40,7 @@ export function ConfigYuzhaPopup({
     | null
   >(null);
 
-  // ---------------------------------------------------------------------------
-  // Sync state snapshots so drag/resize handlers always read latest values
+  // Keep refs in sync so pointer callbacks always use the latest values
   useEffect(() => {
     sizeRef.current = size;
   }, [size]);
@@ -89,8 +55,6 @@ export function ConfigYuzhaPopup({
     }
   }, [isOpen, isCentered]);
 
-  // ---------------------------------------------------------------------------
-  // Pointer handlers for dragging and resizing
   const startDrag = useCallback((event: React.MouseEvent) => {
     if (!popupRef.current) return;
 
@@ -189,9 +153,9 @@ export function ConfigYuzhaPopup({
     }
 
     const maxX = Math.max(0, window.innerWidth - newWidth);
-    const maxY = Math.max(0, window.innerHeight - newHeight);
+    const maxY = Math.max(0, Math.min(window.innerHeight - newHeight, window.innerHeight));
     newX = Math.max(0, Math.min(newX, maxX));
-    newY = Math.max(0, Math.min(newY, maxY));
+    newY = newY = Math.max(0, Math.min(newY, maxY));
 
     const nextSize = { width: newWidth, height: newHeight };
     const nextPosition = { x: newX, y: newY };
@@ -246,14 +210,11 @@ export function ConfigYuzhaPopup({
     return () => document.removeEventListener("selectstart", preventSelect);
   }, [isDragging, isResizing]);
 
-  // ---------------------------------------------------------------------------
-  // Render helpers so header/body tweaks stay isolated
   const renderHeader = () => (
     <div
       className="bg-gradient-to-r from-[#4facfe] to-[#00f2fe] text-white px-4 py-3 cursor-move select-none flex justify-between items-center active:cursor-grabbing"
       onMouseDown={startDrag}
     >
-      {/* Adjust title styling or add buttons here */}
       <div className="font-semibold text-sm">{title}</div>
       <div className="flex">
         <button
@@ -264,7 +225,7 @@ export function ConfigYuzhaPopup({
           }}
           title="Close"
         >
-          X
+          Ã—
         </button>
       </div>
     </div>
@@ -272,13 +233,10 @@ export function ConfigYuzhaPopup({
 
   const renderBody = () => (
     <div className="p-5 bg-gray-200 flex flex-col items-center justify-center gap-5" style={{ height: "calc(100% - 48px)" }}>
-      {/* Drop in custom popup content below or replace DefaultContent */}
-      {children || <DefaultContent />}
+      {children ?? null}
     </div>
   );
 
-  // ---------------------------------------------------------------------------
-  // Render
   if (!isOpen) return null;
 
   const popupStyle = isCentered
@@ -317,5 +275,45 @@ export function ConfigYuzhaPopup({
         <div className="absolute bottom-0 left-0 w-[10px] h-[10px] cursor-sw-resize" onMouseDown={(event) => startResize(event, "sw")} />
       </div>
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// ConfigYuzhaPopupButton (trigger)
+// ---------------------------------------------------------------------------
+export interface ConfigYuzhaPopupButtonProps {
+  label?: string;
+  popupTitle?: string;
+  className?: string;
+  children?: React.ReactNode;
+}
+
+export function ConfigYuzhaPopupButton({
+  label = "Sync Assets",
+  popupTitle,
+  className,
+  children,
+}: ConfigYuzhaPopupButtonProps) {
+  const [open, setOpen] = useState(false);
+
+  const handleOpen = useCallback(() => setOpen(true), []);
+  const handleClose = useCallback(() => setOpen(false), []);
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={handleOpen}
+        className={
+          className ??
+          "text-[10px] px-2 py-0.5 rounded bg-indigo-600/80 hover:bg-indigo-500/80 active:bg-indigo-600 text-white shadow-sm border border-white/10"
+        }
+      >
+        {label}
+      </button>
+      <ConfigYuzhaPopup isOpen={open} onClose={handleClose} title={popupTitle}>
+        {children ?? null}
+      </ConfigYuzhaPopup>
+    </>
   );
 }
