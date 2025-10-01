@@ -16,6 +16,7 @@
 import React from "react";
 import type { CSSProperties } from "react";
 import { ConfigYuzhaPopup } from "@shared/config/ConfigYuzhaPopup";
+import { NestedAccordion, sampleAccordionData } from "@shared/config/AccordionContent";
 
 
 // ===================================================================
@@ -453,7 +454,9 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
           </button>
         </div>
       )}
-      <ConfigYuzhaPopup isOpen={isConfigOpen} onClose={handleClosePopup} />
+      <ConfigYuzhaPopup isOpen={isConfigOpen} onClose={handleClosePopup} title="Configuration">
+        <NestedAccordion data={sampleAccordionData} />
+      </ConfigYuzhaPopup>
     </>
   );
 }
