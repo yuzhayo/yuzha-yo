@@ -14,6 +14,10 @@ export default function StageThree() {
     const canvas = canvasRef.current;
     if (!container || !canvas) return;
 
+    // Set canvas dimensions FIRST (before Three.js renderer initialization)
+    canvas.width = STAGE_SIZE;
+    canvas.height = STAGE_SIZE;
+
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(STAGE_SIZE, STAGE_SIZE, false);
@@ -51,10 +55,6 @@ export default function StageThree() {
     run().catch((error) => {
       console.error("Failed to initialise Three.js stage", error);
     });
-
-    // Set canvas dimensions for Three.js rendering
-    canvas.width = STAGE_SIZE;
-    canvas.height = STAGE_SIZE;
 
     cleanupTransform = createStageTransformer(canvas, container);
 

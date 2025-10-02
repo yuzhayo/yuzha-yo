@@ -9,7 +9,6 @@ import {
   MainScreenUpdater,
   MainScreenApiTester,
 } from "./MainScreenUtils";
-import { DragScreenButton } from "./DragScreenButton";
 
 export type MainScreenProps = {
   children?: React.ReactNode;
@@ -31,17 +30,13 @@ function MainScreenOverlay({ rendererLabel }: { rendererLabel: string }) {
       <MainScreenRendererBadge visible={gesture.open} label={rendererLabel} />
       <MainScreenApiTester visible={gesture.open} />
       <MainScreenUpdater visible={gesture.open} />
-      <div className="fixed top-32 right-3 z-[10001] pointer-events-auto">
-        <DragScreenButton />
-      </div>
     </>
   );
 }
 
 /**
- * Container host untuk stage dan overlay lain.
- * Bertugas menyediakan kanvas full-screen 2048x2048.
- * Auto-detect renderer: Three.js untuk user normal, Canvas 2D fallback untuk AI agent.
+ * MainScreen with MainScreenUtils attached
+ * Testing if overlay components break stage centering
  */
 export default function MainScreen({ children }: MainScreenProps) {
   const rendererType = useMemo(() => getRendererType(), []);
