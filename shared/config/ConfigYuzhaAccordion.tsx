@@ -14,6 +14,116 @@ interface ConfigYuzhaAccordionProps {
   imageOptions?: string[];
 }
 
+// PairInput component for X/Y values with sliders and lock
+function PairInput({
+  value,
+  onChange,
+  min = 0,
+  max = 2048,
+}: {
+  value: number[];
+  onChange: (value: number[]) => void;
+  min?: number;
+  max?: number;
+}) {
+  const [locked, setLocked] = useState(true);
+  const [ratio, setRatio] = useState(1);
+
+  const handleXChange = useCallback(
+    (newX: number) => {
+      const x = value[0] ?? 0;
+      const y = value[1] ?? 0;
+      if (locked && y !== 0) {
+        const currentRatio = x / y;
+        const newY = Math.round(newX / currentRatio);
+        onChange([newX, newY]);
+      } else {
+        onChange([newX, y]);
+      }
+    },
+    [locked, value, onChange],
+  );
+
+  const handleYChange = useCallback(
+    (newY: number) => {
+      const x = value[0] ?? 0;
+      const y = value[1] ?? 0;
+      if (locked && x !== 0) {
+        const currentRatio = x / y;
+        const newX = Math.round(newY * currentRatio);
+        onChange([newX, newY]);
+      } else {
+        onChange([x, newY]);
+      }
+    },
+    [locked, value, onChange],
+  );
+
+  const toggleLock = useCallback(() => {
+    const x = value[0] ?? 0;
+    const y = value[1] ?? 0;
+    if (!locked && y !== 0) {
+      setRatio(x / y);
+    }
+    setLocked(!locked);
+  }, [locked, value]);
+
+  const x = value[0] ?? 0;
+  const y = value[1] ?? 0;
+
+  return (
+    <div className="flex flex-col gap-2 w-full">
+      <div className="flex items-center gap-2">
+        <span className="text-xs font-medium w-4">x</span>
+        <input
+          type="number"
+          value={x}
+          onChange={(e) => handleXChange(Number(e.target.value))}
+          className="w-16 px-2 py-1 border border-gray-300 rounded text-xs"
+          min={min}
+          max={max}
+        />
+        <button
+          type="button"
+          onClick={toggleLock}
+          className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100"
+          title={locked ? "Unlock aspect ratio" : "Lock aspect ratio"}
+        >
+          {locked ? "🔒" : "🔓"}
+        </button>
+        <input
+          type="range"
+          value={x}
+          onChange={(e) => handleXChange(Number(e.target.value))}
+          className="flex-1"
+          min={min}
+          max={max}
+        />
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-xs font-medium w-4">y</span>
+        <input
+          type="number"
+          value={y}
+          onChange={(e) => handleYChange(Number(e.target.value))}
+          className="w-16 px-2 py-1 border border-gray-300 rounded text-xs"
+          min={min}
+          max={max}
+        />
+        <div className="w-[42px]"></div>
+        <input
+          type="range"
+          value={y}
+          onChange={(e) => handleYChange(Number(e.target.value))}
+          className="flex-1"
+          min={min}
+          max={max}
+        />
+      </div>
+    </div>
+  );
+}
+
 // Input components for different field types
 function EditableInput({
   child,
