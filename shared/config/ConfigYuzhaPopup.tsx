@@ -79,10 +79,8 @@ export function ConfigYuzhaPopup({
           onTouchStart={startDrag}
         />
 
-        <div className="relative bg-gray-50 flex flex-col overflow-hidden" style={{ height: "calc(100% - 48px)" }}>
-          <div
-            className="accordion-scroll w-full flex-1 overflow-y-auto overflow-x-hidden scroll-smooth"
-          >
+        <div className="relative bg-gray-50" style={{ height: "calc(100% - 48px)" }}>
+          <div className="w-full h-full">
             <div className="p-3">
               {children ? (
                 children
