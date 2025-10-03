@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react";
 import * as Accordion from "@radix-ui/react-accordion";
-import { ChevronDownIcon, EyeOpenIcon, EyeNoneIcon } from "@radix-ui/react-icons";
+import { ChevronDownIcon } from "@radix-ui/react-icons";
 import {
   getLevelStyles,
   type AccordionParentItem,
@@ -166,33 +166,6 @@ export function ConfigYuzhaAccordion({
     [],
   );
 
-  const toggleChildVisibility = useCallback(
-    (parentId: string, subParentId: string, childId: string) => {
-      setAccordionData((prevData) => {
-        const newData = prevData.map((parent) => {
-          if (parent.id === parentId) {
-            return {
-              ...parent,
-              children: parent.children.map((subParent) => {
-                if (subParent.id === subParentId) {
-                  return {
-                    ...subParent,
-                    children: subParent.children.map((child) =>
-                      child.id === childId ? { ...child, hidden: !child.hidden } : child,
-                    ),
-                  };
-                }
-                return subParent;
-              }),
-            };
-          }
-          return parent;
-        });
-        return newData;
-      });
-    },
-    [],
-  );
 
   const handleSave = useCallback(() => {
     if (onSave) {
@@ -302,46 +275,23 @@ export function ConfigYuzhaAccordion({
                             {subParent.children.map((child) => (
                               <div
                                 key={child.id}
-                                className={`
-                                  bg-white px-4 py-2 text-sm text-gray-700 ml-4 border-l-2 border-gray-300 rounded
-                                  flex items-center justify-between gap-3
-                                  ${child.hidden ? "opacity-50" : ""}
-                                `}
+                                className="bg-white px-4 py-2 text-sm text-gray-700 ml-4 border-l-2 border-gray-300 rounded flex items-center justify-between gap-3"
                                 data-testid={`accordion-child-${child.id}`}
                               >
                                 <span className="font-medium min-w-[100px]">{child.label}:</span>
-                                <div className="flex items-center gap-2 flex-1">
-                                  {!child.hidden && (
-                                    <EditableInput
-                                      child={child}
-                                      onChange={(newValue) =>
-                                        handleChildValueChange(
-                                          parent.id,
-                                          subParent.id,
-                                          child.id,
-                                          newValue,
-                                        )
-                                      }
-                                      imageOptions={imageOptions}
-                                    />
-                                  )}
-                                  {child.hidden && (
-                                    <span className="text-gray-400 text-xs italic">Hidden</span>
-                                  )}
-                                  <button
-                                    onClick={() =>
-                                      toggleChildVisibility(parent.id, subParent.id, child.id)
+                                <div className="flex-1">
+                                  <EditableInput
+                                    child={child}
+                                    onChange={(newValue) =>
+                                      handleChildValueChange(
+                                        parent.id,
+                                        subParent.id,
+                                        child.id,
+                                        newValue,
+                                      )
                                     }
-                                    className="p-1 hover:bg-gray-200 rounded transition-colors"
-                                    title={child.hidden ? "Show" : "Hide"}
-                                    data-testid={`toggle-visibility-${child.id}`}
-                                  >
-                                    {child.hidden ? (
-                                      <EyeNoneIcon className="w-4 h-4 text-gray-500" />
-                                    ) : (
-                                      <EyeOpenIcon className="w-4 h-4 text-gray-600" />
-                                    )}
-                                  </button>
+                                    imageOptions={imageOptions}
+                                  />
                                 </div>
                               </div>
                             ))}
