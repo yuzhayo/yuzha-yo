@@ -117,6 +117,36 @@ The build script originally had `tsc` without `--noEmit`, which created `.js` an
 - ✅ Dual-renderer system operational (Three.js for users, Canvas 2D for AI/screenshots)
 - ✅ Project ready for development and deployment
 
+### Performance Optimizations (Oct 3, 2025)
+
+**Target:** Mid-low end Android devices with maintained visual quality
+
+**Device Capability Detection** (`shared/utils/DeviceCapability.ts`):
+- Detects CPU cores, memory, and mobile devices
+- Classifies devices as low-end (≤4 cores or ≤4GB RAM) or high-end
+- Provides adaptive settings for renderer configuration
+
+**Three.js Renderer Optimizations** (`shared/stages/StageThree.tsx`):
+- **Render-on-Demand**: Eliminated continuous animation loop - renders once after textures load, then only on window resize (debounced at 150ms)
+- **Mobile Optimizations**: Antialias disabled on mobile, pixel ratio capped at 1 for low-end devices, power preference set to "low-power"
+- **Result**: Drastically reduced CPU/GPU usage for static scenes while maintaining visual quality
+
+**Texture Loading Optimizations** (`shared/layer/LayerEngineThree.ts`):
+- **Parallel Loading**: Changed from sequential to Promise.all for faster startup
+- **Mobile-Friendly Settings**: LinearFilter, no mipmaps, anisotropy=1 on mobile
+- **Memory Management**: Proper texture disposal in cleanup to prevent GPU memory leaks
+
+**Resize Optimizations**:
+- **StageThree.tsx**: 150ms debounce on resize to prevent rendering thrashing
+- **StageCanvas.tsx**: 100ms debounce on resize handler
+- **stage2048.ts**: Resize listener already debounced at 100ms
+
+**Performance Benefits**:
+- No continuous GPU rendering for static scenes (major battery/performance win)
+- Faster texture loading on initial load
+- Reduced memory footprint on mobile devices
+- Smoother resize performance during orientation changes
+
 ## Architecture
 
 ### Stage2048 System
