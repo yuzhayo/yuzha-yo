@@ -79,7 +79,29 @@ export function ConfigYuzhaPopup({
           onTouchStart={startDrag}
         />
 
-        <div className="relative bg-gray-50" style={{ height: "calc(100% - 48px)" }}>
+        <div className="border-b border-gray-300 bg-white px-3 py-2 flex gap-2">
+          <button
+            type="button"
+            onClick={() => handleSaveChanges(accordionData)}
+            className="px-3 py-1 text-sm bg-green-600 hover:bg-green-700 text-white rounded font-semibold transition-colors"
+          >
+            Save
+          </button>
+          <button
+            type="button"
+            className="px-3 py-1 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded font-semibold transition-colors"
+          >
+            Sync
+          </button>
+          <button
+            type="button"
+            className="px-3 py-1 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded font-semibold transition-colors"
+          >
+            Add
+          </button>
+        </div>
+
+        <div className="relative bg-gray-50" style={{ height: "calc(100% - 48px - 44px)" }}>
           <div className="w-full h-full">
             <div className="p-3">
               {children ? (
