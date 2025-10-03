@@ -16,7 +16,6 @@
 import React from "react";
 import type { CSSProperties } from "react";
 import { ConfigYuzhaPopup } from "@shared/config/ConfigYuzhaPopup";
-import { NestedAccordion, sampleAccordionData } from "@shared/config/AccordionContent";
 
 // ===================================================================
 // 🔴 BLOCK 1: STAGE DIMENSIONS AND COORDINATE SYSTEM
@@ -453,9 +452,7 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
           </button>
         </div>
       )}
-      <ConfigYuzhaPopup isOpen={isConfigOpen} onClose={handleClosePopup} title="Configuration">
-        <NestedAccordion data={sampleAccordionData} />
-      </ConfigYuzhaPopup>
+      <ConfigYuzhaPopup isOpen={isConfigOpen} onClose={handleClosePopup} title="Configuration" />
     </>
   );
 }

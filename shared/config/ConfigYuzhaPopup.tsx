@@ -1,4 +1,12 @@
-﻿import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { NestedAccordion } from "./AccordionContent";
+import type {
+  AccordionParentItem,
+  AccordionSubParentItem,
+  AccordionChildItem,
+} from "./AccordionContent";
+import configYuzhaData from "./ConfigYuzha.json";
+import imageRegistryData from "./ImageRegistry.json";
 
 export interface ConfigYuzhaPopupProps {
   isOpen: boolean;
@@ -10,20 +18,74 @@ export interface ConfigYuzhaPopupProps {
 const MIN_WIDTH = 200;
 const MIN_HEIGHT = 150;
 
+// Transform ConfigYuzha.json to accordion structure
+function transformConfigToAccordion(): AccordionParentItem[] {
+  return configYuzhaData.map((layerConfig) => {
+    const children: AccordionSubParentItem[] = [];
+
+    // Process each group in the layer config
+    if (layerConfig.groups) {
+      Object.entries(layerConfig.groups).forEach(([groupName, groupData]) => {
+        const groupChildren: AccordionChildItem[] = [];
+
+        // Convert each property to a child item
+        Object.entries(groupData).forEach(([key, value]) => {
+          let type: AccordionChildItem["type"] = "text";
+
+          if (key === "renderer") {
+            type = "dropdown";
+          } else if (key === "imageId") {
+            type = "dropdown";
+          } else if (key === "order") {
+            type = "number";
+          } else if (key === "angle") {
+            type = "number";
+          } else if (Array.isArray(value)) {
+            type = "array";
+          }
+
+          groupChildren.push({
+            id: `${layerConfig.layerId}-${groupName}-${key}`,
+            label: key.charAt(0).toUpperCase() + key.slice(1),
+            value: value as string | number | number[] | null,
+            type,
+            level: 3,
+            hidden: false,
+          });
+        });
+
+        children.push({
+          id: `${layerConfig.layerId}-${groupName}`,
+          label: groupName,
+          level: 2,
+          children: groupChildren,
+        });
+      });
+    }
+
+    return {
+      id: layerConfig.layerId,
+      label: layerConfig.layerId,
+      level: 1,
+      children,
+    };
+  });
+}
+
 // ---------------------------------------------------------------------------
 // ConfigYuzhaPopup (screen)
 // ---------------------------------------------------------------------------
 export function ConfigYuzhaPopup({
   isOpen,
   onClose,
-  title = "Popup Window",
+  title = "Layer Configuration",
   children,
 }: ConfigYuzhaPopupProps) {
   // Runtime state and refs for drag/resize behaviour
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [size, setSize] = useState({ width: 400, height: 300 });
+  const [size, setSize] = useState({ width: 600, height: 500 });
   const [isCentered, setIsCentered] = useState(true);
 
   const popupRef = useRef<HTMLDivElement>(null);
@@ -36,6 +98,10 @@ export function ConfigYuzhaPopup({
     size: { width: number; height: number };
     position: { x: number; y: number };
   } | null>(null);
+
+  // Transform data for accordion
+  const [accordionData] = useState<AccordionParentItem[]>(() => transformConfigToAccordion());
+  const [imageOptions] = useState<string[]>(() => imageRegistryData.map((img) => img.id));
 
   // Keep refs in sync so pointer callbacks always use the latest values
   useEffect(() => {
@@ -51,6 +117,13 @@ export function ConfigYuzhaPopup({
       setIsCentered(true);
     }
   }, [isOpen, isCentered]);
+
+  const handleSaveChanges = useCallback((data: AccordionParentItem[]) => {
+    console.log("Saving configuration changes:", data);
+    // Here you could implement actual save logic
+    // For now, just log the changes
+    alert("Changes saved! (Console log available)");
+  }, []);
 
   const startDrag = useCallback(
     (event: React.MouseEvent) => {
@@ -162,7 +235,7 @@ export function ConfigYuzhaPopup({
       const maxX = Math.max(0, window.innerWidth - newWidth);
       const maxY = Math.max(0, Math.min(window.innerHeight - newHeight, window.innerHeight));
       newX = Math.max(0, Math.min(newX, maxX));
-      newY = newY = Math.max(0, Math.min(newY, maxY));
+      newY = Math.max(0, Math.min(newY, maxY));
 
       const nextSize = { width: newWidth, height: newHeight };
       const nextPosition = { x: newX, y: newY };
@@ -233,8 +306,9 @@ export function ConfigYuzhaPopup({
             onClose();
           }}
           title="Close"
+          data-testid="close-popup-button"
         >
-          Ã—
+          ×
         </button>
       </div>
     </div>
@@ -248,7 +322,15 @@ export function ConfigYuzhaPopup({
           style={{ maxHeight: "100%" }}
         >
           <div className="p-3">
-            {children ?? <div className="text-gray-500 p-4">No content</div>}
+            {children ? (
+              children
+            ) : (
+              <NestedAccordion
+                data={accordionData}
+                onSave={handleSaveChanges}
+                imageOptions={imageOptions}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -282,6 +364,7 @@ export function ConfigYuzhaPopup({
         className="absolute bg-white rounded-xl shadow-[0_25px_50px_rgba(0,0,0,0.25)] overflow-hidden transition-shadow duration-300 hover:shadow-[0_35px_60px_rgba(0,0,0,0.3)]"
         style={popupStyle}
         onMouseDown={(event) => event.stopPropagation()}
+        data-testid="config-popup"
       >
         {renderHeader()}
         {renderBody()}
@@ -353,11 +436,12 @@ export function ConfigYuzhaPopupButton({
           className ??
           "text-[10px] px-2 py-0.5 rounded bg-indigo-600/80 hover:bg-indigo-500/80 active:bg-indigo-600 text-white shadow-sm border border-white/10"
         }
+        data-testid="sync-assets-button"
       >
         {label}
       </button>
       <ConfigYuzhaPopup isOpen={open} onClose={handleClose} title={popupTitle}>
-        {children ?? null}
+        {children}
       </ConfigYuzhaPopup>
     </>
   );

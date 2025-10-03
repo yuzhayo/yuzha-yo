@@ -1,29 +1,41 @@
 [
   {
     "layerId": "stars-background",
-    "renderer": "2D",
-    "order": 50,
-    "imageId": "STARBG",
-    "scale": [1, 1],
-    "position": [1024, 1024],
-    "angle": null
+    "groups": {
+      "Basic Config": {
+        "renderer": "2D",
+        "order": 50,
+        "imageId": "STARBG",
+        "scale": [1, 1],
+        "position": [1024, 1024],
+        "angle": null
+      }
+    }
   },
   {
     "layerId": "clock-bg",
-    "renderer": "2D",
-    "order": 100,
-    "imageId": "CLOCKBG",
-    "scale": [1, 1],
-    "position": [1024, 1024],
-    "angle": null
+    "groups": {
+      "Basic Config": {
+        "renderer": "2D",
+        "order": 100,
+        "imageId": "CLOCKBG",
+        "scale": [1, 1],
+        "position": [1024, 1024],
+        "angle": null
+      }
+    }
   },
   {
     "layerId": "clock-glow",
-    "renderer": "2D",
-    "order": 150,
-    "imageId": "CLOCKGLOW",
-    "scale": [1, 1],
-    "position": [1024, 1024],
-    "angle": null
+    "groups": {
+      "Basic Config": {
+        "renderer": "2D",
+        "order": 150,
+        "imageId": "CLOCKGLOW",
+        "scale": [1, 1],
+        "position": [1024, 1024],
+        "angle": null
+      }
+    }
   }
 ]
