@@ -3,7 +3,10 @@ import { useConfigYuzhaPopupDragResize } from "./ConfigYuzhaPopupDragResize";
 import { ConfigYuzhaPopupHeader } from "./ConfigYuzhaPopupHeader";
 import { ConfigYuzhaPopupHandles } from "./ConfigYuzhaPopupHandles";
 import { ConfigYuzhaAccordion } from "./ConfigYuzhaAccordion";
-import { transformConfigToAccordion } from "./ConfigYuzhaPopupUtils";
+import {
+  loadConfigFromLocalStorage,
+  saveConfigToLocalStorage,
+} from "./ConfigYuzhaPopupUtils";
 import type { ConfigYuzhaPopupProps, ConfigYuzhaPopupButtonProps } from "./ConfigYuzhaPopupUtils";
 import type { AccordionParentItem } from "./ConfigYuzhaAccordionUtils";
 import imageRegistryData from "./ImageRegistry.json";
@@ -28,14 +31,16 @@ export function ConfigYuzhaPopup({
     startResize,
   } = useConfigYuzhaPopupDragResize();
 
-  // Transform data for accordion
-  const [accordionData] = useState<AccordionParentItem[]>(() => transformConfigToAccordion());
+  // Transform data for accordion - load from localStorage
+  const [accordionData, setAccordionData] = useState<AccordionParentItem[]>(() =>
+    loadConfigFromLocalStorage(),
+  );
   const [imageOptions] = useState<string[]>(() => imageRegistryData.map((img) => img.id));
 
-  const handleSaveChanges = useCallback((_data: AccordionParentItem[]) => {
-    // Here you could implement actual save logic
-    // For now, just log the changes
-    alert("Changes saved! (Console log available)");
+  const handleSaveChanges = useCallback((data: AccordionParentItem[]) => {
+    saveConfigToLocalStorage(data);
+    setAccordionData(data);
+    alert("Configuration saved to localStorage!");
   }, []);
 
   if (!isOpen) return null;
