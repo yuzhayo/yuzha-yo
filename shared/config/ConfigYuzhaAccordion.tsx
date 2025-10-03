@@ -209,6 +209,22 @@ function EditableInput({
       );
 
     case "array":
+      // Use PairInput for Position and Scale fields
+      if (
+        (child.label.toLowerCase() === "position" || child.label.toLowerCase() === "scale") &&
+        Array.isArray(child.value) &&
+        child.value.length === 2
+      ) {
+        return (
+          <PairInput
+            value={child.value as number[]}
+            onChange={(newValue) => onChange(newValue)}
+            min={0}
+            max={2048}
+          />
+        );
+      }
+      // Fallback to text input for other arrays
       return (
         <input
           type="text"
