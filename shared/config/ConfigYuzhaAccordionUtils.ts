@@ -27,17 +27,17 @@ export interface AccordionParentItem {
 export const getLevelStyles = (level: number) => {
   const styles = {
     1: {
-      trigger: "bg-blue-600 text-white font-bold text-lg px-4 py-4 border-l-4 border-blue-800",
+      trigger: "!bg-blue-600 !text-white font-bold text-lg px-4 py-4 border-l-4 border-blue-800",
       content: "bg-blue-50",
     },
     2: {
       trigger:
-        "bg-blue-400 text-gray-900 font-semibold text-base px-6 py-3 border-l-2 border-blue-600 ml-2",
+        "!bg-blue-400 !text-gray-900 font-semibold text-base px-6 py-3 border-l-2 border-blue-600 ml-2",
       content: "bg-blue-100",
     },
     3: {
       trigger:
-        "bg-gray-300 text-gray-900 font-medium text-sm px-8 py-2 border-l-2 border-gray-600 ml-4",
+        "!bg-gray-300 !text-gray-900 font-medium text-sm px-8 py-2 border-l-2 border-gray-600 ml-4",
       content: "bg-white",
     },
   };

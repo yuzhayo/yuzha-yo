@@ -211,7 +211,7 @@ export function ConfigYuzhaAccordion({
           <Accordion.Item
             key={parent.id}
             value={parent.id}
-            className="border-2 border-gray-400 rounded-md overflow-hidden"
+            className="border-2 border-gray-400 rounded-md"
             data-testid={`accordion-parent-${parent.id}`}
           >
             <Accordion.Trigger
@@ -262,7 +262,7 @@ export function ConfigYuzhaAccordion({
                       <Accordion.Item
                         key={subParent.id}
                         value={subParent.id}
-                        className="border border-gray-300 rounded-md overflow-hidden ml-2"
+                        className="border border-gray-300 rounded-md ml-2"
                         data-testid={`accordion-subparent-${subParent.id}`}
                       >
                         <Accordion.Trigger
