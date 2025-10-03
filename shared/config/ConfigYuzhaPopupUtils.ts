@@ -13,6 +13,7 @@ export const MIN_WIDTH = 200;
 export const MIN_HEIGHT = 150;
 export const getMaxWidth = () => window.innerWidth * 0.95;
 export const getMaxHeight = () => window.innerHeight * 0.95;
+export const LOCALSTORAGE_KEY = "configYuzhaData";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -115,3 +116,110 @@ export const getEventCoordinates = (
     y: (event as MouseEvent | React.MouseEvent).clientY,
   };
 };
+
+// ---------------------------------------------------------------------------
+// LocalStorage Functions
+// ---------------------------------------------------------------------------
+
+/**
+ * Transform accordion data back to original ConfigYuzha.json format
+ */
+export function transformAccordionToConfig(accordionData: AccordionParentItem[]) {
+  return accordionData.map((parent) => {
+    const groups: Record<string, Record<string, string | number | number[] | null>> = {};
+
+    parent.children.forEach((subParent) => {
+      const groupData: Record<string, string | number | number[] | null> = {};
+
+      subParent.children.forEach((child) => {
+        const key = child.label.charAt(0).toLowerCase() + child.label.slice(1);
+        groupData[key] = child.value;
+      });
+
+      groups[subParent.label] = groupData;
+    });
+
+    return {
+      layerId: parent.id,
+      groups,
+    };
+  });
+}
+
+/**
+ * Save accordion data to localStorage
+ */
+export function saveConfigToLocalStorage(accordionData: AccordionParentItem[]): void {
+  try {
+    const configData = transformAccordionToConfig(accordionData);
+    localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(configData));
+  } catch (error) {
+    console.error("Failed to save config to localStorage:", error);
+  }
+}
+
+/**
+ * Load config from localStorage, fallback to original JSON
+ */
+export function loadConfigFromLocalStorage(): AccordionParentItem[] {
+  try {
+    const stored = localStorage.getItem(LOCALSTORAGE_KEY);
+    if (stored) {
+      const configData = JSON.parse(stored);
+      // Transform stored data to accordion format
+      return configData.map((layerConfig: { layerId: string; groups: Record<string, Record<string, string | number | number[] | null>> }) => {
+        const children: AccordionSubParentItem[] = [];
+
+        if (layerConfig.groups) {
+          Object.entries(layerConfig.groups).forEach(([groupName, groupData]) => {
+            const groupChildren: AccordionChildItem[] = [];
+
+            Object.entries(groupData).forEach(([key, value]) => {
+              let type: AccordionChildItem["type"] = "text";
+
+              if (key === "renderer") {
+                type = "dropdown";
+              } else if (key === "imageId") {
+                type = "dropdown";
+              } else if (key === "order") {
+                type = "number";
+              } else if (key === "angle") {
+                type = "number";
+              } else if (Array.isArray(value)) {
+                type = "array";
+              }
+
+              groupChildren.push({
+                id: `${layerConfig.layerId}-${groupName}-${key}`,
+                label: key.charAt(0).toUpperCase() + key.slice(1),
+                value: value as string | number | number[] | null,
+                type,
+                level: 3,
+                hidden: false,
+              });
+            });
+
+            children.push({
+              id: `${layerConfig.layerId}-${groupName}`,
+              label: groupName,
+              level: 2,
+              children: groupChildren,
+            });
+          });
+        }
+
+        return {
+          id: layerConfig.layerId,
+          label: layerConfig.layerId,
+          level: 1,
+          children,
+        };
+      });
+    }
+  } catch (error) {
+    console.error("Failed to load config from localStorage:", error);
+  }
+
+  // Fallback to original JSON
+  return transformConfigToAccordion();
+}
