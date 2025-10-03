@@ -167,54 +167,59 @@ export function loadConfigFromLocalStorage(): AccordionParentItem[] {
     if (stored) {
       const configData = JSON.parse(stored);
       // Transform stored data to accordion format
-      return configData.map((layerConfig: { layerId: string; groups: Record<string, Record<string, string | number | number[] | null>> }) => {
-        const children: AccordionSubParentItem[] = [];
+      return configData.map(
+        (layerConfig: {
+          layerId: string;
+          groups: Record<string, Record<string, string | number | number[] | null>>;
+        }) => {
+          const children: AccordionSubParentItem[] = [];
 
-        if (layerConfig.groups) {
-          Object.entries(layerConfig.groups).forEach(([groupName, groupData]) => {
-            const groupChildren: AccordionChildItem[] = [];
+          if (layerConfig.groups) {
+            Object.entries(layerConfig.groups).forEach(([groupName, groupData]) => {
+              const groupChildren: AccordionChildItem[] = [];
 
-            Object.entries(groupData).forEach(([key, value]) => {
-              let type: AccordionChildItem["type"] = "text";
+              Object.entries(groupData).forEach(([key, value]) => {
+                let type: AccordionChildItem["type"] = "text";
 
-              if (key === "renderer") {
-                type = "dropdown";
-              } else if (key === "imageId") {
-                type = "dropdown";
-              } else if (key === "order") {
-                type = "number";
-              } else if (key === "angle") {
-                type = "number";
-              } else if (Array.isArray(value)) {
-                type = "array";
-              }
+                if (key === "renderer") {
+                  type = "dropdown";
+                } else if (key === "imageId") {
+                  type = "dropdown";
+                } else if (key === "order") {
+                  type = "number";
+                } else if (key === "angle") {
+                  type = "number";
+                } else if (Array.isArray(value)) {
+                  type = "array";
+                }
 
-              groupChildren.push({
-                id: `${layerConfig.layerId}-${groupName}-${key}`,
-                label: key.charAt(0).toUpperCase() + key.slice(1),
-                value: value as string | number | number[] | null,
-                type,
-                level: 3,
-                hidden: false,
+                groupChildren.push({
+                  id: `${layerConfig.layerId}-${groupName}-${key}`,
+                  label: key.charAt(0).toUpperCase() + key.slice(1),
+                  value: value as string | number | number[] | null,
+                  type,
+                  level: 3,
+                  hidden: false,
+                });
+              });
+
+              children.push({
+                id: `${layerConfig.layerId}-${groupName}`,
+                label: groupName,
+                level: 2,
+                children: groupChildren,
               });
             });
+          }
 
-            children.push({
-              id: `${layerConfig.layerId}-${groupName}`,
-              label: groupName,
-              level: 2,
-              children: groupChildren,
-            });
-          });
-        }
-
-        return {
-          id: layerConfig.layerId,
-          label: layerConfig.layerId,
-          level: 1,
-          children,
-        };
-      });
+          return {
+            id: layerConfig.layerId,
+            label: layerConfig.layerId,
+            level: 1,
+            children,
+          };
+        },
+      );
     }
   } catch (error) {
     console.error("Failed to load config from localStorage:", error);

@@ -1,7 +1,13 @@
 import type React from "react";
 import { useState, useRef, useEffect, useCallback } from "react";
 import type { Position, Size } from "./ConfigYuzhaPopupUtils";
-import { MIN_WIDTH, MIN_HEIGHT, getMaxWidth, getMaxHeight, getEventCoordinates } from "./ConfigYuzhaPopupUtils";
+import {
+  MIN_WIDTH,
+  MIN_HEIGHT,
+  getMaxWidth,
+  getMaxHeight,
+  getEventCoordinates,
+} from "./ConfigYuzhaPopupUtils";
 
 interface UseDragResizeReturn {
   isDragging: boolean;

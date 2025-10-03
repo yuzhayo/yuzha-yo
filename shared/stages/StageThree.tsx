@@ -64,7 +64,7 @@ export default function StageThree() {
       cleanupLayers = await mountThreeLayers(scene, twoDLayers);
 
       window.addEventListener("resize", handleResize);
-      
+
       render();
     };
 

@@ -27,46 +27,49 @@ function PairInput({
   max?: number;
 }) {
   const [locked, setLocked] = useState(true);
-  const [ratio, setRatio] = useState(1);
+  const [storedRatio, setStoredRatio] = useState<number>(1);
+
+  // Update stored ratio whenever both values are non-zero
+  React.useEffect(() => {
+    const x = value[0] ?? 0;
+    const y = value[1] ?? 0;
+    if (x !== 0 && y !== 0 && isFinite(x) && isFinite(y)) {
+      const ratio = x / y;
+      if (isFinite(ratio)) {
+        setStoredRatio(ratio);
+      }
+    }
+  }, [value]);
 
   const handleXChange = useCallback(
     (newX: number) => {
-      const x = value[0] ?? 0;
       const y = value[1] ?? 0;
-      if (locked && y !== 0) {
-        const currentRatio = x / y;
-        const newY = Math.round(newX / currentRatio);
-        onChange([newX, newY]);
+      if (locked && isFinite(storedRatio) && storedRatio > 0) {
+        const newY = Math.round(newX / storedRatio);
+        onChange([newX, isFinite(newY) ? newY : y]);
       } else {
         onChange([newX, y]);
       }
     },
-    [locked, value, onChange],
+    [locked, value, onChange, storedRatio],
   );
 
   const handleYChange = useCallback(
     (newY: number) => {
       const x = value[0] ?? 0;
-      const y = value[1] ?? 0;
-      if (locked && x !== 0) {
-        const currentRatio = x / y;
-        const newX = Math.round(newY * currentRatio);
-        onChange([newX, newY]);
+      if (locked && isFinite(storedRatio) && storedRatio > 0) {
+        const newX = Math.round(newY * storedRatio);
+        onChange([isFinite(newX) ? newX : x, newY]);
       } else {
         onChange([x, newY]);
       }
     },
-    [locked, value, onChange],
+    [locked, value, onChange, storedRatio],
   );
 
   const toggleLock = useCallback(() => {
-    const x = value[0] ?? 0;
-    const y = value[1] ?? 0;
-    if (!locked && y !== 0) {
-      setRatio(x / y);
-    }
     setLocked(!locked);
-  }, [locked, value]);
+  }, [locked]);
 
   const x = value[0] ?? 0;
   const y = value[1] ?? 0;
@@ -291,7 +294,6 @@ export function ConfigYuzhaAccordion({
     },
     [],
   );
-
 
   const handleSave = useCallback(() => {
     if (onSave) {

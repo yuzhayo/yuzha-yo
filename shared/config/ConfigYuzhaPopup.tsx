@@ -3,10 +3,7 @@ import { useConfigYuzhaPopupDragResize } from "./ConfigYuzhaPopupDragResize";
 import { ConfigYuzhaPopupHeader } from "./ConfigYuzhaPopupHeader";
 import { ConfigYuzhaPopupHandles } from "./ConfigYuzhaPopupHandles";
 import { ConfigYuzhaAccordion } from "./ConfigYuzhaAccordion";
-import {
-  loadConfigFromLocalStorage,
-  saveConfigToLocalStorage,
-} from "./ConfigYuzhaPopupUtils";
+import { loadConfigFromLocalStorage, saveConfigToLocalStorage } from "./ConfigYuzhaPopupUtils";
 import type { ConfigYuzhaPopupProps, ConfigYuzhaPopupButtonProps } from "./ConfigYuzhaPopupUtils";
 import type { AccordionParentItem } from "./ConfigYuzhaAccordionUtils";
 import imageRegistryData from "./ImageRegistry.json";
@@ -20,16 +17,8 @@ export function ConfigYuzhaPopup({
   title = "Layer Configuration",
   children,
 }: ConfigYuzhaPopupProps) {
-  const {
-    isDragging,
-    isResizing,
-    position,
-    size,
-    isCentered,
-    popupRef,
-    startDrag,
-    startResize,
-  } = useConfigYuzhaPopupDragResize();
+  const { isDragging, isResizing, position, size, isCentered, popupRef, startDrag, startResize } =
+    useConfigYuzhaPopupDragResize();
 
   // Transform data for accordion - load from localStorage
   const [accordionData, setAccordionData] = useState<AccordionParentItem[]>(() =>

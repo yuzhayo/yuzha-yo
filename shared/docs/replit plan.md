@@ -73,7 +73,7 @@ Purpose: Merge basic transform logic from all three systems.
 import type { Vec2, UnifiedPosition, LayerRenderable } from './LayerTypes';
 // STYLE SECTION (unused)
 // STATE SECTION
-const DEFAULT_ANCHOR = { x: 0.5, y: 0.5 };
+const DEFAULT*ANCHOR = { x: 0.5, y: 0.5 };
 const DEFAULT_SCALE = { x: 1, y: 1 };
 // LOGIC SECTION
 export interface BasicConfig {
@@ -99,8 +99,8 @@ visible: boolean;
 // Launcher: percentage to pixels (proven approach)
 export function percentageToPixels(position: UnifiedPosition, canvasSize: Vec2): Vec2 {
 return {
-x: (position.xPct / 100) _ canvasSize.x,
-y: (position.yPct / 100) _ canvasSize.y
+x: (position.xPct / 100) * canvasSize.x,
+y: (position.yPct / 100) \_ canvasSize.y
 };
 }
 // Variant: pure function approach
@@ -241,8 +241,8 @@ const scaleX = viewportWidth / STAGE_WIDTH;
 const scaleY = viewportHeight / STAGE_HEIGHT;
 const scale = Math.max(scaleX, scaleY); // Cover behavior
 
-const scaledWidth = STAGE_WIDTH _ scale;
-const scaledHeight = STAGE_HEIGHT _ scale;
+const scaledWidth = STAGE*WIDTH * scale;
+const scaledHeight = STAGE*HEIGHT * scale;
 
 return {
 scale,
@@ -254,15 +254,15 @@ containerHeight: scaledHeight
 }
 // Upgraded: Three.js world coordinates
 export function stageToWorld(stageX: number, stageY: number): [number, number] {
-const worldX = stageX - STAGE_WIDTH / 2;
+const worldX = stageX - STAGE*WIDTH / 2;
 const worldY = -(stageY - STAGE_HEIGHT / 2);
 return [worldX, worldY];
 }
 // Launcher: proven percentage system
 export function percentageToStage(position: UnifiedPosition): Vec2 {
 return {
-x: (position.xPct / 100) _ STAGE_WIDTH,
-y: (position.yPct / 100) _ STAGE_HEIGHT
+x: (position.xPct / 100) * STAGE*WIDTH,
+y: (position.yPct / 100) * STAGE_HEIGHT
 };
 }
 // Launcher: viewport to stage coordinates
@@ -446,6 +446,7 @@ freqHz: 0.8
 // UI SECTION
 export function App() {
 return (
+
 <div className="w-full h-screen bg-black">
 <LayerReactScreen 
         layers={[clockConfig]}

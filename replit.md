@@ -109,6 +109,7 @@ The build script originally had `tsc` without `--noEmit`, which created `.js` an
 ### Recent Changes
 
 **October 3, 2025** - GitHub Import Setup Complete
+
 - ✅ Fresh GitHub clone imported and configured for Replit environment
 - ✅ All npm dependencies installed and verified (502 packages, 0 vulnerabilities)
 - ✅ Frontend workflow configured and running (`npm run dev:5000` on port 5000)
@@ -120,6 +121,7 @@ The build script originally had `tsc` without `--noEmit`, which created `.js` an
 - ✅ Project ready for development and deployment
 
 **September 30, 2025** - Initial Setup
+
 - ✅ Frontend workflow configured and running (`npm run dev:5000` on port 5000)
 - ✅ Vite configuration verified (host: 0.0.0.0, allowedHosts: true, port 5000)
 - ✅ Deployment configuration set up for autoscale (build + preview)
@@ -131,26 +133,31 @@ The build script originally had `tsc` without `--noEmit`, which created `.js` an
 **Target:** Mid-low end Android devices with maintained visual quality
 
 **Device Capability Detection** (`shared/utils/DeviceCapability.ts`):
+
 - Detects CPU cores, memory, and mobile devices
 - Classifies devices as low-end (≤4 cores or ≤4GB RAM) or high-end
 - Provides adaptive settings for renderer configuration
 
 **Three.js Renderer Optimizations** (`shared/stages/StageThree.tsx`):
+
 - **Render-on-Demand**: Eliminated continuous animation loop - renders once after textures load, then only on window resize (debounced at 150ms)
 - **Mobile Optimizations**: Antialias disabled on mobile, pixel ratio capped at 1 for low-end devices, power preference set to "low-power"
 - **Result**: Drastically reduced CPU/GPU usage for static scenes while maintaining visual quality
 
 **Texture Loading Optimizations** (`shared/layer/LayerEngineThree.ts`):
+
 - **Parallel Loading**: Changed from sequential to Promise.all for faster startup
 - **Mobile-Friendly Settings**: LinearFilter, no mipmaps, anisotropy=1 on mobile
 - **Memory Management**: Proper texture disposal in cleanup to prevent GPU memory leaks
 
 **Resize Optimizations**:
+
 - **StageThree.tsx**: 150ms debounce on resize to prevent rendering thrashing
 - **StageCanvas.tsx**: 100ms debounce on resize handler
 - **stage2048.ts**: Resize listener already debounced at 100ms
 
 **Performance Benefits**:
+
 - No continuous GPU rendering for static scenes (major battery/performance win)
 - Faster texture loading on initial load
 - Reduced memory footprint on mobile devices
