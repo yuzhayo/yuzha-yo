@@ -17,6 +17,8 @@ export interface ConfigYuzhaPopupProps {
 
 const MIN_WIDTH = 200;
 const MIN_HEIGHT = 150;
+const getMaxWidth = () => window.innerWidth * 0.95;
+const getMaxHeight = () => window.innerHeight * 0.95;
 
 // Transform ConfigYuzha.json to accordion structure
 function transformConfigToAccordion(): AccordionParentItem[] {
@@ -85,7 +87,10 @@ export function ConfigYuzhaPopup({
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [size, setSize] = useState({ width: 600, height: 500 });
+  const [size, setSize] = useState(() => ({
+    width: Math.floor(window.innerWidth * 0.5),
+    height: Math.floor(window.innerHeight * 0.5),
+  }));
   const [isCentered, setIsCentered] = useState(true);
 
   const popupRef = useRef<HTMLDivElement>(null);
@@ -279,22 +284,22 @@ export function ConfigYuzhaPopup({
         let newY = origin.position.y;
 
         if (handle.includes("e")) {
-          newWidth = Math.max(MIN_WIDTH, origin.size.width + deltaX);
+          newWidth = Math.max(MIN_WIDTH, Math.min(getMaxWidth(), origin.size.width + deltaX));
         }
 
         if (handle.includes("w")) {
           const candidateWidth = origin.size.width - deltaX;
-          newWidth = Math.max(MIN_WIDTH, candidateWidth);
+          newWidth = Math.max(MIN_WIDTH, Math.min(getMaxWidth(), candidateWidth));
           newX = origin.position.x + (origin.size.width - newWidth);
         }
 
         if (handle.includes("s")) {
-          newHeight = Math.max(MIN_HEIGHT, origin.size.height + deltaY);
+          newHeight = Math.max(MIN_HEIGHT, Math.min(getMaxHeight(), origin.size.height + deltaY));
         }
 
         if (handle.includes("n")) {
           const candidateHeight = origin.size.height - deltaY;
-          newHeight = Math.max(MIN_HEIGHT, candidateHeight);
+          newHeight = Math.max(MIN_HEIGHT, Math.min(getMaxHeight(), candidateHeight));
           newY = origin.position.y + (origin.size.height - newHeight);
         }
 
@@ -388,6 +393,29 @@ export function ConfigYuzhaPopup({
       }
     };
   }, []);
+
+  // Handle window resize - ensure popup stays within bounds
+  useEffect(() => {
+    const handleWindowResize = () => {
+      const maxW = getMaxWidth();
+      const maxH = getMaxHeight();
+
+      setSize((prevSize) => ({
+        width: Math.min(prevSize.width, maxW),
+        height: Math.min(prevSize.height, maxH),
+      }));
+
+      if (!isCentered) {
+        setPosition((prevPos) => ({
+          x: Math.min(prevPos.x, Math.max(0, window.innerWidth - sizeRef.current.width)),
+          y: Math.min(prevPos.y, Math.max(0, window.innerHeight - sizeRef.current.height)),
+        }));
+      }
+    };
+
+    window.addEventListener("resize", handleWindowResize);
+    return () => window.removeEventListener("resize", handleWindowResize);
+  }, [isCentered]);
 
   const renderHeader = () => (
     <div

@@ -93,7 +93,7 @@ function EditableInput({
           <select
             value={String(child.value)}
             onChange={(e) => onChange(e.target.value)}
-            className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
             data-testid={`input-${child.id}`}
           >
             <option value="2D">2D</option>
@@ -105,7 +105,7 @@ function EditableInput({
           <select
             value={String(child.value)}
             onChange={(e) => onChange(e.target.value)}
-            className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
             data-testid={`input-${child.id}`}
           >
             {imageOptions.map((opt) => (
@@ -121,7 +121,7 @@ function EditableInput({
           type="text"
           value={String(child.value)}
           onChange={(e) => onChange(e.target.value)}
-          className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
           data-testid={`input-${child.id}`}
         />
       );
@@ -133,7 +133,7 @@ function EditableInput({
           value={child.value === null ? "null" : String(child.value)}
           onChange={(e) => handleNumberChange(e.target.value)}
           placeholder="number or null"
-          className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
           data-testid={`input-${child.id}`}
         />
       );
@@ -145,7 +145,7 @@ function EditableInput({
           value={Array.isArray(child.value) ? child.value.join(", ") : ""}
           onChange={(e) => handleArrayChange(e.target.value)}
           placeholder="e.g., 1, 2"
-          className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
           data-testid={`input-${child.id}`}
         />
       );
@@ -157,7 +157,7 @@ function EditableInput({
           type="text"
           value={String(child.value)}
           onChange={(e) => onChange(e.target.value)}
-          className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
           data-testid={`input-${child.id}`}
         />
       );
