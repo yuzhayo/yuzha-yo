@@ -127,22 +127,30 @@ export function ConfigYuzhaPopup({
   }, []);
 
   // Helper to extract coordinates from mouse or touch event
-  const getEventCoordinates = (event: MouseEvent | TouchEvent | React.MouseEvent | React.TouchEvent) => {
-    if ('touches' in event && event.touches.length > 0) {
-      return { x: event.touches[0].clientX, y: event.touches[0].clientY };
+  const getEventCoordinates = (
+    event: MouseEvent | TouchEvent | React.MouseEvent | React.TouchEvent,
+  ) => {
+    if ("touches" in event && event.touches.length > 0) {
+      return { x: event.touches[0]!.clientX, y: event.touches[0]!.clientY };
     }
-    return { x: (event as MouseEvent | React.MouseEvent).clientX, y: (event as MouseEvent | React.MouseEvent).clientY };
+    return {
+      x: (event as MouseEvent | React.MouseEvent).clientX,
+      y: (event as MouseEvent | React.MouseEvent).clientY,
+    };
   };
 
   // Direct DOM manipulation for performance (GPU accelerated)
-  const updatePopupTransform = useCallback((x: number, y: number, width: number, height: number) => {
-    if (!popupRef.current) return;
-    
-    // Use transform for GPU acceleration instead of left/top
-    popupRef.current.style.transform = `translate(${x}px, ${y}px)`;
-    popupRef.current.style.width = `${width}px`;
-    popupRef.current.style.height = `${height}px`;
-  }, []);
+  const updatePopupTransform = useCallback(
+    (x: number, y: number, width: number, height: number) => {
+      if (!popupRef.current) return;
+
+      // Use transform for GPU acceleration instead of left/top
+      popupRef.current.style.transform = `translate(${x}px, ${y}px)`;
+      popupRef.current.style.width = `${width}px`;
+      popupRef.current.style.height = `${height}px`;
+    },
+    [],
+  );
 
   const startDrag = useCallback(
     (event: React.MouseEvent | React.TouchEvent) => {
@@ -172,7 +180,7 @@ export function ConfigYuzhaPopup({
       if (!isDragging || !popupRef.current) return;
 
       // Prevent default touch behavior
-      if ('touches' in event) {
+      if ("touches" in event) {
         event.preventDefault();
       }
 
@@ -246,7 +254,7 @@ export function ConfigYuzhaPopup({
       if (!isResizing) return;
 
       // Prevent default touch behavior
-      if ('touches' in event) {
+      if ("touches" in event) {
         event.preventDefault();
       }
 
@@ -384,7 +392,7 @@ export function ConfigYuzhaPopup({
   const renderHeader = () => (
     <div
       className="bg-gradient-to-r from-[#4facfe] to-[#00f2fe] text-white px-4 py-3 cursor-move select-none flex justify-between items-center active:cursor-grabbing"
-      style={{ touchAction: 'none' }}
+      style={{ touchAction: "none" }}
       onMouseDown={startDrag}
       onTouchStart={startDrag}
     >
@@ -454,7 +462,11 @@ export function ConfigYuzhaPopup({
       <div
         ref={popupRef}
         className="absolute bg-white rounded-xl shadow-[0_25px_50px_rgba(0,0,0,0.25)] overflow-hidden transition-shadow duration-300 hover:shadow-[0_35px_60px_rgba(0,0,0,0.3)]"
-        style={{ ...popupStyle, touchAction: 'none', willChange: isDragging || isResizing ? 'transform, width, height' : 'auto' }}
+        style={{
+          ...popupStyle,
+          touchAction: "none",
+          willChange: isDragging || isResizing ? "transform, width, height" : "auto",
+        }}
         onMouseDown={(event) => event.stopPropagation()}
         data-testid="config-popup"
       >
@@ -463,49 +475,49 @@ export function ConfigYuzhaPopup({
 
         <div
           className="absolute top-0 left-0 right-0 h-[5px] cursor-n-resize"
-          style={{ touchAction: 'none' }}
+          style={{ touchAction: "none" }}
           onMouseDown={(event) => startResize(event, "n")}
           onTouchStart={(event) => startResize(event, "n")}
         />
         <div
           className="absolute bottom-0 left-0 right-0 h-[5px] cursor-s-resize"
-          style={{ touchAction: 'none' }}
+          style={{ touchAction: "none" }}
           onMouseDown={(event) => startResize(event, "s")}
           onTouchStart={(event) => startResize(event, "s")}
         />
         <div
           className="absolute top-0 right-0 bottom-0 w-[5px] cursor-e-resize"
-          style={{ touchAction: 'none' }}
+          style={{ touchAction: "none" }}
           onMouseDown={(event) => startResize(event, "e")}
           onTouchStart={(event) => startResize(event, "e")}
         />
         <div
           className="absolute top-0 left-0 bottom-0 w-[5px] cursor-w-resize"
-          style={{ touchAction: 'none' }}
+          style={{ touchAction: "none" }}
           onMouseDown={(event) => startResize(event, "w")}
           onTouchStart={(event) => startResize(event, "w")}
         />
         <div
           className="absolute top-0 right-0 w-[10px] h-[10px] cursor-ne-resize"
-          style={{ touchAction: 'none' }}
+          style={{ touchAction: "none" }}
           onMouseDown={(event) => startResize(event, "ne")}
           onTouchStart={(event) => startResize(event, "ne")}
         />
         <div
           className="absolute top-0 left-0 w-[10px] h-[10px] cursor-nw-resize"
-          style={{ touchAction: 'none' }}
+          style={{ touchAction: "none" }}
           onMouseDown={(event) => startResize(event, "nw")}
           onTouchStart={(event) => startResize(event, "nw")}
         />
         <div
           className="absolute bottom-0 right-0 w-[10px] h-[10px] cursor-se-resize"
-          style={{ touchAction: 'none' }}
+          style={{ touchAction: "none" }}
           onMouseDown={(event) => startResize(event, "se")}
           onTouchStart={(event) => startResize(event, "se")}
         />
         <div
           className="absolute bottom-0 left-0 w-[10px] h-[10px] cursor-sw-resize"
-          style={{ touchAction: 'none' }}
+          style={{ touchAction: "none" }}
           onMouseDown={(event) => startResize(event, "sw")}
           onTouchStart={(event) => startResize(event, "sw")}
         />

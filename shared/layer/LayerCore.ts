@@ -6,13 +6,20 @@ export type Layer2DTransform = {
 };
 
 export function compute2DTransform(entry: LayerConfigEntry, stageSize: number): Layer2DTransform {
-  const [sx, sy] = normalizePair(entry.scale, 1, 1);
+  const [sxPercent, syPercent] = normalizePair(entry.scale, 100, 100);
+  const sx = clampedPercentToScale(sxPercent);
+  const sy = clampedPercentToScale(syPercent);
   const defaultCenter = stageSize / 2;
   const [px, py] = normalizePair(entry.position, defaultCenter, defaultCenter);
   return {
     position: { x: px, y: py },
     scale: { x: sx, y: sy },
   };
+}
+
+function clampedPercentToScale(percent: number): number {
+  const clamped = Math.max(10, Math.min(500, percent));
+  return clamped / 100;
 }
 
 function normalizePair(

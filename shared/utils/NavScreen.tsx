@@ -112,7 +112,7 @@ export type NavGestureOptions = {
 // Hold-tap gesture handling optimized for mobile/Android
 // ===================================================================
 
-type PressState = {
+type _PressState = {
   active: boolean;
   id: number | null;
   startX: number;
@@ -298,7 +298,7 @@ export const NavSlot = React.memo<NavSlotProps>(function NavSlot(props) {
  * NavScreenLayout - Main layout container for NavScreen system
  *
  * Provides a 2048×2048 stage coordinate system that scales to fit viewport.
- * 
+ *
  * CRITICAL: Uses "contain" behavior - entire stage always fits within viewport.
  * This ensures ALL interactive elements (NavSlot buttons) are always visible
  * and accessible. Background images can use "cover" for visual overflow effect.

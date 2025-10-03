@@ -7,6 +7,7 @@ export type LayerConfigEntry = {
   renderer: LayerRenderer;
   order: number;
   imageId: string;
+  /** Scale as percentage [x, y] (10-500, default 100). Values outside range are clamped. */
   scale?: number[];
   position?: number[];
   angle?: number | number[] | null;

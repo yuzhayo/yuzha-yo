@@ -5,21 +5,14 @@ interface LogOptions {
   stack?: boolean;
 }
 
-type LoggerMetaEnv = { DEV?: boolean; DEBUG?: string | boolean; };
-
-declare global {
-  interface ImportMeta {
-    readonly env?: LoggerMetaEnv;
-  }
-}
-
 class Logger {
   private isDev: boolean;
   private enableDebug: boolean;
 
   constructor() {
-    const metaEnv = import.meta?.env;
-    const globalProcess = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process;
+    const metaEnv = (import.meta as any)?.env;
+    const globalProcess = (globalThis as { process?: { env?: Record<string, string | undefined> } })
+      .process;
     const processEnv = globalProcess?.env;
     const explicitDev = typeof metaEnv?.DEV === "boolean" ? metaEnv.DEV : undefined;
     const inferredDev = processEnv?.NODE_ENV ? processEnv.NODE_ENV !== "production" : undefined;
@@ -120,4 +113,3 @@ class Logger {
 export const logger = new Logger();
 
 export default logger;
-
