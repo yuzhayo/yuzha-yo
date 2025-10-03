@@ -35,7 +35,9 @@ export default function StageCanvas() {
       console.error("Failed to initialise Canvas stage", error);
     });
 
-    cleanupTransform = createStageTransformer(canvas, container);
+    cleanupTransform = createStageTransformer(canvas, container, {
+      resizeDebounce: 100,
+    });
 
     return () => {
       cleanupTransform?.();

@@ -4,6 +4,7 @@ import { loadLayerConfig } from "../config/Config";
 import { is2DLayer } from "../layer/LayerCore";
 import { mountThreeLayers } from "../layer/LayerEngineThree";
 import { STAGE_SIZE, createStageTransformer } from "../utils/stage2048";
+import { getDeviceCapability } from "../utils/DeviceCapability";
 
 export default function StageThree() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -14,12 +15,18 @@ export default function StageThree() {
     const canvas = canvasRef.current;
     if (!container || !canvas) return;
 
-    // Set canvas dimensions FIRST (before Three.js renderer initialization)
+    const deviceCap = getDeviceCapability();
+
     canvas.width = STAGE_SIZE;
     canvas.height = STAGE_SIZE;
 
-    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      alpha: true,
+      antialias: deviceCap.enableAntialiasing,
+      powerPreference: deviceCap.isLowEndDevice ? "low-power" : "default",
+    });
+    renderer.setPixelRatio(deviceCap.pixelRatio);
     renderer.setSize(STAGE_SIZE, STAGE_SIZE, false);
     renderer.setClearColor(0x000000, 0);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -38,29 +45,41 @@ export default function StageThree() {
 
     let cleanupLayers: (() => void) | undefined;
     let cleanupTransform: (() => void) | undefined;
-    let animationId: number;
+    let resizeTimeoutId: number | undefined;
+
+    const render = () => {
+      renderer.render(scene, camera);
+    };
+
+    const handleResize = () => {
+      if (resizeTimeoutId) clearTimeout(resizeTimeoutId);
+      resizeTimeoutId = window.setTimeout(() => {
+        render();
+      }, 150);
+    };
 
     const run = async () => {
       const config = loadLayerConfig();
       const twoDLayers = config.filter(is2DLayer);
       cleanupLayers = await mountThreeLayers(scene, twoDLayers);
 
-      const animate = () => {
-        renderer.render(scene, camera);
-        animationId = requestAnimationFrame(animate);
-      };
-      animate();
+      window.addEventListener("resize", handleResize);
+      
+      render();
     };
 
     run().catch((error) => {
       console.error("Failed to initialise Three.js stage", error);
     });
 
-    cleanupTransform = createStageTransformer(canvas, container);
+    cleanupTransform = createStageTransformer(canvas, container, {
+      resizeDebounce: 100,
+    });
 
     return () => {
+      window.removeEventListener("resize", handleResize);
+      if (resizeTimeoutId) clearTimeout(resizeTimeoutId);
       cleanupTransform?.();
-      cancelAnimationFrame(animationId);
       cleanupLayers?.();
       renderer.dispose();
     };

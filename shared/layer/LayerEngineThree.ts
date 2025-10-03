@@ -23,15 +23,34 @@ export async function mountThreeLayers(
   const meshes: THREE.Mesh[] = [];
   const textureLoader = new THREE.TextureLoader();
 
-  for (const entry of entries) {
+  const texturePromises = entries.map(async (entry) => {
     const assetPath = pathMap.get(entry.imageId);
     if (!assetPath) {
       console.warn(`[LayerEngineThree] Missing asset for imageId "${entry.imageId}"`);
-      continue;
+      return null;
     }
 
-    const texture = await textureLoader.loadAsync(resolveAssetUrl(assetPath));
-    texture.colorSpace = THREE.SRGBColorSpace;
+    try {
+      const texture = await textureLoader.loadAsync(resolveAssetUrl(assetPath));
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.minFilter = THREE.LinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.anisotropy = 1;
+      texture.generateMipmaps = false;
+
+      return { entry, texture };
+    } catch (error) {
+      console.error(`[LayerEngineThree] Failed to load texture for "${entry.imageId}"`, error);
+      return null;
+    }
+  });
+
+  const results = await Promise.all(texturePromises);
+
+  for (const result of results) {
+    if (!result) continue;
+
+    const { entry, texture } = result;
     const { position, scale } = compute2DTransform(entry, STAGE_SIZE);
 
     const planeGeometry = new THREE.PlaneGeometry(
@@ -43,6 +62,7 @@ export async function mountThreeLayers(
       map: texture,
       transparent: true,
       side: THREE.DoubleSide,
+      depthWrite: false,
     });
 
     const mesh = new THREE.Mesh(planeGeometry, planeMaterial);
@@ -56,7 +76,11 @@ export async function mountThreeLayers(
     for (const mesh of meshes) {
       mesh.geometry.dispose();
       if (mesh.material instanceof THREE.Material) {
-        mesh.material.dispose();
+        const material = mesh.material as THREE.MeshBasicMaterial;
+        if (material.map) {
+          material.map.dispose();
+        }
+        material.dispose();
       }
       scene.remove(mesh);
     }
