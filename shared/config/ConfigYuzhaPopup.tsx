@@ -93,6 +93,7 @@ export function ConfigYuzhaPopup({
   const resizeHandleRef = useRef<string | null>(null);
   const sizeRef = useRef(size);
   const positionRef = useRef(position);
+  const animationFrameRef = useRef<number | null>(null);
   const resizeOriginRef = useRef<{
     pointer: { x: number; y: number };
     size: { width: number; height: number };
@@ -125,8 +126,26 @@ export function ConfigYuzhaPopup({
     alert("Changes saved! (Console log available)");
   }, []);
 
+  // Helper to extract coordinates from mouse or touch event
+  const getEventCoordinates = (event: MouseEvent | TouchEvent | React.MouseEvent | React.TouchEvent) => {
+    if ('touches' in event && event.touches.length > 0) {
+      return { x: event.touches[0].clientX, y: event.touches[0].clientY };
+    }
+    return { x: (event as MouseEvent | React.MouseEvent).clientX, y: (event as MouseEvent | React.MouseEvent).clientY };
+  };
+
+  // Direct DOM manipulation for performance (GPU accelerated)
+  const updatePopupTransform = useCallback((x: number, y: number, width: number, height: number) => {
+    if (!popupRef.current) return;
+    
+    // Use transform for GPU acceleration instead of left/top
+    popupRef.current.style.transform = `translate(${x}px, ${y}px)`;
+    popupRef.current.style.width = `${width}px`;
+    popupRef.current.style.height = `${height}px`;
+  }, []);
+
   const startDrag = useCallback(
-    (event: React.MouseEvent) => {
+    (event: React.MouseEvent | React.TouchEvent) => {
       if (!popupRef.current) return;
 
       setIsDragging(true);
@@ -139,43 +158,68 @@ export function ConfigYuzhaPopup({
         setIsCentered(false);
       }
 
+      const coords = getEventCoordinates(event);
       dragOffsetRef.current = {
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top,
+        x: coords.x - rect.left,
+        y: coords.y - rect.top,
       };
     },
     [isCentered],
   );
 
   const drag = useCallback(
-    (event: MouseEvent) => {
+    (event: MouseEvent | TouchEvent) => {
       if (!isDragging || !popupRef.current) return;
 
-      const currentSize = sizeRef.current;
-      const proposedX = event.clientX - dragOffsetRef.current.x;
-      const proposedY = event.clientY - dragOffsetRef.current.y;
+      // Prevent default touch behavior
+      if ('touches' in event) {
+        event.preventDefault();
+      }
 
-      const maxX = Math.max(0, window.innerWidth - currentSize.width);
-      const maxY = Math.max(0, window.innerHeight - currentSize.height);
+      // Cancel previous animation frame
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
 
-      const next = {
-        x: Math.max(0, Math.min(proposedX, maxX)),
-        y: Math.max(0, Math.min(proposedY, maxY)),
-      };
+      // Use RAF for smooth 60fps updates
+      animationFrameRef.current = requestAnimationFrame(() => {
+        const coords = getEventCoordinates(event);
+        const currentSize = sizeRef.current;
+        const proposedX = coords.x - dragOffsetRef.current.x;
+        const proposedY = coords.y - dragOffsetRef.current.y;
 
-      positionRef.current = next;
-      setPosition(next);
+        const maxX = Math.max(0, window.innerWidth - currentSize.width);
+        const maxY = Math.max(0, window.innerHeight - currentSize.height);
+
+        const next = {
+          x: Math.max(0, Math.min(proposedX, maxX)),
+          y: Math.max(0, Math.min(proposedY, maxY)),
+        };
+
+        // Update ref and DOM directly (no React re-render)
+        positionRef.current = next;
+        updatePopupTransform(next.x, next.y, currentSize.width, currentSize.height);
+      });
     },
-    [isDragging],
+    [isDragging, updatePopupTransform],
   );
 
   const stopDrag = useCallback(() => {
+    // Cancel any pending animation frame
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+
+    // Sync final position to React state
+    setPosition(positionRef.current);
     setIsDragging(false);
   }, []);
 
   const startResize = useCallback(
-    (event: React.MouseEvent, handle: string) => {
+    (event: React.MouseEvent | React.TouchEvent, handle: string) => {
       event.stopPropagation();
+
       setIsResizing(true);
       resizeHandleRef.current = handle;
 
@@ -187,8 +231,9 @@ export function ConfigYuzhaPopup({
         setIsCentered(false);
       }
 
+      const coords = getEventCoordinates(event);
       resizeOriginRef.current = {
-        pointer: { x: event.clientX, y: event.clientY },
+        pointer: { x: coords.x, y: coords.y },
         size: sizeRef.current,
         position: positionRef.current,
       };
@@ -197,58 +242,81 @@ export function ConfigYuzhaPopup({
   );
 
   const resize = useCallback(
-    (event: MouseEvent) => {
+    (event: MouseEvent | TouchEvent) => {
       if (!isResizing) return;
+
+      // Prevent default touch behavior
+      if ('touches' in event) {
+        event.preventDefault();
+      }
 
       const handle = resizeHandleRef.current;
       const origin = resizeOriginRef.current;
       if (!handle || !origin) return;
 
-      const deltaX = event.clientX - origin.pointer.x;
-      const deltaY = event.clientY - origin.pointer.y;
-
-      let newWidth = origin.size.width;
-      let newHeight = origin.size.height;
-      let newX = origin.position.x;
-      let newY = origin.position.y;
-
-      if (handle.includes("e")) {
-        newWidth = Math.max(MIN_WIDTH, origin.size.width + deltaX);
+      // Cancel previous animation frame
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
       }
 
-      if (handle.includes("w")) {
-        const candidateWidth = origin.size.width - deltaX;
-        newWidth = Math.max(MIN_WIDTH, candidateWidth);
-        newX = origin.position.x + (origin.size.width - newWidth);
-      }
+      // Use RAF for smooth 60fps updates
+      animationFrameRef.current = requestAnimationFrame(() => {
+        const coords = getEventCoordinates(event);
+        const deltaX = coords.x - origin.pointer.x;
+        const deltaY = coords.y - origin.pointer.y;
 
-      if (handle.includes("s")) {
-        newHeight = Math.max(MIN_HEIGHT, origin.size.height + deltaY);
-      }
+        let newWidth = origin.size.width;
+        let newHeight = origin.size.height;
+        let newX = origin.position.x;
+        let newY = origin.position.y;
 
-      if (handle.includes("n")) {
-        const candidateHeight = origin.size.height - deltaY;
-        newHeight = Math.max(MIN_HEIGHT, candidateHeight);
-        newY = origin.position.y + (origin.size.height - newHeight);
-      }
+        if (handle.includes("e")) {
+          newWidth = Math.max(MIN_WIDTH, origin.size.width + deltaX);
+        }
 
-      const maxX = Math.max(0, window.innerWidth - newWidth);
-      const maxY = Math.max(0, Math.min(window.innerHeight - newHeight, window.innerHeight));
-      newX = Math.max(0, Math.min(newX, maxX));
-      newY = Math.max(0, Math.min(newY, maxY));
+        if (handle.includes("w")) {
+          const candidateWidth = origin.size.width - deltaX;
+          newWidth = Math.max(MIN_WIDTH, candidateWidth);
+          newX = origin.position.x + (origin.size.width - newWidth);
+        }
 
-      const nextSize = { width: newWidth, height: newHeight };
-      const nextPosition = { x: newX, y: newY };
+        if (handle.includes("s")) {
+          newHeight = Math.max(MIN_HEIGHT, origin.size.height + deltaY);
+        }
 
-      sizeRef.current = nextSize;
-      positionRef.current = nextPosition;
-      setSize(nextSize);
-      setPosition(nextPosition);
+        if (handle.includes("n")) {
+          const candidateHeight = origin.size.height - deltaY;
+          newHeight = Math.max(MIN_HEIGHT, candidateHeight);
+          newY = origin.position.y + (origin.size.height - newHeight);
+        }
+
+        const maxX = Math.max(0, window.innerWidth - newWidth);
+        const maxY = Math.max(0, Math.min(window.innerHeight - newHeight, window.innerHeight));
+        newX = Math.max(0, Math.min(newX, maxX));
+        newY = Math.max(0, Math.min(newY, maxY));
+
+        const nextSize = { width: newWidth, height: newHeight };
+        const nextPosition = { x: newX, y: newY };
+
+        // Update refs and DOM directly (no React re-render)
+        sizeRef.current = nextSize;
+        positionRef.current = nextPosition;
+        updatePopupTransform(newX, newY, newWidth, newHeight);
+      });
     },
-    [isResizing],
+    [isResizing, updatePopupTransform],
   );
 
   const stopResize = useCallback(() => {
+    // Cancel any pending animation frame
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+
+    // Sync final size and position to React state
+    setSize(sizeRef.current);
+    setPosition(positionRef.current);
     setIsResizing(false);
     resizeHandleRef.current = null;
     resizeOriginRef.current = null;
@@ -258,13 +326,19 @@ export function ConfigYuzhaPopup({
     if (!isDragging) return;
 
     const handleMouseMove = (event: MouseEvent) => drag(event);
+    const handleTouchMove = (event: TouchEvent) => drag(event);
     const handleMouseUp = () => stopDrag();
+    const handleTouchEnd = () => stopDrag();
 
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener("touchmove", handleTouchMove, { passive: false });
+    document.addEventListener("touchend", handleTouchEnd);
     return () => {
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener("touchmove", handleTouchMove);
+      document.removeEventListener("touchend", handleTouchEnd);
     };
   }, [isDragging, drag, stopDrag]);
 
@@ -272,13 +346,19 @@ export function ConfigYuzhaPopup({
     if (!isResizing) return;
 
     const handleMouseMove = (event: MouseEvent) => resize(event);
+    const handleTouchMove = (event: TouchEvent) => resize(event);
     const handleMouseUp = () => stopResize();
+    const handleTouchEnd = () => stopResize();
 
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener("touchmove", handleTouchMove, { passive: false });
+    document.addEventListener("touchend", handleTouchEnd);
     return () => {
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener("touchmove", handleTouchMove);
+      document.removeEventListener("touchend", handleTouchEnd);
     };
   }, [isResizing, resize, stopResize]);
 
@@ -292,10 +372,21 @@ export function ConfigYuzhaPopup({
     return () => document.removeEventListener("selectstart", preventSelect);
   }, [isDragging, isResizing]);
 
+  // Cleanup animation frames on unmount
+  useEffect(() => {
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, []);
+
   const renderHeader = () => (
     <div
       className="bg-gradient-to-r from-[#4facfe] to-[#00f2fe] text-white px-4 py-3 cursor-move select-none flex justify-between items-center active:cursor-grabbing"
+      style={{ touchAction: 'none' }}
       onMouseDown={startDrag}
+      onTouchStart={startDrag}
     >
       <div className="font-semibold text-sm">{title}</div>
       <div className="flex">
@@ -348,8 +439,9 @@ export function ConfigYuzhaPopup({
         height: `${size.height}px`,
       }
     : {
-        left: `${position.x}px`,
-        top: `${position.y}px`,
+        left: "0",
+        top: "0",
+        transform: `translate(${position.x}px, ${position.y}px)`,
         width: `${size.width}px`,
         height: `${size.height}px`,
       };
@@ -362,7 +454,7 @@ export function ConfigYuzhaPopup({
       <div
         ref={popupRef}
         className="absolute bg-white rounded-xl shadow-[0_25px_50px_rgba(0,0,0,0.25)] overflow-hidden transition-shadow duration-300 hover:shadow-[0_35px_60px_rgba(0,0,0,0.3)]"
-        style={popupStyle}
+        style={{ ...popupStyle, touchAction: 'none', willChange: isDragging || isResizing ? 'transform, width, height' : 'auto' }}
         onMouseDown={(event) => event.stopPropagation()}
         data-testid="config-popup"
       >
@@ -371,35 +463,51 @@ export function ConfigYuzhaPopup({
 
         <div
           className="absolute top-0 left-0 right-0 h-[5px] cursor-n-resize"
+          style={{ touchAction: 'none' }}
           onMouseDown={(event) => startResize(event, "n")}
+          onTouchStart={(event) => startResize(event, "n")}
         />
         <div
           className="absolute bottom-0 left-0 right-0 h-[5px] cursor-s-resize"
+          style={{ touchAction: 'none' }}
           onMouseDown={(event) => startResize(event, "s")}
+          onTouchStart={(event) => startResize(event, "s")}
         />
         <div
           className="absolute top-0 right-0 bottom-0 w-[5px] cursor-e-resize"
+          style={{ touchAction: 'none' }}
           onMouseDown={(event) => startResize(event, "e")}
+          onTouchStart={(event) => startResize(event, "e")}
         />
         <div
           className="absolute top-0 left-0 bottom-0 w-[5px] cursor-w-resize"
+          style={{ touchAction: 'none' }}
           onMouseDown={(event) => startResize(event, "w")}
+          onTouchStart={(event) => startResize(event, "w")}
         />
         <div
           className="absolute top-0 right-0 w-[10px] h-[10px] cursor-ne-resize"
+          style={{ touchAction: 'none' }}
           onMouseDown={(event) => startResize(event, "ne")}
+          onTouchStart={(event) => startResize(event, "ne")}
         />
         <div
           className="absolute top-0 left-0 w-[10px] h-[10px] cursor-nw-resize"
+          style={{ touchAction: 'none' }}
           onMouseDown={(event) => startResize(event, "nw")}
+          onTouchStart={(event) => startResize(event, "nw")}
         />
         <div
           className="absolute bottom-0 right-0 w-[10px] h-[10px] cursor-se-resize"
+          style={{ touchAction: 'none' }}
           onMouseDown={(event) => startResize(event, "se")}
+          onTouchStart={(event) => startResize(event, "se")}
         />
         <div
           className="absolute bottom-0 left-0 w-[10px] h-[10px] cursor-sw-resize"
+          style={{ touchAction: 'none' }}
           onMouseDown={(event) => startResize(event, "sw")}
+          onTouchStart={(event) => startResize(event, "sw")}
         />
       </div>
     </div>
