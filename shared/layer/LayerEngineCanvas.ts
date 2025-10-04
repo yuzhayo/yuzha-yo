@@ -69,10 +69,12 @@ export async function mountCanvasLayers(
 
       ctx.save();
 
-      // Use rotation from pipeline (currentRotation is in degrees)
-      const rotationDeg = data.currentRotation ?? 0;
+      // Combine display rotation (from base→tip axis) with spin rotation
+      const displayRotation = baseLayer.imageMapping.displayRotation ?? 0;
+      const spinRotation = data.currentRotation ?? 0;
+      const totalRotation = displayRotation + spinRotation;
 
-      if (rotationDeg !== 0 && data.spinCenter) {
+      if (totalRotation !== 0 && data.spinCenter) {
         // Rotate around custom spin center
         // spinCenter is already in pixel coordinates relative to image
         const spinCenterScaled = {
@@ -87,15 +89,21 @@ export async function mountCanvasLayers(
         );
 
         // Rotate around this point
-        ctx.rotate((rotationDeg * Math.PI) / 180);
+        ctx.rotate((totalRotation * Math.PI) / 180);
 
         // Translate back so image draws from correct position
         ctx.translate(-spinCenterScaled.x, -spinCenterScaled.y);
 
         // Draw image
         ctx.drawImage(image, 0, 0, width, height);
+      } else if (totalRotation !== 0) {
+        // Rotation without custom spin center - rotate around image center
+        ctx.translate(data.position.x, data.position.y);
+        ctx.rotate((totalRotation * Math.PI) / 180);
+        ctx.translate(-width / 2, -height / 2);
+        ctx.drawImage(image, 0, 0, width, height);
       } else {
-        // No rotation or using default center - draw centered at position
+        // No rotation - draw centered at position
         const x = data.position.x - width / 2;
         const y = data.position.y - height / 2;
         ctx.drawImage(image, x, y, width, height);
