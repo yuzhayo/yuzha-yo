@@ -23,8 +23,7 @@ function MainScreenOverlay({ rendererLabel }: { rendererLabel: string }) {
         open={gesture.open}
         onToggle={gesture.toggle}
         effect={{ kind: "fade" }}
-        title="Modules"
-        target="_self"
+        title="Launcher"
       />
       <MainScreenRendererBadge visible={gesture.open} label={rendererLabel} />
       <MainScreenUpdater visible={gesture.open} />
