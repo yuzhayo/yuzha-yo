@@ -12,6 +12,7 @@ export type EnhancedLayerData = UniversalLayerData & {
   spinSpeed?: number;
   spinDirection?: "cw" | "ccw";
   currentRotation?: number;
+  hasSpinAnimation?: boolean;
 
   // Future properties will be added here by other processors
   opacity?: number;
