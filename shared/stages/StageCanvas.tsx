@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from "react";
 import { loadLayerConfig } from "../config/Config";
 import { is2DLayer, prepareLayer } from "../layer/LayerCore";
 import { mountCanvasLayers } from "../layer/LayerEngineCanvas";
-import { runPipeline, type EnhancedLayerData } from "../layer/LayerCorePipeline";
 import { createSpinProcessor } from "../layer/LayerCorePipelineSpin";
 import { STAGE_SIZE, createStageTransformer } from "../utils/stage2048";
 
@@ -31,11 +30,15 @@ export default function StageCanvas() {
       const config = loadLayerConfig();
       const twoDLayers = config.filter(is2DLayer);
 
-      // Prepare and process layers together to maintain correspondence
-      const enhancedLayers: EnhancedLayerData[] = [];
+      // Prepare base layers and create processors for each
+      const layersWithProcessors = [];
+
       for (const entry of twoDLayers) {
-        const preparedLayer = await prepareLayer(entry, STAGE_SIZE);
-        if (!preparedLayer) continue;
+        const baseLayer = await prepareLayer(entry, STAGE_SIZE);
+        if (!baseLayer) {
+          console.warn(`[StageCanvas] Skipping layer ${entry.layerId} - failed to prepare`);
+          continue;
+        }
 
         // Create spin processor for this layer
         const spinProcessor = createSpinProcessor({
@@ -50,13 +53,14 @@ export default function StageCanvas() {
           spinDirection: entry.spinDirection,
         });
 
-        // Run through pipeline
-        const enhanced = runPipeline(preparedLayer, [spinProcessor]);
-        enhancedLayers.push(enhanced);
+        layersWithProcessors.push({
+          baseLayer,
+          processors: [spinProcessor],
+        });
       }
 
-      // Mount to canvas engine
-      cleanupLayers = await mountCanvasLayers(ctx, enhancedLayers);
+      // Mount to canvas engine with base layers and processors
+      cleanupLayers = await mountCanvasLayers(ctx, layersWithProcessors);
     };
 
     run().catch((error) => {
