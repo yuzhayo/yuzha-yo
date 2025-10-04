@@ -22,14 +22,15 @@ const STAGE_CENTER = 1024;
  */
 export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
   // Extract config with defaults
-  const orbitCenter = config.orbitCenter ?? [STAGE_CENTER, STAGE_CENTER];
+  const orbitCenter = config.orbitCenter; // No default - if not set, use passthrough
   const orbitImagePoint = config.orbitImagePoint ?? [50, 50];
   const orbitRadius = config.orbitRadius ?? 0;
   const orbitSpeed = config.orbitSpeed ?? 0;
   const orbitDirection = config.orbitDirection ?? "cw";
 
-  // If no orbital motion, return passthrough processor
-  if (orbitSpeed === 0 || orbitRadius === 0) {
+  // If no orbitCenter or no orbital motion, return passthrough processor
+  // This ensures layers without orbitCenter use their original position
+  if (!orbitCenter || orbitSpeed === 0 || orbitRadius === 0) {
     return (layer: UniversalLayerData): EnhancedLayerData => layer as EnhancedLayerData;
   }
 
