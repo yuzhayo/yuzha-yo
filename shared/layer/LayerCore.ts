@@ -42,6 +42,7 @@ export function compute2DTransform(entry: LayerConfigEntry, stageSize: number): 
 export function computeImageMapping(
   imageDimensions: { width: number; height: number },
   tipAngle: number = 90,
+  baseAngle: number = 270,
 ): ImageMapping {
   const { width, height } = imageDimensions;
 
@@ -51,33 +52,33 @@ export function computeImageMapping(
     y: height / 2,
   };
 
-  // Convert angle to radians
+  // Convert angles to radians
   // In image/screen coordinates: 0° is right, 90° is UP (top), 180° is left, 270° is down
   // Standard math has Y increasing upward, but screen Y increases downward
   // So we negate the angle to flip the Y-axis orientation
-  const angleRad = (-tipAngle * Math.PI) / 180;
+  const tipAngleRad = (-tipAngle * Math.PI) / 180;
+  const baseAngleRad = (-baseAngle * Math.PI) / 180;
 
   // Calculate tip point at the edge of the actual image rectangle
   // Project from center to rectangle boundary at given angle
-  const dx = Math.cos(angleRad);
-  const dy = Math.sin(angleRad);
+  const tipDx = Math.cos(tipAngleRad);
+  const tipDy = Math.sin(tipAngleRad);
 
   // Find intersection with rectangle by checking which edge we hit first
   const halfWidth = width / 2;
   const halfHeight = height / 2;
 
-  // Calculate scaling factor to reach rectangle edge
-  const scaleX = dx !== 0 ? halfWidth / Math.abs(dx) : Infinity;
-  const scaleY = dy !== 0 ? halfHeight / Math.abs(dy) : Infinity;
-  const scale = Math.min(scaleX, scaleY);
+  // Calculate scaling factor to reach rectangle edge for tip
+  const tipScaleX = tipDx !== 0 ? halfWidth / Math.abs(tipDx) : Infinity;
+  const tipScaleY = tipDy !== 0 ? halfHeight / Math.abs(tipDy) : Infinity;
+  const tipScale = Math.min(tipScaleX, tipScaleY);
 
   const imageTip = {
-    x: imageCenter.x + scale * dx,
-    y: imageCenter.y + scale * dy,
+    x: imageCenter.x + tipScale * tipDx,
+    y: imageCenter.y + tipScale * tipDy,
   };
 
-  // Base is 180° opposite from tip (rotate tip angle by 180°)
-  const baseAngleRad = angleRad + Math.PI;
+  // Calculate base point independently at baseAngle from center
   const baseDx = Math.cos(baseAngleRad);
   const baseDy = Math.sin(baseAngleRad);
 
@@ -126,9 +127,10 @@ export async function prepareLayer(
   // Get image dimensions - we need to load the image to get actual dimensions
   const dimensions = await getImageDimensions(imageUrl);
 
-  // Calculate image mapping with imageTip from config (default 90°)
+  // Calculate image mapping with imageTip and imageBase from config
   const tipAngle = typeof entry.imageTip === "number" ? entry.imageTip : 90;
-  const imageMapping = computeImageMapping(dimensions, tipAngle);
+  const baseAngle = typeof entry.imageBase === "number" ? entry.imageBase : 270;
+  const imageMapping = computeImageMapping(dimensions, tipAngle, baseAngle);
 
   return {
     layerId: entry.layerId,
