@@ -62,6 +62,16 @@ export async function mountCanvasLayers(
       const layerData: EnhancedLayerData =
         processors.length > 0 ? runPipeline(baseData, processors, timestamp) : baseData;
 
+      // Debug logging (only log GEARMOON to reduce noise)
+      if (baseData.layerId === "clock-GEARMOON") {
+        console.log(`[LayerEngineCanvas] GEARMOON:`, {
+          timestamp,
+          processorCount: processors.length,
+          hasSpinAnimation: layerData.hasSpinAnimation,
+          currentRotation: layerData.currentRotation,
+        });
+      }
+
       const width = image.width * layerData.scale.x;
       const height = image.height * layerData.scale.y;
 
@@ -79,10 +89,15 @@ export async function mountCanvasLayers(
 
       if (rotation !== 0) {
         // Rotate around pivot point
+        // Move to layer position
         ctx.translate(layerData.position.x, layerData.position.y);
+        // Rotate
         ctx.rotate((rotation * Math.PI) / 180);
-        ctx.translate(-pivot.x * layerData.scale.x, -pivot.y * layerData.scale.y);
-        ctx.drawImage(image, 0, 0, width, height);
+        // Offset by pivot (pivot is in image pixels, needs scaling)
+        const pivotX = pivot.x * layerData.scale.x;
+        const pivotY = pivot.y * layerData.scale.y;
+        // Draw with pivot as origin
+        ctx.drawImage(image, -pivotX, -pivotY, width, height);
       } else {
         // No rotation - draw centered at position
         const x = layerData.position.x - width / 2;
