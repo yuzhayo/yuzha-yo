@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from "react";
 import { loadLayerConfig } from "../config/Config";
-import { is2DLayer, prepareLayer } from "../layer/LayerCore";
+import { is2DLayer, prepareLayer, type UniversalLayerData } from "../layer/LayerCore";
 import { mountCanvasLayers } from "../layer/LayerEngineCanvas";
+import { type LayerProcessor } from "../layer/LayerCorePipeline";
 import { createSpinProcessor } from "../layer/LayerCorePipelineSpin";
 import { STAGE_SIZE, createStageTransformer } from "../utils/stage2048";
 
@@ -31,7 +32,10 @@ export default function StageCanvas() {
       const twoDLayers = config.filter(is2DLayer);
 
       // Prepare base layers and create processors for each
-      const layersWithProcessors = [];
+      const layersWithProcessors: Array<{
+        baseLayer: UniversalLayerData;
+        processors: LayerProcessor[];
+      }> = [];
 
       for (const entry of twoDLayers) {
         const baseLayer = await prepareLayer(entry, STAGE_SIZE);
