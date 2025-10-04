@@ -16,45 +16,71 @@ export type SpinConfig = {
 export function createSpinProcessor(config: SpinConfig): LayerProcessor {
   const spinSpeed = config.spinSpeed ?? 0;
   const spinDirection = config.spinDirection ?? "cw";
-  const spinCenter = config.spinCenter;
+  let spinCenter = config.spinCenter;
 
-  return (layer: UniversalLayerData) => {
-    // If spinSpeed is 0, no spinning - return layer as-is
+  // Validate and clamp spinCenter to 0-100 range
+  if (spinCenter) {
+    if (spinCenter.x < 0 || spinCenter.x > 100 || spinCenter.y < 0 || spinCenter.y > 100) {
+      console.warn(
+        `[SpinProcessor] spinCenter out of range (0-100): {x: ${spinCenter.x}, y: ${spinCenter.y}}. Clamping.`,
+      );
+      spinCenter = {
+        x: Math.max(0, Math.min(100, spinCenter.x)),
+        y: Math.max(0, Math.min(100, spinCenter.y)),
+      };
+    }
+  }
+
+  // Track start time for this processor instance
+  let startTime: number | null = null;
+
+  return (layer: UniversalLayerData, timestamp?: number): UniversalLayerData => {
+    // If no spin speed, return layer as-is with no spin properties
     if (spinSpeed === 0) {
-      return layer;
+      return {
+        ...layer,
+        spinCenter: undefined,
+        spinSpeed: undefined,
+        spinDirection: undefined,
+        currentRotation: 0,
+      };
     }
 
-    // Calculate spin center position
+    // Initialize start time on first call with timestamp
+    const currentTime = timestamp ?? performance.now();
+    if (startTime === null) {
+      startTime = currentTime;
+    }
+
+    // Calculate rotation based on elapsed time
+    const elapsed = currentTime - startTime;
+    const elapsedSeconds = elapsed / 1000;
+    let rotation = (elapsedSeconds * spinSpeed) % 360;
+
+    // Apply direction
+    if (spinDirection === "ccw") {
+      rotation = -rotation;
+    }
+
+    // Calculate spin center position in pixel coordinates
     // Default to image center if not specified
-    let spinCenterAbsolute = {
+    let spinCenterPixels = {
       x: layer.imageMapping.imageCenter.x,
       y: layer.imageMapping.imageCenter.y,
     };
 
     if (spinCenter) {
-      // Convert 0-100% to absolute pixel coordinates
+      // Convert 0-100% to absolute pixel coordinates relative to image
       const { width, height } = layer.imageMapping.imageDimensions;
-      spinCenterAbsolute = {
+      spinCenterPixels = {
         x: (spinCenter.x / 100) * width,
         y: (spinCenter.y / 100) * height,
       };
     }
 
-    // Calculate current rotation based on time
-    // This will be used by the renderer to apply rotation
-    const now = performance.now();
-    const elapsedSeconds = now / 1000;
-
-    let rotation = (elapsedSeconds * spinSpeed) % 360;
-
-    // Reverse direction if counter-clockwise
-    if (spinDirection === "ccw") {
-      rotation = -rotation;
-    }
-
     return {
       ...layer,
-      spinCenter: spinCenterAbsolute,
+      spinCenter: spinCenterPixels,
       spinSpeed,
       spinDirection,
       currentRotation: rotation,
