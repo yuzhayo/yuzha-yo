@@ -70,11 +70,11 @@ export async function mountCanvasLayers(
       // Determine rotation mode
       const isSpinning = layerData.hasSpinAnimation === true;
       const rotation = isSpinning
-        ? layerData.currentRotation ?? 0
-        : layerData.imageMapping.displayRotation ?? 0;
+        ? (layerData.currentRotation ?? 0)
+        : (layerData.imageMapping.displayRotation ?? 0);
 
       const pivot = isSpinning
-        ? layerData.spinCenter ?? layerData.imageMapping.imageCenter
+        ? (layerData.spinCenter ?? layerData.imageMapping.imageCenter)
         : layerData.imageMapping.imageCenter;
 
       if (rotation !== 0) {

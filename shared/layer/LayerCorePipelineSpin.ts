@@ -16,7 +16,7 @@ export type SpinConfig = {
 export function createSpinProcessor(config: SpinConfig): LayerProcessor {
   const spinSpeed = config.spinSpeed ?? 0;
   const spinDirection = config.spinDirection ?? "cw";
-  
+
   // Normalize spinCenter to {x, y} format (accept both array and object)
   let spinCenter: { x: number; y: number } | undefined;
   if (config.spinCenter) {

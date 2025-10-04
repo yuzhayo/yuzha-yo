@@ -35,10 +35,7 @@ export async function mountThreeLayers(
 
       return { item, texture };
     } catch (error) {
-      console.error(
-        `[LayerEngineThree] Failed to load texture for "${item.data.imageId}"`,
-        error,
-      );
+      console.error(`[LayerEngineThree] Failed to load texture for "${item.data.imageId}"`, error);
       return null;
     }
   });
