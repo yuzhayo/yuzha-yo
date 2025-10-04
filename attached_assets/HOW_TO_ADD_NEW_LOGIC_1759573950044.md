@@ -34,9 +34,9 @@ Rendering
 import type { EnhancedLayerData, LayerProcessor } from "./LayerCorePipeline";
 
 export type OpacityConfig = {
-  opacityStart?: number;      // 0-100 (default: 100)
-  opacityEnd?: number;        // 0-100 (default: 100)
-  opacityDuration?: number;   // Duration in seconds (0 = static)
+  opacityStart?: number; // 0-100 (default: 100)
+  opacityEnd?: number; // 0-100 (default: 100)
+  opacityDuration?: number; // Duration in seconds (0 = static)
   opacityEasing?: "linear" | "ease-in" | "ease-out" | "ease-in-out";
 };
 
@@ -64,7 +64,7 @@ export function createOpacityProcessor(config: OpacityConfig): LayerProcessor {
 
   return (layer: EnhancedLayerData, timestamp?: number): EnhancedLayerData => {
     const currentTime = timestamp ?? performance.now();
-    
+
     // Initialize start time on first call
     if (startTime === null) {
       startTime = currentTime;
@@ -72,10 +72,10 @@ export function createOpacityProcessor(config: OpacityConfig): LayerProcessor {
 
     // Calculate elapsed time in seconds
     const elapsed = (currentTime - startTime) / 1000;
-    
+
     // Calculate progress (0 to 1)
     let progress = Math.min(elapsed / opacityDuration, 1);
-    
+
     // Apply easing
     switch (opacityEasing) {
       case "ease-in":
@@ -85,13 +85,12 @@ export function createOpacityProcessor(config: OpacityConfig): LayerProcessor {
         progress = 1 - (1 - progress) * (1 - progress);
         break;
       case "ease-in-out":
-        progress = progress < 0.5
-          ? 2 * progress * progress
-          : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+        progress =
+          progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
         break;
       // "linear" - no change
     }
-    
+
     // Interpolate opacity
     const opacity = (opacityStart + (opacityEnd - opacityStart) * progress) / 100;
 
@@ -121,8 +120,8 @@ export type EnhancedLayerData = UniversalLayerData & {
   hasSpinAnimation?: boolean;
 
   // Opacity properties (NEW - from LayerCorePipelineOpacity)
-  opacity?: number;                    // 0 to 1
-  opacityProgress?: number;            // 0 to 1
+  opacity?: number; // 0 to 1
+  opacityProgress?: number; // 0 to 1
   hasOpacityAnimation?: boolean;
 
   // Future properties
@@ -276,7 +275,7 @@ for (const entry of twoDLayers) {
         spinCenter: entry.spinCenter as [number, number] | undefined,
         spinSpeed: entry.spinSpeed,
         spinDirection: entry.spinDirection,
-      })
+      }),
     );
   }
 
@@ -288,7 +287,7 @@ for (const entry of twoDLayers) {
         opacityEnd: entry.opacityEnd,
         opacityDuration: entry.opacityDuration,
         opacityEasing: entry.opacityEasing,
-      })
+      }),
     );
   }
 
@@ -359,7 +358,7 @@ const render = (timestamp: number) => {
     }
 
     ctx.restore();
-    
+
     // Reset global alpha (NEW)
     ctx.globalAlpha = 1.0;
   }
@@ -444,9 +443,9 @@ const layerData = runPipeline(baseData, processors, timestamp);
 
 ```typescript
 export type OrbitalConfig = {
-  orbitalCenter?: [number, number];  // Stage coordinates
-  orbitalRadius?: number;             // Pixels
-  orbitalSpeed?: number;              // Degrees per second
+  orbitalCenter?: [number, number]; // Stage coordinates
+  orbitalRadius?: number; // Pixels
+  orbitalSpeed?: number; // Degrees per second
   orbitalDirection?: "cw" | "ccw";
 };
 
@@ -456,14 +455,14 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
   return (layer: EnhancedLayerData, timestamp?: number): EnhancedLayerData => {
     // Calculate orbital position...
     const angle = (elapsedSeconds * orbitalSpeed) % 360;
-    const offsetX = Math.cos(angle * Math.PI / 180) * orbitalRadius;
-    const offsetY = Math.sin(angle * Math.PI / 180) * orbitalRadius;
-    
+    const offsetX = Math.cos((angle * Math.PI) / 180) * orbitalRadius;
+    const offsetY = Math.sin((angle * Math.PI) / 180) * orbitalRadius;
+
     return {
       ...layer,
       position: {
         x: orbitalCenter.x + offsetX,
-        y: orbitalCenter.y + offsetY
+        y: orbitalCenter.y + offsetY,
       },
       orbitalAngle: angle,
       hasOrbitalAnimation: true,
@@ -476,21 +475,21 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
 
 ```typescript
 export type FilterConfig = {
-  blur?: number;           // 0-100
-  brightness?: number;     // 0-200
-  contrast?: number;       // 0-200
-  saturate?: number;       // 0-200
+  blur?: number; // 0-100
+  brightness?: number; // 0-200
+  contrast?: number; // 0-200
+  saturate?: number; // 0-200
 };
 
 export function createFilterProcessor(config: FilterConfig): LayerProcessor {
   return (layer: EnhancedLayerData): EnhancedLayerData => {
     const filters: string[] = [];
-    
+
     if (config.blur) filters.push(`blur(${config.blur}px)`);
     if (config.brightness) filters.push(`brightness(${config.brightness}%)`);
     if (config.contrast) filters.push(`contrast(${config.contrast}%)`);
     if (config.saturate) filters.push(`saturate(${config.saturate}%)`);
-    
+
     return {
       ...layer,
       filters,
@@ -505,6 +504,7 @@ export function createFilterProcessor(config: FilterConfig): LayerProcessor {
 ## Key Principles
 
 ### ✅ Do's:
+
 1. **Non-destructive wrapping** - Always spread `...layer` to preserve previous data
 2. **Return EnhancedLayerData** - Type must be compatible with pipeline
 3. **Add new properties** - Extend EnhancedLayerData type definition
@@ -512,6 +512,7 @@ export function createFilterProcessor(config: FilterConfig): LayerProcessor {
 5. **Optional timestamp** - Accept timestamp parameter for time-based logic
 
 ### ❌ Don'ts:
+
 1. Don't modify UniversalLayerData type directly
 2. Don't create circular dependencies between processors
 3. Don't assume processor execution order (make each independent)
@@ -533,6 +534,7 @@ export function createFilterProcessor(config: FilterConfig): LayerProcessor {
 8. ✅ Update rendering engines to use new properties
 
 The pipeline pattern allows unlimited chaining:
+
 ```
 Basic → Spin → Opacity → Orbital → Filter → ... → Rendering
 ```

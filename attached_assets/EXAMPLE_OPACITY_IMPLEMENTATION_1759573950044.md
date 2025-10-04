@@ -14,15 +14,15 @@ This is a ready-to-use example showing how to add Opacity logic that wraps Spin 
 import type { EnhancedLayerData, LayerProcessor } from "./LayerCorePipeline";
 
 export type OpacityConfig = {
-  opacityStart?: number;      // 0-100 (default: 100 = fully visible)
-  opacityEnd?: number;        // 0-100 (default: 100)
-  opacityDuration?: number;   // Seconds (0 = no animation)
+  opacityStart?: number; // 0-100 (default: 100 = fully visible)
+  opacityEnd?: number; // 0-100 (default: 100)
+  opacityDuration?: number; // Seconds (0 = no animation)
   opacityEasing?: "linear" | "ease-in" | "ease-out" | "ease-in-out";
 };
 
 /**
  * Create opacity processor for fade animations
- * 
+ *
  * Examples:
  * - Fade in: { opacityStart: 0, opacityEnd: 100, opacityDuration: 2 }
  * - Fade out: { opacityStart: 100, opacityEnd: 0, opacityDuration: 2 }
@@ -48,14 +48,14 @@ export function createOpacityProcessor(config: OpacityConfig): LayerProcessor {
 
   return (layer: EnhancedLayerData, timestamp?: number): EnhancedLayerData => {
     const currentTime = timestamp ?? performance.now();
-    
+
     if (startTime === null) {
       startTime = currentTime;
     }
 
     const elapsed = (currentTime - startTime) / 1000;
     let progress = Math.min(elapsed / opacityDuration, 1);
-    
+
     // Apply easing function
     switch (opacityEasing) {
       case "ease-in":
@@ -65,14 +65,13 @@ export function createOpacityProcessor(config: OpacityConfig): LayerProcessor {
         progress = 1 - (1 - progress) * (1 - progress);
         break;
       case "ease-in-out":
-        progress = progress < 0.5
-          ? 2 * progress * progress
-          : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+        progress =
+          progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
         break;
       default: // linear
         break;
     }
-    
+
     // Interpolate opacity from start to end
     const opacity = (opacityStart + (opacityEnd - opacityStart) * progress) / 100;
 
@@ -102,8 +101,8 @@ export type EnhancedLayerData = UniversalLayerData & {
   hasSpinAnimation?: boolean;
 
   // Opacity properties (ADD THESE)
-  opacity?: number;                    // 0 to 1 (0 = transparent, 1 = opaque)
-  opacityProgress?: number;            // Animation progress 0 to 1
+  opacity?: number; // 0 to 1 (0 = transparent, 1 = opaque)
+  opacityProgress?: number; // Animation progress 0 to 1
   hasOpacityAnimation?: boolean;
 
   // Future properties
@@ -152,7 +151,7 @@ type ConfigYuzhaEntry = {
   groups: {
     [groupName: string]: {
       // ... existing properties ...
-      
+
       // ADD THESE
       opacityStart?: number;
       opacityEnd?: number;
@@ -229,11 +228,13 @@ type ConfigYuzhaEntry = {
 ## File 5: Update StageCanvas.tsx
 
 **Add import:**
+
 ```typescript
 import { createOpacityProcessor } from "../layer/LayerCorePipelineOpacity";
 ```
 
 **Update processor chain:**
+
 ```typescript
 for (const entry of twoDLayers) {
   const layer = await prepareLayer(entry, STAGE_SIZE);
@@ -251,7 +252,7 @@ for (const entry of twoDLayers) {
         spinCenter: entry.spinCenter as [number, number] | undefined,
         spinSpeed: entry.spinSpeed,
         spinDirection: entry.spinDirection,
-      })
+      }),
     );
   }
 
@@ -267,7 +268,7 @@ for (const entry of twoDLayers) {
         opacityEnd: entry.opacityEnd,
         opacityDuration: entry.opacityDuration,
         opacityEasing: entry.opacityEasing,
-      })
+      }),
     );
   }
 
@@ -333,7 +334,7 @@ const render = (timestamp: number) => {
     }
 
     ctx.restore();
-    
+
     // ✅ RESET OPACITY (NEW)
     ctx.globalAlpha = 1.0;
   }
@@ -400,6 +401,7 @@ Apply the same processor chain logic.
 ## Testing Examples
 
 ### Test 1: Fade In Background
+
 ```json
 "Opacity Config": {
   "opacityStart": 0,
@@ -408,9 +410,11 @@ Apply the same processor chain logic.
   "opacityEasing": "ease-in"
 }
 ```
+
 **Result:** Background fades in from transparent to opaque over 3 seconds.
 
 ### Test 2: Spinning Gear with Constant Opacity
+
 ```json
 "Spin Config": {
   "spinCenter": [50, 50],
@@ -423,9 +427,11 @@ Apply the same processor chain logic.
   "opacityDuration": 0
 }
 ```
+
 **Result:** Gear spins normally at full opacity (no fade).
 
 ### Test 3: Spinning Gear that Fades Out
+
 ```json
 "Spin Config": {
   "spinCenter": [50, 50],
@@ -439,6 +445,7 @@ Apply the same processor chain logic.
   "opacityEasing": "ease-out"
 }
 ```
+
 **Result:** Gear spins while gradually fading out over 5 seconds.
 
 ---
@@ -480,6 +487,7 @@ Rendering Engine
 ✅ **Works with both engines** - Canvas and Three.js
 
 This architecture allows unlimited combinations:
+
 - Static image (no spin, no opacity animation)
 - Spinning with fade in
 - Spinning with fade out

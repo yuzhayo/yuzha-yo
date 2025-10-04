@@ -7,6 +7,7 @@ Modern TypeScript animation framework with a JSON-based "Layer System" that crea
 ## Project Structure
 
 **Monorepo with single workspace:**
+
 - `yuzha/` - Main application (template launcher)
 - `shared/` - Animation logic, rendering engines, utilities
 
@@ -29,12 +30,14 @@ npm run dev:5000
 ```
 
 **DO NOT:**
+
 - Run tests (`npm test`) - Skip all testing during setup
 - Run builds - Only if specifically requested
 - Modify Vite config - Already configured correctly
 - Change workflows - Already set up
 
 **Configuration Status:**
+
 - ✅ Vite: host 0.0.0.0, allowedHosts: true, port 5000
 - ✅ Workflow: "Frontend" runs `npm run dev:5000`
 - ✅ Deployment: Autoscale with `npm run build` → `npm run start`
@@ -44,18 +47,22 @@ npm run dev:5000
 ## Development
 
 **Run locally:**
+
 ```bash
 npm run dev:5000
 ```
+
 Server runs on port 5000 at http://localhost:5000
 
 **Build for production:**
+
 ```bash
 npm run build
 npm run start
 ```
 
 **Type checking only (no tests):**
+
 ```bash
 npm run typecheck
 ```
@@ -65,11 +72,13 @@ npm run typecheck
 ## Architecture Quick Reference
 
 ### Dual Renderer System
+
 - **Production:** Three.js WebGL (StageThree.tsx)
 - **AI/Screenshots:** Canvas 2D (StageCanvas.tsx)
 - Auto-detects headless browsers and falls back appropriately
 
 ### Layer System Flow
+
 ```
 JSON Config → LayerCore (basic logic)
   → Spin Processor (rotation)
@@ -79,6 +88,7 @@ JSON Config → LayerCore (basic logic)
 ```
 
 **Key Files:**
+
 - `shared/config/ConfigYuzha.json` - Layer definitions
 - `shared/layer/LayerCore.ts` - Core transform logic
 - `shared/layer/LayerCorePipelineSpin.ts` - Spin animation
@@ -86,6 +96,7 @@ JSON Config → LayerCore (basic logic)
 - `shared/stages/StageCanvas.tsx` - Canvas 2D renderer
 
 ### Stage2048 System
+
 - Fixed 2048×2048 coordinate system
 - Scales to any screen size (like CSS background-size: cover)
 - Renderer-agnostic
@@ -95,11 +106,13 @@ JSON Config → LayerCore (basic logic)
 ## TypeScript Compilation
 
 **✅ Use Vite, not tsc directly**
+
 - Development: `npm run dev` (Vite compiles in-memory)
 - Type check: `npm run typecheck` (tsc --noEmit)
 - Build: `npm run build` (tsc --noEmit + vite build)
 
 **❌ Never run:**
+
 - `tsc` without --noEmit (creates .js files in source)
 
 ---
@@ -113,6 +126,7 @@ Communication: Simple, everyday language
 ## Recent Changes
 
 **October 4, 2025 - Initial Replit Setup Complete**
+
 - ✅ Dependencies installed successfully (502 packages)
 - ✅ Frontend workflow configured: "Frontend" running on port 5000
 - ✅ Development server running successfully with Vite

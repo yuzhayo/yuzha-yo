@@ -9,22 +9,26 @@
 ## Flow Breakdown
 
 ### 1️⃣ **Logic Basic** (Foundation Layer)
+
 **Location:** `LayerCore.ts`
 
 **Input:** `LayerConfigEntry` from JSON config
 
 **Process:**
+
 ```typescript
 prepareLayer(entry, stageSize) → UniversalLayerData
 ```
 
 **What it does:**
+
 - ✅ Loads image from asset registry
 - ✅ Computes `imageMapping` (imageCenter, imageTip, imageBase, displayRotation)
 - ✅ Calculates 2D transforms (position, scale)
 - ✅ Creates base layer data structure
 
 **Output:** `UniversalLayerData`
+
 ```typescript
 {
   layerId: string,
@@ -39,11 +43,13 @@ prepareLayer(entry, stageSize) → UniversalLayerData
 ---
 
 ### 2️⃣ **Logic Spin** (Enhancement Wrapper)
+
 **Location:** `LayerCorePipelineSpin.ts`
 
 **Input:** Spin configuration + UniversalLayerData
 
 **Process:**
+
 ```typescript
 createSpinProcessor({spinCenter, spinSpeed, spinDirection})
   → LayerProcessor function
@@ -51,6 +57,7 @@ createSpinProcessor({spinCenter, spinSpeed, spinDirection})
 ```
 
 **What it does:**
+
 - ✅ **Wraps** the basic layer data
 - ✅ Converts spinCenter from percentage to pixels
 - ✅ Calculates time-based `currentRotation`
@@ -58,6 +65,7 @@ createSpinProcessor({spinCenter, spinSpeed, spinDirection})
 - ✅ Sets `hasSpinAnimation` flag
 
 **Output:** `EnhancedLayerData` (extends UniversalLayerData)
+
 ```typescript
 {
   ...UniversalLayerData,        // All basic properties
@@ -114,38 +122,42 @@ createSpinProcessor({spinCenter, spinSpeed, spinDirection})
 ## Code Evidence
 
 ### Stage Component (StageCanvas.tsx)
+
 ```typescript
 // 1. BASIC LOGIC: Prepare base layer
-const layer = await prepareLayer(entry, STAGE_SIZE);  // UniversalLayerData
+const layer = await prepareLayer(entry, STAGE_SIZE); // UniversalLayerData
 
 // 2. SPIN LOGIC: Wrap with processor
 const processors: LayerProcessor[] = [];
 if (entry.spinSpeed !== undefined) {
-  processors.push(createSpinProcessor({
-    spinCenter: entry.spinCenter,
-    spinSpeed: entry.spinSpeed,
-    spinDirection: entry.spinDirection
-  }));
+  processors.push(
+    createSpinProcessor({
+      spinCenter: entry.spinCenter,
+      spinSpeed: entry.spinSpeed,
+      spinDirection: entry.spinDirection,
+    }),
+  );
 }
 
 // 3. Pass to engine
 layersWithProcessors.push({
-  data: layer,        // Basic data
-  processors          // Spin wrapper
+  data: layer, // Basic data
+  processors, // Spin wrapper
 });
 ```
 
 ### Rendering Engine (LayerEngineCanvas.ts)
+
 ```typescript
 // Basic data is wrapped/enhanced by spin processor
-const layerData: EnhancedLayerData = 
-  processors.length > 0 
-    ? runPipeline(baseData, processors, timestamp)  // WRAPPING
+const layerData: EnhancedLayerData =
+  processors.length > 0
+    ? runPipeline(baseData, processors, timestamp) // WRAPPING
     : baseData;
 
 // Use enhanced data
-const rotation = layerData.currentRotation;    // From spin logic
-const pivot = layerData.spinCenter;            // From spin logic
+const rotation = layerData.currentRotation; // From spin logic
+const pivot = layerData.spinCenter; // From spin logic
 ```
 
 ---
@@ -153,9 +165,11 @@ const pivot = layerData.spinCenter;            // From spin logic
 ## Why "Wrap" is the Correct Term
 
 ### Definition of "Wrap"
+
 To **wrap** means to enclose or surround something while preserving its original form.
 
 ### In This Architecture:
+
 ✅ **Basic logic remains intact** - UniversalLayerData is not modified
 
 ✅ **Spin logic surrounds it** - Processor takes UniversalLayerData as input
@@ -165,6 +179,7 @@ To **wrap** means to enclose or surround something while preserving its original
 ✅ **Non-destructive** - Original data structure preserved, only extended
 
 ### Pattern Name: **Decorator Pattern / Pipeline Pattern**
+
 - Basic logic provides the core
 - Spin logic decorates/enhances it
 - Can chain multiple processors (future: opacity, filters, etc.)
@@ -176,6 +191,7 @@ To **wrap** means to enclose or surround something while preserving its original
 ### ✅ CONFIRMED: "Logic Basic Wrap with Logic Spin"
 
 **Correct Definition:**
+
 ```
 Basic Logic (Core layer data)
     wrapped by
@@ -185,6 +201,7 @@ Enhanced Data (Basic + Spin properties)
 ```
 
 This is a **decorator/pipeline pattern** where:
+
 - **Basic logic** = Foundation (imageMapping, transforms)
 - **Spin logic** = Enhancement layer (rotation, pivot)
 - **Wrapping** = Non-destructive extension of data
