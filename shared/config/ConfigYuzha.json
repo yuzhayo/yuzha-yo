@@ -38,12 +38,12 @@
     }
   },
   {
-    "layerId": "clock-glow",
+    "layerId": "clock-GEARMOON",
     "groups": {
       "Basic Config": {
         "renderer": "2D",
         "order": 150,
-        "imageId": "CLOCKGLOW",
+        "imageId": "GEARMOON",
         "scale": [100, 100],
         "position": [1024, 1024],
         "imageTip": 90,
