@@ -50,7 +50,7 @@
         "imageBase": 270
       },
       "Spin Config": {
-        "spinCenter": [50, 50],
+        "spinCenter": [30, 30],
         "spinSpeed": 15,
         "spinDirection": "cw"
       }

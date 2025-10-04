@@ -7,6 +7,7 @@ const STAGE_SIZE = 2048;
 
 type MeshRenderData = {
   mesh: THREE.Mesh;
+  group: THREE.Group; // Group for handling off-center rotation
   baseData: EnhancedLayerData;
   processors: LayerProcessor[];
 };
@@ -63,8 +64,18 @@ export async function mountThreeLayers(
 
     const mesh = new THREE.Mesh(planeGeometry, planeMaterial);
 
-    // Position the mesh in Three.js coordinate system
-    mesh.position.set(data.position.x - STAGE_SIZE / 2, STAGE_SIZE / 2 - data.position.y, 0);
+    // Create a group to handle rotation around off-center pivot
+    const group = new THREE.Group();
+
+    // Position the group at the layer position in Three.js coordinate system
+    group.position.set(data.position.x - STAGE_SIZE / 2, STAGE_SIZE / 2 - data.position.y, 0);
+
+    // Mesh will be offset within the group for pivot rotation
+    // Initially, mesh is at center (no offset)
+    mesh.position.set(0, 0, 0);
+
+    group.add(mesh);
+    scene.add(group);
 
     console.log(`[LayerEngineThree] Loaded layer "${data.layerId}":`, {
       imageId: data.imageId,
@@ -73,9 +84,9 @@ export async function mountThreeLayers(
       scale: data.scale,
     });
 
-    scene.add(mesh);
     meshData.push({
       mesh,
+      group,
       baseData: data,
       processors,
     });
@@ -88,7 +99,7 @@ export async function mountThreeLayers(
   const animate = (timestamp: number) => {
     // Update each mesh based on pipeline output
     for (const item of meshData) {
-      const { mesh, baseData, processors } = item;
+      const { mesh, group, baseData, processors } = item;
 
       // Run pipeline to get enhanced data with current rotation
       const layerData: EnhancedLayerData =
@@ -96,16 +107,31 @@ export async function mountThreeLayers(
 
       // Determine rotation mode
       const isSpinning = layerData.hasSpinAnimation === true;
+      const rotation = isSpinning
+        ? (layerData.currentRotation ?? 0)
+        : (layerData.imageMapping.displayRotation ?? 0);
 
-      if (isSpinning) {
-        // SPIN MODE: Use currentRotation from processor
-        const rotation = layerData.currentRotation ?? 0;
-        mesh.rotation.z = (rotation * Math.PI) / 180;
-      } else {
-        // STATIC MODE: Use displayRotation from imageMapping
-        const displayRotation = layerData.imageMapping.displayRotation ?? 0;
-        mesh.rotation.z = (displayRotation * Math.PI) / 180;
-      }
+      const pivot = isSpinning
+        ? (layerData.spinCenter ?? layerData.imageMapping.imageCenter)
+        : layerData.imageMapping.imageCenter;
+
+      // Calculate offset for pivot rotation
+      // In Three.js, we need to offset the mesh within the group
+      const imageCenter = layerData.imageMapping.imageCenter;
+      const centerX = imageCenter.x * layerData.scale.x;
+      const centerY = imageCenter.y * layerData.scale.y;
+      const pivotX = pivot.x * layerData.scale.x;
+      const pivotY = pivot.y * layerData.scale.y;
+
+      // Offset from center to pivot (in Three.js Y-up coordinates)
+      const dx = centerX - pivotX;
+      const dy = -(centerY - pivotY); // Negate Y for Three.js coordinate system
+
+      // Position mesh offset within group so pivot is at origin
+      mesh.position.set(dx, dy, 0);
+
+      // Rotate the group around its origin (which is now at the pivot point)
+      group.rotation.z = (rotation * Math.PI) / 180;
     }
 
     // Render the scene
@@ -117,7 +143,7 @@ export async function mountThreeLayers(
   return () => {
     cancelAnimationFrame(animationId);
     for (const item of meshData) {
-      const { mesh } = item;
+      const { mesh, group } = item;
       mesh.geometry.dispose();
       if (mesh.material instanceof THREE.Material) {
         const material = mesh.material as THREE.MeshBasicMaterial;
@@ -126,7 +152,8 @@ export async function mountThreeLayers(
         }
         material.dispose();
       }
-      scene.remove(mesh);
+      group.remove(mesh);
+      scene.remove(group);
     }
   };
 }

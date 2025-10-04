@@ -78,16 +78,23 @@ export async function mountCanvasLayers(
         : layerData.imageMapping.imageCenter;
 
       if (rotation !== 0) {
-        // Rotate around pivot point
-        // Move to layer position
-        ctx.translate(layerData.position.x, layerData.position.y);
-        // Rotate
-        ctx.rotate((rotation * Math.PI) / 180);
-        // Offset by pivot (pivot is in image pixels, needs scaling)
+        // Rotate around pivot point while keeping image visually centered
+        // Calculate image center and pivot in scaled coordinates
+        const centerX = (image.width / 2) * layerData.scale.x;
+        const centerY = (image.height / 2) * layerData.scale.y;
         const pivotX = pivot.x * layerData.scale.x;
         const pivotY = pivot.y * layerData.scale.y;
-        // Draw with pivot as origin
-        ctx.drawImage(image, -pivotX, -pivotY, width, height);
+
+        // Offset from image center to pivot
+        const dx = centerX - pivotX;
+        const dy = centerY - pivotY;
+
+        // Transform: move to image center, offset to pivot, rotate, offset back, draw centered
+        ctx.translate(layerData.position.x, layerData.position.y); // Move to image center position
+        ctx.translate(-dx, -dy); // Move to pivot position
+        ctx.rotate((rotation * Math.PI) / 180); // Rotate around pivot
+        ctx.translate(dx, dy); // Move back to center
+        ctx.drawImage(image, -centerX, -centerY, width, height); // Draw centered
       } else {
         // No rotation - draw centered at position
         const x = layerData.position.x - width / 2;
