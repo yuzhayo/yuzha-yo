@@ -27,6 +27,13 @@ export type LayerConfigEntry = {
   spinCenter?: number[]; // [x, y] in 0-100% coordinates
   spinSpeed?: number; // Degrees per second (0 = no spin)
   spinDirection?: "cw" | "ccw";
+
+  // Orbital config
+  orbitCenter?: number[]; // [x, y] stage coordinates (0-2048), default [1024, 1024]
+  orbitImagePoint?: number[]; // [x, y] in 0-100% coordinates, default [50, 50]
+  orbitRadius?: number; // Pixels (0-2048)
+  orbitSpeed?: number; // Degrees per second (0 = no orbit)
+  orbitDirection?: "cw" | "ccw";
 };
 
 export type LayerConfig = LayerConfigEntry[];
@@ -46,6 +53,11 @@ type ConfigYuzhaEntry = {
       spinCenter?: number[];
       spinSpeed?: number;
       spinDirection?: "cw" | "ccw";
+      orbitCenter?: number[];
+      orbitImagePoint?: number[];
+      orbitRadius?: number;
+      orbitSpeed?: number;
+      orbitDirection?: "cw" | "ccw";
     };
   };
 };
