@@ -142,8 +142,13 @@ export async function mountThreeLayers(
     }
   }
 
-  // Update mesh transforms
-  const updateMeshes = (timestamp: number) => {
+  // Track rotation state for render-on-demand optimization
+  const lastRotations = new Map<string, number>();
+
+  // Update mesh transforms and return whether any changes occurred
+  const updateMeshes = (timestamp: number): boolean => {
+    let needsRender = false;
+
     for (const item of meshData) {
       const { mesh, group, baseData, processors, transformCache, isStatic } = item;
 
@@ -159,6 +164,13 @@ export async function mountThreeLayers(
       const rotation = isSpinning
         ? (layerData.currentRotation ?? 0)
         : (layerData.imageMapping.displayRotation ?? 0);
+
+      // Check if rotation changed (for render-on-demand)
+      const lastRotation = lastRotations.get(baseData.layerId);
+      if (lastRotation !== rotation) {
+        needsRender = true;
+        lastRotations.set(baseData.layerId, rotation);
+      }
 
       const pivot = isSpinning
         ? (layerData.spinCenter ?? transformCache.imageCenter)
@@ -180,6 +192,8 @@ export async function mountThreeLayers(
       // Rotate the group around its origin (which is now at the pivot point)
       group.rotation.z = (rotation * Math.PI) / 180;
     }
+
+    return needsRender;
   };
 
   // Check if any layers need animation
@@ -188,14 +202,19 @@ export async function mountThreeLayers(
   let animationId: number | undefined;
 
   if (hasAnimatedLayers) {
-    // Continuous animation for animated layers
+    // Continuous animation for animated layers with render-on-demand
     const animate = (timestamp: number) => {
-      updateMeshes(timestamp);
-      renderer.render(scene, camera);
+      const needsRender = updateMeshes(timestamp);
+      // Only render if rotation actually changed
+      if (needsRender) {
+        renderer.render(scene, camera);
+      }
       animationId = requestAnimationFrame(animate);
     };
     animationId = requestAnimationFrame(animate);
-    console.log(`[LayerEngineThree] Starting animation loop (${animatedCount} animated layers)`);
+    console.log(
+      `[LayerEngineThree] Starting animation loop with render-on-demand (${animatedCount} animated layers)`,
+    );
   } else {
     // Static scene - render once
     updateMeshes(0);

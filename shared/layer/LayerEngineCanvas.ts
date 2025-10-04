@@ -124,40 +124,84 @@ export async function mountCanvasLayers(
     }
   }
 
+  // Split layers by rendering path for optimal performance
+  const staticNoRotationLayers: LayerRenderData[] = [];
+  const staticWithRotationLayers: LayerRenderData[] = [];
+  const animatedLayers: LayerRenderData[] = [];
+
+  for (const layer of layers) {
+    if (layer.isStatic) {
+      if (layer.transformCache.hasRotation) {
+        staticWithRotationLayers.push(layer);
+      } else {
+        staticNoRotationLayers.push(layer);
+      }
+    } else {
+      animatedLayers.push(layer);
+    }
+  }
+
   const render = (timestamp: number) => {
     ctx.clearRect(0, 0, STAGE_SIZE, STAGE_SIZE);
 
-    for (const layer of layers) {
-      const { image, baseData, processors, transformCache, isStatic } = layer;
+    // Render static layers without rotation (no conditionals, no save/restore)
+    for (const layer of staticNoRotationLayers) {
+      const { image, baseData, transformCache } = layer;
+      const layerData = staticLayerCache.get(baseData.layerId) ?? baseData;
+      const x = layerData.position.x - transformCache.scaledWidth / 2;
+      const y = layerData.position.y - transformCache.scaledHeight / 2;
+      ctx.drawImage(image, x, y, transformCache.scaledWidth, transformCache.scaledHeight);
+    }
 
-      // Use cached data for static layers, calculate for animated layers
-      const layerData: EnhancedLayerData = isStatic
-        ? (staticLayerCache.get(baseData.layerId) ?? baseData)
-        : processors.length > 0
-          ? runPipeline(baseData, processors, timestamp)
-          : baseData;
+    // Render static layers with rotation (always needs save/restore)
+    for (const layer of staticWithRotationLayers) {
+      const { image, baseData, transformCache } = layer;
+      const layerData = staticLayerCache.get(baseData.layerId) ?? baseData;
+      const rotation = layerData.imageMapping.displayRotation ?? 0;
 
-      // Determine rotation mode
+      ctx.save();
+      const pivot = layerData.imageMapping.imageCenter;
+      const pivotX = pivot.x * layerData.scale.x;
+      const pivotY = pivot.y * layerData.scale.y;
+      const dx = transformCache.centerX - pivotX;
+      const dy = transformCache.centerY - pivotY;
+
+      ctx.translate(layerData.position.x, layerData.position.y);
+      ctx.translate(-dx, -dy);
+      ctx.rotate((rotation * Math.PI) / 180);
+      ctx.translate(dx, dy);
+      ctx.drawImage(
+        image,
+        -transformCache.centerX,
+        -transformCache.centerY,
+        transformCache.scaledWidth,
+        transformCache.scaledHeight,
+      );
+      ctx.restore();
+    }
+
+    // Render animated layers (determine rotation dynamically)
+    for (const layer of animatedLayers) {
+      const { image, baseData, processors, transformCache } = layer;
+      const layerData: EnhancedLayerData =
+        processors.length > 0 ? runPipeline(baseData, processors, timestamp) : baseData;
+
       const isSpinning = layerData.hasSpinAnimation === true;
       const rotation = isSpinning
         ? (layerData.currentRotation ?? 0)
         : (layerData.imageMapping.displayRotation ?? 0);
 
       if (rotation !== 0) {
-        // Rotating layer - use transform cache for constants, calculate pivot
         ctx.save();
-
         const pivot = isSpinning
           ? (layerData.spinCenter ?? layerData.imageMapping.imageCenter)
           : layerData.imageMapping.imageCenter;
 
-        // Re-calculate pivot offset only if spinning (pivot may change)
         const pivotX = pivot.x * layerData.scale.x;
         const pivotY = pivot.y * layerData.scale.y;
         const dx = transformCache.centerX - pivotX;
         const dy = transformCache.centerY - pivotY;
 
-        // Transform: move to image center, offset to pivot, rotate, offset back, draw centered
         ctx.translate(layerData.position.x, layerData.position.y);
         ctx.translate(-dx, -dy);
         ctx.rotate((rotation * Math.PI) / 180);
@@ -169,10 +213,8 @@ export async function mountCanvasLayers(
           transformCache.scaledWidth,
           transformCache.scaledHeight,
         );
-
         ctx.restore();
       } else {
-        // No rotation - draw centered at position (no save/restore needed)
         const x = layerData.position.x - transformCache.scaledWidth / 2;
         const y = layerData.position.y - transformCache.scaledHeight / 2;
         ctx.drawImage(image, x, y, transformCache.scaledWidth, transformCache.scaledHeight);
