@@ -83,7 +83,7 @@ export function createSpinProcessor(config: SpinConfig): LayerProcessor {
       };
     }
 
-    const result = {
+    return {
       ...layer,
       spinCenter: spinCenterPixels,
       spinSpeed,
@@ -91,16 +91,5 @@ export function createSpinProcessor(config: SpinConfig): LayerProcessor {
       currentRotation: rotation,
       hasSpinAnimation: true,
     };
-
-    // Debug log for first few frames
-    if (elapsedSeconds < 5) {
-      console.log(`[SpinProcessor] "${layer.layerId}" rotation:`, {
-        elapsed: elapsedSeconds.toFixed(2),
-        rotation: rotation.toFixed(2),
-        spinSpeed,
-      });
-    }
-
-    return result;
   };
 }

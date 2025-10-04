@@ -47,11 +47,6 @@ export default function StageCanvas() {
 
         // Add spin processor if spin config exists
         if (entry.spinSpeed !== undefined || entry.spinCenter !== undefined) {
-          console.log(`[StageCanvas] Creating spin processor for "${entry.layerId}":`, {
-            spinCenter: entry.spinCenter,
-            spinSpeed: entry.spinSpeed,
-            spinDirection: entry.spinDirection,
-          });
           processors.push(
             createSpinProcessor({
               spinCenter: entry.spinCenter as [number, number] | undefined,

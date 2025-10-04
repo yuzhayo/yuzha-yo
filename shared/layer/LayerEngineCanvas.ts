@@ -62,16 +62,6 @@ export async function mountCanvasLayers(
       const layerData: EnhancedLayerData =
         processors.length > 0 ? runPipeline(baseData, processors, timestamp) : baseData;
 
-      // Debug logging (only log GEARMOON to reduce noise)
-      if (baseData.layerId === "clock-GEARMOON") {
-        console.log(`[LayerEngineCanvas] GEARMOON:`, {
-          timestamp,
-          processorCount: processors.length,
-          hasSpinAnimation: layerData.hasSpinAnimation,
-          currentRotation: layerData.currentRotation,
-        });
-      }
-
       const width = image.width * layerData.scale.x;
       const height = image.height * layerData.scale.y;
 
