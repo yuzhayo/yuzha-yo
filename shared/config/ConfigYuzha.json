@@ -13,7 +13,7 @@
       },
       "Spin Config": {
         "spinCenter": [50, 50],
-        "spinSpeed": 0,
+        "spinSpeed": 500,
         "spinDirection": "cw"
       }
     }
@@ -51,7 +51,7 @@
       },
       "Spin Config": {
         "spinCenter": [50, 50],
-        "spinSpeed": 0,
+        "spinSpeed": 5,
         "spinDirection": "cw"
       }
     }
