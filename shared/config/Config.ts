@@ -10,15 +10,18 @@ export type LayerConfigEntry = {
   /** Scale as percentage [x, y] (10-500, default 100). Values outside range are clamped. */
   scale?: number[];
   position?: number[];
-  angle?: number | number[] | null;
 
   // Image mapping config
   /**
    * Angle in degrees defining the "tip" direction of the image (default 90°).
    * Screen-space angle convention: 0° = right, 90° = top, 180° = left, 270° = bottom.
-   * The "base" is automatically calculated as 180° opposite the tip.
    */
   imageTip?: number;
+  /**
+   * Angle in degrees defining the "base" direction of the image (default 270°).
+   * Can be set independently from imageTip for asymmetric image orientation.
+   */
+  imageBase?: number;
 
   // Spin config
   spinCenter?: number[]; // [x, y] in 0-100% coordinates
@@ -38,8 +41,8 @@ type ConfigYuzhaEntry = {
       imageId?: string;
       scale?: number[];
       position?: number[];
-      angle?: number | number[] | null;
       imageTip?: number;
+      imageBase?: number;
       spinCenter?: number[];
       spinSpeed?: number;
       spinDirection?: "cw" | "ccw";
