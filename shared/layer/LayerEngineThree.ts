@@ -19,6 +19,7 @@ type MeshRenderData = {
   processors: LayerProcessor[];
   transformCache: TransformCache;
   isStatic: boolean;
+  spinSpeed: number;
 };
 
 export async function mountThreeLayers(
@@ -62,10 +63,12 @@ export async function mountThreeLayers(
     // Determine if layer is static by running processors once and checking result
     // A layer is static if it has no processors OR if running processors yields no animation flags
     let isStatic = processors.length === 0;
+    let spinSpeed = 0;
     if (!isStatic && processors.length > 0) {
       // Run pipeline once to check if it produces animation
       const testData = runPipeline(data, processors, 0);
       isStatic = !testData.hasSpinAnimation; // Static if no spin animation flag
+      spinSpeed = testData.spinSpeed ?? 0; // Extract spin speed for render optimization
     }
 
     // Pre-calculate transform constants
@@ -112,6 +115,7 @@ export async function mountThreeLayers(
       position: data.position,
       scale: data.scale,
       isStatic,
+      spinSpeed,
     });
 
     meshData.push({
@@ -121,14 +125,32 @@ export async function mountThreeLayers(
       processors,
       transformCache,
       isStatic,
+      spinSpeed,
     });
   }
 
   const staticCount = meshData.filter((m) => m.isStatic).length;
   const animatedCount = meshData.length - staticCount;
+
+  // Check if any animated layer has slow rotation (< 6 degrees/second)
+  // Slow rotations need every frame rendered to avoid stuttering
+  const SLOW_ROTATION_THRESHOLD = 6;
+  const hasSlowRotation = meshData.some(
+    (m) => !m.isStatic && m.spinSpeed > 0 && m.spinSpeed < SLOW_ROTATION_THRESHOLD,
+  );
+
   console.log(
     `[LayerEngineThree] Total layers loaded: ${meshData.length} (${staticCount} static, ${animatedCount} animated)`,
   );
+
+  if (hasSlowRotation) {
+    const slowLayers = meshData.filter(
+      (m) => !m.isStatic && m.spinSpeed > 0 && m.spinSpeed < SLOW_ROTATION_THRESHOLD,
+    );
+    console.log(
+      `[LayerEngineThree] Detected slow rotation layers (always render): ${slowLayers.map((m) => `${m.baseData.layerId}@${m.spinSpeed}°/s`).join(", ")}`,
+    );
+  }
 
   // Cache for static layers - calculate once, reuse forever
   const staticLayerCache = new Map<string, EnhancedLayerData>();
@@ -202,21 +224,28 @@ export async function mountThreeLayers(
   let animationId: number | undefined;
 
   if (hasAnimatedLayers) {
-    // Continuous animation for animated layers with render-on-demand
+    // Smart render-on-demand: always render for slow rotations, optimize for fast rotations
     let firstFrame = true;
     const animate = (timestamp: number) => {
       const needsRender = updateMeshes(timestamp);
-      // Always render first frame, then only when rotation changes
-      if (firstFrame || needsRender) {
+      // Always render if: first frame, slow rotation detected, or rotation changed
+      if (firstFrame || hasSlowRotation || needsRender) {
         renderer.render(scene, camera);
         firstFrame = false;
       }
       animationId = requestAnimationFrame(animate);
     };
     animationId = requestAnimationFrame(animate);
-    console.log(
-      `[LayerEngineThree] Starting animation loop with render-on-demand (${animatedCount} animated layers)`,
-    );
+
+    if (hasSlowRotation) {
+      console.log(
+        `[LayerEngineThree] Starting animation loop with always-render for slow rotations (${animatedCount} animated layers)`,
+      );
+    } else {
+      console.log(
+        `[LayerEngineThree] Starting animation loop with render-on-demand (${animatedCount} animated layers)`,
+      );
+    }
   } else {
     // Static scene - render once
     updateMeshes(0);
