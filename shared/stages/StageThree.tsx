@@ -1,8 +1,10 @@
 import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { loadLayerConfig } from "../config/Config";
-import { is2DLayer } from "../layer/LayerCore";
+import { is2DLayer, prepareLayer } from "../layer/LayerCore";
 import { mountThreeLayers } from "../layer/LayerEngineThree";
+import { runPipeline, type EnhancedLayerData } from "../layer/LayerCorePipeline";
+import { createSpinProcessor } from "../layer/LayerCorePipelineSpin";
 import { STAGE_SIZE, createStageTransformer } from "../utils/stage2048";
 import { getDeviceCapability } from "../utils/DeviceCapability";
 
@@ -61,7 +63,33 @@ export default function StageThree() {
     const run = async () => {
       const config = loadLayerConfig();
       const twoDLayers = config.filter(is2DLayer);
-      cleanupLayers = await mountThreeLayers(scene, twoDLayers);
+
+      // Prepare and process layers together to maintain correspondence
+      const enhancedLayers: EnhancedLayerData[] = [];
+      for (const entry of twoDLayers) {
+        const preparedLayer = await prepareLayer(entry, STAGE_SIZE);
+        if (!preparedLayer) continue;
+
+        // Create spin processor for this layer
+        const spinProcessor = createSpinProcessor({
+          spinCenter:
+            entry.spinCenter &&
+            entry.spinCenter.length >= 2 &&
+            typeof entry.spinCenter[0] === "number" &&
+            typeof entry.spinCenter[1] === "number"
+              ? { x: entry.spinCenter[0], y: entry.spinCenter[1] }
+              : undefined,
+          spinSpeed: entry.spinSpeed,
+          spinDirection: entry.spinDirection,
+        });
+
+        // Run through pipeline
+        const enhanced = runPipeline(preparedLayer, [spinProcessor]);
+        enhancedLayers.push(enhanced);
+      }
+
+      // Mount to Three.js engine
+      cleanupLayers = await mountThreeLayers(scene, enhancedLayers);
 
       window.addEventListener("resize", handleResize);
 

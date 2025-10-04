@@ -8,7 +8,13 @@
         "imageId": "STARBG",
         "scale": [100, 100],
         "position": [1024, 1024],
-        "angle": null
+        "angle": null,
+        "imageTip": 90
+      },
+      "Spin Config": {
+        "spinCenter": [50, 50],
+        "spinSpeed": 0,
+        "spinDirection": "cw"
       }
     }
   },
@@ -21,7 +27,13 @@
         "imageId": "CLOCKBG",
         "scale": [100, 100],
         "position": [1024, 1024],
-        "angle": null
+        "angle": null,
+        "imageTip": 90
+      },
+      "Spin Config": {
+        "spinCenter": [50, 50],
+        "spinSpeed": 0,
+        "spinDirection": "cw"
       }
     }
   },
@@ -34,7 +46,13 @@
         "imageId": "CLOCKGLOW",
         "scale": [100, 100],
         "position": [1024, 1024],
-        "angle": null
+        "angle": null,
+        "imageTip": 90
+      },
+      "Spin Config": {
+        "spinCenter": [50, 50],
+        "spinSpeed": 0,
+        "spinDirection": "cw"
       }
     }
   }

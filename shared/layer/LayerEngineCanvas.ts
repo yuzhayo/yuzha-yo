@@ -1,19 +1,6 @@
-import type { LayerConfigEntry } from "../config/Config";
-import { compute2DTransform } from "./LayerCore";
-import registryData from "../config/ImageRegistry.json" assert { type: "json" };
+import type { EnhancedLayerData } from "./LayerCorePipeline";
 
 const STAGE_SIZE = 2048;
-
-const registry = registryData as Array<{ id: string; path: string }>;
-const pathMap = new Map(registry.map((entry) => [entry.id, entry.path]));
-
-function resolveAssetUrl(path: string): string {
-  if (!path.toLowerCase().startsWith("shared/asset/")) {
-    throw new Error(`Unsupported asset path: ${path}`);
-  }
-  const relative = path.replace(/^shared\/asset\//i, "../Asset/");
-  return new URL(relative, import.meta.url).href;
-}
 
 async function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -26,35 +13,29 @@ async function loadImage(src: string): Promise<HTMLImageElement> {
 
 export async function mountCanvasLayers(
   ctx: CanvasRenderingContext2D,
-  entries: LayerConfigEntry[],
+  layersData: EnhancedLayerData[],
 ): Promise<() => void> {
   const layers: Array<{
     image: HTMLImageElement;
-    position: { x: number; y: number };
-    scale: { x: number; y: number };
+    data: EnhancedLayerData;
   }> = [];
 
-  for (const entry of entries) {
-    const assetPath = pathMap.get(entry.imageId);
-    if (!assetPath) {
-      console.warn(`[LayerEngineCanvas] Missing asset for imageId "${entry.imageId}"`);
-      continue;
-    }
-
+  // Load all images
+  for (const data of layersData) {
     try {
-      const image = await loadImage(resolveAssetUrl(assetPath));
-      const { position, scale } = compute2DTransform(entry, STAGE_SIZE);
+      const image = await loadImage(data.imageUrl);
 
-      console.log(`[LayerEngineCanvas] Loaded layer "${entry.layerId}" (order: ${entry.order}):`, {
-        imageId: entry.imageId,
+      console.log(`[LayerEngineCanvas] Loaded layer "${data.layerId}":`, {
+        imageId: data.imageId,
         imageDimensions: `${image.width}x${image.height}`,
-        position,
-        scale,
+        position: data.position,
+        scale: data.scale,
+        spinSpeed: data.spinSpeed,
       });
 
-      layers.push({ image, position, scale });
+      layers.push({ image, data });
     } catch (error) {
-      console.error(`[LayerEngineCanvas] Failed to load image for "${entry.imageId}"`, error);
+      console.error(`[LayerEngineCanvas] Failed to load image for "${data.imageId}"`, error);
     }
   }
 
@@ -64,12 +45,42 @@ export async function mountCanvasLayers(
     ctx.clearRect(0, 0, STAGE_SIZE, STAGE_SIZE);
 
     for (const layer of layers) {
-      const width = layer.image.width * layer.scale.x;
-      const height = layer.image.height * layer.scale.y;
-      const x = layer.position.x - width / 2;
-      const y = layer.position.y - height / 2;
+      const { image, data } = layer;
+      const width = image.width * data.scale.x;
+      const height = image.height * data.scale.y;
 
-      ctx.drawImage(layer.image, x, y, width, height);
+      ctx.save();
+
+      // Calculate current rotation if spin is enabled
+      const spinSpeed = data.spinSpeed ?? 0;
+      if (spinSpeed > 0) {
+        // Calculate rotation based on current time
+        const now = performance.now();
+        const elapsedSeconds = now / 1000;
+        let rotation = (elapsedSeconds * spinSpeed) % 360;
+
+        // Reverse direction if counter-clockwise
+        if (data.spinDirection === "ccw") {
+          rotation = -rotation;
+        }
+
+        // Translate to spin center
+        const spinCenterX = data.spinCenter?.x ?? image.width / 2;
+        const spinCenterY = data.spinCenter?.y ?? image.height / 2;
+
+        ctx.translate(data.position.x, data.position.y);
+        ctx.rotate((rotation * Math.PI) / 180);
+        ctx.translate(-spinCenterX * data.scale.x, -spinCenterY * data.scale.y);
+
+        ctx.drawImage(image, 0, 0, width, height);
+      } else {
+        // No rotation - draw centered at position
+        const x = data.position.x - width / 2;
+        const y = data.position.y - height / 2;
+        ctx.drawImage(image, x, y, width, height);
+      }
+
+      ctx.restore();
     }
   };
 
