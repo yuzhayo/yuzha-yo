@@ -138,5 +138,6 @@ Communication: Simple, everyday language
 
 - ✅ **Canvas Optimization**: Split layers into separate arrays (staticNoRotation, staticWithRotation, animated) to eliminate redundant conditional checks - ~5-10% CPU savings
 - ✅ **Three.js Render-on-Demand**: Track rotation changes and skip GPU renders when nothing changed - ~30-50% GPU savings for partially static scenes
+- ✅ **Smart Render-on-Demand**: Implemented threshold-based rendering (6°/s) where slow rotations (<6°/s) always render for smoothness, fast rotations use optimization - fixes choppy GEARMOON animation
 - ✅ All optimizations preserve visual functionality - no regressions
 - ✅ TypeScript, ESLint, and Prettier checks passing
