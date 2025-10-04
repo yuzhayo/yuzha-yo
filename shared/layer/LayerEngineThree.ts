@@ -94,11 +94,14 @@ export async function mountThreeLayers(
         // Run pipeline with current timestamp
         const enhanced = runPipeline(baseLayer, processors, timestamp);
 
-        const rotationDeg = enhanced.currentRotation ?? 0;
+        // Combine display rotation (from base→tip axis) with spin rotation
+        const displayRotation = baseLayer.imageMapping.displayRotation ?? 0;
+        const spinRotation = enhanced.currentRotation ?? 0;
+        const totalRotation = displayRotation + spinRotation;
 
-        if (rotationDeg !== 0) {
+        if (totalRotation !== 0) {
           // Apply rotation
-          mesh.rotation.z = (rotationDeg * Math.PI) / 180;
+          mesh.rotation.z = (totalRotation * Math.PI) / 180;
 
           // If spinCenter is specified, adjust pivot point
           if (enhanced.spinCenter) {
@@ -116,7 +119,7 @@ export async function mountThreeLayers(
             };
 
             // Calculate rotated offset
-            const angle = (rotationDeg * Math.PI) / 180;
+            const angle = (totalRotation * Math.PI) / 180;
             const cos = Math.cos(angle);
             const sin = Math.sin(angle);
             const rotatedOffset = {
