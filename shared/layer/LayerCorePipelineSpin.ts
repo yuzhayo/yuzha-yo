@@ -42,12 +42,10 @@ export function createSpinProcessor(config: SpinConfig): LayerProcessor {
   let startTime: number | null = null;
 
   return (layer: UniversalLayerData, timestamp?: number): EnhancedLayerData => {
-    // STATIC MODE: No spin speed - use displayRotation from imageMapping
+    // STATIC MODE: No spin speed - return layer as-is (cast to EnhancedLayerData)
+    // hasSpinAnimation is undefined, which is falsy - same behavior, no allocation
     if (spinSpeed === 0) {
-      return {
-        ...layer,
-        hasSpinAnimation: false,
-      };
+      return layer as EnhancedLayerData;
     }
 
     // SPIN MODE: Calculate time-based rotation

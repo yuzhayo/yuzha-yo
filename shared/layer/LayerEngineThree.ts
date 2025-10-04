@@ -5,11 +5,20 @@ import { runPipeline } from "./LayerCorePipeline";
 
 const STAGE_SIZE = 2048;
 
+type TransformCache = {
+  scaledWidth: number;
+  scaledHeight: number;
+  imageCenter: { x: number; y: number };
+  hasRotation: boolean;
+};
+
 type MeshRenderData = {
   mesh: THREE.Mesh;
-  group: THREE.Group; // Group for handling off-center rotation
+  group: THREE.Group;
   baseData: EnhancedLayerData;
   processors: LayerProcessor[];
+  transformCache: TransformCache;
+  isStatic: boolean;
 };
 
 export async function mountThreeLayers(
@@ -43,17 +52,37 @@ export async function mountThreeLayers(
 
   const results = await Promise.all(texturePromises);
 
-  // Create meshes
+  // Create meshes and pre-calculate transforms
   for (const result of results) {
     if (!result) continue;
 
     const { item, texture } = result;
     const { data, processors } = item;
 
-    const width = texture.image.width * data.scale.x;
-    const height = texture.image.height * data.scale.y;
+    // Determine if layer is static by running processors once and checking result
+    // A layer is static if it has no processors OR if running processors yields no animation flags
+    let isStatic = processors.length === 0;
+    if (!isStatic && processors.length > 0) {
+      // Run pipeline once to check if it produces animation
+      const testData = runPipeline(data, processors, 0);
+      isStatic = !testData.hasSpinAnimation; // Static if no spin animation flag
+    }
 
-    const planeGeometry = new THREE.PlaneGeometry(width, height);
+    // Pre-calculate transform constants
+    const scaledWidth = texture.image.width * data.scale.x;
+    const scaledHeight = texture.image.height * data.scale.y;
+    const imageCenter = { ...data.imageMapping.imageCenter };
+    const displayRotation = data.imageMapping.displayRotation ?? 0;
+    const hasRotation = displayRotation !== 0;
+
+    const transformCache: TransformCache = {
+      scaledWidth,
+      scaledHeight,
+      imageCenter,
+      hasRotation,
+    };
+
+    const planeGeometry = new THREE.PlaneGeometry(scaledWidth, scaledHeight);
 
     const planeMaterial = new THREE.MeshBasicMaterial({
       map: texture,
@@ -82,6 +111,7 @@ export async function mountThreeLayers(
       imageDimensions: `${texture.image.width}x${texture.image.height}`,
       position: data.position,
       scale: data.scale,
+      isStatic,
     });
 
     meshData.push({
@@ -89,21 +119,40 @@ export async function mountThreeLayers(
       group,
       baseData: data,
       processors,
+      transformCache,
+      isStatic,
     });
   }
 
-  console.log(`[LayerEngineThree] Total layers loaded: ${meshData.length}`);
+  const staticCount = meshData.filter((m) => m.isStatic).length;
+  const animatedCount = meshData.length - staticCount;
+  console.log(
+    `[LayerEngineThree] Total layers loaded: ${meshData.length} (${staticCount} static, ${animatedCount} animated)`,
+  );
 
-  // Animation loop
-  let animationId: number;
-  const animate = (timestamp: number) => {
-    // Update each mesh based on pipeline output
+  // Cache for static layers - calculate once, reuse forever
+  const staticLayerCache = new Map<string, EnhancedLayerData>();
+
+  for (const item of meshData) {
+    if (item.isStatic) {
+      // Pre-calculate static layer data once
+      const staticData =
+        item.processors.length > 0 ? runPipeline(item.baseData, item.processors, 0) : item.baseData;
+      staticLayerCache.set(item.baseData.layerId, staticData);
+    }
+  }
+
+  // Update mesh transforms
+  const updateMeshes = (timestamp: number) => {
     for (const item of meshData) {
-      const { mesh, group, baseData, processors } = item;
+      const { mesh, group, baseData, processors, transformCache, isStatic } = item;
 
-      // Run pipeline to get enhanced data with current rotation
-      const layerData: EnhancedLayerData =
-        processors.length > 0 ? runPipeline(baseData, processors, timestamp) : baseData;
+      // Use cached data for static layers, calculate for animated layers
+      const layerData: EnhancedLayerData = isStatic
+        ? (staticLayerCache.get(baseData.layerId) ?? baseData)
+        : processors.length > 0
+          ? runPipeline(baseData, processors, timestamp)
+          : baseData;
 
       // Determine rotation mode
       const isSpinning = layerData.hasSpinAnimation === true;
@@ -112,14 +161,12 @@ export async function mountThreeLayers(
         : (layerData.imageMapping.displayRotation ?? 0);
 
       const pivot = isSpinning
-        ? (layerData.spinCenter ?? layerData.imageMapping.imageCenter)
-        : layerData.imageMapping.imageCenter;
+        ? (layerData.spinCenter ?? transformCache.imageCenter)
+        : transformCache.imageCenter;
 
-      // Calculate offset for pivot rotation
-      // In Three.js, we need to offset the mesh within the group
-      const imageCenter = layerData.imageMapping.imageCenter;
-      const centerX = imageCenter.x * layerData.scale.x;
-      const centerY = imageCenter.y * layerData.scale.y;
+      // Calculate offset for pivot rotation using cached image center
+      const centerX = transformCache.imageCenter.x * layerData.scale.x;
+      const centerY = transformCache.imageCenter.y * layerData.scale.y;
       const pivotX = pivot.x * layerData.scale.x;
       const pivotY = pivot.y * layerData.scale.y;
 
@@ -133,15 +180,33 @@ export async function mountThreeLayers(
       // Rotate the group around its origin (which is now at the pivot point)
       group.rotation.z = (rotation * Math.PI) / 180;
     }
-
-    // Render the scene
-    renderer.render(scene, camera);
-    animationId = requestAnimationFrame(animate);
   };
-  animationId = requestAnimationFrame(animate);
+
+  // Check if any layers need animation
+  const hasAnimatedLayers = animatedCount > 0;
+
+  let animationId: number | undefined;
+
+  if (hasAnimatedLayers) {
+    // Continuous animation for animated layers
+    const animate = (timestamp: number) => {
+      updateMeshes(timestamp);
+      renderer.render(scene, camera);
+      animationId = requestAnimationFrame(animate);
+    };
+    animationId = requestAnimationFrame(animate);
+    console.log(`[LayerEngineThree] Starting animation loop (${animatedCount} animated layers)`);
+  } else {
+    // Static scene - render once
+    updateMeshes(0);
+    renderer.render(scene, camera);
+    console.log("[LayerEngineThree] Static scene - rendered once, no animation loop");
+  }
 
   return () => {
-    cancelAnimationFrame(animationId);
+    if (animationId !== undefined) {
+      cancelAnimationFrame(animationId);
+    }
     for (const item of meshData) {
       const { mesh, group } = item;
       mesh.geometry.dispose();
