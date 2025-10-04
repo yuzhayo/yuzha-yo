@@ -3,6 +3,8 @@ import * as THREE from "three";
 import { loadLayerConfig } from "../config/Config";
 import { is2DLayer, prepareLayer } from "../layer/LayerCore";
 import { mountThreeLayers } from "../layer/LayerEngineThree";
+import { createSpinProcessor } from "../layer/LayerCorePipelineSpin";
+import type { EnhancedLayerData, LayerProcessor } from "../layer/LayerCorePipeline";
 import { STAGE_SIZE, createStageTransformer } from "../utils/stage2048";
 import { getDeviceCapability } from "../utils/DeviceCapability";
 
@@ -45,38 +47,49 @@ export default function StageThree() {
 
     let cleanupLayers: (() => void) | undefined;
     let cleanupTransform: (() => void) | undefined;
-    let resizeTimeoutId: number | undefined;
-
-    const render = () => {
-      renderer.render(scene, camera);
-    };
-
-    const handleResize = () => {
-      if (resizeTimeoutId) clearTimeout(resizeTimeoutId);
-      resizeTimeoutId = window.setTimeout(() => {
-        render();
-      }, 150);
-    };
 
     const run = async () => {
       const config = loadLayerConfig();
       const twoDLayers = config.filter(is2DLayer);
 
-      const layers = [];
+      const layersWithProcessors: Array<{
+        data: EnhancedLayerData;
+        processors: LayerProcessor[];
+      }> = [];
+
       for (const entry of twoDLayers) {
         const layer = await prepareLayer(entry, STAGE_SIZE);
         if (!layer) {
           console.warn(`[StageThree] Skipping layer ${entry.layerId} - failed to prepare`);
           continue;
         }
-        layers.push(layer);
+
+        // Create processors for this layer
+        const processors: LayerProcessor[] = [];
+
+        // Add spin processor if spin config exists
+        if (entry.spinSpeed !== undefined || entry.spinCenter !== undefined) {
+          console.log(`[StageThree] Creating spin processor for "${entry.layerId}":`, {
+            spinCenter: entry.spinCenter,
+            spinSpeed: entry.spinSpeed,
+            spinDirection: entry.spinDirection,
+          });
+          processors.push(
+            createSpinProcessor({
+              spinCenter: entry.spinCenter as [number, number] | undefined,
+              spinSpeed: entry.spinSpeed,
+              spinDirection: entry.spinDirection,
+            }),
+          );
+        }
+
+        layersWithProcessors.push({
+          data: layer,
+          processors,
+        });
       }
 
-      cleanupLayers = await mountThreeLayers(scene, layers);
-
-      window.addEventListener("resize", handleResize);
-
-      render();
+      cleanupLayers = await mountThreeLayers(scene, renderer, camera, layersWithProcessors);
     };
 
     run().catch((error) => {
@@ -88,8 +101,6 @@ export default function StageThree() {
     });
 
     return () => {
-      window.removeEventListener("resize", handleResize);
-      if (resizeTimeoutId) clearTimeout(resizeTimeoutId);
       cleanupTransform?.();
       cleanupLayers?.();
       renderer.dispose();
