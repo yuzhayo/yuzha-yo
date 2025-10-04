@@ -1,0 +1,91 @@
+understand image mapping concept and their relation to image base and image tip first
+
+11:25 am, Oct 04, 2025
+
+Show less
+
+Decided on image mapping understanding
+I'll help you understand the image mapping concept first, then we can fix the issues properly.
+
+
+Searched for "What is the purpose of imageMapping with imageTip, imageBase, and imageCenter? How are they supposed to be used in the rendering or animation system?"
+
+Decided on unused variable findings (4 seconds)
+Image Mapping Concept Analysis
+Based on my deep analysis, here's what I found:
+
+Current System (What the code does):
+Config has imageTip - This is an angle in degrees (e.g., 90° = top)
+
+Code calculates 3 points:
+
+imageCenter - geometric center of the image
+imageTip - point on the edge at the specified angle
+imageBase - point on the opposite edge (180° from tip)
+BUT HERE'S THE KEY FINDING:
+
+✅ imageCenter is actively used (as default spin center)
+❌ imageTip point is calculated but NEVER used
+❌ imageBase point is calculated but NEVER used
+The Truth (confirmed by grep):
+Only one reference to imageTip exists:
+Line 130: const tipAngle = typeof entry.imageTip === "number" ? entry.imageTip : 90;
+         (This reads the ANGLE, not the calculated point)
+Zero references to .imageTip or .imageBase anywhere in rendering code.
+What Should Happen:
+The intended concept seems to be:
+
+Images like clock hands or arrows have a "tip" (front) and "base" (back)
+These reference points could be used for:
+Aligning multiple images (e.g., clock hand tip to center)
+Attaching objects to specific points
+Advanced animations
+But none of this is implemented. The calculation exists but is dead code.
+
+My Recommendation:
+Option 1: Remove Dead Code (Simple)
+
+Remove imageTip and imageBase from ImageMapping
+Remove the calculation logic
+Keep only imageCenter and imageDimensions
+Remove imageTip from config (it's not doing anything useful)
+Option 2: Implement Properly (If you have a use case)
+
+Keep the concept but actually use the points
+For example: Allow setting spin center as "tip" or "base" instead of percentages
+Which direction do you want to go? Do you have a specific use case for tip/base, or should we clean up the dead code?
+
+1 minute of work
+correct logic is use imagemapping to calculate image dimension convert it to 0-100h 0-100w then determine imagecenter, 50.50,
+then imagetip is draw imaginaginary line from imagecenter to up 90degree (default)
+and image base is 180degree (default)
+do you understand until here, i will continue after your confirm
+
+11:31 am, Oct 04, 2025
+
+Show less
+
+Decided on percentage-based mapping (6 seconds)
+Yes, I understand! Let me confirm:
+
+Your Correct Logic:
+
+Image dimensions → Normalize to 0-100% coordinate system
+
+Width: 0-100%
+Height: 0-100%
+Image center = 50%, 50% (always in the middle)
+
+Image tip = Imaginary line from center pointing at 90° (up) by default
+
+This is a DIRECTION, not a specific edge point
+Image base = Imaginary line from center pointing at 180° opposite (down) by default
+
+Also a DIRECTION
+So the system should use percentage-based coordinates where:
+
+Center is always at (50, 50)
+Tip and Base are ANGLES/DIRECTIONS from center, not edge coordinates
+This is different from current code which calculates pixel coordinates at the edge!
+
+I understand. Please continue explaining how this should be used! 👍
