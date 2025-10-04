@@ -1,4 +1,6 @@
-import type { UniversalLayerData } from "./LayerCore";
+import type { EnhancedLayerData } from "./LayerCorePipeline";
+import type { LayerProcessor } from "./LayerCorePipeline";
+import { runPipeline } from "./LayerCorePipeline";
 
 const STAGE_SIZE = 2048;
 
@@ -11,61 +13,80 @@ async function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
+type LayerRenderData = {
+  image: HTMLImageElement;
+  baseData: EnhancedLayerData;
+  processors: LayerProcessor[];
+};
+
 export async function mountCanvasLayers(
   ctx: CanvasRenderingContext2D,
-  layerDataArray: UniversalLayerData[],
+  layersWithProcessors: Array<{
+    data: EnhancedLayerData;
+    processors: LayerProcessor[];
+  }>,
 ): Promise<() => void> {
-  const layers: Array<{
-    image: HTMLImageElement;
-    data: UniversalLayerData;
-  }> = [];
+  const layers: LayerRenderData[] = [];
 
   // Load all images
-  for (const layerData of layerDataArray) {
+  for (const item of layersWithProcessors) {
     try {
-      const image = await loadImage(layerData.imageUrl);
+      const image = await loadImage(item.data.imageUrl);
 
-      console.log(`[LayerEngineCanvas] Loaded layer "${layerData.layerId}":`, {
-        imageId: layerData.imageId,
+      console.log(`[LayerEngineCanvas] Loaded layer "${item.data.layerId}":`, {
+        imageId: item.data.imageId,
         imageDimensions: `${image.width}x${image.height}`,
-        position: layerData.position,
-        scale: layerData.scale,
+        position: item.data.position,
+        scale: item.data.scale,
       });
 
       layers.push({
         image,
-        data: layerData,
+        baseData: item.data,
+        processors: item.processors,
       });
     } catch (error) {
-      console.error(`[LayerEngineCanvas] Failed to load image for "${layerData.imageId}"`, error);
+      console.error(`[LayerEngineCanvas] Failed to load image for "${item.data.imageId}"`, error);
     }
   }
 
   console.log(`[LayerEngineCanvas] Total layers loaded: ${layers.length}`);
 
-  const render = () => {
+  const render = (timestamp: number) => {
     ctx.clearRect(0, 0, STAGE_SIZE, STAGE_SIZE);
 
     for (const layer of layers) {
-      const { image, data } = layer;
+      const { image, baseData, processors } = layer;
 
-      const width = image.width * data.scale.x;
-      const height = image.height * data.scale.y;
+      // Run pipeline to get enhanced data with current rotation
+      const layerData: EnhancedLayerData =
+        processors.length > 0 ? runPipeline(baseData, processors, timestamp) : baseData;
+
+      const width = image.width * layerData.scale.x;
+      const height = image.height * layerData.scale.y;
 
       ctx.save();
 
-      const displayRotation = data.imageMapping.displayRotation ?? 0;
+      // Determine rotation mode
+      const isSpinning = layerData.hasSpinAnimation === true;
+      const rotation = isSpinning
+        ? layerData.currentRotation ?? 0
+        : layerData.imageMapping.displayRotation ?? 0;
 
-      if (displayRotation !== 0) {
-        // Rotate around image center
-        ctx.translate(data.position.x, data.position.y);
-        ctx.rotate((displayRotation * Math.PI) / 180);
-        ctx.translate(-width / 2, -height / 2);
+      const pivot = isSpinning
+        ? layerData.spinCenter ?? layerData.imageMapping.imageCenter
+        : layerData.imageMapping.imageCenter;
+
+      if (rotation !== 0) {
+        // Rotate around pivot point
+        ctx.translate(layerData.position.x, layerData.position.y);
+        ctx.rotate((rotation * Math.PI) / 180);
+        ctx.translate(-pivot.x * layerData.scale.x, -pivot.y * layerData.scale.y);
         ctx.drawImage(image, 0, 0, width, height);
       } else {
         // No rotation - draw centered at position
-        const x = data.position.x - width / 2;
-        const y = data.position.y - height / 2;
+        const x = layerData.position.x - width / 2;
+        const y = layerData.position.y - height / 2;
         ctx.drawImage(image, x, y, width, height);
       }
 
@@ -74,8 +95,8 @@ export async function mountCanvasLayers(
   };
 
   let animationId: number;
-  const animate = () => {
-    render();
+  const animate = (timestamp: number) => {
+    render(timestamp);
     animationId = requestAnimationFrame(animate);
   };
   animationId = requestAnimationFrame(animate);
