@@ -14,6 +14,9 @@ export type ImageMapping = {
   imageTip: { x: number; y: number };
   imageBase: { x: number; y: number };
   imageDimensions: { width: number; height: number };
+  displayAxisAngle: number;
+  displayRotation: number;
+  axisCenterOffset: { x: number; y: number };
 };
 
 export type UniversalLayerData = {
@@ -91,11 +94,37 @@ export function computeImageMapping(
     y: imageCenter.y + baseScale * baseDy,
   };
 
+  // Calculate display axis orientation
+  // Vector from base to tip
+  const axisDx = imageTip.x - imageBase.x;
+  const axisDy = imageTip.y - imageBase.y;
+
+  // Angle of base→tip line in degrees (0° = right, 90° = up, etc.)
+  const displayAxisAngle = (Math.atan2(-axisDy, axisDx) * 180) / Math.PI;
+
+  // Rotation needed to make axis point upward (90°)
+  const displayRotation = 90 - displayAxisAngle;
+
+  // Midpoint of base-tip axis
+  const axisMidpoint = {
+    x: (imageBase.x + imageTip.x) / 2,
+    y: (imageBase.y + imageTip.y) / 2,
+  };
+
+  // Offset of geometric center from axis midpoint
+  const axisCenterOffset = {
+    x: imageCenter.x - axisMidpoint.x,
+    y: imageCenter.y - axisMidpoint.y,
+  };
+
   return {
     imageCenter,
     imageTip,
     imageBase,
     imageDimensions,
+    displayAxisAngle,
+    displayRotation,
+    axisCenterOffset,
   };
 }
 
