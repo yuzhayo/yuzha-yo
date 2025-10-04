@@ -1,32 +1,48 @@
 import * as THREE from "three";
-import type { EnhancedLayerData } from "./LayerCorePipeline";
+import type { UniversalLayerData } from "./LayerCore";
+import type { LayerProcessor } from "./LayerCorePipeline";
+import { runPipeline } from "./LayerCorePipeline";
 
 const STAGE_SIZE = 2048;
 
+type LayerWithProcessors = {
+  baseLayer: UniversalLayerData;
+  processors: LayerProcessor[];
+};
+
 export async function mountThreeLayers(
   scene: THREE.Scene,
-  layersData: EnhancedLayerData[],
+  layersWithProcessors: LayerWithProcessors[],
 ): Promise<() => void> {
   const meshes: THREE.Mesh[] = [];
-  const meshData: Array<{ mesh: THREE.Mesh; data: EnhancedLayerData }> = [];
+  const layerData: Array<{
+    mesh: THREE.Mesh;
+    baseLayer: UniversalLayerData;
+    processors: LayerProcessor[];
+  }> = [];
   const textureLoader = new THREE.TextureLoader();
 
   // Check if any layer has spin enabled
-  const hasSpinningLayers = layersData.some((data) => (data.spinSpeed ?? 0) > 0);
+  const hasSpinningLayers = layersWithProcessors.some(
+    (item) => item.baseLayer.spinSpeed !== undefined && item.baseLayer.spinSpeed > 0,
+  );
 
   // Load all textures in parallel
-  const texturePromises = layersData.map(async (data) => {
+  const texturePromises = layersWithProcessors.map(async (item) => {
     try {
-      const texture = await textureLoader.loadAsync(data.imageUrl);
+      const texture = await textureLoader.loadAsync(item.baseLayer.imageUrl);
       texture.colorSpace = THREE.SRGBColorSpace;
       texture.minFilter = THREE.LinearFilter;
       texture.magFilter = THREE.LinearFilter;
       texture.anisotropy = 1;
       texture.generateMipmaps = false;
 
-      return { data, texture };
+      return { item, texture };
     } catch (error) {
-      console.error(`[LayerEngineThree] Failed to load texture for "${data.imageId}"`, error);
+      console.error(
+        `[LayerEngineThree] Failed to load texture for "${item.baseLayer.imageId}"`,
+        error,
+      );
       return null;
     }
   });
@@ -37,10 +53,11 @@ export async function mountThreeLayers(
   for (const result of results) {
     if (!result) continue;
 
-    const { data, texture } = result;
+    const { item, texture } = result;
+    const { baseLayer } = item;
 
-    const width = texture.image.width * data.scale.x;
-    const height = texture.image.height * data.scale.y;
+    const width = texture.image.width * baseLayer.scale.x;
+    const height = texture.image.height * baseLayer.scale.y;
 
     const planeGeometry = new THREE.PlaneGeometry(width, height);
 
@@ -54,38 +71,74 @@ export async function mountThreeLayers(
     const mesh = new THREE.Mesh(planeGeometry, planeMaterial);
 
     // Position the mesh
-    mesh.position.set(data.position.x - STAGE_SIZE / 2, STAGE_SIZE / 2 - data.position.y, 0);
+    mesh.position.set(
+      baseLayer.position.x - STAGE_SIZE / 2,
+      STAGE_SIZE / 2 - baseLayer.position.y,
+      0,
+    );
 
     scene.add(mesh);
     meshes.push(mesh);
-    meshData.push({ mesh, data });
+    layerData.push({
+      mesh,
+      baseLayer: item.baseLayer,
+      processors: item.processors,
+    });
   }
 
   // Animation loop for spinning layers
   let animationId: number | null = null;
 
   if (hasSpinningLayers) {
-    const animate = () => {
-      // Update rotation for spinning meshes
-      for (const { mesh, data } of meshData) {
-        const spinSpeed = data.spinSpeed ?? 0;
-        if (spinSpeed > 0) {
-          const now = performance.now();
-          const elapsedSeconds = now / 1000;
-          let rotation = (elapsedSeconds * spinSpeed) % 360;
+    const animate = (timestamp: number) => {
+      // Update rotation for meshes using pipeline
+      for (const { mesh, baseLayer, processors } of layerData) {
+        // Run pipeline with current timestamp
+        const enhanced = runPipeline(baseLayer, processors, timestamp);
 
-          // Reverse direction if counter-clockwise
-          if (data.spinDirection === "ccw") {
-            rotation = -rotation;
+        const rotationDeg = enhanced.currentRotation ?? 0;
+
+        if (rotationDeg !== 0) {
+          // Apply rotation
+          mesh.rotation.z = (rotationDeg * Math.PI) / 180;
+
+          // If spinCenter is specified, adjust pivot point
+          if (enhanced.spinCenter) {
+            // In Three.js, we need to offset the mesh position to rotate around a custom point
+            // The spinCenter is in pixel coordinates relative to image top-left
+            const centerOffset = {
+              x: enhanced.spinCenter.x - enhanced.imageMapping.imageCenter.x,
+              y: enhanced.spinCenter.y - enhanced.imageMapping.imageCenter.y,
+            };
+
+            // Apply scale to the offset
+            const scaledOffset = {
+              x: centerOffset.x * baseLayer.scale.x,
+              y: centerOffset.y * baseLayer.scale.y,
+            };
+
+            // Calculate rotated offset
+            const angle = (rotationDeg * Math.PI) / 180;
+            const cos = Math.cos(angle);
+            const sin = Math.sin(angle);
+            const rotatedOffset = {
+              x: scaledOffset.x * cos - scaledOffset.y * sin,
+              y: scaledOffset.x * sin + scaledOffset.y * cos,
+            };
+
+            // Adjust position to rotate around spinCenter
+            mesh.position.set(
+              baseLayer.position.x - STAGE_SIZE / 2 - rotatedOffset.x + scaledOffset.x,
+              STAGE_SIZE / 2 - baseLayer.position.y + rotatedOffset.y - scaledOffset.y,
+              0,
+            );
           }
-
-          mesh.rotation.z = (rotation * Math.PI) / 180;
         }
       }
 
       animationId = requestAnimationFrame(animate);
     };
-    animate();
+    animationId = requestAnimationFrame(animate);
   }
 
   return () => {
