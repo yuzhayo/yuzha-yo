@@ -153,18 +153,16 @@ export async function mountCanvasLayers(
       ctx.drawImage(image, x, y, transformCache.scaledWidth, transformCache.scaledHeight);
     }
 
-    // Render static layers with rotation (always needs save/restore)
+    // Render static layers with rotation (always needs save/restore, use cached transforms)
     for (const layer of staticWithRotationLayers) {
       const { image, baseData, transformCache } = layer;
       const layerData = staticLayerCache.get(baseData.layerId) ?? baseData;
       const rotation = layerData.imageMapping.displayRotation ?? 0;
 
       ctx.save();
-      const pivot = layerData.imageMapping.imageCenter;
-      const pivotX = pivot.x * layerData.scale.x;
-      const pivotY = pivot.y * layerData.scale.y;
-      const dx = transformCache.centerX - pivotX;
-      const dy = transformCache.centerY - pivotY;
+      // Use cached pivot offsets - static layers never change
+      const dx = transformCache.dx;
+      const dy = transformCache.dy;
 
       ctx.translate(layerData.position.x, layerData.position.y);
       ctx.translate(-dx, -dy);

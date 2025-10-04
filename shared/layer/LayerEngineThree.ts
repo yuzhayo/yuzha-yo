@@ -203,11 +203,13 @@ export async function mountThreeLayers(
 
   if (hasAnimatedLayers) {
     // Continuous animation for animated layers with render-on-demand
+    let firstFrame = true;
     const animate = (timestamp: number) => {
       const needsRender = updateMeshes(timestamp);
-      // Only render if rotation actually changed
-      if (needsRender) {
+      // Always render first frame, then only when rotation changes
+      if (firstFrame || needsRender) {
         renderer.render(scene, camera);
+        firstFrame = false;
       }
       animationId = requestAnimationFrame(animate);
     };
