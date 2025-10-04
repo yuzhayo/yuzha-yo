@@ -15,6 +15,13 @@
         "spinCenter": [50, 50],
         "spinSpeed": 0,
         "spinDirection": "cw"
+      },
+      "Orbital Config": {
+        "orbitCenter": [1024, 1024],
+        "orbitImagePoint": [50, 50],
+        "orbitRadius": 0,
+        "orbitSpeed": 0,
+        "orbitDirection": "cw"
       }
     }
   },
@@ -34,6 +41,13 @@
         "spinCenter": [50, 50],
         "spinSpeed": 0,
         "spinDirection": "cw"
+      },
+      "Orbital Config": {
+        "orbitCenter": [1024, 1024],
+        "orbitImagePoint": [50, 50],
+        "orbitRadius": 0,
+        "orbitSpeed": 0,
+        "orbitDirection": "cw"
       }
     }
   },
@@ -53,6 +67,13 @@
         "spinCenter": [50, 80],
         "spinSpeed": 15,
         "spinDirection": "cw"
+      },
+      "Orbital Config": {
+        "orbitCenter": [1024, 1024],
+        "orbitImagePoint": [50, 50],
+        "orbitRadius": 0,
+        "orbitSpeed": 0,
+        "orbitDirection": "cw"
       }
     }
   },
@@ -72,6 +93,39 @@
         "spinCenter": [50, 50],
         "spinSpeed": 1,
         "spinDirection": "cw"
+      },
+      "Orbital Config": {
+        "orbitCenter": [1024, 1024],
+        "orbitImagePoint": [50, 50],
+        "orbitRadius": 0,
+        "orbitSpeed": 0,
+        "orbitDirection": "cw"
+      }
+    }
+  },
+  {
+    "layerId": "orbiting-moon",
+    "groups": {
+      "Basic Config": {
+        "renderer": "2D",
+        "order": 200,
+        "imageId": "GEARMOON",
+        "scale": [80, 80],
+        "position": [1024, 1024],
+        "imageTip": 90,
+        "imageBase": 270
+      },
+      "Spin Config": {
+        "spinCenter": [50, 50],
+        "spinSpeed": 5,
+        "spinDirection": "cw"
+      },
+      "Orbital Config": {
+        "orbitCenter": [1024, 1024],
+        "orbitImagePoint": [50, 50],
+        "orbitRadius": 400,
+        "orbitSpeed": 15,
+        "orbitDirection": "cw"
       }
     }
   }
