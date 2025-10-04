@@ -14,6 +14,17 @@ export type EnhancedLayerData = UniversalLayerData & {
   currentRotation?: number;
   hasSpinAnimation?: boolean;
 
+  // Orbital properties (added by LayerCorePipelineOrbital)
+  orbitCenter?: { x: number; y: number };
+  orbitImagePoint?: { x: number; y: number };
+  orbitRadius?: number;
+  orbitSpeed?: number;
+  orbitDirection?: "cw" | "ccw";
+  currentOrbitAngle?: number;
+  orbitRotation?: number;
+  hasOrbitalAnimation?: boolean;
+  visible?: boolean;
+
   // Future properties will be added here by other processors
   opacity?: number;
   filters?: string[];
