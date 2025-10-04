@@ -1,6 +1,4 @@
 import type { UniversalLayerData } from "./LayerCore";
-import type { LayerProcessor } from "./LayerCorePipeline";
-import { runPipeline } from "./LayerCorePipeline";
 
 const STAGE_SIZE = 2048;
 
@@ -13,41 +11,34 @@ async function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-type LayerWithProcessors = {
-  baseLayer: UniversalLayerData;
-  processors: LayerProcessor[];
-};
-
 export async function mountCanvasLayers(
   ctx: CanvasRenderingContext2D,
-  layersWithProcessors: LayerWithProcessors[],
+  layerDataArray: UniversalLayerData[],
 ): Promise<() => void> {
   const layers: Array<{
     image: HTMLImageElement;
-    baseLayer: UniversalLayerData;
-    processors: LayerProcessor[];
+    data: UniversalLayerData;
   }> = [];
 
   // Load all images
-  for (const item of layersWithProcessors) {
+  for (const layerData of layerDataArray) {
     try {
-      const image = await loadImage(item.baseLayer.imageUrl);
+      const image = await loadImage(layerData.imageUrl);
 
-      console.log(`[LayerEngineCanvas] Loaded layer "${item.baseLayer.layerId}":`, {
-        imageId: item.baseLayer.imageId,
+      console.log(`[LayerEngineCanvas] Loaded layer "${layerData.layerId}":`, {
+        imageId: layerData.imageId,
         imageDimensions: `${image.width}x${image.height}`,
-        position: item.baseLayer.position,
-        scale: item.baseLayer.scale,
+        position: layerData.position,
+        scale: layerData.scale,
       });
 
       layers.push({
         image,
-        baseLayer: item.baseLayer,
-        processors: item.processors,
+        data: layerData,
       });
     } catch (error) {
       console.error(
-        `[LayerEngineCanvas] Failed to load image for "${item.baseLayer.imageId}"`,
+        `[LayerEngineCanvas] Failed to load image for "${layerData.imageId}"`,
         error,
       );
     }
@@ -55,51 +46,23 @@ export async function mountCanvasLayers(
 
   console.log(`[LayerEngineCanvas] Total layers loaded: ${layers.length}`);
 
-  const render = (timestamp: number) => {
+  const render = () => {
     ctx.clearRect(0, 0, STAGE_SIZE, STAGE_SIZE);
 
     for (const layer of layers) {
-      const { image, baseLayer, processors } = layer;
-
-      // Run pipeline with current timestamp to get enhanced data
-      const data = runPipeline(baseLayer, processors, timestamp);
+      const { image, data } = layer;
 
       const width = image.width * data.scale.x;
       const height = image.height * data.scale.y;
 
       ctx.save();
 
-      // Combine display rotation (from base→tip axis) with spin rotation
-      const displayRotation = baseLayer.imageMapping.displayRotation ?? 0;
-      const spinRotation = data.currentRotation ?? 0;
-      const totalRotation = displayRotation + spinRotation;
+      const displayRotation = data.imageMapping.displayRotation ?? 0;
 
-      if (totalRotation !== 0 && data.spinCenter) {
-        // Rotate around custom spin center
-        // spinCenter is already in pixel coordinates relative to image
-        const spinCenterScaled = {
-          x: data.spinCenter.x * data.scale.x,
-          y: data.spinCenter.y * data.scale.y,
-        };
-
-        // Translate to world position of spin center
-        ctx.translate(
-          data.position.x - width / 2 + spinCenterScaled.x,
-          data.position.y - height / 2 + spinCenterScaled.y,
-        );
-
-        // Rotate around this point
-        ctx.rotate((totalRotation * Math.PI) / 180);
-
-        // Translate back so image draws from correct position
-        ctx.translate(-spinCenterScaled.x, -spinCenterScaled.y);
-
-        // Draw image
-        ctx.drawImage(image, 0, 0, width, height);
-      } else if (totalRotation !== 0) {
-        // Rotation without custom spin center - rotate around image center
+      if (displayRotation !== 0) {
+        // Rotate around image center
         ctx.translate(data.position.x, data.position.y);
-        ctx.rotate((totalRotation * Math.PI) / 180);
+        ctx.rotate((displayRotation * Math.PI) / 180);
         ctx.translate(-width / 2, -height / 2);
         ctx.drawImage(image, 0, 0, width, height);
       } else {
@@ -114,8 +77,8 @@ export async function mountCanvasLayers(
   };
 
   let animationId: number;
-  const animate = (timestamp: number) => {
-    render(timestamp);
+  const animate = () => {
+    render();
     animationId = requestAnimationFrame(animate);
   };
   animationId = requestAnimationFrame(animate);

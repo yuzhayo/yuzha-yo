@@ -1,10 +1,8 @@
 import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { loadLayerConfig } from "../config/Config";
-import { is2DLayer, prepareLayer, type UniversalLayerData } from "../layer/LayerCore";
+import { is2DLayer, prepareLayer } from "../layer/LayerCore";
 import { mountThreeLayers } from "../layer/LayerEngineThree";
-import { type LayerProcessor } from "../layer/LayerCorePipeline";
-import { createSpinProcessor } from "../layer/LayerCorePipelineSpin";
 import { STAGE_SIZE, createStageTransformer } from "../utils/stage2048";
 import { getDeviceCapability } from "../utils/DeviceCapability";
 
@@ -64,40 +62,17 @@ export default function StageThree() {
       const config = loadLayerConfig();
       const twoDLayers = config.filter(is2DLayer);
 
-      // Prepare base layers and create processors for each
-      const layersWithProcessors: Array<{
-        baseLayer: UniversalLayerData;
-        processors: LayerProcessor[];
-      }> = [];
-
+      const layers = [];
       for (const entry of twoDLayers) {
-        const baseLayer = await prepareLayer(entry, STAGE_SIZE);
-        if (!baseLayer) {
+        const layer = await prepareLayer(entry, STAGE_SIZE);
+        if (!layer) {
           console.warn(`[StageThree] Skipping layer ${entry.layerId} - failed to prepare`);
           continue;
         }
-
-        // Create spin processor for this layer
-        const spinProcessor = createSpinProcessor({
-          spinCenter:
-            entry.spinCenter &&
-            entry.spinCenter.length >= 2 &&
-            typeof entry.spinCenter[0] === "number" &&
-            typeof entry.spinCenter[1] === "number"
-              ? { x: entry.spinCenter[0], y: entry.spinCenter[1] }
-              : undefined,
-          spinSpeed: entry.spinSpeed,
-          spinDirection: entry.spinDirection,
-        });
-
-        layersWithProcessors.push({
-          baseLayer,
-          processors: [spinProcessor],
-        });
+        layers.push(layer);
       }
 
-      // Mount to Three.js engine with base layers and processors
-      cleanupLayers = await mountThreeLayers(scene, layersWithProcessors);
+      cleanupLayers = await mountThreeLayers(scene, layers);
 
       window.addEventListener("resize", handleResize);
 
