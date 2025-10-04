@@ -7,7 +7,6 @@ import {
   useMainScreenBtnGesture,
   MainScreenRendererBadge,
   MainScreenUpdater,
-  MainScreenApiTester,
 } from "./MainScreenUtils";
 
 export type MainScreenProps = {
@@ -28,7 +27,6 @@ function MainScreenOverlay({ rendererLabel }: { rendererLabel: string }) {
         target="_self"
       />
       <MainScreenRendererBadge visible={gesture.open} label={rendererLabel} />
-      <MainScreenApiTester visible={gesture.open} />
       <MainScreenUpdater visible={gesture.open} />
     </>
   );

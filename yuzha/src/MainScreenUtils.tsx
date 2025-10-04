@@ -131,9 +131,7 @@ export type MainScreenRendererBadgeProps = {
   label: string;
 };
 
-export type MainScreenApiTesterProps = {
-  visible: boolean;
-};
+// Removed MainScreenApiTesterProps - no longer needed
 
 export type MainScreenUpdaterProps = {
   visible: boolean;
@@ -397,20 +395,9 @@ export function MainScreenRendererBadge(props: MainScreenRendererBadgeProps) {
 }
 
 // ===================================================================
-// 🟡 BLOCK 8: API TESTER COMPONENT
-// ⚠️  AI AGENT: OPTIONAL BLOCK - Safe to delete (removes API tester display)
-// Component for displaying API tester information
+// 🗑️  BLOCK 8: API TESTER COMPONENT - REMOVED
+// Previously contained Supabase API tester - removed as requested
 // ===================================================================
-
-export function MainScreenApiTester(props: MainScreenApiTesterProps) {
-  if (!props.visible) return null;
-
-  return (
-    <div className="fixed top-4 right-90 z-[9998] rounded border border-white/10 bg-black/70 px-3 py-2 text-[11px] text-white/80 shadow-sm">
-      Supabase API tester dinonaktifkan. Gunakan data lokal untuk verifikasi.
-    </div>
-  );
-}
 
 // ===================================================================
 // 🟡 BLOCK 9: UPDATER COMPONENT
@@ -448,7 +435,7 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
             onClick={handleSyncAssets}
             className="text-[10px] px-2 py-0.5 rounded bg-indigo-600/80 hover:bg-indigo-500/80 active:bg-indigo-600 text-white shadow-sm border border-white/10"
           >
-            Sync Assets
+            Config
           </button>
         </div>
       )}
