@@ -43,14 +43,14 @@
       "Basic Config": {
         "renderer": "2D",
         "order": 150,
-        "imageId": "GEARMOON",
+        "imageId": "UI_Clock_HourHand",
         "scale": [100, 100],
         "position": [1024, 1024],
         "imageTip": 90,
         "imageBase": 270
       },
       "Spin Config": {
-        "spinCenter": [30, 30],
+        "spinCenter": [50, 80],
         "spinSpeed": 15,
         "spinDirection": "cw"
       }
