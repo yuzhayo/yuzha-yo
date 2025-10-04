@@ -61,16 +61,16 @@ export function computeImageMapping(
   // Project from center to rectangle boundary at given angle
   const dx = Math.cos(angleRad);
   const dy = Math.sin(angleRad);
-  
+
   // Find intersection with rectangle by checking which edge we hit first
   const halfWidth = width / 2;
   const halfHeight = height / 2;
-  
+
   // Calculate scaling factor to reach rectangle edge
   const scaleX = dx !== 0 ? halfWidth / Math.abs(dx) : Infinity;
   const scaleY = dy !== 0 ? halfHeight / Math.abs(dy) : Infinity;
   const scale = Math.min(scaleX, scaleY);
-  
+
   const imageTip = {
     x: imageCenter.x + scale * dx,
     y: imageCenter.y + scale * dy,
@@ -80,11 +80,11 @@ export function computeImageMapping(
   const baseAngleRad = angleRad + Math.PI;
   const baseDx = Math.cos(baseAngleRad);
   const baseDy = Math.sin(baseAngleRad);
-  
+
   const baseScaleX = baseDx !== 0 ? halfWidth / Math.abs(baseDx) : Infinity;
   const baseScaleY = baseDy !== 0 ? halfHeight / Math.abs(baseDy) : Infinity;
   const baseScale = Math.min(baseScaleX, baseScaleY);
-  
+
   const imageBase = {
     x: imageCenter.x + baseScale * baseDx,
     y: imageCenter.y + baseScale * baseDy,

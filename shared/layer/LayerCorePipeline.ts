@@ -1,10 +1,7 @@
 import type { UniversalLayerData } from "./LayerCore";
 
-// Pipeline processor function type - now accepts optional timestamp
-export type LayerProcessor = (
-  layer: UniversalLayerData,
-  timestamp?: number,
-) => UniversalLayerData;
+// Pipeline processor function type - now accepts optional timestamp and returns EnhancedLayerData
+export type LayerProcessor = (layer: UniversalLayerData, timestamp?: number) => EnhancedLayerData;
 
 /**
  * Enhanced universal layer data that can include additional properties from processors
@@ -36,7 +33,7 @@ export function runPipeline(
   let enhanced: EnhancedLayerData = { ...baseLayer };
 
   for (const processor of processors) {
-    enhanced = processor(enhanced, timestamp) as EnhancedLayerData;
+    enhanced = processor(enhanced, timestamp);
   }
 
   return enhanced;

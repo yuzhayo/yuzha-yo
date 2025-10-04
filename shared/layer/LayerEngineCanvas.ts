@@ -1,5 +1,5 @@
 import type { UniversalLayerData } from "./LayerCore";
-import type { LayerProcessor, runPipeline as runPipelineFn } from "./LayerCorePipeline";
+import type { LayerProcessor } from "./LayerCorePipeline";
 import { runPipeline } from "./LayerCorePipeline";
 
 const STAGE_SIZE = 2048;

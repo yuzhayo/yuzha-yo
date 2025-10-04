@@ -1,5 +1,5 @@
 import type { UniversalLayerData } from "./LayerCore";
-import type { LayerProcessor } from "./LayerCorePipeline";
+import type { EnhancedLayerData, LayerProcessor } from "./LayerCorePipeline";
 
 export type SpinConfig = {
   spinCenter?: { x: number; y: number }; // 0-100% relative to image dimensions
@@ -34,7 +34,7 @@ export function createSpinProcessor(config: SpinConfig): LayerProcessor {
   // Track start time for this processor instance
   let startTime: number | null = null;
 
-  return (layer: UniversalLayerData, timestamp?: number): UniversalLayerData => {
+  return (layer: UniversalLayerData, timestamp?: number): EnhancedLayerData => {
     // If no spin speed, return layer as-is with no spin properties
     if (spinSpeed === 0) {
       return {

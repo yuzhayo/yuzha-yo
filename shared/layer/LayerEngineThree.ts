@@ -22,10 +22,8 @@ export async function mountThreeLayers(
   }> = [];
   const textureLoader = new THREE.TextureLoader();
 
-  // Check if any layer has spin enabled
-  const hasSpinningLayers = layersWithProcessors.some(
-    (item) => item.baseLayer.spinSpeed !== undefined && item.baseLayer.spinSpeed > 0,
-  );
+  // Always run animation loop to process pipeline per frame
+  const hasSpinningLayers = true;
 
   // Load all textures in parallel
   const texturePromises = layersWithProcessors.map(async (item) => {
