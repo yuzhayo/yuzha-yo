@@ -38,7 +38,7 @@
     }
   },
   {
-    "layerId": "clock-GEARMOON",
+    "layerId": "hand",
     "groups": {
       "Basic Config": {
         "renderer": "2D",
@@ -52,6 +52,25 @@
       "Spin Config": {
         "spinCenter": [50, 80],
         "spinSpeed": 15,
+        "spinDirection": "cw"
+      }
+    }
+  },
+  {
+    "layerId": "clock-GEARMOON",
+    "groups": {
+      "Basic Config": {
+        "renderer": "2D",
+        "order": 60,
+        "imageId": "GEARMOON",
+        "scale": [100, 100],
+        "position": [1024, 1024],
+        "imageTip": 90,
+        "imageBase": 270
+      },
+      "Spin Config": {
+        "spinCenter": [50, 50],
+        "spinSpeed": 1,
         "spinDirection": "cw"
       }
     }
