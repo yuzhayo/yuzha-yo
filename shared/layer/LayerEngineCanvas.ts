@@ -37,10 +37,7 @@ export async function mountCanvasLayers(
         data: layerData,
       });
     } catch (error) {
-      console.error(
-        `[LayerEngineCanvas] Failed to load image for "${layerData.imageId}"`,
-        error,
-      );
+      console.error(`[LayerEngineCanvas] Failed to load image for "${layerData.imageId}"`, error);
     }
   }
 
