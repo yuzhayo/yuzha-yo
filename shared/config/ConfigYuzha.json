@@ -22,6 +22,16 @@
         "orbitRadius": 0,
         "orbitSpeed": 0,
         "orbitDirection": "cw"
+      },
+      "Image Mapping Debug": {
+        "showCenter": true,
+        "showTip": true,
+        "showBase": true,
+        "showAxisLine": true,
+        "showRotation": true,
+        "showTipRay": true,
+        "showBaseRay": true,
+        "showBoundingBox": true
       }
     }
   },
@@ -48,6 +58,16 @@
         "orbitRadius": 0,
         "orbitSpeed": 0,
         "orbitDirection": "cw"
+      },
+      "Image Mapping Debug": {
+        "showCenter": true,
+        "showTip": true,
+        "showBase": true,
+        "showAxisLine": true,
+        "showRotation": true,
+        "showTipRay": true,
+        "showBaseRay": true,
+        "showBoundingBox": true
       }
     }
   },
@@ -110,6 +130,16 @@
         "orbitRadius": 0,
         "orbitSpeed": 0,
         "orbitDirection": "cw"
+      },
+      "Image Mapping Debug": {
+        "showCenter": true,
+        "showTip": true,
+        "showBase": true,
+        "showAxisLine": true,
+        "showRotation": true,
+        "showTipRay": true,
+        "showBaseRay": true,
+        "showBoundingBox": true
       }
     }
   },
@@ -136,6 +166,16 @@
         "orbitRadius": 0,
         "orbitSpeed": 0,
         "orbitDirection": "cw"
+      },
+      "Image Mapping Debug": {
+        "showCenter": true,
+        "showTip": true,
+        "showBase": true,
+        "showAxisLine": true,
+        "showRotation": true,
+        "showTipRay": true,
+        "showBaseRay": true,
+        "showBoundingBox": true
       }
     }
   }
