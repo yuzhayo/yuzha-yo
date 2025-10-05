@@ -126,6 +126,35 @@ Communication: Simple, everyday language
 
 ## Recent Changes
 
+**October 5, 2025 - Image Mapping Debug System**
+
+- ✅ Created complete Image Mapping Debug visualization system
+- ✅ Added `ImageMappingDebugConfig` to layer configuration system with 8 configurable visual helpers
+- ✅ Created `LayerCorePipelineImageMappingDebug` processor for debug visual generation
+- ✅ Implemented rendering support for both Canvas 2D and Three.js WebGL
+- ✅ Extended `EnhancedLayerData` type with proper type-safe debug properties
+- ✅ All TypeScript, linting, and formatting checks pass
+- ✅ Architect review: Pass - type-safe implementation working on both renderers
+
+**Debug Visual Helpers:**
+
+- `centerMarker` - Red crosshair/dot at imageCenter position
+- `tipMarker` - Green circle/arrow at imageTip position with label
+- `baseMarker` - Blue circle/square at imageBase position with label
+- `axisLine` - Yellow dashed line from imageBase to imageTip
+- `rotationIndicator` - Cyan arc showing rotation angle
+- `tipRay` - Orange dotted ray from center to tip
+- `baseRay` - Purple dotted ray from center to base
+- `boundingBox` - Magenta rectangle showing image bounds
+
+**Architecture Notes:**
+
+- Debug system integrated as pipeline processor, works with layer processing flow
+- Config-driven: Each layer can enable/disable individual debug helpers via JSON
+- Dual-renderer support: Canvas 2D and Three.js both render debug visuals correctly
+- Type-safe: Proper TypeScript types throughout (`ImageMappingDebugVisuals`, `ImageMappingDebugConfig`)
+- Clean implementation: No performance impact when debug is disabled
+
 **October 5, 2025 - Complete Removal of Spin/Orbit Animation System**
 
 - ✅ Removed all spin and orbital animation logic from the codebase
