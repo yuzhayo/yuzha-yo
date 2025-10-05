@@ -46,6 +46,8 @@ export async function mountDOMLayers(
       // Apply image to layer - use natural dimensions
       img.style.width = `${naturalWidth}px`;
       img.style.height = `${naturalHeight}px`;
+      img.style.maxWidth = "none";
+      img.style.maxHeight = "none";
       img.style.display = "block";
       img.style.position = "absolute";
 
@@ -61,7 +63,7 @@ export async function mountDOMLayers(
       img.style.top = `${top}px`;
 
       // Apply both scale and rotation transforms
-      const transforms = [];
+      const transforms: string[] = [];
       if (scale.x !== 1 || scale.y !== 1) {
         transforms.push(`scale(${scale.x}, ${scale.y})`);
       }
