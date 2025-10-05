@@ -151,11 +151,13 @@ export async function mountCanvasLayers(
 
   // Render debug visuals after all layers
   for (const layer of layers) {
-    if (layer.processors.length > 0) {
-      const enhancedData = runPipeline(layer.baseData, layer.processors);
-      if (enhancedData.imageMappingDebugVisuals) {
-        CanvasDebugRenderer.drawAll(ctx, enhancedData.imageMappingDebugVisuals);
-      }
+    // Always run pipeline if there are processors (to generate debug visuals)
+    const enhancedData = layer.processors.length > 0
+      ? runPipeline(layer.baseData, layer.processors)
+      : layer.baseData;
+    
+    if (enhancedData.imageMappingDebugVisuals) {
+      CanvasDebugRenderer.drawAll(ctx, enhancedData.imageMappingDebugVisuals);
     }
   }
 

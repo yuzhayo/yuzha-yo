@@ -143,17 +143,19 @@ export async function mountThreeLayers(
   // Add debug visuals to the scene
   const debugMeshes: THREE.Object3D[] = [];
   for (const item of meshData) {
-    if (item.processors.length > 0) {
-      const enhancedData = runPipeline(item.baseData, item.processors);
-      if (enhancedData.imageMappingDebugVisuals) {
-        const meshes = ThreeDebugRenderer.addAllToScene(
-          enhancedData.imageMappingDebugVisuals,
-          scene,
-          STAGE_SIZE,
-          THREE,
-        );
-        debugMeshes.push(...meshes);
-      }
+    // Always run pipeline if there are processors (to generate debug visuals)
+    const enhancedData = item.processors.length > 0 
+      ? runPipeline(item.baseData, item.processors)
+      : item.baseData;
+    
+    if (enhancedData.imageMappingDebugVisuals) {
+      const meshes = ThreeDebugRenderer.addAllToScene(
+        enhancedData.imageMappingDebugVisuals,
+        scene,
+        STAGE_SIZE,
+        THREE,
+      );
+      debugMeshes.push(...meshes);
     }
   }
 
