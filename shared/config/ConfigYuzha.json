@@ -31,8 +31,8 @@
         "showAxisLine": true,
         "showRotation": true,
         "showTipRay": true,
-        "showBaseRay": true,
-        "showBoundingBox": true
+        "showBaseRay": false,
+        "showBoundingBox": false
       }
     }
   },
@@ -135,15 +135,15 @@
         "orbitDirection": "cw"
       },
       "Image Mapping Debug": {
-        "showCenter": true,
-        "showTip": true,
-        "showBase": true,
-        "showStageCenter": true,
-        "showAxisLine": true,
-        "showRotation": true,
-        "showTipRay": true,
-        "showBaseRay": true,
-        "showBoundingBox": true
+        "showCenter": false,
+        "showTip": false,
+        "showBase": false,
+        "showStageCenter": false,
+        "showAxisLine": false,
+        "showRotation": false,
+        "showTipRay": false,
+        "showBaseRay": false,
+        "showBoundingBox": false
       }
     }
   },
