@@ -2,8 +2,6 @@ import React, { useEffect, useRef } from "react";
 import { loadLayerConfig } from "../config/Config";
 import { is2DLayer, prepareLayer } from "../layer/LayerCore";
 import { mountCanvasLayers } from "../layer/LayerEngineCanvas";
-import { createSpinProcessor } from "../layer/LayerCorePipelineSpin";
-import { createOrbitalProcessor } from "../layer/LayerCorePipelineOrbital";
 import type { EnhancedLayerData, LayerProcessor } from "../layer/LayerCorePipeline";
 import { STAGE_SIZE, createStageTransformer } from "../utils/stage2048";
 
@@ -43,36 +41,9 @@ export default function StageCanvas() {
           continue;
         }
 
-        // Create processors for this layer
-        const processors: LayerProcessor[] = [];
-
-        // Add spin processor if spin config exists
-        if (entry.spinSpeed !== undefined || entry.spinCenter !== undefined) {
-          processors.push(
-            createSpinProcessor({
-              spinCenter: entry.spinCenter as [number, number] | undefined,
-              spinSpeed: entry.spinSpeed,
-              spinDirection: entry.spinDirection,
-            }),
-          );
-        }
-
-        // Add orbital processor if orbital config exists
-        if (entry.orbitSpeed !== undefined || entry.orbitRadius !== undefined) {
-          processors.push(
-            createOrbitalProcessor({
-              orbitCenter: entry.orbitCenter as [number, number] | undefined,
-              orbitImagePoint: entry.orbitImagePoint as [number, number] | undefined,
-              orbitRadius: entry.orbitRadius,
-              orbitSpeed: entry.orbitSpeed,
-              orbitDirection: entry.orbitDirection,
-            }),
-          );
-        }
-
         layersWithProcessors.push({
           data: layer,
-          processors,
+          processors: [],
         });
       }
 
