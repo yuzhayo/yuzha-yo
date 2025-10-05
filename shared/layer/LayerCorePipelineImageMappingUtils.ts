@@ -45,12 +45,24 @@ export type ImageRotationIndicator = {
   opacity: number;
 };
 
+export type ImageRay = {
+  start: { x: number; y: number };
+  end: { x: number; y: number };
+  angle: number; // In degrees
+  thickness: number;
+  color: string;
+  opacity: number;
+  label?: string;
+};
+
 export type ImageMappingDebugVisuals = {
   centerMarker?: ImageCenterMarker;
   tipMarker?: ImageTipMarker;
   baseMarker?: ImageBaseMarker;
   axisLine?: ImageAxisLine;
   rotationIndicator?: ImageRotationIndicator;
+  tipRay?: ImageRay;
+  baseRay?: ImageRay;
   boundingBox?: {
     x: number;
     y: number;
@@ -67,6 +79,8 @@ export type ImageMappingDebugConfig = {
   showBase?: boolean;
   showAxisLine?: boolean;
   showRotation?: boolean;
+  showTipRay?: boolean;
+  showBaseRay?: boolean;
   showBoundingBox?: boolean;
   centerStyle?: "dot" | "crosshair";
   tipStyle?: "circle" | "arrow";
@@ -77,6 +91,8 @@ export type ImageMappingDebugConfig = {
     base?: string;
     axisLine?: string;
     rotation?: string;
+    tipRay?: string;
+    baseRay?: string;
     boundingBox?: string;
   };
 };
@@ -87,6 +103,8 @@ type ResolvedImageMappingDebugConfig = {
   showBase: boolean;
   showAxisLine: boolean;
   showRotation: boolean;
+  showTipRay: boolean;
+  showBaseRay: boolean;
   showBoundingBox: boolean;
   centerStyle: "dot" | "crosshair";
   tipStyle: "circle" | "arrow";
@@ -97,6 +115,8 @@ type ResolvedImageMappingDebugConfig = {
     base: string;
     axisLine: string;
     rotation: string;
+    tipRay: string;
+    baseRay: string;
     boundingBox: string;
   };
 };
@@ -107,6 +127,8 @@ const DEFAULT_CONFIG: ResolvedImageMappingDebugConfig = {
   showBase: true,
   showAxisLine: true,
   showRotation: false, // Optional - can be noisy
+  showTipRay: false, // Optional - shows calculation ray for tip
+  showBaseRay: false, // Optional - shows calculation ray for base
   showBoundingBox: false, // Optional - for advanced debugging
   centerStyle: "crosshair",
   tipStyle: "circle",
@@ -117,6 +139,8 @@ const DEFAULT_CONFIG: ResolvedImageMappingDebugConfig = {
     base: "#0000FF", // Blue - imageBase
     axisLine: "#FFFF00", // Yellow - axis line
     rotation: "#00FFFF", // Cyan - rotation indicator
+    tipRay: "#FFA500", // Orange - tip ray
+    baseRay: "#9370DB", // Purple - base ray
     boundingBox: "#FF00FF", // Magenta - bounding box
   },
 };
@@ -248,6 +272,53 @@ export function generateBoundingBox(
 }
 
 /**
+ * Generate ray from imageCenter to border at specified angle
+ * This visualizes the calculation used to determine imageTip/imageBase
+ */
+export function generateImageRay(
+  imageCenter: { x: number; y: number },
+  imageDimensions: { width: number; height: number },
+  angle: number,
+  rayType: "tip" | "base",
+  config?: Partial<ImageMappingDebugConfig>,
+): ImageRay {
+  const _cfg = { ...DEFAULT_CONFIG, ...config };
+  const colors = { ...DEFAULT_CONFIG.colors, ...config?.colors };
+
+  // Convert angle to radians (negate for screen coordinates)
+  const angleRad = (-angle * Math.PI) / 180;
+
+  // Calculate ray direction
+  const dx = Math.cos(angleRad);
+  const dy = Math.sin(angleRad);
+
+  // Find intersection with rectangle boundary
+  const halfWidth = imageDimensions.width / 2;
+  const halfHeight = imageDimensions.height / 2;
+
+  // Calculate scaling factor to reach rectangle edge
+  const scaleX = dx !== 0 ? halfWidth / Math.abs(dx) : Infinity;
+  const scaleY = dy !== 0 ? halfHeight / Math.abs(dy) : Infinity;
+  const scale = Math.min(scaleX, scaleY);
+
+  // Calculate end point (border intersection)
+  const end = {
+    x: imageCenter.x + scale * dx,
+    y: imageCenter.y + scale * dy,
+  };
+
+  return {
+    start: imageCenter,
+    end: end,
+    angle: angle,
+    thickness: 1,
+    color: rayType === "tip" ? colors.tipRay : colors.baseRay,
+    opacity: 0.5,
+    label: `${angle}°`,
+  };
+}
+
+/**
  * Generate complete image mapping debug visuals for a layer
  */
 export function generateImageMappingDebugVisuals(
@@ -262,13 +333,15 @@ export function generateImageMappingDebugVisuals(
       displayAxisAngle: number;
       displayRotation: number;
     };
+    tipAngle?: number;
+    baseAngle?: number;
   },
   config?: Partial<ImageMappingDebugConfig>,
 ): ImageMappingDebugVisuals {
   const cfg = { ...DEFAULT_CONFIG, ...config };
   const visuals: ImageMappingDebugVisuals = {};
 
-  const { imageMapping, position, scale } = layerData;
+  const { imageMapping, position, scale, tipAngle, baseAngle } = layerData;
   const { width, height } = imageMapping.imageDimensions;
 
   // Convert image-space coordinates to stage-space coordinates
@@ -315,6 +388,50 @@ export function generateImageMappingDebugVisuals(
       imageMapping.displayRotation,
       config,
     );
+  }
+
+  if (cfg.showTipRay && tipAngle !== undefined) {
+    const tipRayImageSpace = generateImageRay(
+      imageMapping.imageCenter,
+      imageMapping.imageDimensions,
+      tipAngle,
+      "tip",
+      config,
+    );
+    // Convert to stage space
+    visuals.tipRay = {
+      ...tipRayImageSpace,
+      start: {
+        x: position.x + (tipRayImageSpace.start.x - width / 2) * scale.x,
+        y: position.y + (tipRayImageSpace.start.y - height / 2) * scale.y,
+      },
+      end: {
+        x: position.x + (tipRayImageSpace.end.x - width / 2) * scale.x,
+        y: position.y + (tipRayImageSpace.end.y - height / 2) * scale.y,
+      },
+    };
+  }
+
+  if (cfg.showBaseRay && baseAngle !== undefined) {
+    const baseRayImageSpace = generateImageRay(
+      imageMapping.imageCenter,
+      imageMapping.imageDimensions,
+      baseAngle,
+      "base",
+      config,
+    );
+    // Convert to stage space
+    visuals.baseRay = {
+      ...baseRayImageSpace,
+      start: {
+        x: position.x + (baseRayImageSpace.start.x - width / 2) * scale.x,
+        y: position.y + (baseRayImageSpace.start.y - height / 2) * scale.y,
+      },
+      end: {
+        x: position.x + (baseRayImageSpace.end.x - width / 2) * scale.x,
+        y: position.y + (baseRayImageSpace.end.y - height / 2) * scale.y,
+      },
+    };
   }
 
   if (cfg.showBoundingBox) {
