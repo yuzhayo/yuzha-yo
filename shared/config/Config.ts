@@ -39,6 +39,7 @@ export type LayerConfigEntry = {
   showCenter?: boolean;
   showTip?: boolean;
   showBase?: boolean;
+  showStageCenter?: boolean;
   showAxisLine?: boolean;
   showRotation?: boolean;
   showTipRay?: boolean;
@@ -47,10 +48,12 @@ export type LayerConfigEntry = {
   centerStyle?: "dot" | "crosshair";
   tipStyle?: "circle" | "arrow";
   baseStyle?: "circle" | "square";
+  stageCenterStyle?: "dot" | "crosshair" | "star";
   debugColors?: {
     center?: string;
     tip?: string;
     base?: string;
+    stageCenter?: string;
     axisLine?: string;
     rotation?: string;
     tipRay?: string;
@@ -84,6 +87,7 @@ type ConfigYuzhaEntry = {
       showCenter?: boolean;
       showTip?: boolean;
       showBase?: boolean;
+      showStageCenter?: boolean;
       showAxisLine?: boolean;
       showRotation?: boolean;
       showTipRay?: boolean;
@@ -92,10 +96,12 @@ type ConfigYuzhaEntry = {
       centerStyle?: "dot" | "crosshair";
       tipStyle?: "circle" | "arrow";
       baseStyle?: "circle" | "square";
+      stageCenterStyle?: "dot" | "crosshair" | "star";
       debugColors?: {
         center?: string;
         tip?: string;
         base?: string;
+        stageCenter?: string;
         axisLine?: string;
         rotation?: string;
         tipRay?: string;

@@ -20,6 +20,7 @@ export function createImageMappingDebugProcessor(
     config.showCenter ||
     config.showTip ||
     config.showBase ||
+    config.showStageCenter ||
     config.showAxisLine ||
     config.showRotation ||
     config.showTipRay ||

@@ -71,6 +71,7 @@ export default function StageThree() {
           entry.showCenter ||
           entry.showTip ||
           entry.showBase ||
+          entry.showStageCenter ||
           entry.showAxisLine ||
           entry.showRotation ||
           entry.showTipRay ||
@@ -83,6 +84,7 @@ export default function StageThree() {
               showCenter: entry.showCenter,
               showTip: entry.showTip,
               showBase: entry.showBase,
+              showStageCenter: entry.showStageCenter,
               showAxisLine: entry.showAxisLine,
               showRotation: entry.showRotation,
               showTipRay: entry.showTipRay,
@@ -91,6 +93,7 @@ export default function StageThree() {
               centerStyle: entry.centerStyle,
               tipStyle: entry.tipStyle,
               baseStyle: entry.baseStyle,
+              stageCenterStyle: entry.stageCenterStyle,
               colors: entry.debugColors,
             }),
           );

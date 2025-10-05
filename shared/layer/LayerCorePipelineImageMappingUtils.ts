@@ -27,6 +27,14 @@ export type ImageBaseMarker = {
   label?: string;
 };
 
+export type StageCenterMarker = {
+  type: "dot" | "crosshair" | "star";
+  position: { x: number; y: number };
+  size: number;
+  color: string;
+  label?: string;
+};
+
 export type ImageAxisLine = {
   start: { x: number; y: number };
   end: { x: number; y: number };
@@ -59,6 +67,7 @@ export type ImageMappingDebugVisuals = {
   centerMarker?: ImageCenterMarker;
   tipMarker?: ImageTipMarker;
   baseMarker?: ImageBaseMarker;
+  stageCenterMarker?: StageCenterMarker;
   axisLine?: ImageAxisLine;
   rotationIndicator?: ImageRotationIndicator;
   tipRay?: ImageRay;
@@ -77,6 +86,7 @@ export type ImageMappingDebugConfig = {
   showCenter?: boolean;
   showTip?: boolean;
   showBase?: boolean;
+  showStageCenter?: boolean;
   showAxisLine?: boolean;
   showRotation?: boolean;
   showTipRay?: boolean;
@@ -85,10 +95,12 @@ export type ImageMappingDebugConfig = {
   centerStyle?: "dot" | "crosshair";
   tipStyle?: "circle" | "arrow";
   baseStyle?: "circle" | "square";
+  stageCenterStyle?: "dot" | "crosshair" | "star";
   colors?: {
     center?: string;
     tip?: string;
     base?: string;
+    stageCenter?: string;
     axisLine?: string;
     rotation?: string;
     tipRay?: string;
@@ -101,6 +113,7 @@ type ResolvedImageMappingDebugConfig = {
   showCenter: boolean;
   showTip: boolean;
   showBase: boolean;
+  showStageCenter: boolean;
   showAxisLine: boolean;
   showRotation: boolean;
   showTipRay: boolean;
@@ -109,10 +122,12 @@ type ResolvedImageMappingDebugConfig = {
   centerStyle: "dot" | "crosshair";
   tipStyle: "circle" | "arrow";
   baseStyle: "circle" | "square";
+  stageCenterStyle: "dot" | "crosshair" | "star";
   colors: {
     center: string;
     tip: string;
     base: string;
+    stageCenter: string;
     axisLine: string;
     rotation: string;
     tipRay: string;
@@ -125,6 +140,7 @@ const DEFAULT_CONFIG: ResolvedImageMappingDebugConfig = {
   showCenter: true,
   showTip: true,
   showBase: true,
+  showStageCenter: false, // Optional - shows stage center at 1024,1024
   showAxisLine: true,
   showRotation: false, // Optional - can be noisy
   showTipRay: false, // Optional - shows calculation ray for tip
@@ -133,10 +149,12 @@ const DEFAULT_CONFIG: ResolvedImageMappingDebugConfig = {
   centerStyle: "crosshair",
   tipStyle: "circle",
   baseStyle: "circle",
+  stageCenterStyle: "star",
   colors: {
     center: "#FF0000", // Red - imageCenter
     tip: "#00FF00", // Green - imageTip
     base: "#0000FF", // Blue - imageBase
+    stageCenter: "#FFFFFF", // White - stage center (1024,1024)
     axisLine: "#FFFF00", // Yellow - axis line
     rotation: "#00FFFF", // Cyan - rotation indicator
     tipRay: "#FFA500", // Orange - tip ray
@@ -198,6 +216,25 @@ export function generateImageBaseMarker(
     size: 8,
     color: colors.base,
     label: "BASE",
+  };
+}
+
+/**
+ * Generate stage center marker visualization data
+ * Stage center is always at (1024, 1024) - the center of the 2048x2048 stage
+ */
+export function generateStageCenterMarker(
+  config?: Partial<ImageMappingDebugConfig>,
+): StageCenterMarker {
+  const cfg = { ...DEFAULT_CONFIG, ...config };
+  const colors = { ...DEFAULT_CONFIG.colors, ...config?.colors };
+
+  return {
+    type: cfg.stageCenterStyle,
+    position: { x: 1024, y: 1024 },
+    size: cfg.stageCenterStyle === "star" ? 16 : 14,
+    color: colors.stageCenter,
+    label: "STAGE",
   };
 }
 
@@ -443,6 +480,10 @@ export function generateImageMappingDebugVisuals(
     visuals.boundingBox = generateBoundingBox(position, width, height, scale, config);
   }
 
+  if (cfg.showStageCenter) {
+    visuals.stageCenterMarker = generateStageCenterMarker(config);
+  }
+
   return visuals;
 }
 
@@ -656,6 +697,64 @@ export const CanvasDebugRenderer = {
     ctx.restore();
   },
 
+  drawStageCenter(ctx: CanvasRenderingContext2D, marker: StageCenterMarker): void {
+    ctx.save();
+
+    if (marker.type === "dot") {
+      ctx.fillStyle = marker.color;
+      ctx.beginPath();
+      ctx.arc(marker.position.x, marker.position.y, marker.size, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (marker.type === "crosshair") {
+      ctx.strokeStyle = marker.color;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      // Horizontal line
+      ctx.moveTo(marker.position.x - marker.size, marker.position.y);
+      ctx.lineTo(marker.position.x + marker.size, marker.position.y);
+      // Vertical line
+      ctx.moveTo(marker.position.x, marker.position.y - marker.size);
+      ctx.lineTo(marker.position.x, marker.position.y + marker.size);
+      ctx.stroke();
+    } else if (marker.type === "star") {
+      // Draw a 5-point star
+      ctx.fillStyle = marker.color;
+      ctx.strokeStyle = "#000000";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      const spikes = 5;
+      const outerRadius = marker.size;
+      const innerRadius = marker.size / 2;
+      for (let i = 0; i < spikes * 2; i++) {
+        const radius = i % 2 === 0 ? outerRadius : innerRadius;
+        const angle = (i * Math.PI) / spikes - Math.PI / 2;
+        const x = marker.position.x + radius * Math.cos(angle);
+        const y = marker.position.y + radius * Math.sin(angle);
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    }
+
+    // Draw label
+    if (marker.label) {
+      ctx.fillStyle = marker.color;
+      ctx.font = "bold 12px monospace";
+      ctx.textAlign = "center";
+      ctx.strokeStyle = "#000000";
+      ctx.lineWidth = 3;
+      ctx.strokeText(marker.label, marker.position.x, marker.position.y - marker.size - 8);
+      ctx.fillText(marker.label, marker.position.x, marker.position.y - marker.size - 8);
+    }
+
+    ctx.restore();
+  },
+
   drawAll(ctx: CanvasRenderingContext2D, visuals: ImageMappingDebugVisuals): void {
     // Draw in order: bounding box, rays (background), axis line, rotation, markers (foreground)
     if (visuals.boundingBox) {
@@ -681,6 +780,9 @@ export const CanvasDebugRenderer = {
     }
     if (visuals.centerMarker) {
       this.drawImageCenter(ctx, visuals.centerMarker);
+    }
+    if (visuals.stageCenterMarker) {
+      this.drawStageCenter(ctx, visuals.stageCenterMarker);
     }
   },
 };
@@ -903,6 +1005,110 @@ export const ThreeDebugRenderer = {
     return lineMesh;
   },
 
+  createStageCenterMesh(
+    marker: StageCenterMarker,
+    scene: any,
+    STAGE_SIZE: number,
+    THREE: any,
+  ): any[] {
+    const meshes: any[] = [];
+
+    // Stage center is at (1024, 1024), convert to Three.js coordinates
+    const x = marker.position.x - STAGE_SIZE / 2;
+    const y = STAGE_SIZE / 2 - marker.position.y;
+
+    if (marker.type === "dot") {
+      const geometry = new THREE.CircleGeometry(marker.size, 16);
+      const material = new THREE.MeshBasicMaterial({
+        color: marker.color,
+        transparent: true,
+        opacity: 1,
+        depthTest: false,
+      });
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.set(x, y, 100);
+      meshes.push(mesh);
+    } else if (marker.type === "crosshair") {
+      // Horizontal line
+      const hGeometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(x - marker.size, y, 100),
+        new THREE.Vector3(x + marker.size, y, 100),
+      ]);
+      const hMaterial = new THREE.LineBasicMaterial({
+        color: marker.color,
+        linewidth: 3,
+        depthTest: false,
+      });
+      const hLine = new THREE.Line(hGeometry, hMaterial);
+      meshes.push(hLine);
+
+      // Vertical line
+      const vGeometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(x, y - marker.size, 100),
+        new THREE.Vector3(x, y + marker.size, 100),
+      ]);
+      const vMaterial = new THREE.LineBasicMaterial({
+        color: marker.color,
+        linewidth: 3,
+        depthTest: false,
+      });
+      const vLine = new THREE.Line(vGeometry, vMaterial);
+      meshes.push(vLine);
+    } else if (marker.type === "star") {
+      // Create 5-point star
+      const spikes = 5;
+      const outerRadius = marker.size;
+      const innerRadius = marker.size / 2;
+      const points: any[] = [];
+
+      for (let i = 0; i < spikes * 2; i++) {
+        const radius = i % 2 === 0 ? outerRadius : innerRadius;
+        const angle = (i * Math.PI) / spikes - Math.PI / 2;
+        const px = x + radius * Math.cos(angle);
+        const py = y + radius * Math.sin(angle);
+        points.push(new THREE.Vector3(px, py, 100));
+      }
+      points.push(points[0]); // Close the star
+
+      const geometry = new THREE.BufferGeometry().setFromPoints(points);
+      const material = new THREE.LineBasicMaterial({
+        color: marker.color,
+        linewidth: 2,
+        depthTest: false,
+      });
+      const lineMesh = new THREE.LineLoop(geometry, material);
+      meshes.push(lineMesh);
+
+      // Fill the star
+      const shape = new THREE.Shape();
+      for (let i = 0; i < spikes * 2; i++) {
+        const radius = i % 2 === 0 ? outerRadius : innerRadius;
+        const angle = (i * Math.PI) / spikes - Math.PI / 2;
+        const px = radius * Math.cos(angle);
+        const py = radius * Math.sin(angle);
+        if (i === 0) {
+          shape.moveTo(px, py);
+        } else {
+          shape.lineTo(px, py);
+        }
+      }
+      shape.closePath();
+
+      const fillGeometry = new THREE.ShapeGeometry(shape);
+      const fillMaterial = new THREE.MeshBasicMaterial({
+        color: marker.color,
+        transparent: true,
+        opacity: 0.8,
+        depthTest: false,
+      });
+      const fillMesh = new THREE.Mesh(fillGeometry, fillMaterial);
+      fillMesh.position.set(x, y, 100);
+      meshes.push(fillMesh);
+    }
+
+    return meshes;
+  },
+
   addAllToScene(
     visuals: ImageMappingDebugVisuals,
     scene: any,
@@ -953,6 +1159,19 @@ export const ThreeDebugRenderer = {
 
     if (visuals.centerMarker) {
       const meshes = this.createImageCenterMesh(visuals.centerMarker, scene, STAGE_SIZE, THREE);
+      meshes.forEach((mesh) => {
+        scene.add(mesh);
+        allMeshes.push(mesh);
+      });
+    }
+
+    if (visuals.stageCenterMarker) {
+      const meshes = this.createStageCenterMesh(
+        visuals.stageCenterMarker,
+        scene,
+        STAGE_SIZE,
+        THREE,
+      );
       meshes.forEach((mesh) => {
         scene.add(mesh);
         allMeshes.push(mesh);
