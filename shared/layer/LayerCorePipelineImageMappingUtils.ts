@@ -872,6 +872,32 @@ export const ThreeDebugRenderer = {
     return lineSegments;
   },
 
+  createImageRayMesh(ray: ImageRay, scene: any, STAGE_SIZE: number, THREE: any): any {
+    const startX = ray.start.x - STAGE_SIZE / 2;
+    const startY = STAGE_SIZE / 2 - ray.start.y;
+    const endX = ray.end.x - STAGE_SIZE / 2;
+    const endY = STAGE_SIZE / 2 - ray.end.y;
+
+    const geometry = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(startX, startY, 100),
+      new THREE.Vector3(endX, endY, 100),
+    ]);
+
+    const material = new THREE.LineDashedMaterial({
+      color: ray.color,
+      linewidth: ray.thickness,
+      transparent: true,
+      opacity: ray.opacity,
+      dashSize: 3,
+      gapSize: 3,
+      depthTest: false,
+    });
+
+    const lineMesh = new THREE.Line(geometry, material);
+    lineMesh.computeLineDistances(); // Required for dashed lines
+    return lineMesh;
+  },
+
   addAllToScene(
     visuals: ImageMappingDebugVisuals,
     scene: any,
@@ -882,6 +908,18 @@ export const ThreeDebugRenderer = {
 
     if (visuals.boundingBox) {
       const mesh = this.createBoundingBoxMesh(visuals.boundingBox, scene, STAGE_SIZE, THREE);
+      scene.add(mesh);
+      allMeshes.push(mesh);
+    }
+
+    if (visuals.tipRay) {
+      const mesh = this.createImageRayMesh(visuals.tipRay, scene, STAGE_SIZE, THREE);
+      scene.add(mesh);
+      allMeshes.push(mesh);
+    }
+
+    if (visuals.baseRay) {
+      const mesh = this.createImageRayMesh(visuals.baseRay, scene, STAGE_SIZE, THREE);
       scene.add(mesh);
       allMeshes.push(mesh);
     }
