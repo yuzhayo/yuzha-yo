@@ -841,8 +841,9 @@ export const ThreeDebugRenderer = {
     const y = STAGE_SIZE / 2 - marker.position.y;
 
     if (marker.type === "dot") {
-      // Create dot
-      const geometry = new THREE.CircleGeometry(marker.size, 16);
+      // Create larger dot (2x size - reduced from 3x)
+      const dotSize = marker.size * 2;
+      const geometry = new THREE.CircleGeometry(dotSize, 32);
       const material = new THREE.MeshBasicMaterial({
         color: marker.color,
         transparent: true,
@@ -852,32 +853,56 @@ export const ThreeDebugRenderer = {
       const mesh = new THREE.Mesh(geometry, material);
       mesh.position.set(x, y, 100); // Z=100 to render on top
       meshes.push(mesh);
-    } else if (marker.type === "crosshair") {
-      // Horizontal line
-      const hGeometry = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(x - marker.size, y, 100),
-        new THREE.Vector3(x + marker.size, y, 100),
-      ]);
-      const hMaterial = new THREE.LineBasicMaterial({
-        color: marker.color,
-        linewidth: 2,
+      
+      // Add small white center dot for precision
+      const centerDotGeometry = new THREE.CircleGeometry(2, 16);
+      const centerDotMaterial = new THREE.MeshBasicMaterial({
+        color: "#FFFFFF",
+        transparent: true,
+        opacity: 1,
         depthTest: false,
       });
-      const hLine = new THREE.Line(hGeometry, hMaterial);
+      const centerDot = new THREE.Mesh(centerDotGeometry, centerDotMaterial);
+      centerDot.position.set(x, y, 101);
+      meshes.push(centerDot);
+    } else if (marker.type === "crosshair") {
+      const lineSize = marker.size * 2;
+      // Horizontal line - use mesh-based thick line
+      const hThickness = 3;
+      const hGeometry = new THREE.PlaneGeometry(lineSize * 2, hThickness);
+      const hMaterial = new THREE.MeshBasicMaterial({
+        color: marker.color,
+        transparent: true,
+        opacity: 1,
+        depthTest: false,
+      });
+      const hLine = new THREE.Mesh(hGeometry, hMaterial);
+      hLine.position.set(x, y, 100);
       meshes.push(hLine);
 
-      // Vertical line
-      const vGeometry = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(x, y - marker.size, 100),
-        new THREE.Vector3(x, y + marker.size, 100),
-      ]);
-      const vMaterial = new THREE.LineBasicMaterial({
+      // Vertical line - use mesh-based thick line
+      const vGeometry = new THREE.PlaneGeometry(hThickness, lineSize * 2);
+      const vMaterial = new THREE.MeshBasicMaterial({
         color: marker.color,
-        linewidth: 2,
+        transparent: true,
+        opacity: 1,
         depthTest: false,
       });
-      const vLine = new THREE.Line(vGeometry, vMaterial);
+      const vLine = new THREE.Mesh(vGeometry, vMaterial);
+      vLine.position.set(x, y, 100);
       meshes.push(vLine);
+      
+      // Add small center dot at crosshair intersection for precision
+      const centerDotGeometry = new THREE.CircleGeometry(4, 16);
+      const centerDotMaterial = new THREE.MeshBasicMaterial({
+        color: marker.color,
+        transparent: true,
+        opacity: 1,
+        depthTest: false,
+      });
+      const centerDot = new THREE.Mesh(centerDotGeometry, centerDotMaterial);
+      centerDot.position.set(x, y, 101);
+      meshes.push(centerDot);
     }
 
     return meshes;
@@ -889,8 +914,9 @@ export const ThreeDebugRenderer = {
     const x = marker.position.x - STAGE_SIZE / 2;
     const y = STAGE_SIZE / 2 - marker.position.y;
 
-    // Create circle
-    const geometry = new THREE.CircleGeometry(marker.size, 16);
+    // Create circle (1.2x size - smaller than before)
+    const circleSize = marker.size * 1.2;
+    const geometry = new THREE.CircleGeometry(circleSize, 32);
     const material = new THREE.MeshBasicMaterial({
       color: marker.color,
       transparent: true,
@@ -901,8 +927,8 @@ export const ThreeDebugRenderer = {
     mesh.position.set(x, y, 100);
     meshes.push(mesh);
 
-    // Add outline
-    const outlineGeometry = new THREE.RingGeometry(marker.size - 0.5, marker.size + 0.5, 16);
+    // Add thicker outline
+    const outlineGeometry = new THREE.RingGeometry(circleSize - 1.5, circleSize + 1.5, 32);
     const outlineMaterial = new THREE.MeshBasicMaterial({
       color: "#FFFFFF",
       transparent: true,
@@ -912,6 +938,18 @@ export const ThreeDebugRenderer = {
     const outlineMesh = new THREE.Mesh(outlineGeometry, outlineMaterial);
     outlineMesh.position.set(x, y, 100);
     meshes.push(outlineMesh);
+    
+    // Add small center dot for precision
+    const centerDotGeometry = new THREE.CircleGeometry(3, 16);
+    const centerDotMaterial = new THREE.MeshBasicMaterial({
+      color: "#FFFFFF",
+      transparent: true,
+      opacity: 1,
+      depthTest: false,
+    });
+    const centerDot = new THREE.Mesh(centerDotGeometry, centerDotMaterial);
+    centerDot.position.set(x, y, 101);
+    meshes.push(centerDot);
 
     return meshes;
   },
@@ -923,10 +961,25 @@ export const ThreeDebugRenderer = {
     const y = STAGE_SIZE / 2 - marker.position.y;
 
     if (marker.type === "circle") {
-      // Create circle
-      const geometry = new THREE.CircleGeometry(marker.size, 16);
+      // Create circle (1.5x size)
+      const circleSize = marker.size * 1.5;
+      
+      // Add bright glow for visibility against dark background
+      const glowGeometry = new THREE.CircleGeometry(circleSize * 2, 32);
+      const glowMaterial = new THREE.MeshBasicMaterial({
+        color: "#00BFFF", // Bright cyan/light blue for visibility
+        transparent: true,
+        opacity: 0.4,
+        depthTest: false,
+      });
+      const glowMesh = new THREE.Mesh(glowGeometry, glowMaterial);
+      glowMesh.position.set(x, y, 99);
+      meshes.push(glowMesh);
+      
+      // Main circle with brighter blue
+      const geometry = new THREE.CircleGeometry(circleSize, 32);
       const material = new THREE.MeshBasicMaterial({
-        color: marker.color,
+        color: "#4169E1", // Royal blue - brighter than pure blue
         transparent: true,
         opacity: 1,
         depthTest: false,
@@ -935,8 +988,8 @@ export const ThreeDebugRenderer = {
       mesh.position.set(x, y, 100);
       meshes.push(mesh);
 
-      // Add outline
-      const outlineGeometry = new THREE.RingGeometry(marker.size - 0.5, marker.size + 0.5, 16);
+      // Add thicker white outline
+      const outlineGeometry = new THREE.RingGeometry(circleSize - 1.5, circleSize + 1.5, 32);
       const outlineMaterial = new THREE.MeshBasicMaterial({
         color: "#FFFFFF",
         transparent: true,
@@ -946,9 +999,22 @@ export const ThreeDebugRenderer = {
       const outlineMesh = new THREE.Mesh(outlineGeometry, outlineMaterial);
       outlineMesh.position.set(x, y, 100);
       meshes.push(outlineMesh);
+      
+      // Add bright cyan center dot for precision
+      const centerDotGeometry = new THREE.CircleGeometry(4, 16);
+      const centerDotMaterial = new THREE.MeshBasicMaterial({
+        color: "#00FFFF", // Bright cyan
+        transparent: true,
+        opacity: 1,
+        depthTest: false,
+      });
+      const centerDot = new THREE.Mesh(centerDotGeometry, centerDotMaterial);
+      centerDot.position.set(x, y, 101);
+      meshes.push(centerDot);
     } else if (marker.type === "square") {
-      // Create square
-      const geometry = new THREE.PlaneGeometry(marker.size * 2, marker.size * 2);
+      // Create square (1.5x size)
+      const squareSize = marker.size * 1.5;
+      const geometry = new THREE.PlaneGeometry(squareSize * 2, squareSize * 2);
       const material = new THREE.MeshBasicMaterial({
         color: marker.color,
         transparent: true,
@@ -969,23 +1035,28 @@ export const ThreeDebugRenderer = {
     const endX = line.end.x - STAGE_SIZE / 2;
     const endY = STAGE_SIZE / 2 - line.end.y;
 
-    const geometry = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(startX, startY, 100),
-      new THREE.Vector3(endX, endY, 100),
-    ]);
+    // Calculate line properties
+    const dx = endX - startX;
+    const dy = endY - startY;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    const angle = Math.atan2(dy, dx);
+    const centerX = (startX + endX) / 2;
+    const centerY = (startY + endY) / 2;
 
-    const material = new THREE.LineDashedMaterial({
+    // Create mesh-based thick line (4px thick for better visibility)
+    const thickness = 4;
+    const geometry = new THREE.PlaneGeometry(length, thickness);
+    const material = new THREE.MeshBasicMaterial({
       color: line.color,
-      linewidth: line.thickness,
       transparent: true,
-      opacity: line.opacity,
-      dashSize: 5,
-      gapSize: 5,
+      opacity: line.opacity * 1.5, // Increase opacity
       depthTest: false,
     });
 
-    const lineMesh = new THREE.Line(geometry, material);
-    lineMesh.computeLineDistances(); // Required for dashed lines
+    const lineMesh = new THREE.Mesh(geometry, material);
+    lineMesh.position.set(centerX, centerY, 100);
+    lineMesh.rotation.z = angle;
+
     return lineMesh;
   },
 
@@ -994,23 +1065,70 @@ export const ThreeDebugRenderer = {
     scene: any,
     STAGE_SIZE: number,
     THREE: any,
-  ): any {
+  ): any[] {
+    const meshes: any[] = [];
     const centerX = box.x + box.width / 2 - STAGE_SIZE / 2;
     const centerY = STAGE_SIZE / 2 - (box.y + box.height / 2);
-
-    const geometry = new THREE.PlaneGeometry(box.width, box.height);
-    const edges = new THREE.EdgesGeometry(geometry);
-    const material = new THREE.LineBasicMaterial({
+    
+    // Convert to corners in Three.js coordinates
+    const left = box.x - STAGE_SIZE / 2;
+    const right = left + box.width;
+    const top = STAGE_SIZE / 2 - box.y;
+    const bottom = top - box.height;
+    
+    // Use mesh-based thick lines (5px) for better visibility
+    const thickness = 5;
+    const increasedOpacity = Math.min(box.opacity * 3, 0.9); // 3x opacity, max 90%
+    
+    // Top line
+    const topGeometry = new THREE.PlaneGeometry(box.width, thickness);
+    const topMaterial = new THREE.MeshBasicMaterial({
       color: box.color,
       transparent: true,
-      opacity: box.opacity,
+      opacity: increasedOpacity,
       depthTest: false,
     });
+    const topLine = new THREE.Mesh(topGeometry, topMaterial);
+    topLine.position.set(centerX, top, 100);
+    meshes.push(topLine);
+    
+    // Bottom line
+    const bottomGeometry = new THREE.PlaneGeometry(box.width, thickness);
+    const bottomMaterial = new THREE.MeshBasicMaterial({
+      color: box.color,
+      transparent: true,
+      opacity: increasedOpacity,
+      depthTest: false,
+    });
+    const bottomLine = new THREE.Mesh(bottomGeometry, bottomMaterial);
+    bottomLine.position.set(centerX, bottom, 100);
+    meshes.push(bottomLine);
+    
+    // Left line
+    const leftGeometry = new THREE.PlaneGeometry(thickness, box.height);
+    const leftMaterial = new THREE.MeshBasicMaterial({
+      color: box.color,
+      transparent: true,
+      opacity: increasedOpacity,
+      depthTest: false,
+    });
+    const leftLine = new THREE.Mesh(leftGeometry, leftMaterial);
+    leftLine.position.set(left, centerY, 100);
+    meshes.push(leftLine);
+    
+    // Right line
+    const rightGeometry = new THREE.PlaneGeometry(thickness, box.height);
+    const rightMaterial = new THREE.MeshBasicMaterial({
+      color: box.color,
+      transparent: true,
+      opacity: increasedOpacity,
+      depthTest: false,
+    });
+    const rightLine = new THREE.Mesh(rightGeometry, rightMaterial);
+    rightLine.position.set(right, centerY, 100);
+    meshes.push(rightLine);
 
-    const lineSegments = new THREE.LineSegments(edges, material);
-    lineSegments.position.set(centerX, centerY, 100);
-
-    return lineSegments;
+    return meshes;
   },
 
   createImageRayMesh(ray: ImageRay, scene: any, STAGE_SIZE: number, THREE: any): any {
@@ -1019,23 +1137,28 @@ export const ThreeDebugRenderer = {
     const endX = ray.end.x - STAGE_SIZE / 2;
     const endY = STAGE_SIZE / 2 - ray.end.y;
 
-    const geometry = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(startX, startY, 100),
-      new THREE.Vector3(endX, endY, 100),
-    ]);
+    // Calculate line properties
+    const dx = endX - startX;
+    const dy = endY - startY;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    const angle = Math.atan2(dy, dx);
+    const centerX = (startX + endX) / 2;
+    const centerY = (startY + endY) / 2;
 
-    const material = new THREE.LineDashedMaterial({
+    // Create mesh-based thick line (3px thick for better visibility)
+    const thickness = 3;
+    const geometry = new THREE.PlaneGeometry(length, thickness);
+    const material = new THREE.MeshBasicMaterial({
       color: ray.color,
-      linewidth: ray.thickness,
       transparent: true,
-      opacity: ray.opacity,
-      dashSize: 3,
-      gapSize: 3,
+      opacity: ray.opacity * 1.5, // Increase opacity
       depthTest: false,
     });
 
-    const lineMesh = new THREE.Line(geometry, material);
-    lineMesh.computeLineDistances(); // Required for dashed lines
+    const lineMesh = new THREE.Mesh(geometry, material);
+    lineMesh.position.set(centerX, centerY, 98); // Slightly behind axis line
+    lineMesh.rotation.z = angle;
+
     return lineMesh;
   },
 
@@ -1052,7 +1175,8 @@ export const ThreeDebugRenderer = {
     const y = STAGE_SIZE / 2 - marker.position.y;
 
     if (marker.type === "dot") {
-      const geometry = new THREE.CircleGeometry(marker.size, 16);
+      const dotSize = marker.size * 2;
+      const geometry = new THREE.CircleGeometry(dotSize, 32);
       const material = new THREE.MeshBasicMaterial({
         color: marker.color,
         transparent: true,
@@ -1063,76 +1187,54 @@ export const ThreeDebugRenderer = {
       mesh.position.set(x, y, 100);
       meshes.push(mesh);
     } else if (marker.type === "crosshair") {
-      // Full-screen horizontal line for maximum visibility
-      const hGeometry = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(-STAGE_SIZE / 2, y, 100),
-        new THREE.Vector3(STAGE_SIZE / 2, y, 100),
-      ]);
-      const hMaterial = new THREE.LineDashedMaterial({
+      // Full-screen horizontal line - mesh-based for visibility
+      const hThickness = 4;
+      const hGeometry = new THREE.PlaneGeometry(STAGE_SIZE, hThickness);
+      const hMaterial = new THREE.MeshBasicMaterial({
         color: marker.color,
-        linewidth: 2,
         transparent: true,
-        opacity: 0.8,
-        dashSize: 10,
-        gapSize: 5,
+        opacity: 0.9,
         depthTest: false,
       });
-      const hLine = new THREE.Line(hGeometry, hMaterial);
-      hLine.computeLineDistances();
+      const hLine = new THREE.Mesh(hGeometry, hMaterial);
+      hLine.position.set(0, y, 100);
       meshes.push(hLine);
 
-      // Full-screen vertical line for maximum visibility
-      const vGeometry = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(x, -STAGE_SIZE / 2, 100),
-        new THREE.Vector3(x, STAGE_SIZE / 2, 100),
-      ]);
-      const vMaterial = new THREE.LineDashedMaterial({
+      // Full-screen vertical line - mesh-based for visibility
+      const vGeometry = new THREE.PlaneGeometry(hThickness, STAGE_SIZE);
+      const vMaterial = new THREE.MeshBasicMaterial({
         color: marker.color,
-        linewidth: 2,
         transparent: true,
-        opacity: 0.8,
-        dashSize: 10,
-        gapSize: 5,
+        opacity: 0.9,
         depthTest: false,
       });
-      const vLine = new THREE.Line(vGeometry, vMaterial);
-      vLine.computeLineDistances();
+      const vLine = new THREE.Mesh(vGeometry, vMaterial);
+      vLine.position.set(x, 0, 100);
       meshes.push(vLine);
     } else if (marker.type === "star") {
-      // Full-screen horizontal line for maximum visibility
-      const hGeometry = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(-STAGE_SIZE / 2, y, 100),
-        new THREE.Vector3(STAGE_SIZE / 2, y, 100),
-      ]);
-      const hMaterial = new THREE.LineDashedMaterial({
+      // Full-screen horizontal line - mesh-based for visibility
+      const hThickness = 4;
+      const hGeometry = new THREE.PlaneGeometry(STAGE_SIZE, hThickness);
+      const hMaterial = new THREE.MeshBasicMaterial({
         color: marker.color,
-        linewidth: 2,
         transparent: true,
-        opacity: 0.8,
-        dashSize: 10,
-        gapSize: 5,
+        opacity: 0.9,
         depthTest: false,
       });
-      const hLine = new THREE.Line(hGeometry, hMaterial);
-      hLine.computeLineDistances();
+      const hLine = new THREE.Mesh(hGeometry, hMaterial);
+      hLine.position.set(0, y, 100);
       meshes.push(hLine);
 
-      // Full-screen vertical line for maximum visibility
-      const vGeometry = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(x, -STAGE_SIZE / 2, 100),
-        new THREE.Vector3(x, STAGE_SIZE / 2, 100),
-      ]);
-      const vMaterial = new THREE.LineDashedMaterial({
+      // Full-screen vertical line - mesh-based for visibility
+      const vGeometry = new THREE.PlaneGeometry(hThickness, STAGE_SIZE);
+      const vMaterial = new THREE.MeshBasicMaterial({
         color: marker.color,
-        linewidth: 2,
         transparent: true,
-        opacity: 0.8,
-        dashSize: 10,
-        gapSize: 5,
+        opacity: 0.9,
         depthTest: false,
       });
-      const vLine = new THREE.Line(vGeometry, vMaterial);
-      vLine.computeLineDistances();
+      const vLine = new THREE.Mesh(vGeometry, vMaterial);
+      vLine.position.set(x, 0, 100);
       meshes.push(vLine);
 
       // Create 5-point star at center
@@ -1198,9 +1300,11 @@ export const ThreeDebugRenderer = {
     const allMeshes: any[] = [];
 
     if (visuals.boundingBox) {
-      const mesh = this.createBoundingBoxMesh(visuals.boundingBox, scene, STAGE_SIZE, THREE);
-      scene.add(mesh);
-      allMeshes.push(mesh);
+      const meshes = this.createBoundingBoxMesh(visuals.boundingBox, scene, STAGE_SIZE, THREE);
+      meshes.forEach((mesh) => {
+        scene.add(mesh);
+        allMeshes.push(mesh);
+      });
     }
 
     if (visuals.tipRay) {
