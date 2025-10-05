@@ -85,6 +85,8 @@ export type MainScreenRendererBadgeProps = {
 
 export type MainScreenUpdaterProps = {
   visible: boolean;
+  rendererMode?: "auto" | "canvas" | "three";
+  onRendererModeChange?: (mode: "auto" | "canvas" | "three") => void;
 };
 
 export type MainScreenBtnGestureAreaProps = {
@@ -293,12 +295,46 @@ export function MainScreenRendererBadge(props: MainScreenRendererBadgeProps) {
 export function MainScreenUpdater(props: MainScreenUpdaterProps) {
   const [isConfigOpen, setIsConfigOpen] = React.useState(false);
 
+  const handleRendererToggle = () => {
+    if (!props.onRendererModeChange) return;
+    const currentMode = props.rendererMode ?? "auto";
+    const nextMode = currentMode === "auto" ? "canvas" : currentMode === "canvas" ? "three" : "auto";
+    props.onRendererModeChange(nextMode);
+  };
+
+  const getRendererButtonClass = () => {
+    const mode = props.rendererMode ?? "auto";
+    const baseClass = "text-[10px] px-2 py-0.5 rounded text-white shadow-sm border border-white/10";
+    if (mode === "auto") {
+      return `${baseClass} bg-blue-600/80 hover:bg-blue-500/80 active:bg-blue-600`;
+    } else if (mode === "canvas") {
+      return `${baseClass} bg-amber-600/80 hover:bg-amber-500/80 active:bg-amber-600`;
+    } else {
+      return `${baseClass} bg-emerald-600/80 hover:bg-emerald-500/80 active:bg-emerald-600`;
+    }
+  };
+
+  const getRendererButtonLabel = () => {
+    const mode = props.rendererMode ?? "auto";
+    return mode === "auto" ? "Auto" : mode === "canvas" ? "Canvas" : "Three";
+  };
+
   if (!props.visible && !isConfigOpen) return null;
 
   return (
     <>
       {props.visible && (
         <div className="fixed top-9 right-3 z-[9998] flex flex-col gap-1">
+          {props.onRendererModeChange && (
+            <button
+              type="button"
+              onClick={handleRendererToggle}
+              className={getRendererButtonClass()}
+              aria-label="Toggle renderer mode"
+            >
+              {getRendererButtonLabel()}
+            </button>
+          )}
           <button
             type="button"
             onClick={clearCachesAndReload}

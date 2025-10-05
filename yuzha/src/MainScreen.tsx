@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import StageCanvas from "@shared/stages/StageCanvas";
 import StageThree from "@shared/stages/StageThree";
 import { getRendererType } from "@shared/utils/RendererDetector";
@@ -9,11 +9,22 @@ import {
   MainScreenUpdater,
 } from "./MainScreenUtils";
 
+export type RendererMode = "auto" | "canvas" | "three";
+export type RendererType = "canvas" | "three";
+
 export type MainScreenProps = {
   children?: React.ReactNode;
 };
 
-function MainScreenOverlay({ rendererLabel }: { rendererLabel: string }) {
+function MainScreenOverlay({
+  rendererLabel,
+  rendererMode,
+  onRendererModeChange,
+}: {
+  rendererLabel: string;
+  rendererMode: RendererMode;
+  onRendererModeChange: (mode: RendererMode) => void;
+}) {
   const gesture = useMainScreenBtnGesture();
 
   return (
@@ -26,7 +37,11 @@ function MainScreenOverlay({ rendererLabel }: { rendererLabel: string }) {
         title="Launcher"
       />
       <MainScreenRendererBadge visible={gesture.open} label={rendererLabel} />
-      <MainScreenUpdater visible={gesture.open} />
+      <MainScreenUpdater
+        visible={gesture.open}
+        rendererMode={rendererMode}
+        onRendererModeChange={onRendererModeChange}
+      />
     </>
   );
 }
@@ -36,14 +51,31 @@ function MainScreenOverlay({ rendererLabel }: { rendererLabel: string }) {
  * Testing if overlay components break stage centering
  */
 export default function MainScreen({ children }: MainScreenProps) {
-  const rendererType = useMemo(() => getRendererType(), []);
-  const rendererLabel =
-    rendererType === "three" ? "Three.js WebGL Renderer" : "Canvas 2D Renderer (AI Agent Fallback)";
+  const autoDetectedRenderer = useMemo(() => getRendererType(), []);
+  const [rendererMode, setRendererMode] = useState<RendererMode>("auto");
+
+  const activeRenderer: RendererType =
+    rendererMode === "auto" ? autoDetectedRenderer : rendererMode;
+
+  const rendererLabel = React.useMemo(() => {
+    const baseLabel =
+      activeRenderer === "three"
+        ? "Three.js WebGL Renderer"
+        : "Canvas 2D Renderer (AI Agent Fallback)";
+    const modeLabel = rendererMode === "auto" ? " (Auto)" : ` (Manual: ${rendererMode})`;
+    return baseLabel + modeLabel;
+  }, [activeRenderer, rendererMode]);
 
   return (
     <div className="relative w-screen h-screen overflow-hidden">
-      {rendererType === "three" ? <StageThree /> : <StageCanvas />}
-      {children ?? <MainScreenOverlay rendererLabel={rendererLabel} />}
+      {activeRenderer === "three" ? <StageThree /> : <StageCanvas />}
+      {children ?? (
+        <MainScreenOverlay
+          rendererLabel={rendererLabel}
+          rendererMode={rendererMode}
+          onRendererModeChange={setRendererMode}
+        />
+      )}
     </div>
   );
 }
