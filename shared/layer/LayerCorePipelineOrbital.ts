@@ -10,7 +10,6 @@ export type OrbitalConfig = {
 };
 
 const STAGE_SIZE = 2048;
-const STAGE_CENTER = 1024;
 
 /**
  * Create an orbital processor with the given configuration
@@ -67,18 +66,24 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
       y: (orbitImagePoint[1] / 100) * height,
     };
 
-    // Calculate new image position so orbitImagePoint is at orbitPoint
+    // Calculate new image CENTER position so orbitImagePoint is at orbitPoint
+    // IMPORTANT: Renderers expect position to represent the image CENTER
+    // Formula: centerPosition = orbitPoint + (imageCenter - orbitImagePoint)
+    const imageCenter = { x: width / 2, y: height / 2 };
     const newPosition = {
-      x: orbitPoint.x - orbitImagePointPixels.x,
-      y: orbitPoint.y - orbitImagePointPixels.y,
+      x: orbitPoint.x + (imageCenter.x - orbitImagePointPixels.x),
+      y: orbitPoint.y + (imageCenter.y - orbitImagePointPixels.y),
     };
 
     // Off-screen culling: Check if object is completely outside stage bounds
+    // Use image center position and half dimensions for accurate bounds checking
+    const halfWidth = width / 2;
+    const halfHeight = height / 2;
     const isOffScreen =
-      newPosition.x + width < 0 || // Completely left of stage
-      newPosition.x > STAGE_SIZE || // Completely right of stage
-      newPosition.y + height < 0 || // Completely above stage
-      newPosition.y > STAGE_SIZE; // Completely below stage
+      newPosition.x + halfWidth < 0 || // Completely left of stage
+      newPosition.x - halfWidth > STAGE_SIZE || // Completely right of stage
+      newPosition.y + halfHeight < 0 || // Completely above stage
+      newPosition.y - halfHeight > STAGE_SIZE; // Completely below stage
 
     // Handle static image rotation (if no spin animation)
     let orbitRotation = 0;
