@@ -1,40 +1,8 @@
 import * as THREE from "three";
 import type { EnhancedLayerData } from "./LayerCorePipeline";
 import type { LayerProcessor } from "./LayerCorePipeline";
-import { runPipeline } from "./LayerCorePipeline";
-import {
-  generateOrbitalDebugVisuals as _generateOrbitalDebugVisuals,
-  type OrbitalDebugConfig,
-} from "./LayerCorePipelineOrbitalUtils";
-import {
-  generateImageMappingDebugVisuals,
-  ThreeDebugRenderer as ImageMappingThreeDebugRenderer,
-  type ImageMappingDebugConfig,
-} from "./LayerCorePipelineImageMappingUtils";
 
 const STAGE_SIZE = 2048;
-
-// Enable orbital debug visuals (set to false to disable)
-const ORBITAL_DEBUG_ENABLED = true;
-const _ORBITAL_DEBUG_CONFIG: OrbitalDebugConfig = {
-  showCenter: true,
-  showOrbitLine: true,
-  showRadiusLine: true,
-  showOrbitPoint: true,
-  centerStyle: "crosshair",
-};
-
-// Enable image mapping debug visuals
-const IMAGE_MAPPING_DEBUG_ENABLED = true;
-const IMAGE_MAPPING_DEBUG_CONFIG: ImageMappingDebugConfig = {
-  showCenter: true,
-  showTip: true,
-  showBase: true,
-  showAxisLine: true,
-  showRotation: false,
-  showBoundingBox: false,
-};
-const IMAGE_MAPPING_DEBUG_LAYER_IDS = ["orbiting-moon"]; // Only show for specific layers
 
 type TransformCache = {
   scaledWidth: number;
@@ -50,8 +18,6 @@ type MeshRenderData = {
   processors: LayerProcessor[];
   transformCache: TransformCache;
   isStatic: boolean;
-  spinSpeed: number;
-  debugObjects?: THREE.Group; // Group for debug visuals
 };
 
 export async function mountThreeLayers(
@@ -92,17 +58,8 @@ export async function mountThreeLayers(
     const { item, texture } = result;
     const { data, processors } = item;
 
-    // Determine if layer is static by running processors once and checking result
-    // A layer is static if it has no processors OR if running processors yields no animation flags
-    let isStatic = processors.length === 0;
-    let spinSpeed = 0;
-    if (!isStatic && processors.length > 0) {
-      // Run pipeline once to check if it produces animation
-      const testData = runPipeline(data, processors, 0);
-      // Static if no spin AND no orbital animation
-      isStatic = !testData.hasSpinAnimation && !testData.hasOrbitalAnimation;
-      spinSpeed = testData.spinSpeed ?? 0; // Extract spin speed for render optimization
-    }
+    // All layers are static since processors are empty
+    const isStatic = processors.length === 0;
 
     // Pre-calculate transform constants
     const scaledWidth = texture.image.width * data.scale.x;
@@ -148,7 +105,6 @@ export async function mountThreeLayers(
       position: data.position,
       scale: data.scale,
       isStatic,
-      spinSpeed,
     });
 
     meshData.push({
@@ -158,239 +114,35 @@ export async function mountThreeLayers(
       processors,
       transformCache,
       isStatic,
-      spinSpeed,
     });
   }
 
   const staticCount = meshData.filter((m) => m.isStatic).length;
   const animatedCount = meshData.length - staticCount;
 
-  // Check if any animated layer has slow rotation (< 6 degrees/second)
-  // Slow rotations need every frame rendered to avoid stuttering
-  const SLOW_ROTATION_THRESHOLD = 6;
-  const hasSlowRotation = meshData.some(
-    (m) => !m.isStatic && m.spinSpeed > 0 && m.spinSpeed < SLOW_ROTATION_THRESHOLD,
-  );
-
   console.log(
     `[LayerEngineThree] Total layers loaded: ${meshData.length} (${staticCount} static, ${animatedCount} animated)`,
   );
 
-  if (hasSlowRotation) {
-    const slowLayers = meshData.filter(
-      (m) => !m.isStatic && m.spinSpeed > 0 && m.spinSpeed < SLOW_ROTATION_THRESHOLD,
-    );
-    console.log(
-      `[LayerEngineThree] Detected slow rotation layers (always render): ${slowLayers.map((m) => `${m.baseData.layerId}@${m.spinSpeed}°/s`).join(", ")}`,
-    );
-  }
-
-  // Cache for static layers - calculate once, reuse forever
-  const staticLayerCache = new Map<string, EnhancedLayerData>();
-
+  // Apply static transforms once
   for (const item of meshData) {
-    if (item.isStatic) {
-      // Pre-calculate static layer data once
-      const staticData =
-        item.processors.length > 0 ? runPipeline(item.baseData, item.processors, 0) : item.baseData;
-      staticLayerCache.set(item.baseData.layerId, staticData);
-    }
+    const { mesh, group, baseData, transformCache } = item;
+
+    // Use only basic display rotation
+    const rotation = baseData.imageMapping.displayRotation ?? 0;
+
+    // No pivot offset needed for basic rotation - mesh stays centered in group
+    mesh.position.set(0, 0, 0);
+
+    // Rotate the group around its center
+    group.rotation.z = (rotation * Math.PI) / 180;
   }
 
-  // Helper function to create Three.js debug visuals for orbital motion
-  function createOrbitalDebugObjects(
-    orbitCenter: { x: number; y: number },
-    orbitRadius: number,
-    orbitPoint: { x: number; y: number },
-  ): THREE.Group {
-    const debugGroup = new THREE.Group();
-    const zOffset = 500; // High Z to render on top
-
-    // Create orbit center marker (crosshair)
-    const centerSize = 15;
-    const centerMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 }); // Red
-    const centerPoints = [
-      new THREE.Vector3(
-        orbitCenter.x - STAGE_SIZE / 2 - centerSize,
-        STAGE_SIZE / 2 - orbitCenter.y,
-        zOffset,
-      ),
-      new THREE.Vector3(
-        orbitCenter.x - STAGE_SIZE / 2 + centerSize,
-        STAGE_SIZE / 2 - orbitCenter.y,
-        zOffset,
-      ),
-      new THREE.Vector3(orbitCenter.x - STAGE_SIZE / 2, STAGE_SIZE / 2 - orbitCenter.y, zOffset),
-      new THREE.Vector3(
-        orbitCenter.x - STAGE_SIZE / 2,
-        STAGE_SIZE / 2 - orbitCenter.y - centerSize,
-        zOffset,
-      ),
-      new THREE.Vector3(
-        orbitCenter.x - STAGE_SIZE / 2,
-        STAGE_SIZE / 2 - orbitCenter.y + centerSize,
-        zOffset,
-      ),
-    ];
-    const centerGeometry = new THREE.BufferGeometry().setFromPoints([
-      centerPoints[0]!,
-      centerPoints[1]!,
-    ]);
-    const centerLine1 = new THREE.Line(centerGeometry, centerMaterial);
-    const centerGeometry2 = new THREE.BufferGeometry().setFromPoints([
-      centerPoints[3]!,
-      centerPoints[4]!,
-    ]);
-    const centerLine2 = new THREE.Line(centerGeometry2, centerMaterial);
-    debugGroup.add(centerLine1, centerLine2);
-
-    // Create orbit line (circle)
-    const orbitLineMaterial = new THREE.LineBasicMaterial({
-      color: 0x00ff00, // Green
-      transparent: true,
-      opacity: 0.5,
-    });
-    const curvePoints: THREE.Vector3[] = [];
-    const segments = 64;
-    for (let i = 0; i <= segments; i++) {
-      const angle = (i / segments) * Math.PI * 2;
-      const x = orbitCenter.x + orbitRadius * Math.cos(angle);
-      const y = orbitCenter.y + orbitRadius * Math.sin(angle);
-      curvePoints.push(new THREE.Vector3(x - STAGE_SIZE / 2, STAGE_SIZE / 2 - y, zOffset));
-    }
-    const orbitLineGeometry = new THREE.BufferGeometry().setFromPoints(curvePoints);
-    const orbitLine = new THREE.Line(orbitLineGeometry, orbitLineMaterial);
-    debugGroup.add(orbitLine);
-
-    // Create radius line
-    const radiusLineMaterial = new THREE.LineBasicMaterial({
-      color: 0xffff00, // Yellow
-      transparent: true,
-      opacity: 0.7,
-    });
-    const radiusPoints = [
-      new THREE.Vector3(orbitCenter.x - STAGE_SIZE / 2, STAGE_SIZE / 2 - orbitCenter.y, zOffset),
-      new THREE.Vector3(orbitPoint.x - STAGE_SIZE / 2, STAGE_SIZE / 2 - orbitPoint.y, zOffset),
-    ];
-    const radiusLineGeometry = new THREE.BufferGeometry().setFromPoints(radiusPoints);
-    const radiusLine = new THREE.Line(radiusLineGeometry, radiusLineMaterial);
-    debugGroup.add(radiusLine);
-
-    // Create orbit point marker
-    const pointGeometry = new THREE.CircleGeometry(8, 16);
-    const pointMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff }); // Blue
-    const pointMesh = new THREE.Mesh(pointGeometry, pointMaterial);
-    pointMesh.position.set(orbitPoint.x - STAGE_SIZE / 2, STAGE_SIZE / 2 - orbitPoint.y, zOffset);
-    debugGroup.add(pointMesh);
-
-    return debugGroup;
-  }
-
-  // Track rotation state for render-on-demand optimization
-  const lastRotations = new Map<string, number>();
-
-  // Update mesh transforms and return whether any changes occurred
-  const updateMeshes = (timestamp: number): boolean => {
-    let needsRender = false;
-
-    for (const item of meshData) {
-      const { mesh, group, baseData, processors, transformCache, isStatic } = item;
-
-      // Use cached data for static layers, calculate for animated layers
-      const layerData: EnhancedLayerData = isStatic
-        ? (staticLayerCache.get(baseData.layerId) ?? baseData)
-        : processors.length > 0
-          ? runPipeline(baseData, processors, timestamp)
-          : baseData;
-
-      // Skip rendering if layer is marked invisible (off-screen culling)
-      if (layerData.visible === false) {
-        // Hide the mesh
-        group.visible = false;
-        continue;
-      } else {
-        group.visible = true;
-      }
-
-      // Update position for orbital motion
-      if (layerData.hasOrbitalAnimation && layerData.position) {
-        group.position.set(
-          layerData.position.x - STAGE_SIZE / 2,
-          STAGE_SIZE / 2 - layerData.position.y,
-          0,
-        );
-        needsRender = true;
-      }
-
-      // Use only basic display rotation
-      const rotation = layerData.imageMapping.displayRotation ?? 0;
-
-      // Check if rotation changed (for render-on-demand)
-      const lastRotation = lastRotations.get(baseData.layerId);
-      if (lastRotation !== rotation) {
-        needsRender = true;
-        lastRotations.set(baseData.layerId, rotation);
-      }
-
-      // Calculate offset for pivot rotation using cached image center
-      const centerX = transformCache.imageCenter.x * layerData.scale.x;
-      const centerY = transformCache.imageCenter.y * layerData.scale.y;
-      const pivotX = transformCache.imageCenter.x * layerData.scale.x;
-      const pivotY = transformCache.imageCenter.y * layerData.scale.y;
-
-      // Offset from center to pivot (in Three.js Y-up coordinates)
-      const dx = centerX - pivotX;
-      const dy = -(centerY - pivotY);
-
-      // Position mesh offset within group so pivot is at origin
-      mesh.position.set(dx, dy, 0);
-
-      // Rotate the group around its origin (which is now at the pivot point)
-      group.rotation.z = (rotation * Math.PI) / 180;
-    }
-
-    return needsRender;
-  };
-
-  // Check if any layers need animation
-  const hasAnimatedLayers = animatedCount > 0;
-
-  let animationId: number | undefined;
-
-  if (hasAnimatedLayers) {
-    // Smart render-on-demand: always render for slow rotations, optimize for fast rotations
-    let firstFrame = true;
-    const animate = (timestamp: number) => {
-      const needsRender = updateMeshes(timestamp);
-      // Always render if: first frame, slow rotation detected, or rotation changed
-      if (firstFrame || hasSlowRotation || needsRender) {
-        renderer.render(scene, camera);
-        firstFrame = false;
-      }
-      animationId = requestAnimationFrame(animate);
-    };
-    animationId = requestAnimationFrame(animate);
-
-    if (hasSlowRotation) {
-      console.log(
-        `[LayerEngineThree] Starting animation loop with always-render for slow rotations (${animatedCount} animated layers)`,
-      );
-    } else {
-      console.log(
-        `[LayerEngineThree] Starting animation loop with render-on-demand (${animatedCount} animated layers)`,
-      );
-    }
-  } else {
-    // Static scene - render once
-    updateMeshes(0);
-    renderer.render(scene, camera);
-    console.log("[LayerEngineThree] Static scene - rendered once, no animation loop");
-  }
+  // Static scene - render once
+  renderer.render(scene, camera);
+  console.log("[LayerEngineThree] Static scene - rendered once, no animation loop");
 
   return () => {
-    if (animationId !== undefined) {
-      cancelAnimationFrame(animationId);
-    }
     for (const item of meshData) {
       const { mesh, group } = item;
       mesh.geometry.dispose();
@@ -403,25 +155,6 @@ export async function mountThreeLayers(
       }
       group.remove(mesh);
       scene.remove(group);
-
-      // Clean up debug objects
-      if (item.debugObjects) {
-        scene.remove(item.debugObjects);
-        item.debugObjects.traverse((child) => {
-          if (child instanceof THREE.Mesh) {
-            child.geometry.dispose();
-            if (child.material instanceof THREE.Material) {
-              child.material.dispose();
-            }
-          }
-          if (child instanceof THREE.Line) {
-            child.geometry.dispose();
-            if (child.material instanceof THREE.Material) {
-              child.material.dispose();
-            }
-          }
-        });
-      }
     }
   };
 }
