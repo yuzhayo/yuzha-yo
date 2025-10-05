@@ -34,6 +34,29 @@ export type LayerConfigEntry = {
   orbitRadius?: number; // Pixels (0-2048)
   orbitSpeed?: number; // Degrees per second (0 = no orbit)
   orbitDirection?: "cw" | "ccw";
+
+  // Image Mapping Debug config
+  showCenter?: boolean;
+  showTip?: boolean;
+  showBase?: boolean;
+  showAxisLine?: boolean;
+  showRotation?: boolean;
+  showTipRay?: boolean;
+  showBaseRay?: boolean;
+  showBoundingBox?: boolean;
+  centerStyle?: "dot" | "crosshair";
+  tipStyle?: "circle" | "arrow";
+  baseStyle?: "circle" | "square";
+  debugColors?: {
+    center?: string;
+    tip?: string;
+    base?: string;
+    axisLine?: string;
+    rotation?: string;
+    tipRay?: string;
+    baseRay?: string;
+    boundingBox?: string;
+  };
 };
 
 export type LayerConfig = LayerConfigEntry[];
@@ -58,6 +81,27 @@ type ConfigYuzhaEntry = {
       orbitRadius?: number;
       orbitSpeed?: number;
       orbitDirection?: "cw" | "ccw";
+      showCenter?: boolean;
+      showTip?: boolean;
+      showBase?: boolean;
+      showAxisLine?: boolean;
+      showRotation?: boolean;
+      showTipRay?: boolean;
+      showBaseRay?: boolean;
+      showBoundingBox?: boolean;
+      centerStyle?: "dot" | "crosshair";
+      tipStyle?: "circle" | "arrow";
+      baseStyle?: "circle" | "square";
+      debugColors?: {
+        center?: string;
+        tip?: string;
+        base?: string;
+        axisLine?: string;
+        rotation?: string;
+        tipRay?: string;
+        baseRay?: string;
+        boundingBox?: string;
+      };
     };
   };
 };

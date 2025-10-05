@@ -24,7 +24,7 @@ localPort = 43501
 externalPort = 3001
 
 [[ports]]
-localPort = 46761
+localPort = 45193
 externalPort = 3002
 
 [workflows]
@@ -37,23 +37,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Frontend"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
 args = "Start Game"
-
-[[workflows.workflow]]
-name = "Frontend"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run dev:5000"
-waitForPort = 5000
-
-[workflows.workflow.metadata]
-outputType = "webview"
 
 [[workflows.workflow]]
 name = "Start Game"

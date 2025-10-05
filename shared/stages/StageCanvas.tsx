@@ -3,6 +3,7 @@ import { loadLayerConfig } from "../config/Config";
 import { is2DLayer, prepareLayer } from "../layer/LayerCore";
 import { mountCanvasLayers } from "../layer/LayerEngineCanvas";
 import type { EnhancedLayerData, LayerProcessor } from "../layer/LayerCorePipeline";
+import { createImageMappingDebugProcessor } from "../layer/LayerCorePipelineImageMappingDebug";
 import { STAGE_SIZE, createStageTransformer } from "../utils/stage2048";
 
 export default function StageCanvas() {
@@ -41,9 +42,41 @@ export default function StageCanvas() {
           continue;
         }
 
+        const processors: LayerProcessor[] = [];
+
+        // Add Image Mapping Debug processor if configured
+        const hasDebugConfig =
+          entry.showCenter ||
+          entry.showTip ||
+          entry.showBase ||
+          entry.showAxisLine ||
+          entry.showRotation ||
+          entry.showTipRay ||
+          entry.showBaseRay ||
+          entry.showBoundingBox;
+
+        if (hasDebugConfig) {
+          processors.push(
+            createImageMappingDebugProcessor({
+              showCenter: entry.showCenter,
+              showTip: entry.showTip,
+              showBase: entry.showBase,
+              showAxisLine: entry.showAxisLine,
+              showRotation: entry.showRotation,
+              showTipRay: entry.showTipRay,
+              showBaseRay: entry.showBaseRay,
+              showBoundingBox: entry.showBoundingBox,
+              centerStyle: entry.centerStyle,
+              tipStyle: entry.tipStyle,
+              baseStyle: entry.baseStyle,
+              colors: entry.debugColors,
+            }),
+          );
+        }
+
         layersWithProcessors.push({
-          data: layer,
-          processors: [],
+          data: { ...layer, imageTip: entry.imageTip, imageBase: entry.imageBase } as any,
+          processors,
         });
       }
 

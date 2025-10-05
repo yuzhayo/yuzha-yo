@@ -1,5 +1,7 @@
 import type { EnhancedLayerData } from "./LayerCorePipeline";
 import type { LayerProcessor } from "./LayerCorePipeline";
+import { runPipeline } from "./LayerCorePipeline";
+import { CanvasDebugRenderer } from "./LayerCorePipelineImageMappingUtils";
 
 const STAGE_SIZE = 2048;
 
@@ -146,6 +148,16 @@ export async function mountCanvasLayers(
   }
 
   console.log("[LayerEngineCanvas] Static scene - rendered once");
+
+  // Render debug visuals after all layers
+  for (const layer of layers) {
+    if (layer.processors.length > 0) {
+      const enhancedData = runPipeline(layer.baseData, layer.processors);
+      if (enhancedData.imageMappingDebugVisuals) {
+        CanvasDebugRenderer.drawAll(ctx, enhancedData.imageMappingDebugVisuals);
+      }
+    }
+  }
 
   return () => {};
 }

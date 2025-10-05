@@ -1,4 +1,8 @@
 import type { UniversalLayerData } from "./LayerCore";
+import type {
+  ImageMappingDebugVisuals,
+  ImageMappingDebugConfig,
+} from "./LayerCorePipelineImageMappingUtils";
 
 // Pipeline processor function type - now accepts optional timestamp and returns EnhancedLayerData
 export type LayerProcessor = (layer: UniversalLayerData, timestamp?: number) => EnhancedLayerData;
@@ -30,6 +34,10 @@ export type EnhancedLayerData = UniversalLayerData & {
   orbitRotation?: number;
   hasOrbitalAnimation?: boolean;
   visible?: boolean;
+
+  // Image Mapping Debug properties (added by LayerCorePipelineImageMappingDebug)
+  imageMappingDebugVisuals?: ImageMappingDebugVisuals;
+  imageMappingDebugConfig?: Partial<ImageMappingDebugConfig>;
 
   // Future properties will be added here by other processors
   opacity?: number;

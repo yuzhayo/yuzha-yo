@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import type { EnhancedLayerData } from "./LayerCorePipeline";
 import type { LayerProcessor } from "./LayerCorePipeline";
+import { runPipeline } from "./LayerCorePipeline";
+import { ThreeDebugRenderer } from "./LayerCorePipelineImageMappingUtils";
 
 const STAGE_SIZE = 2048;
 
@@ -126,7 +128,7 @@ export async function mountThreeLayers(
 
   // Apply static transforms once
   for (const item of meshData) {
-    const { mesh, group, baseData, transformCache } = item;
+    const { mesh, group, baseData } = item;
 
     // Use only basic display rotation
     const rotation = baseData.imageMapping.displayRotation ?? 0;
@@ -138,11 +140,38 @@ export async function mountThreeLayers(
     group.rotation.z = (rotation * Math.PI) / 180;
   }
 
+  // Add debug visuals to the scene
+  const debugMeshes: THREE.Object3D[] = [];
+  for (const item of meshData) {
+    if (item.processors.length > 0) {
+      const enhancedData = runPipeline(item.baseData, item.processors);
+      if (enhancedData.imageMappingDebugVisuals) {
+        const meshes = ThreeDebugRenderer.addAllToScene(
+          enhancedData.imageMappingDebugVisuals,
+          scene,
+          STAGE_SIZE,
+          THREE,
+        );
+        debugMeshes.push(...meshes);
+      }
+    }
+  }
+
   // Static scene - render once
   renderer.render(scene, camera);
   console.log("[LayerEngineThree] Static scene - rendered once, no animation loop");
 
   return () => {
+    // Clean up debug meshes
+    for (const debugMesh of debugMeshes) {
+      scene.remove(debugMesh);
+      if (debugMesh instanceof THREE.Mesh) {
+        debugMesh.geometry.dispose();
+        if (debugMesh.material instanceof THREE.Material) {
+          debugMesh.material.dispose();
+        }
+      }
+    }
     for (const item of meshData) {
       const { mesh, group } = item;
       mesh.geometry.dispose();
