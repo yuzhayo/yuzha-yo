@@ -274,6 +274,7 @@ export function generateBoundingBox(
 /**
  * Generate ray from imageCenter to border at specified angle
  * This visualizes the calculation used to determine imageTip/imageBase
+ * Uses the EXACT same logic as computeImageMapping for consistency
  */
 export function generateImageRay(
   imageCenter: { x: number; y: number },
@@ -285,7 +286,10 @@ export function generateImageRay(
   const _cfg = { ...DEFAULT_CONFIG, ...config };
   const colors = { ...DEFAULT_CONFIG.colors, ...config?.colors };
 
+  const { width, height } = imageDimensions;
+
   // Convert angle to radians (negate for screen coordinates)
+  // EXACT copy from computeImageMapping
   const angleRad = (-angle * Math.PI) / 180;
 
   // Calculate ray direction
@@ -293,8 +297,9 @@ export function generateImageRay(
   const dy = Math.sin(angleRad);
 
   // Find intersection with rectangle boundary
-  const halfWidth = imageDimensions.width / 2;
-  const halfHeight = imageDimensions.height / 2;
+  // EXACT copy from computeImageMapping logic
+  const halfWidth = width / 2;
+  const halfHeight = height / 2;
 
   // Calculate scaling factor to reach rectangle edge
   const scaleX = dx !== 0 ? halfWidth / Math.abs(dx) : Infinity;
