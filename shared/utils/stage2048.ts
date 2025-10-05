@@ -70,10 +70,10 @@ export interface StageTransformerOptions {
 }
 
 /**
- * Creates a stage transformer that automatically handles canvas and container sizing.
+ * Creates a stage transformer that automatically handles stage element and container sizing.
  * Returns a cleanup function to remove event listeners.
  *
- * @param canvas - The canvas element to transform
+ * @param stageElement - The stage element to transform (canvas, div, etc)
  * @param container - The container element to transform
  * @param options - Optional configuration
  * @returns Cleanup function to remove event listeners
@@ -83,7 +83,7 @@ export interface StageTransformerOptions {
  * // Later: cleanup();
  */
 export function createStageTransformer(
-  canvas: HTMLCanvasElement,
+  stageElement: HTMLElement,
   container: HTMLElement,
   options: StageTransformerOptions = {},
 ): () => void {
@@ -95,9 +95,9 @@ export function createStageTransformer(
     const { innerWidth, innerHeight } = window;
     const { scale, offsetX, offsetY } = computeCoverTransform(innerWidth, innerHeight);
 
-    // Set canvas size
-    canvas.style.width = `${STAGE_SIZE}px`;
-    canvas.style.height = `${STAGE_SIZE}px`;
+    // Set stage element size
+    stageElement.style.width = `${STAGE_SIZE}px`;
+    stageElement.style.height = `${STAGE_SIZE}px`;
 
     // Set container size and transform
     container.style.width = `${STAGE_SIZE}px`;

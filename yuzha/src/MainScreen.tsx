@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import StageCanvas from "@shared/stages/StageCanvas";
+import StageDOM from "@shared/stages/StageDOM";
 import StageThree from "@shared/stages/StageThree";
 import { getRendererType } from "@shared/utils/RendererDetector";
 import {
@@ -9,8 +10,8 @@ import {
   MainScreenUpdater,
 } from "./MainScreenUtils";
 
-export type RendererMode = "auto" | "canvas" | "three";
-export type RendererType = "canvas" | "three";
+export type RendererMode = "auto" | "dom" | "canvas" | "three";
+export type RendererType = "dom" | "canvas" | "three";
 
 export type MainScreenProps = {
   children?: React.ReactNode;
@@ -52,23 +53,31 @@ function MainScreenOverlay({
  */
 export default function MainScreen({ children }: MainScreenProps) {
   const autoDetectedRenderer = useMemo(() => getRendererType(), []);
-  const [rendererMode, setRendererMode] = useState<RendererMode>("auto");
+  const [rendererMode, setRendererMode] = useState<RendererMode>("dom");
 
   const activeRenderer: RendererType =
     rendererMode === "auto" ? autoDetectedRenderer : rendererMode;
 
   const rendererLabel = React.useMemo(() => {
-    const baseLabel =
-      activeRenderer === "three"
-        ? "Three.js WebGL Renderer"
-        : "Canvas 2D Renderer (AI Agent Fallback)";
+    let baseLabel = "Canvas 2D Renderer (AI Agent Fallback)";
+    if (activeRenderer === "three") {
+      baseLabel = "Three.js WebGL Renderer";
+    } else if (activeRenderer === "dom") {
+      baseLabel = "DOM CSS Renderer";
+    }
     const modeLabel = rendererMode === "auto" ? " (Auto)" : ` (Manual: ${rendererMode})`;
     return baseLabel + modeLabel;
   }, [activeRenderer, rendererMode]);
 
   return (
     <div className="relative w-screen h-screen overflow-hidden">
-      {activeRenderer === "three" ? <StageThree /> : <StageCanvas />}
+      {activeRenderer === "three" ? (
+        <StageThree />
+      ) : activeRenderer === "dom" ? (
+        <StageDOM />
+      ) : (
+        <StageCanvas />
+      )}
       {children ?? (
         <MainScreenOverlay
           rendererLabel={rendererLabel}
