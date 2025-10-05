@@ -9,7 +9,7 @@ import React from "react";
 import { NavScreenLayout, NavSlot, NAV_STAGE_CENTER_X, NAV_STAGE_CENTER_Y } from "./NavScreen";
 
 // ===================================================================
-// EXAMPLE 1: Basic NavScreen with Images
+// EXAMPLE 1: Basic NavScreen with Imagess
 // ===================================================================
 
 export function ExampleBasicNavScreen() {
