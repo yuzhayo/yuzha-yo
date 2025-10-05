@@ -85,8 +85,8 @@ export type MainScreenRendererBadgeProps = {
 
 export type MainScreenUpdaterProps = {
   visible: boolean;
-  rendererMode?: "auto" | "canvas" | "three";
-  onRendererModeChange?: (mode: "auto" | "canvas" | "three") => void;
+  rendererMode?: "auto" | "dom" | "canvas" | "three";
+  onRendererModeChange?: (mode: "auto" | "dom" | "canvas" | "three") => void;
 };
 
 export type MainScreenBtnGestureAreaProps = {
@@ -297,7 +297,7 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
 
   const currentMode = props.rendererMode ?? "auto";
 
-  const getRendererButtonClass = (mode: "auto" | "canvas" | "three") => {
+  const getRendererButtonClass = (mode: "auto" | "dom" | "canvas" | "three") => {
     const baseClass = "text-[10px] px-2 py-0.5 rounded text-white shadow-sm border";
     const isSelected = currentMode === mode;
 
@@ -307,6 +307,8 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
 
     if (mode === "auto") {
       return `${baseClass} bg-blue-600/80 hover:bg-blue-500/80 active:bg-blue-600 border-white/10`;
+    } else if (mode === "dom") {
+      return `${baseClass} bg-purple-600/80 hover:bg-purple-500/80 active:bg-purple-600 border-white/10`;
     } else if (mode === "canvas") {
       return `${baseClass} bg-amber-600/80 hover:bg-amber-500/80 active:bg-amber-600 border-white/10`;
     } else {
@@ -329,6 +331,14 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
                 aria-label="Auto renderer mode"
               >
                 Auto
+              </button>
+              <button
+                type="button"
+                onClick={() => props.onRendererModeChange?.("dom")}
+                className={getRendererButtonClass("dom")}
+                aria-label="DOM renderer mode"
+              >
+                DOM
               </button>
               <button
                 type="button"
