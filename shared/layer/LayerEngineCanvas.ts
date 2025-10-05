@@ -1,8 +1,23 @@
 import type { EnhancedLayerData } from "./LayerCorePipeline";
 import type { LayerProcessor } from "./LayerCorePipeline";
 import { runPipeline } from "./LayerCorePipeline";
+import {
+  generateOrbitalDebugVisuals,
+  CanvasDebugRenderer,
+  type OrbitalDebugConfig,
+} from "./LayerCorePipelineOrbitalUtils";
 
 const STAGE_SIZE = 2048;
+
+// Enable orbital debug visuals (set to false to disable)
+const ORBITAL_DEBUG_ENABLED = true;
+const ORBITAL_DEBUG_CONFIG: OrbitalDebugConfig = {
+  showCenter: true,
+  showOrbitLine: true,
+  showRadiusLine: true,
+  showOrbitPoint: true,
+  centerStyle: "crosshair",
+};
 
 async function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -53,7 +68,8 @@ export async function mountCanvasLayers(
       if (!isStatic && item.processors.length > 0) {
         // Run pipeline once to check if it produces animation
         const testData = runPipeline(item.data, item.processors, 0);
-        isStatic = !testData.hasSpinAnimation; // Static if no spin animation flag
+        // Static if no spin AND no orbital animation
+        isStatic = !testData.hasSpinAnimation && !testData.hasOrbitalAnimation;
       }
 
       // Pre-calculate transform constants
@@ -184,10 +200,18 @@ export async function mountCanvasLayers(
       const layerData: EnhancedLayerData =
         processors.length > 0 ? runPipeline(baseData, processors, timestamp) : baseData;
 
+      // Skip rendering if layer is marked invisible (off-screen culling)
+      if (layerData.visible === false) {
+        continue;
+      }
+
       const isSpinning = layerData.hasSpinAnimation === true;
+      const isOrbiting = layerData.hasOrbitalAnimation === true && !isSpinning;
       const rotation = isSpinning
         ? (layerData.currentRotation ?? 0)
-        : (layerData.imageMapping.displayRotation ?? 0);
+        : isOrbiting
+          ? (layerData.orbitRotation ?? 0)
+          : (layerData.imageMapping.displayRotation ?? 0);
 
       if (rotation !== 0) {
         ctx.save();
@@ -216,6 +240,23 @@ export async function mountCanvasLayers(
         const x = layerData.position.x - transformCache.scaledWidth / 2;
         const y = layerData.position.y - transformCache.scaledHeight / 2;
         ctx.drawImage(image, x, y, transformCache.scaledWidth, transformCache.scaledHeight);
+      }
+
+      // Render orbital debug visuals for layers with orbital animation
+      if (ORBITAL_DEBUG_ENABLED && layerData.hasOrbitalAnimation && layerData.orbitCenter) {
+        const orbitPoint = {
+          x: layerData.orbitCenter.x + (layerData.orbitRadius || 0) * Math.cos(((layerData.currentOrbitAngle || 0) * Math.PI) / 180),
+          y: layerData.orbitCenter.y + (layerData.orbitRadius || 0) * Math.sin(((layerData.currentOrbitAngle || 0) * Math.PI) / 180),
+        };
+
+        const debugVisuals = generateOrbitalDebugVisuals(
+          [layerData.orbitCenter.x, layerData.orbitCenter.y],
+          layerData.orbitRadius || 0,
+          orbitPoint,
+          ORBITAL_DEBUG_CONFIG,
+        );
+
+        CanvasDebugRenderer.drawAll(ctx, debugVisuals);
       }
     }
   };

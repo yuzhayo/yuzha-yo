@@ -2,8 +2,22 @@ import * as THREE from "three";
 import type { EnhancedLayerData } from "./LayerCorePipeline";
 import type { LayerProcessor } from "./LayerCorePipeline";
 import { runPipeline } from "./LayerCorePipeline";
+import {
+  generateOrbitalDebugVisuals,
+  type OrbitalDebugConfig,
+} from "./LayerCorePipelineOrbitalUtils";
 
 const STAGE_SIZE = 2048;
+
+// Enable orbital debug visuals (set to false to disable)
+const ORBITAL_DEBUG_ENABLED = true;
+const ORBITAL_DEBUG_CONFIG: OrbitalDebugConfig = {
+  showCenter: true,
+  showOrbitLine: true,
+  showRadiusLine: true,
+  showOrbitPoint: true,
+  centerStyle: "crosshair",
+};
 
 type TransformCache = {
   scaledWidth: number;
@@ -20,6 +34,7 @@ type MeshRenderData = {
   transformCache: TransformCache;
   isStatic: boolean;
   spinSpeed: number;
+  debugObjects?: THREE.Group; // Group for debug visuals
 };
 
 export async function mountThreeLayers(
@@ -67,7 +82,8 @@ export async function mountThreeLayers(
     if (!isStatic && processors.length > 0) {
       // Run pipeline once to check if it produces animation
       const testData = runPipeline(data, processors, 0);
-      isStatic = !testData.hasSpinAnimation; // Static if no spin animation flag
+      // Static if no spin AND no orbital animation
+      isStatic = !testData.hasSpinAnimation && !testData.hasOrbitalAnimation;
       spinSpeed = testData.spinSpeed ?? 0; // Extract spin speed for render optimization
     }
 
@@ -164,6 +180,73 @@ export async function mountThreeLayers(
     }
   }
 
+  // Helper function to create Three.js debug visuals for orbital motion
+  function createOrbitalDebugObjects(
+    orbitCenter: { x: number; y: number },
+    orbitRadius: number,
+    orbitPoint: { x: number; y: number },
+  ): THREE.Group {
+    const debugGroup = new THREE.Group();
+    const zOffset = 500; // High Z to render on top
+
+    // Create orbit center marker (crosshair)
+    const centerSize = 15;
+    const centerMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 }); // Red
+    const centerPoints = [
+      new THREE.Vector3(orbitCenter.x - STAGE_SIZE / 2 - centerSize, STAGE_SIZE / 2 - orbitCenter.y, zOffset),
+      new THREE.Vector3(orbitCenter.x - STAGE_SIZE / 2 + centerSize, STAGE_SIZE / 2 - orbitCenter.y, zOffset),
+      new THREE.Vector3(orbitCenter.x - STAGE_SIZE / 2, STAGE_SIZE / 2 - orbitCenter.y, zOffset),
+      new THREE.Vector3(orbitCenter.x - STAGE_SIZE / 2, STAGE_SIZE / 2 - orbitCenter.y - centerSize, zOffset),
+      new THREE.Vector3(orbitCenter.x - STAGE_SIZE / 2, STAGE_SIZE / 2 - orbitCenter.y + centerSize, zOffset),
+    ];
+    const centerGeometry = new THREE.BufferGeometry().setFromPoints([centerPoints[0]!, centerPoints[1]!]);
+    const centerLine1 = new THREE.Line(centerGeometry, centerMaterial);
+    const centerGeometry2 = new THREE.BufferGeometry().setFromPoints([centerPoints[3]!, centerPoints[4]!]);
+    const centerLine2 = new THREE.Line(centerGeometry2, centerMaterial);
+    debugGroup.add(centerLine1, centerLine2);
+
+    // Create orbit line (circle)
+    const orbitLineMaterial = new THREE.LineBasicMaterial({ 
+      color: 0x00ff00, // Green
+      transparent: true,
+      opacity: 0.5,
+    });
+    const curvePoints: THREE.Vector3[] = [];
+    const segments = 64;
+    for (let i = 0; i <= segments; i++) {
+      const angle = (i / segments) * Math.PI * 2;
+      const x = orbitCenter.x + orbitRadius * Math.cos(angle);
+      const y = orbitCenter.y + orbitRadius * Math.sin(angle);
+      curvePoints.push(new THREE.Vector3(x - STAGE_SIZE / 2, STAGE_SIZE / 2 - y, zOffset));
+    }
+    const orbitLineGeometry = new THREE.BufferGeometry().setFromPoints(curvePoints);
+    const orbitLine = new THREE.Line(orbitLineGeometry, orbitLineMaterial);
+    debugGroup.add(orbitLine);
+
+    // Create radius line
+    const radiusLineMaterial = new THREE.LineBasicMaterial({ 
+      color: 0xffff00, // Yellow
+      transparent: true,
+      opacity: 0.7,
+    });
+    const radiusPoints = [
+      new THREE.Vector3(orbitCenter.x - STAGE_SIZE / 2, STAGE_SIZE / 2 - orbitCenter.y, zOffset),
+      new THREE.Vector3(orbitPoint.x - STAGE_SIZE / 2, STAGE_SIZE / 2 - orbitPoint.y, zOffset),
+    ];
+    const radiusLineGeometry = new THREE.BufferGeometry().setFromPoints(radiusPoints);
+    const radiusLine = new THREE.Line(radiusLineGeometry, radiusLineMaterial);
+    debugGroup.add(radiusLine);
+
+    // Create orbit point marker
+    const pointGeometry = new THREE.CircleGeometry(8, 16);
+    const pointMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff }); // Blue
+    const pointMesh = new THREE.Mesh(pointGeometry, pointMaterial);
+    pointMesh.position.set(orbitPoint.x - STAGE_SIZE / 2, STAGE_SIZE / 2 - orbitPoint.y, zOffset);
+    debugGroup.add(pointMesh);
+
+    return debugGroup;
+  }
+
   // Track rotation state for render-on-demand optimization
   const lastRotations = new Map<string, number>();
 
@@ -181,11 +264,33 @@ export async function mountThreeLayers(
           ? runPipeline(baseData, processors, timestamp)
           : baseData;
 
+      // Skip rendering if layer is marked invisible (off-screen culling)
+      if (layerData.visible === false) {
+        // Hide the mesh
+        group.visible = false;
+        continue;
+      } else {
+        group.visible = true;
+      }
+
+      // Update position for orbital motion
+      if (layerData.hasOrbitalAnimation && layerData.position) {
+        group.position.set(
+          layerData.position.x - STAGE_SIZE / 2,
+          STAGE_SIZE / 2 - layerData.position.y,
+          0,
+        );
+        needsRender = true;
+      }
+
       // Determine rotation mode
       const isSpinning = layerData.hasSpinAnimation === true;
+      const isOrbiting = layerData.hasOrbitalAnimation === true && !isSpinning;
       const rotation = isSpinning
         ? (layerData.currentRotation ?? 0)
-        : (layerData.imageMapping.displayRotation ?? 0);
+        : isOrbiting
+          ? (layerData.orbitRotation ?? 0)
+          : (layerData.imageMapping.displayRotation ?? 0);
 
       // Check if rotation changed (for render-on-demand)
       const lastRotation = lastRotations.get(baseData.layerId);
@@ -213,6 +318,39 @@ export async function mountThreeLayers(
 
       // Rotate the group around its origin (which is now at the pivot point)
       group.rotation.z = (rotation * Math.PI) / 180;
+
+      // Update or create orbital debug visuals
+      if (ORBITAL_DEBUG_ENABLED && layerData.hasOrbitalAnimation && layerData.orbitCenter) {
+        // Calculate current orbit point
+        const orbitPoint = {
+          x: layerData.orbitCenter.x + (layerData.orbitRadius || 0) * Math.cos(((layerData.currentOrbitAngle || 0) * Math.PI) / 180),
+          y: layerData.orbitCenter.y + (layerData.orbitRadius || 0) * Math.sin(((layerData.currentOrbitAngle || 0) * Math.PI) / 180),
+        };
+
+        // Remove old debug objects if they exist
+        if (item.debugObjects) {
+          scene.remove(item.debugObjects);
+          item.debugObjects.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+              child.geometry.dispose();
+              if (child.material instanceof THREE.Material) {
+                child.material.dispose();
+              }
+            }
+            if (child instanceof THREE.Line) {
+              child.geometry.dispose();
+              if (child.material instanceof THREE.Material) {
+                child.material.dispose();
+              }
+            }
+          });
+        }
+
+        // Create new debug objects
+        item.debugObjects = createOrbitalDebugObjects(layerData.orbitCenter, layerData.orbitRadius || 0, orbitPoint);
+        scene.add(item.debugObjects);
+        needsRender = true;
+      }
     }
 
     return needsRender;
@@ -269,6 +407,25 @@ export async function mountThreeLayers(
       }
       group.remove(mesh);
       scene.remove(group);
+
+      // Clean up debug objects
+      if (item.debugObjects) {
+        scene.remove(item.debugObjects);
+        item.debugObjects.traverse((child) => {
+          if (child instanceof THREE.Mesh) {
+            child.geometry.dispose();
+            if (child.material instanceof THREE.Material) {
+              child.material.dispose();
+            }
+          }
+          if (child instanceof THREE.Line) {
+            child.geometry.dispose();
+            if (child.material instanceof THREE.Material) {
+              child.material.dispose();
+            }
+          }
+        });
+      }
     }
   };
 }
