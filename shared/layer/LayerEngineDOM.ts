@@ -39,30 +39,37 @@ export async function mountDOMLayers(
       const { position, scale, imageMapping } = item.data;
       const displayRotation = imageMapping.displayRotation ?? 0;
 
-      // Calculate the position to place the image
-      // Position is where we want the image center to be
-      const scaledWidth = img.width * scale.x;
-      const scaledHeight = img.height * scale.y;
+      // Get the natural image dimensions
+      const naturalWidth = img.naturalWidth;
+      const naturalHeight = img.naturalHeight;
 
-      // Apply image to layer
-      img.style.width = `${scaledWidth}px`;
-      img.style.height = `${scaledHeight}px`;
+      // Apply image to layer - use natural dimensions
+      img.style.width = `${naturalWidth}px`;
+      img.style.height = `${naturalHeight}px`;
       img.style.display = "block";
       img.style.position = "absolute";
 
-      // Transform origin is the image center (default)
+      // Transform origin is the center for both scaling and rotation
       img.style.transformOrigin = "center center";
 
-      // Position the image so its center is at the desired position
-      const left = position.x - scaledWidth / 2;
-      const top = position.y - scaledHeight / 2;
+      // Position the image using natural dimensions (CSS transform will handle scaling from center)
+      // Since transform-origin is center, the element scales from its center point
+      const left = position.x - naturalWidth / 2;
+      const top = position.y - naturalHeight / 2;
 
       img.style.left = `${left}px`;
       img.style.top = `${top}px`;
 
-      // Apply rotation
+      // Apply both scale and rotation transforms
+      const transforms = [];
+      if (scale.x !== 1 || scale.y !== 1) {
+        transforms.push(`scale(${scale.x}, ${scale.y})`);
+      }
       if (displayRotation !== 0) {
-        img.style.transform = `rotate(${displayRotation}deg)`;
+        transforms.push(`rotate(${displayRotation}deg)`);
+      }
+      if (transforms.length > 0) {
+        img.style.transform = transforms.join(" ");
       }
 
       layerDiv.appendChild(img);
@@ -70,7 +77,7 @@ export async function mountDOMLayers(
 
       console.log(`[LayerEngineDOM] Loaded layer "${item.data.layerId}":`, {
         imageId: item.data.imageId,
-        imageDimensions: `${img.width}x${img.height}`,
+        imageDimensions: `${naturalWidth}x${naturalHeight}`,
         position: item.data.position,
         scale: item.data.scale,
         rotation: displayRotation,
