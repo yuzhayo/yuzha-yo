@@ -262,8 +262,14 @@ export async function mountCanvasLayers(
       // Render orbital debug visuals for layers with orbital animation
       if (ORBITAL_DEBUG_ENABLED && layerData.hasOrbitalAnimation && layerData.orbitCenter) {
         const orbitPoint = {
-          x: layerData.orbitCenter.x + (layerData.orbitRadius || 0) * Math.cos(((layerData.currentOrbitAngle || 0) * Math.PI) / 180),
-          y: layerData.orbitCenter.y + (layerData.orbitRadius || 0) * Math.sin(((layerData.currentOrbitAngle || 0) * Math.PI) / 180),
+          x:
+            layerData.orbitCenter.x +
+            (layerData.orbitRadius || 0) *
+              Math.cos(((layerData.currentOrbitAngle || 0) * Math.PI) / 180),
+          y:
+            layerData.orbitCenter.y +
+            (layerData.orbitRadius || 0) *
+              Math.sin(((layerData.currentOrbitAngle || 0) * Math.PI) / 180),
         };
 
         const debugVisuals = generateOrbitalDebugVisuals(

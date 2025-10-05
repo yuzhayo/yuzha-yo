@@ -595,12 +595,7 @@ export const ThreeDebugRenderer = {
     return meshes;
   },
 
-  createImageTipMesh(
-    marker: ImageTipMarker,
-    scene: any,
-    STAGE_SIZE: number,
-    THREE: any,
-  ): any[] {
+  createImageTipMesh(marker: ImageTipMarker, scene: any, STAGE_SIZE: number, THREE: any): any[] {
     const meshes: any[] = [];
 
     const x = marker.position.x - STAGE_SIZE / 2;
@@ -633,12 +628,7 @@ export const ThreeDebugRenderer = {
     return meshes;
   },
 
-  createImageBaseMesh(
-    marker: ImageBaseMarker,
-    scene: any,
-    STAGE_SIZE: number,
-    THREE: any,
-  ): any[] {
+  createImageBaseMesh(marker: ImageBaseMarker, scene: any, STAGE_SIZE: number, THREE: any): any[] {
     const meshes: any[] = [];
 
     const x = marker.position.x - STAGE_SIZE / 2;
@@ -686,7 +676,6 @@ export const ThreeDebugRenderer = {
   },
 
   createAxisLineMesh(line: ImageAxisLine, scene: any, STAGE_SIZE: number, THREE: any): any {
-
     const startX = line.start.x - STAGE_SIZE / 2;
     const startY = STAGE_SIZE / 2 - line.start.y;
     const endX = line.end.x - STAGE_SIZE / 2;
@@ -718,7 +707,6 @@ export const ThreeDebugRenderer = {
     STAGE_SIZE: number,
     THREE: any,
   ): any {
-
     const centerX = box.x + box.width / 2 - STAGE_SIZE / 2;
     const centerY = STAGE_SIZE / 2 - (box.y + box.height / 2);
 
@@ -737,7 +725,12 @@ export const ThreeDebugRenderer = {
     return lineSegments;
   },
 
-  addAllToScene(visuals: ImageMappingDebugVisuals, scene: any, STAGE_SIZE: number, THREE: any): any[] {
+  addAllToScene(
+    visuals: ImageMappingDebugVisuals,
+    scene: any,
+    STAGE_SIZE: number,
+    THREE: any,
+  ): any[] {
     const allMeshes: any[] = [];
 
     if (visuals.boundingBox) {
@@ -793,4 +786,3 @@ export const ThreeDebugRenderer = {
     });
   },
 };
-

@@ -298,7 +298,8 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
   const handleRendererToggle = () => {
     if (!props.onRendererModeChange) return;
     const currentMode = props.rendererMode ?? "auto";
-    const nextMode = currentMode === "auto" ? "canvas" : currentMode === "canvas" ? "three" : "auto";
+    const nextMode =
+      currentMode === "auto" ? "canvas" : currentMode === "canvas" ? "three" : "auto";
     props.onRendererModeChange(nextMode);
   };
 

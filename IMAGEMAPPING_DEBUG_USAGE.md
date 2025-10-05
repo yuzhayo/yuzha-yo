@@ -7,6 +7,7 @@ The `LayerCorePipelineImageMappingUtils.ts` file provides visual debugging tools
 ## Purpose
 
 These utilities help you:
+
 - ✅ Visualize where imageTip and imageBase points are located
 - ✅ Understand the axis line between base and tip
 - ✅ Debug image orientation and rotation issues
@@ -16,6 +17,7 @@ These utilities help you:
 ## Visual Markers
 
 ### Color Coding
+
 - 🔴 **Red** - imageCenter (crosshair)
 - 🟢 **Green** - imageTip point (circle with "TIP" label)
 - 🔵 **Blue** - imageBase point (circle with "BASE" label)
@@ -118,15 +120,15 @@ const DEBUG_CONFIG = {
 
 ```typescript
 type ImageMappingDebugConfig = {
-  showCenter?: boolean;       // Show imageCenter marker (default: true)
-  showTip?: boolean;          // Show imageTip marker (default: true)
-  showBase?: boolean;         // Show imageBase marker (default: true)
-  showAxisLine?: boolean;     // Show axis line base→tip (default: true)
-  showRotation?: boolean;     // Show rotation arc (default: false)
-  showBoundingBox?: boolean;  // Show image bounds (default: false)
-  centerStyle?: "dot" | "crosshair";     // Center marker style
-  tipStyle?: "circle" | "arrow";         // Tip marker style
-  baseStyle?: "circle" | "square";       // Base marker style
+  showCenter?: boolean; // Show imageCenter marker (default: true)
+  showTip?: boolean; // Show imageTip marker (default: true)
+  showBase?: boolean; // Show imageBase marker (default: true)
+  showAxisLine?: boolean; // Show axis line base→tip (default: true)
+  showRotation?: boolean; // Show rotation arc (default: false)
+  showBoundingBox?: boolean; // Show image bounds (default: false)
+  centerStyle?: "dot" | "crosshair"; // Center marker style
+  tipStyle?: "circle" | "arrow"; // Tip marker style
+  baseStyle?: "circle" | "square"; // Base marker style
   colors?: {
     center?: string;
     tip?: string;
@@ -150,6 +152,7 @@ When you render the debug visuals, you'll see:
 4. **Yellow Dashed Line** connecting BASE → TIP (with angle label)
 
 This helps you verify:
+
 - ✅ Is the imageTip pointing in the expected direction?
 - ✅ Is the imageBase opposite to the tip?
 - ✅ Is the axis line aligned correctly?
@@ -202,8 +205,8 @@ const debugVisuals = generateImageMappingDebugVisuals(layerData, {
 const debugVisuals = generateImageMappingDebugVisuals(layerData, {
   colors: {
     center: "#FF69B4", // Hot pink center
-    tip: "#32CD32",    // Lime green tip
-    base: "#4169E1",   // Royal blue base
+    tip: "#32CD32", // Lime green tip
+    base: "#4169E1", // Royal blue base
   },
 });
 ```
@@ -213,6 +216,7 @@ const debugVisuals = generateImageMappingDebugVisuals(layerData, {
 ### Problem: Markers not showing
 
 **Solution:** Ensure debug visuals are rendered AFTER the layer image:
+
 ```typescript
 // 1. Render layer image
 ctx.drawImage(image, x, y, width, height);
@@ -225,6 +229,7 @@ CanvasDebugRenderer.drawAll(ctx, debugVisuals);
 ### Problem: Markers in wrong position
 
 **Possible Causes:**
+
 1. Position calculation issue in LayerCore
 2. Scale not applied correctly
 3. Coordinate system mismatch
@@ -234,6 +239,7 @@ CanvasDebugRenderer.drawAll(ctx, debugVisuals);
 ### Problem: Axis line doesn't match rotation
 
 This indicates a potential bug in:
+
 - `computeImageMapping()` calculation
 - `displayAxisAngle` or `displayRotation` logic
 - Renderer rotation application
@@ -264,6 +270,7 @@ When debugging is enabled, you'll see visual overlays like:
 ```
 
 This makes it crystal clear:
+
 - Where each point is located
 - How they relate to each other
 - Whether the calculations are correct

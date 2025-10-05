@@ -210,20 +210,42 @@ export async function mountThreeLayers(
     const centerSize = 15;
     const centerMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 }); // Red
     const centerPoints = [
-      new THREE.Vector3(orbitCenter.x - STAGE_SIZE / 2 - centerSize, STAGE_SIZE / 2 - orbitCenter.y, zOffset),
-      new THREE.Vector3(orbitCenter.x - STAGE_SIZE / 2 + centerSize, STAGE_SIZE / 2 - orbitCenter.y, zOffset),
+      new THREE.Vector3(
+        orbitCenter.x - STAGE_SIZE / 2 - centerSize,
+        STAGE_SIZE / 2 - orbitCenter.y,
+        zOffset,
+      ),
+      new THREE.Vector3(
+        orbitCenter.x - STAGE_SIZE / 2 + centerSize,
+        STAGE_SIZE / 2 - orbitCenter.y,
+        zOffset,
+      ),
       new THREE.Vector3(orbitCenter.x - STAGE_SIZE / 2, STAGE_SIZE / 2 - orbitCenter.y, zOffset),
-      new THREE.Vector3(orbitCenter.x - STAGE_SIZE / 2, STAGE_SIZE / 2 - orbitCenter.y - centerSize, zOffset),
-      new THREE.Vector3(orbitCenter.x - STAGE_SIZE / 2, STAGE_SIZE / 2 - orbitCenter.y + centerSize, zOffset),
+      new THREE.Vector3(
+        orbitCenter.x - STAGE_SIZE / 2,
+        STAGE_SIZE / 2 - orbitCenter.y - centerSize,
+        zOffset,
+      ),
+      new THREE.Vector3(
+        orbitCenter.x - STAGE_SIZE / 2,
+        STAGE_SIZE / 2 - orbitCenter.y + centerSize,
+        zOffset,
+      ),
     ];
-    const centerGeometry = new THREE.BufferGeometry().setFromPoints([centerPoints[0]!, centerPoints[1]!]);
+    const centerGeometry = new THREE.BufferGeometry().setFromPoints([
+      centerPoints[0]!,
+      centerPoints[1]!,
+    ]);
     const centerLine1 = new THREE.Line(centerGeometry, centerMaterial);
-    const centerGeometry2 = new THREE.BufferGeometry().setFromPoints([centerPoints[3]!, centerPoints[4]!]);
+    const centerGeometry2 = new THREE.BufferGeometry().setFromPoints([
+      centerPoints[3]!,
+      centerPoints[4]!,
+    ]);
     const centerLine2 = new THREE.Line(centerGeometry2, centerMaterial);
     debugGroup.add(centerLine1, centerLine2);
 
     // Create orbit line (circle)
-    const orbitLineMaterial = new THREE.LineBasicMaterial({ 
+    const orbitLineMaterial = new THREE.LineBasicMaterial({
       color: 0x00ff00, // Green
       transparent: true,
       opacity: 0.5,
@@ -241,7 +263,7 @@ export async function mountThreeLayers(
     debugGroup.add(orbitLine);
 
     // Create radius line
-    const radiusLineMaterial = new THREE.LineBasicMaterial({ 
+    const radiusLineMaterial = new THREE.LineBasicMaterial({
       color: 0xffff00, // Yellow
       transparent: true,
       opacity: 0.7,
@@ -340,8 +362,14 @@ export async function mountThreeLayers(
       if (ORBITAL_DEBUG_ENABLED && layerData.hasOrbitalAnimation && layerData.orbitCenter) {
         // Calculate current orbit point
         const orbitPoint = {
-          x: layerData.orbitCenter.x + (layerData.orbitRadius || 0) * Math.cos(((layerData.currentOrbitAngle || 0) * Math.PI) / 180),
-          y: layerData.orbitCenter.y + (layerData.orbitRadius || 0) * Math.sin(((layerData.currentOrbitAngle || 0) * Math.PI) / 180),
+          x:
+            layerData.orbitCenter.x +
+            (layerData.orbitRadius || 0) *
+              Math.cos(((layerData.currentOrbitAngle || 0) * Math.PI) / 180),
+          y:
+            layerData.orbitCenter.y +
+            (layerData.orbitRadius || 0) *
+              Math.sin(((layerData.currentOrbitAngle || 0) * Math.PI) / 180),
         };
 
         // Remove old debug objects if they exist
@@ -364,7 +392,11 @@ export async function mountThreeLayers(
         }
 
         // Create new debug objects
-        item.debugObjects = createOrbitalDebugObjects(layerData.orbitCenter, layerData.orbitRadius || 0, orbitPoint);
+        item.debugObjects = createOrbitalDebugObjects(
+          layerData.orbitCenter,
+          layerData.orbitRadius || 0,
+          orbitPoint,
+        );
         scene.add(item.debugObjects);
         needsRender = true;
       }
