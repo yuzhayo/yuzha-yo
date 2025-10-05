@@ -78,7 +78,7 @@ export default function StageCanvas() {
         }
 
         layersWithProcessors.push({
-          data: { ...layer, imageTip: entry.imageTip, imageBase: entry.imageBase } as any,
+          data: layer,
           processors,
         });
       }

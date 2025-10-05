@@ -38,8 +38,8 @@ export function createImageMappingDebugProcessor(
         position: layer.position,
         scale: layer.scale,
         imageMapping: layer.imageMapping,
-        tipAngle: (layer as any).imageTip,
-        baseAngle: (layer as any).imageBase,
+        tipAngle: layer.imageTip,
+        baseAngle: layer.imageBase,
       },
       config,
     );

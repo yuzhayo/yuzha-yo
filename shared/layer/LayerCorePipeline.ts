@@ -13,6 +13,7 @@ export type LayerProcessor = (layer: UniversalLayerData, timestamp?: number) => 
  * Base properties (from UniversalLayerData):
  * - imageMapping: Calculated by LayerCorePipelineImageMapping.computeImageMapping() in LayerCore.prepareLayer()
  *   Contains image geometry (center, tip, base, dimensions, axis angle, rotation, center offset)
+ * - calculation: Precomputed coordinate aliases (stage/image/percent) for center, tip, base, spin, and orbit points
  *
  * Processor-added properties:
  */
@@ -23,6 +24,8 @@ export type EnhancedLayerData = UniversalLayerData & {
   spinDirection?: "cw" | "ccw";
   currentRotation?: number;
   hasSpinAnimation?: boolean;
+  spinStagePoint?: { x: number; y: number };
+  spinPercent?: { x: number; y: number };
 
   // Orbital properties (added by LayerCorePipelineOrbital)
   orbitCenter?: { x: number; y: number };

@@ -100,7 +100,7 @@ export default function StageThree() {
         }
 
         layersWithProcessors.push({
-          data: { ...layer, imageTip: entry.imageTip, imageBase: entry.imageBase } as any,
+          data: layer,
           processors,
         });
       }

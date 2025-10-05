@@ -1,115 +1,136 @@
-import type { UniversalLayerData } from "./LayerCore";
+import {
+  imagePercentToImagePoint,
+  type PercentPoint,
+  type Point2D,
+  type UniversalLayerData,
+} from "./LayerCore";
 import type { EnhancedLayerData, LayerProcessor } from "./LayerCorePipeline";
 
 export type OrbitalConfig = {
-  orbitCenter?: [number, number]; // Stage coords (0-2048), default [1024, 1024]
-  orbitImagePoint?: [number, number]; // Image coords (0-100%), default [50, 50]
+  orbitCenter?: [number, number]; // Stage coords (0-2048)
+  orbitImagePoint?: [number, number]; // Image coords (0-100%)
   orbitRadius?: number; // Pixels (0-2048)
-  orbitSpeed?: number; // Degrees per second, 0 = no orbit
+  orbitSpeed?: number; // Degrees per second (0 = no orbit)
   orbitDirection?: "cw" | "ccw"; // Default "cw"
 };
 
-const STAGE_SIZE = 2048;
-
 /**
  * Create an orbital processor with the given configuration
- * orbitCenter: [x, y] center point on stage (0-2048), default = [1024, 1024]
- * orbitImagePoint: [x, y] point on image that follows orbit (0-100%), default = [50, 50]
+ * orbitCenter: [x, y] center point on stage (0-2048)
+ * orbitImagePoint: [x, y] point on image that follows orbit (0-100%)
  * orbitRadius: radius of orbit in pixels (0-2048)
  * orbitSpeed: degrees per second (0 = no orbit, default = 0)
  * orbitDirection: "cw" (clockwise) or "ccw" (counter-clockwise), default = "cw"
  */
 export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
-  // Extract config with defaults
-  const orbitCenter = config.orbitCenter; // No default - if not set, use passthrough
-  const orbitImagePoint = config.orbitImagePoint ?? [50, 50];
   const orbitRadius = config.orbitRadius ?? 0;
   const orbitSpeed = config.orbitSpeed ?? 0;
   const orbitDirection = config.orbitDirection ?? "cw";
 
-  // If no orbitCenter or no orbital motion, return passthrough processor
-  // This ensures layers without orbitCenter use their original position
-  if (!orbitCenter || orbitSpeed === 0 || orbitRadius === 0) {
+  if (orbitSpeed === 0 || orbitRadius === 0) {
     return (layer: UniversalLayerData): EnhancedLayerData => layer as EnhancedLayerData;
   }
 
-  // Track start time for this processor instance
+  const overrideCenter = normaliseStagePoint(config.orbitCenter);
+  const overrideImagePercent = normalisePercent(config.orbitImagePoint);
+
   let startTime: number | null = null;
 
   return (layer: EnhancedLayerData, timestamp?: number): EnhancedLayerData => {
-    // Initialize start time on first call
     const currentTime = timestamp ?? performance.now();
     if (startTime === null) {
       startTime = currentTime;
     }
 
-    // Calculate orbital angle based on elapsed time
-    const elapsed = (currentTime - startTime) / 1000; // Convert to seconds
+    const elapsed = (currentTime - startTime) / 1000;
     let orbitAngle = (elapsed * orbitSpeed) % 360;
     if (orbitDirection === "ccw") {
       orbitAngle = -orbitAngle;
     }
 
-    // Convert angle to radians for trigonometry
+    const stageSize = layer.calculation.stageCenter.point.x * 2;
+
+    const baseOrbitCenter = layer.calculation.orbitPoint.stage.point;
+    const resolvedOrbitCenter: Point2D = overrideCenter ?? baseOrbitCenter;
+
+    const baseOrbitImagePercent = layer.calculation.orbitPoint.image.percent;
+    const resolvedOrbitImagePercent: PercentPoint = overrideImagePercent ?? baseOrbitImagePercent;
+
+    const baseOrbitImagePoint = layer.calculation.orbitPoint.image.point;
+    const resolvedOrbitImagePoint = overrideImagePercent
+      ? imagePercentToImagePoint(resolvedOrbitImagePercent, layer.imageMapping.imageDimensions)
+      : baseOrbitImagePoint;
+
     const orbitAngleRad = (orbitAngle * Math.PI) / 180;
-
-    // Calculate orbitPoint position on stage
     const orbitPoint = {
-      x: orbitCenter[0] + orbitRadius * Math.cos(orbitAngleRad),
-      y: orbitCenter[1] + orbitRadius * Math.sin(orbitAngleRad),
+      x: resolvedOrbitCenter.x + orbitRadius * Math.cos(orbitAngleRad),
+      y: resolvedOrbitCenter.y + orbitRadius * Math.sin(orbitAngleRad),
     };
 
-    // Convert orbitImagePoint from percentage to pixels
-    const { width, height } = layer.imageMapping.imageDimensions;
-    const orbitImagePointPixels = {
-      x: (orbitImagePoint[0] / 100) * width,
-      y: (orbitImagePoint[1] / 100) * height,
+    const imageCenter = {
+      x: layer.imageMapping.imageDimensions.width / 2,
+      y: layer.imageMapping.imageDimensions.height / 2,
     };
 
-    // Calculate new image CENTER position so orbitImagePoint is at orbitPoint
-    // IMPORTANT: Renderers expect position to represent the image CENTER
-    // Formula: centerPosition = orbitPoint + (imageCenter - orbitImagePoint)
-    const imageCenter = { x: width / 2, y: height / 2 };
     const newPosition = {
-      x: orbitPoint.x + (imageCenter.x - orbitImagePointPixels.x),
-      y: orbitPoint.y + (imageCenter.y - orbitImagePointPixels.y),
+      x: orbitPoint.x + (imageCenter.x - resolvedOrbitImagePoint.x),
+      y: orbitPoint.y + (imageCenter.y - resolvedOrbitImagePoint.y),
     };
 
-    // Off-screen culling: Check if object is completely outside stage bounds
-    // Use image center position and half dimensions for accurate bounds checking
-    const halfWidth = width / 2;
-    const halfHeight = height / 2;
+    const halfWidth = layer.imageMapping.imageDimensions.width / 2;
+    const halfHeight = layer.imageMapping.imageDimensions.height / 2;
     const isOffScreen =
-      newPosition.x + halfWidth < 0 || // Completely left of stage
-      newPosition.x - halfWidth > STAGE_SIZE || // Completely right of stage
-      newPosition.y + halfHeight < 0 || // Completely above stage
-      newPosition.y - halfHeight > STAGE_SIZE; // Completely below stage
+      newPosition.x + halfWidth < 0 ||
+      newPosition.x - halfWidth > stageSize ||
+      newPosition.y + halfHeight < 0 ||
+      newPosition.y - halfHeight > stageSize;
 
-    // Handle static image rotation (if no spin animation)
     let orbitRotation = 0;
     if (!layer.hasSpinAnimation) {
-      // Calculate angle from orbitCenter to orbitPoint (outward direction)
-      const dx = orbitPoint.x - orbitCenter[0];
-      const dy = orbitPoint.y - orbitCenter[1];
+      const dx = orbitPoint.x - resolvedOrbitCenter.x;
+      const dy = orbitPoint.y - resolvedOrbitCenter.y;
       const outwardAngle = (Math.atan2(dy, dx) * 180) / Math.PI;
-
-      // Rotate so imageTip points in outward direction
-      // imageTip default is 90° (pointing up), so we adjust from there
       orbitRotation = outwardAngle - 90;
     }
 
     return {
       ...layer,
       position: newPosition,
-      orbitCenter: { x: orbitCenter[0], y: orbitCenter[1] },
-      orbitImagePoint: { x: orbitImagePoint[0], y: orbitImagePoint[1] },
+      orbitCenter: resolvedOrbitCenter,
+      orbitImagePoint: resolvedOrbitImagePercent,
       orbitRadius,
       orbitSpeed,
       orbitDirection,
       currentOrbitAngle: orbitAngle,
       orbitRotation,
       hasOrbitalAnimation: true,
-      visible: !isOffScreen, // Mark as invisible if off-screen
+      visible: !isOffScreen,
     };
   };
+}
+
+function normalisePercent(value?: [number, number]): PercentPoint | undefined {
+  if (!value || value.length < 2) return undefined;
+  return {
+    x: clampPercent(value[0]),
+    y: clampPercent(value[1]),
+  };
+}
+
+function normaliseStagePoint(value?: [number, number]): Point2D | undefined {
+  if (!value || value.length < 2) return undefined;
+  return {
+    x: clampStage(value[0]),
+    y: clampStage(value[1]),
+  };
+}
+
+function clampPercent(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(100, value));
+}
+
+function clampStage(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(2048, value));
 }
