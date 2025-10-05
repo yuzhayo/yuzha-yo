@@ -44,7 +44,7 @@
         "order": 100,
         "imageId": "CLOCKBG",
         "scale": [100, 100],
-        "position": [1024, 1024],
+        "position": [0, 0],
         "imageTip": 90,
         "imageBase": 270
       },
@@ -81,7 +81,7 @@
         "order": 150,
         "imageId": "UI_Clock_HourHand",
         "scale": [10, 10],
-        "position": [1024, 1024],
+        "position": [0, 0],
         "imageTip": 90,
         "imageBase": 270
       },
