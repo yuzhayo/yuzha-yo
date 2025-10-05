@@ -126,6 +126,25 @@ Communication: Simple, everyday language
 
 ## Recent Changes
 
+**October 5, 2025 - Complete Removal of Spin/Orbit Animation System**
+
+- ✅ Removed all spin and orbital animation logic from the codebase
+- ✅ Disabled all animations in ConfigYuzha.json (set all spinSpeed and orbitSpeed to 0)
+- ✅ Simplified LayerEngineCanvas.ts to static-only rendering
+- ✅ Simplified LayerEngineThree.ts to static-only rendering
+- ✅ Removed all animation loops, caching, and per-frame update logic
+- ✅ Removed unused imports (runPipeline, orbital/spin utilities, debug code)
+- ✅ Both renderers now perform single static draw with basic displayRotation only
+- ✅ All 5 layers verified rendering correctly in static mode
+- ✅ Architect review: Pass - clean implementation, no dead code
+
+**Architecture Notes:**
+
+- Layer system now provides only basic rendering without animation processors
+- Rendering engines simplified: mount → precompute transforms → render once
+- No animation loops or dynamic updates - pure static scene rendering
+- Both Canvas and Three.js renderers aligned to static-only approach
+
 **October 5, 2025 - Ray Helper Debug Visualization**
 
 - ✅ Added ray helper visualization to `LayerCorePipelineImageMappingUtils.ts`
