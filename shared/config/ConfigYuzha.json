@@ -65,7 +65,7 @@
       },
       "Spin Config": {
         "spinCenter": [50, 80],
-        "spinSpeed": 15,
+        "spinSpeed": 0,
         "spinDirection": "cw"
       },
       "Orbital Config": {
@@ -91,7 +91,7 @@
       },
       "Spin Config": {
         "spinCenter": [50, 50],
-        "spinSpeed": 7,
+        "spinSpeed": 0,
         "spinDirection": "cw"
       },
       "Orbital Config": {
@@ -123,8 +123,8 @@
       "Orbital Config": {
         "orbitCenter": [1024, 1024],
         "orbitImagePoint": [50, 50],
-        "orbitRadius": 400,
-        "orbitSpeed": 20,
+        "orbitRadius": 0,
+        "orbitSpeed": 0,
         "orbitDirection": "cw"
       }
     }
