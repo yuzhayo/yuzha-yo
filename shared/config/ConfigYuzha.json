@@ -116,11 +116,11 @@
       "Basic Config": {
         "renderer": "2D",
         "order": 200,
-        "imageId": "GEARMOON",
-        "scale": [150, 150],
+        "imageId": "UI_Clock_HourHand",
+        "scale": [180, 180],
         "position": [1024, 1024],
-        "imageTip": 80,
-        "imageBase": 270
+        "imageTip": 40,
+        "imageBase": 280
       },
       "Spin Config": {
         "spinCenter": [50, 50],
