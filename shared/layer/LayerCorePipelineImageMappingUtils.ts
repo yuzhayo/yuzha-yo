@@ -746,7 +746,7 @@ export const CanvasDebugRenderer = {
       ctx.moveTo(marker.position.x, 0);
       ctx.lineTo(marker.position.x, 2048);
       ctx.stroke();
-      
+
       // Draw the star at center with no transparency
       ctx.globalAlpha = 1;
       ctx.setLineDash([]);
@@ -853,7 +853,7 @@ export const ThreeDebugRenderer = {
       const mesh = new THREE.Mesh(geometry, material);
       mesh.position.set(x, y, 100); // Z=100 to render on top
       meshes.push(mesh);
-      
+
       // Add small white center dot for precision
       const centerDotGeometry = new THREE.CircleGeometry(2, 16);
       const centerDotMaterial = new THREE.MeshBasicMaterial({
@@ -891,7 +891,7 @@ export const ThreeDebugRenderer = {
       const vLine = new THREE.Mesh(vGeometry, vMaterial);
       vLine.position.set(x, y, 100);
       meshes.push(vLine);
-      
+
       // Add small center dot at crosshair intersection for precision
       const centerDotGeometry = new THREE.CircleGeometry(4, 16);
       const centerDotMaterial = new THREE.MeshBasicMaterial({
@@ -938,7 +938,7 @@ export const ThreeDebugRenderer = {
     const outlineMesh = new THREE.Mesh(outlineGeometry, outlineMaterial);
     outlineMesh.position.set(x, y, 100);
     meshes.push(outlineMesh);
-    
+
     // Add small center dot for precision
     const centerDotGeometry = new THREE.CircleGeometry(3, 16);
     const centerDotMaterial = new THREE.MeshBasicMaterial({
@@ -963,7 +963,7 @@ export const ThreeDebugRenderer = {
     if (marker.type === "circle") {
       // Create circle (1.5x size)
       const circleSize = marker.size * 1.5;
-      
+
       // Add bright glow for visibility against dark background
       const glowGeometry = new THREE.CircleGeometry(circleSize * 2, 32);
       const glowMaterial = new THREE.MeshBasicMaterial({
@@ -975,7 +975,7 @@ export const ThreeDebugRenderer = {
       const glowMesh = new THREE.Mesh(glowGeometry, glowMaterial);
       glowMesh.position.set(x, y, 99);
       meshes.push(glowMesh);
-      
+
       // Main circle with brighter blue
       const geometry = new THREE.CircleGeometry(circleSize, 32);
       const material = new THREE.MeshBasicMaterial({
@@ -999,7 +999,7 @@ export const ThreeDebugRenderer = {
       const outlineMesh = new THREE.Mesh(outlineGeometry, outlineMaterial);
       outlineMesh.position.set(x, y, 100);
       meshes.push(outlineMesh);
-      
+
       // Add bright cyan center dot for precision
       const centerDotGeometry = new THREE.CircleGeometry(4, 16);
       const centerDotMaterial = new THREE.MeshBasicMaterial({
@@ -1069,17 +1069,17 @@ export const ThreeDebugRenderer = {
     const meshes: any[] = [];
     const centerX = box.x + box.width / 2 - STAGE_SIZE / 2;
     const centerY = STAGE_SIZE / 2 - (box.y + box.height / 2);
-    
+
     // Convert to corners in Three.js coordinates
     const left = box.x - STAGE_SIZE / 2;
     const right = left + box.width;
     const top = STAGE_SIZE / 2 - box.y;
     const bottom = top - box.height;
-    
+
     // Use mesh-based thick lines (5px) for better visibility
     const thickness = 5;
     const increasedOpacity = Math.min(box.opacity * 3, 0.9); // 3x opacity, max 90%
-    
+
     // Top line
     const topGeometry = new THREE.PlaneGeometry(box.width, thickness);
     const topMaterial = new THREE.MeshBasicMaterial({
@@ -1091,7 +1091,7 @@ export const ThreeDebugRenderer = {
     const topLine = new THREE.Mesh(topGeometry, topMaterial);
     topLine.position.set(centerX, top, 100);
     meshes.push(topLine);
-    
+
     // Bottom line
     const bottomGeometry = new THREE.PlaneGeometry(box.width, thickness);
     const bottomMaterial = new THREE.MeshBasicMaterial({
@@ -1103,7 +1103,7 @@ export const ThreeDebugRenderer = {
     const bottomLine = new THREE.Mesh(bottomGeometry, bottomMaterial);
     bottomLine.position.set(centerX, bottom, 100);
     meshes.push(bottomLine);
-    
+
     // Left line
     const leftGeometry = new THREE.PlaneGeometry(thickness, box.height);
     const leftMaterial = new THREE.MeshBasicMaterial({
@@ -1115,7 +1115,7 @@ export const ThreeDebugRenderer = {
     const leftLine = new THREE.Mesh(leftGeometry, leftMaterial);
     leftLine.position.set(left, centerY, 100);
     meshes.push(leftLine);
-    
+
     // Right line
     const rightGeometry = new THREE.PlaneGeometry(thickness, box.height);
     const rightMaterial = new THREE.MeshBasicMaterial({

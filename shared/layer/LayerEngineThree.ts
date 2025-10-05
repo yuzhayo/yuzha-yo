@@ -144,10 +144,9 @@ export async function mountThreeLayers(
   const debugMeshes: THREE.Object3D[] = [];
   for (const item of meshData) {
     // Always run pipeline if there are processors (to generate debug visuals)
-    const enhancedData = item.processors.length > 0 
-      ? runPipeline(item.baseData, item.processors)
-      : item.baseData;
-    
+    const enhancedData =
+      item.processors.length > 0 ? runPipeline(item.baseData, item.processors) : item.baseData;
+
     if (enhancedData.imageMappingDebugVisuals) {
       const meshes = ThreeDebugRenderer.addAllToScene(
         enhancedData.imageMappingDebugVisuals,

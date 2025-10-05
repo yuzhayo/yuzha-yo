@@ -1,6 +1,5 @@
 import type { EnhancedLayerData } from "./LayerCorePipeline";
 import type { LayerProcessor } from "./LayerCorePipeline";
-import { runPipeline } from "./LayerCorePipeline";
 
 const STAGE_SIZE = 2048;
 
