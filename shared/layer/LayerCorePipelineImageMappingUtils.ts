@@ -9,6 +9,7 @@ export type ImageCenterMarker = {
   position: { x: number; y: number };
   size: number;
   color: string;
+  label?: string;
 };
 
 export type ImageTipMarker = {
@@ -154,7 +155,7 @@ const DEFAULT_CONFIG: ResolvedImageMappingDebugConfig = {
     center: "#FF0000", // Red - imageCenter
     tip: "#00FF00", // Green - imageTip
     base: "#0000FF", // Blue - imageBase
-    stageCenter: "#FFFFFF", // White - stage center (1024,1024)
+    stageCenter: "#00FFFF", // Cyan - stage center (1024,1024)
     axisLine: "#FFFF00", // Yellow - axis line
     rotation: "#00FFFF", // Cyan - rotation indicator
     tipRay: "#FFA500", // Orange - tip ray
@@ -178,6 +179,7 @@ export function generateImageCenterMarker(
     position: imageCenter,
     size: cfg.centerStyle === "dot" ? 6 : 12,
     color: colors.center,
+    label: "CENTER",
   };
 }
 
@@ -512,6 +514,17 @@ export const CanvasDebugRenderer = {
       ctx.stroke();
     }
 
+    // Draw label
+    if (marker.label) {
+      ctx.fillStyle = marker.color;
+      ctx.font = "10px monospace";
+      ctx.textAlign = "center";
+      ctx.strokeStyle = "#000000";
+      ctx.lineWidth = 3;
+      ctx.strokeText(marker.label, marker.position.x, marker.position.y - marker.size - 5);
+      ctx.fillText(marker.label, marker.position.x, marker.position.y - marker.size - 5);
+    }
+
     ctx.restore();
   },
 
@@ -706,21 +719,40 @@ export const CanvasDebugRenderer = {
       ctx.arc(marker.position.x, marker.position.y, marker.size, 0, Math.PI * 2);
       ctx.fill();
     } else if (marker.type === "crosshair") {
+      // Draw full-screen crosshair lines for maximum visibility
       ctx.strokeStyle = marker.color;
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = 0.8;
+      ctx.setLineDash([10, 5]);
       ctx.beginPath();
-      // Horizontal line
-      ctx.moveTo(marker.position.x - marker.size, marker.position.y);
-      ctx.lineTo(marker.position.x + marker.size, marker.position.y);
-      // Vertical line
-      ctx.moveTo(marker.position.x, marker.position.y - marker.size);
-      ctx.lineTo(marker.position.x, marker.position.y + marker.size);
+      // Horizontal line spanning the entire stage
+      ctx.moveTo(0, marker.position.y);
+      ctx.lineTo(2048, marker.position.y);
+      // Vertical line spanning the entire stage
+      ctx.moveTo(marker.position.x, 0);
+      ctx.lineTo(marker.position.x, 2048);
       ctx.stroke();
     } else if (marker.type === "star") {
-      // Draw a 5-point star
+      // Draw full-screen crosshair lines for maximum visibility
+      ctx.strokeStyle = marker.color;
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = 0.8;
+      ctx.setLineDash([10, 5]);
+      ctx.beginPath();
+      // Horizontal line spanning the entire stage
+      ctx.moveTo(0, marker.position.y);
+      ctx.lineTo(2048, marker.position.y);
+      // Vertical line spanning the entire stage
+      ctx.moveTo(marker.position.x, 0);
+      ctx.lineTo(marker.position.x, 2048);
+      ctx.stroke();
+      
+      // Draw the star at center with no transparency
+      ctx.globalAlpha = 1;
+      ctx.setLineDash([]);
       ctx.fillStyle = marker.color;
       ctx.strokeStyle = "#000000";
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 2;
       ctx.beginPath();
       const spikes = 5;
       const outerRadius = marker.size;
@@ -743,6 +775,8 @@ export const CanvasDebugRenderer = {
 
     // Draw label
     if (marker.label) {
+      ctx.globalAlpha = 1;
+      ctx.setLineDash([]);
       ctx.fillStyle = marker.color;
       ctx.font = "bold 12px monospace";
       ctx.textAlign = "center";
@@ -1029,33 +1063,79 @@ export const ThreeDebugRenderer = {
       mesh.position.set(x, y, 100);
       meshes.push(mesh);
     } else if (marker.type === "crosshair") {
-      // Horizontal line
+      // Full-screen horizontal line for maximum visibility
       const hGeometry = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(x - marker.size, y, 100),
-        new THREE.Vector3(x + marker.size, y, 100),
+        new THREE.Vector3(-STAGE_SIZE / 2, y, 100),
+        new THREE.Vector3(STAGE_SIZE / 2, y, 100),
       ]);
-      const hMaterial = new THREE.LineBasicMaterial({
+      const hMaterial = new THREE.LineDashedMaterial({
         color: marker.color,
-        linewidth: 3,
+        linewidth: 2,
+        transparent: true,
+        opacity: 0.8,
+        dashSize: 10,
+        gapSize: 5,
         depthTest: false,
       });
       const hLine = new THREE.Line(hGeometry, hMaterial);
+      hLine.computeLineDistances();
       meshes.push(hLine);
 
-      // Vertical line
+      // Full-screen vertical line for maximum visibility
       const vGeometry = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(x, y - marker.size, 100),
-        new THREE.Vector3(x, y + marker.size, 100),
+        new THREE.Vector3(x, -STAGE_SIZE / 2, 100),
+        new THREE.Vector3(x, STAGE_SIZE / 2, 100),
       ]);
-      const vMaterial = new THREE.LineBasicMaterial({
+      const vMaterial = new THREE.LineDashedMaterial({
         color: marker.color,
-        linewidth: 3,
+        linewidth: 2,
+        transparent: true,
+        opacity: 0.8,
+        dashSize: 10,
+        gapSize: 5,
         depthTest: false,
       });
       const vLine = new THREE.Line(vGeometry, vMaterial);
+      vLine.computeLineDistances();
       meshes.push(vLine);
     } else if (marker.type === "star") {
-      // Create 5-point star
+      // Full-screen horizontal line for maximum visibility
+      const hGeometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(-STAGE_SIZE / 2, y, 100),
+        new THREE.Vector3(STAGE_SIZE / 2, y, 100),
+      ]);
+      const hMaterial = new THREE.LineDashedMaterial({
+        color: marker.color,
+        linewidth: 2,
+        transparent: true,
+        opacity: 0.8,
+        dashSize: 10,
+        gapSize: 5,
+        depthTest: false,
+      });
+      const hLine = new THREE.Line(hGeometry, hMaterial);
+      hLine.computeLineDistances();
+      meshes.push(hLine);
+
+      // Full-screen vertical line for maximum visibility
+      const vGeometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(x, -STAGE_SIZE / 2, 100),
+        new THREE.Vector3(x, STAGE_SIZE / 2, 100),
+      ]);
+      const vMaterial = new THREE.LineDashedMaterial({
+        color: marker.color,
+        linewidth: 2,
+        transparent: true,
+        opacity: 0.8,
+        dashSize: 10,
+        gapSize: 5,
+        depthTest: false,
+      });
+      const vLine = new THREE.Line(vGeometry, vMaterial);
+      vLine.computeLineDistances();
+      meshes.push(vLine);
+
+      // Create 5-point star at center
       const spikes = 5;
       const outerRadius = marker.size;
       const innerRadius = marker.size / 2;
@@ -1098,7 +1178,7 @@ export const ThreeDebugRenderer = {
       const fillMaterial = new THREE.MeshBasicMaterial({
         color: marker.color,
         transparent: true,
-        opacity: 0.8,
+        opacity: 1,
         depthTest: false,
       });
       const fillMesh = new THREE.Mesh(fillGeometry, fillMaterial);
