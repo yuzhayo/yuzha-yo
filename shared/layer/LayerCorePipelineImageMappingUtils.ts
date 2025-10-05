@@ -627,10 +627,40 @@ export const CanvasDebugRenderer = {
     ctx.restore();
   },
 
+  drawImageRay(ctx: CanvasRenderingContext2D, ray: ImageRay): void {
+    ctx.save();
+    ctx.strokeStyle = ray.color;
+    ctx.lineWidth = ray.thickness;
+    ctx.globalAlpha = ray.opacity;
+    ctx.setLineDash([3, 3]); // Dotted line for rays
+
+    ctx.beginPath();
+    ctx.moveTo(ray.start.x, ray.start.y);
+    ctx.lineTo(ray.end.x, ray.end.y);
+    ctx.stroke();
+
+    // Draw label near the end point
+    if (ray.label) {
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = ray.color;
+      ctx.font = "9px monospace";
+      ctx.textAlign = "center";
+      ctx.fillText(ray.label, ray.end.x, ray.end.y - 8);
+    }
+
+    ctx.restore();
+  },
+
   drawAll(ctx: CanvasRenderingContext2D, visuals: ImageMappingDebugVisuals): void {
-    // Draw in order: bounding box, axis line, base, tip, center (center on top)
+    // Draw in order: bounding box, rays (background), axis line, rotation, markers (foreground)
     if (visuals.boundingBox) {
       this.drawBoundingBox(ctx, visuals.boundingBox);
+    }
+    if (visuals.tipRay) {
+      this.drawImageRay(ctx, visuals.tipRay);
+    }
+    if (visuals.baseRay) {
+      this.drawImageRay(ctx, visuals.baseRay);
     }
     if (visuals.axisLine) {
       this.drawAxisLine(ctx, visuals.axisLine);
