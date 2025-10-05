@@ -120,7 +120,7 @@
         "scale": [150, 150],
         "position": [1024, 1024],
         "imageTip": 90,
-        "imageBase": 280
+        "imageBase": 270
       },
       "Spin Config": {
         "spinCenter": [50, 50],
