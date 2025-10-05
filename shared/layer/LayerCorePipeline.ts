@@ -5,11 +5,11 @@ export type LayerProcessor = (layer: UniversalLayerData, timestamp?: number) => 
 
 /**
  * Enhanced universal layer data that can include additional properties from processors
- * 
+ *
  * Base properties (from UniversalLayerData):
  * - imageMapping: Calculated by LayerCorePipelineImageMapping.computeImageMapping() in LayerCore.prepareLayer()
  *   Contains image geometry (center, tip, base, dimensions, axis angle, rotation, center offset)
- * 
+ *
  * Processor-added properties:
  */
 export type EnhancedLayerData = UniversalLayerData & {
