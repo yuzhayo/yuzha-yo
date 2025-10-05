@@ -126,6 +126,23 @@ Communication: Simple, everyday language
 
 ## Recent Changes
 
+**October 5, 2025 - Canvas 2D Renderer Complete Removal**
+
+- ✅ Deleted StageCanvas.tsx and LayerEngineCanvas.ts completely
+- ✅ Updated RendererDetector to always return 'dom' (simplified)
+- ✅ Removed all canvas renderer imports and conditionals from MainScreen
+- ✅ Cleaned up renderer mode switching UI (removed dead code)
+- ✅ Fixed DOM renderer positioning - moved layers to center (1024, 1024) for on-screen visibility
+- ✅ Added z-index and overflow-hidden to DOM stage container
+- ✅ Simplified MainScreen to only render StageDOM (no conditionals)
+- ✅ Three.js renderer kept intact but dormant for future reconnection
+- ✅ Verified no Canvas 2D renderer references remain
+
+**Current Renderer Status:**
+- Primary: DOM CSS Renderer (active)
+- Three.js WebGL: Dormant (files intact, can be reconnected later)
+- Canvas 2D: Completely removed
+
 **October 5, 2025 - Image Mapping Debug System**
 
 - ✅ Created complete Image Mapping Debug visualization system

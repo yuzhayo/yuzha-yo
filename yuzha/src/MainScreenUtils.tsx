@@ -85,8 +85,6 @@ export type MainScreenRendererBadgeProps = {
 
 export type MainScreenUpdaterProps = {
   visible: boolean;
-  rendererMode?: "auto" | "dom" | "canvas" | "three";
-  onRendererModeChange?: (mode: "auto" | "dom" | "canvas" | "three") => void;
 };
 
 export type MainScreenBtnGestureAreaProps = {
@@ -295,69 +293,12 @@ export function MainScreenRendererBadge(props: MainScreenRendererBadgeProps) {
 export function MainScreenUpdater(props: MainScreenUpdaterProps) {
   const [isConfigOpen, setIsConfigOpen] = React.useState(false);
 
-  const currentMode = props.rendererMode ?? "auto";
-
-  const getRendererButtonClass = (mode: "auto" | "dom" | "canvas" | "three") => {
-    const baseClass = "text-[10px] px-2 py-0.5 rounded text-white shadow-sm border";
-    const isSelected = currentMode === mode;
-
-    if (!isSelected) {
-      return `${baseClass} bg-gray-600/40 border-gray-700/40 text-gray-400`;
-    }
-
-    if (mode === "auto") {
-      return `${baseClass} bg-blue-600/80 hover:bg-blue-500/80 active:bg-blue-600 border-white/10`;
-    } else if (mode === "dom") {
-      return `${baseClass} bg-purple-600/80 hover:bg-purple-500/80 active:bg-purple-600 border-white/10`;
-    } else if (mode === "canvas") {
-      return `${baseClass} bg-amber-600/80 hover:bg-amber-500/80 active:bg-amber-600 border-white/10`;
-    } else {
-      return `${baseClass} bg-emerald-600/80 hover:bg-emerald-500/80 active:bg-emerald-600 border-white/10`;
-    }
-  };
-
   if (!props.visible && !isConfigOpen) return null;
 
   return (
     <>
       {props.visible && (
         <div className="fixed top-9 right-3 z-[9998] flex flex-col gap-1">
-          {props.onRendererModeChange && (
-            <div className="flex flex-row gap-1">
-              <button
-                type="button"
-                onClick={() => props.onRendererModeChange?.("auto")}
-                className={getRendererButtonClass("auto")}
-                aria-label="Auto renderer mode"
-              >
-                Auto
-              </button>
-              <button
-                type="button"
-                onClick={() => props.onRendererModeChange?.("dom")}
-                className={getRendererButtonClass("dom")}
-                aria-label="DOM renderer mode"
-              >
-                DOM
-              </button>
-              <button
-                type="button"
-                onClick={() => props.onRendererModeChange?.("canvas")}
-                className={getRendererButtonClass("canvas")}
-                aria-label="Canvas renderer mode"
-              >
-                Canvas
-              </button>
-              <button
-                type="button"
-                onClick={() => props.onRendererModeChange?.("three")}
-                className={getRendererButtonClass("three")}
-                aria-label="Three renderer mode"
-              >
-                Three
-              </button>
-            </div>
-          )}
           <button
             type="button"
             onClick={clearCachesAndReload}

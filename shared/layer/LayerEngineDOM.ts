@@ -61,7 +61,7 @@ export async function mountDOMLayers(
       img.style.top = `${top}px`;
 
       // Apply both scale and rotation transforms
-      const transforms = [];
+      const transforms: string[] = [];
       if (scale.x !== 1 || scale.y !== 1) {
         transforms.push(`scale(${scale.x}, ${scale.y})`);
       }
@@ -81,6 +81,9 @@ export async function mountDOMLayers(
         position: item.data.position,
         scale: item.data.scale,
         rotation: displayRotation,
+        calculatedLeft: left,
+        calculatedTop: top,
+        imgTransform: img.style.transform,
       });
 
       layers.push({
