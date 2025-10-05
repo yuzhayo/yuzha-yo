@@ -322,14 +322,8 @@ export async function mountThreeLayers(
         needsRender = true;
       }
 
-      // Determine rotation mode
-      const isSpinning = layerData.hasSpinAnimation === true;
-      const isOrbiting = layerData.hasOrbitalAnimation === true && !isSpinning;
-      const rotation = isSpinning
-        ? (layerData.currentRotation ?? 0)
-        : isOrbiting
-          ? (layerData.orbitRotation ?? 0)
-          : (layerData.imageMapping.displayRotation ?? 0);
+      // Use only basic display rotation
+      const rotation = layerData.imageMapping.displayRotation ?? 0;
 
       // Check if rotation changed (for render-on-demand)
       const lastRotation = lastRotations.get(baseData.layerId);
@@ -338,97 +332,21 @@ export async function mountThreeLayers(
         lastRotations.set(baseData.layerId, rotation);
       }
 
-      const pivot = isSpinning
-        ? (layerData.spinCenter ?? transformCache.imageCenter)
-        : transformCache.imageCenter;
-
       // Calculate offset for pivot rotation using cached image center
       const centerX = transformCache.imageCenter.x * layerData.scale.x;
       const centerY = transformCache.imageCenter.y * layerData.scale.y;
-      const pivotX = pivot.x * layerData.scale.x;
-      const pivotY = pivot.y * layerData.scale.y;
+      const pivotX = transformCache.imageCenter.x * layerData.scale.x;
+      const pivotY = transformCache.imageCenter.y * layerData.scale.y;
 
       // Offset from center to pivot (in Three.js Y-up coordinates)
       const dx = centerX - pivotX;
-      const dy = -(centerY - pivotY); // Negate Y for Three.js coordinate system
+      const dy = -(centerY - pivotY);
 
       // Position mesh offset within group so pivot is at origin
       mesh.position.set(dx, dy, 0);
 
       // Rotate the group around its origin (which is now at the pivot point)
       group.rotation.z = (rotation * Math.PI) / 180;
-
-      // Update or create orbital debug visuals
-      if (ORBITAL_DEBUG_ENABLED && layerData.hasOrbitalAnimation && layerData.orbitCenter) {
-        // Calculate current orbit point
-        const orbitPoint = {
-          x:
-            layerData.orbitCenter.x +
-            (layerData.orbitRadius || 0) *
-              Math.cos(((layerData.currentOrbitAngle || 0) * Math.PI) / 180),
-          y:
-            layerData.orbitCenter.y +
-            (layerData.orbitRadius || 0) *
-              Math.sin(((layerData.currentOrbitAngle || 0) * Math.PI) / 180),
-        };
-
-        // Remove old debug objects if they exist
-        if (item.debugObjects) {
-          scene.remove(item.debugObjects);
-          item.debugObjects.traverse((child) => {
-            if (child instanceof THREE.Mesh) {
-              child.geometry.dispose();
-              if (child.material instanceof THREE.Material) {
-                child.material.dispose();
-              }
-            }
-            if (child instanceof THREE.Line) {
-              child.geometry.dispose();
-              if (child.material instanceof THREE.Material) {
-                child.material.dispose();
-              }
-            }
-          });
-        }
-
-        // Create new debug objects
-        item.debugObjects = createOrbitalDebugObjects(
-          layerData.orbitCenter,
-          layerData.orbitRadius || 0,
-          orbitPoint,
-        );
-        scene.add(item.debugObjects);
-        needsRender = true;
-      }
-
-      // Update or create image mapping debug visuals for specific layers
-      if (
-        IMAGE_MAPPING_DEBUG_ENABLED &&
-        IMAGE_MAPPING_DEBUG_LAYER_IDS.includes(layerData.layerId)
-      ) {
-        // Generate debug visuals
-        const imageMappingDebugVisuals = generateImageMappingDebugVisuals(
-          layerData,
-          IMAGE_MAPPING_DEBUG_CONFIG,
-        );
-
-        // Add debug objects to scene (they will be cleaned up on unmount)
-        const debugMeshes = ImageMappingThreeDebugRenderer.addAllToScene(
-          imageMappingDebugVisuals,
-          scene,
-          STAGE_SIZE,
-          THREE,
-        );
-
-        // Store for cleanup
-        if (!item.debugObjects) {
-          item.debugObjects = new THREE.Group();
-          scene.add(item.debugObjects);
-        }
-        debugMeshes.forEach((mesh) => item.debugObjects?.add(mesh));
-
-        needsRender = true;
-      }
     }
 
     return needsRender;

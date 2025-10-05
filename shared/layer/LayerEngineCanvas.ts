@@ -211,35 +211,18 @@ export async function mountCanvasLayers(
       ctx.restore();
     }
 
-    // Render animated layers (determine rotation dynamically)
+    // Render animated layers (using only basic display rotation)
     for (const layer of animatedLayers) {
       const { image, baseData, processors, transformCache } = layer;
       const layerData: EnhancedLayerData =
         processors.length > 0 ? runPipeline(baseData, processors, timestamp) : baseData;
 
-      // Skip rendering if layer is marked invisible (off-screen culling)
-      if (layerData.visible === false) {
-        continue;
-      }
-
-      const isSpinning = layerData.hasSpinAnimation === true;
-      const isOrbiting = layerData.hasOrbitalAnimation === true && !isSpinning;
-      const rotation = isSpinning
-        ? (layerData.currentRotation ?? 0)
-        : isOrbiting
-          ? (layerData.orbitRotation ?? 0)
-          : (layerData.imageMapping.displayRotation ?? 0);
+      const rotation = layerData.imageMapping.displayRotation ?? 0;
 
       if (rotation !== 0) {
         ctx.save();
-        const pivot = isSpinning
-          ? (layerData.spinCenter ?? layerData.imageMapping.imageCenter)
-          : layerData.imageMapping.imageCenter;
-
-        const pivotX = pivot.x * layerData.scale.x;
-        const pivotY = pivot.y * layerData.scale.y;
-        const dx = transformCache.centerX - pivotX;
-        const dy = transformCache.centerY - pivotY;
+        const dx = transformCache.dx;
+        const dy = transformCache.dy;
 
         ctx.translate(layerData.position.x, layerData.position.y);
         ctx.translate(-dx, -dy);
@@ -257,42 +240,6 @@ export async function mountCanvasLayers(
         const x = layerData.position.x - transformCache.scaledWidth / 2;
         const y = layerData.position.y - transformCache.scaledHeight / 2;
         ctx.drawImage(image, x, y, transformCache.scaledWidth, transformCache.scaledHeight);
-      }
-
-      // Render orbital debug visuals for layers with orbital animation
-      if (ORBITAL_DEBUG_ENABLED && layerData.hasOrbitalAnimation && layerData.orbitCenter) {
-        const orbitPoint = {
-          x:
-            layerData.orbitCenter.x +
-            (layerData.orbitRadius || 0) *
-              Math.cos(((layerData.currentOrbitAngle || 0) * Math.PI) / 180),
-          y:
-            layerData.orbitCenter.y +
-            (layerData.orbitRadius || 0) *
-              Math.sin(((layerData.currentOrbitAngle || 0) * Math.PI) / 180),
-        };
-
-        const debugVisuals = generateOrbitalDebugVisuals(
-          [layerData.orbitCenter.x, layerData.orbitCenter.y],
-          layerData.orbitRadius || 0,
-          orbitPoint,
-          ORBITAL_DEBUG_CONFIG,
-        );
-
-        OrbitalCanvasDebugRenderer.drawAll(ctx, debugVisuals);
-      }
-
-      // Render image mapping debug visuals for specific layers
-      if (
-        IMAGE_MAPPING_DEBUG_ENABLED &&
-        IMAGE_MAPPING_DEBUG_LAYER_IDS.includes(layerData.layerId)
-      ) {
-        const imageMappingDebugVisuals = generateImageMappingDebugVisuals(
-          layerData,
-          IMAGE_MAPPING_DEBUG_CONFIG,
-        );
-
-        ImageMappingCanvasDebugRenderer.drawAll(ctx, imageMappingDebugVisuals);
       }
     }
   };
