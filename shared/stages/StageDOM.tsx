@@ -59,7 +59,7 @@ export default function StageDOM() {
   }, []);
 
   return (
-    <div ref={containerRef} className="absolute inset-0 z-0 pointer-events-none">
+    <div ref={containerRef} className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
       <div ref={stageRef} className="block" />
     </div>
   );

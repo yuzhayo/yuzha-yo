@@ -81,6 +81,9 @@ export async function mountDOMLayers(
         position: item.data.position,
         scale: item.data.scale,
         rotation: displayRotation,
+        calculatedLeft: left,
+        calculatedTop: top,
+        imgTransform: img.style.transform,
       });
 
       layers.push({
