@@ -3,21 +3,38 @@ import type { EnhancedLayerData } from "./LayerCorePipeline";
 import type { LayerProcessor } from "./LayerCorePipeline";
 import { runPipeline } from "./LayerCorePipeline";
 import {
-  generateOrbitalDebugVisuals,
+  generateOrbitalDebugVisuals as _generateOrbitalDebugVisuals,
   type OrbitalDebugConfig,
 } from "./LayerCorePipelineOrbitalUtils";
+import {
+  generateImageMappingDebugVisuals,
+  ThreeDebugRenderer as ImageMappingThreeDebugRenderer,
+  type ImageMappingDebugConfig,
+} from "./LayerCorePipelineImageMappingUtils";
 
 const STAGE_SIZE = 2048;
 
 // Enable orbital debug visuals (set to false to disable)
 const ORBITAL_DEBUG_ENABLED = true;
-const ORBITAL_DEBUG_CONFIG: OrbitalDebugConfig = {
+const _ORBITAL_DEBUG_CONFIG: OrbitalDebugConfig = {
   showCenter: true,
   showOrbitLine: true,
   showRadiusLine: true,
   showOrbitPoint: true,
   centerStyle: "crosshair",
 };
+
+// Enable image mapping debug visuals
+const IMAGE_MAPPING_DEBUG_ENABLED = true;
+const IMAGE_MAPPING_DEBUG_CONFIG: ImageMappingDebugConfig = {
+  showCenter: true,
+  showTip: true,
+  showBase: true,
+  showAxisLine: true,
+  showRotation: false,
+  showBoundingBox: false,
+};
+const IMAGE_MAPPING_DEBUG_LAYER_IDS = ["orbiting-moon"]; // Only show for specific layers
 
 type TransformCache = {
   scaledWidth: number;
@@ -349,6 +366,35 @@ export async function mountThreeLayers(
         // Create new debug objects
         item.debugObjects = createOrbitalDebugObjects(layerData.orbitCenter, layerData.orbitRadius || 0, orbitPoint);
         scene.add(item.debugObjects);
+        needsRender = true;
+      }
+
+      // Update or create image mapping debug visuals for specific layers
+      if (
+        IMAGE_MAPPING_DEBUG_ENABLED &&
+        IMAGE_MAPPING_DEBUG_LAYER_IDS.includes(layerData.layerId)
+      ) {
+        // Generate debug visuals
+        const imageMappingDebugVisuals = generateImageMappingDebugVisuals(
+          layerData,
+          IMAGE_MAPPING_DEBUG_CONFIG,
+        );
+
+        // Add debug objects to scene (they will be cleaned up on unmount)
+        const debugMeshes = ImageMappingThreeDebugRenderer.addAllToScene(
+          imageMappingDebugVisuals,
+          scene,
+          STAGE_SIZE,
+          THREE,
+        );
+
+        // Store for cleanup
+        if (!item.debugObjects) {
+          item.debugObjects = new THREE.Group();
+          scene.add(item.debugObjects);
+        }
+        debugMeshes.forEach((mesh) => item.debugObjects?.add(mesh));
+
         needsRender = true;
       }
     }

@@ -3,9 +3,14 @@ import type { LayerProcessor } from "./LayerCorePipeline";
 import { runPipeline } from "./LayerCorePipeline";
 import {
   generateOrbitalDebugVisuals,
-  CanvasDebugRenderer,
+  CanvasDebugRenderer as OrbitalCanvasDebugRenderer,
   type OrbitalDebugConfig,
 } from "./LayerCorePipelineOrbitalUtils";
+import {
+  generateImageMappingDebugVisuals,
+  CanvasDebugRenderer as ImageMappingCanvasDebugRenderer,
+  type ImageMappingDebugConfig,
+} from "./LayerCorePipelineImageMappingUtils";
 
 const STAGE_SIZE = 2048;
 
@@ -18,6 +23,18 @@ const ORBITAL_DEBUG_CONFIG: OrbitalDebugConfig = {
   showOrbitPoint: true,
   centerStyle: "crosshair",
 };
+
+// Enable image mapping debug visuals
+const IMAGE_MAPPING_DEBUG_ENABLED = true;
+const IMAGE_MAPPING_DEBUG_CONFIG: ImageMappingDebugConfig = {
+  showCenter: true,
+  showTip: true,
+  showBase: true,
+  showAxisLine: true,
+  showRotation: false,
+  showBoundingBox: false,
+};
+const IMAGE_MAPPING_DEBUG_LAYER_IDS = ["orbiting-moon"]; // Only show for specific layers
 
 async function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -256,7 +273,20 @@ export async function mountCanvasLayers(
           ORBITAL_DEBUG_CONFIG,
         );
 
-        CanvasDebugRenderer.drawAll(ctx, debugVisuals);
+        OrbitalCanvasDebugRenderer.drawAll(ctx, debugVisuals);
+      }
+
+      // Render image mapping debug visuals for specific layers
+      if (
+        IMAGE_MAPPING_DEBUG_ENABLED &&
+        IMAGE_MAPPING_DEBUG_LAYER_IDS.includes(layerData.layerId)
+      ) {
+        const imageMappingDebugVisuals = generateImageMappingDebugVisuals(
+          layerData,
+          IMAGE_MAPPING_DEBUG_CONFIG,
+        );
+
+        ImageMappingCanvasDebugRenderer.drawAll(ctx, imageMappingDebugVisuals);
       }
     }
   };

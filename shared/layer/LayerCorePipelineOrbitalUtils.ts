@@ -109,7 +109,7 @@ export function generateOrbitLineTrace(
   orbitRadius: number,
   config?: Partial<OrbitalDebugConfig>,
 ): OrbitLineTrace {
-  const cfg = { ...DEFAULT_CONFIG, ...config };
+  const _cfg = { ...DEFAULT_CONFIG, ...config };
   const colors = { ...DEFAULT_CONFIG.colors, ...config?.colors };
   const segments = 64; // Smooth circle
   const points: Array<{ x: number; y: number }> = [];
@@ -140,7 +140,7 @@ export function generateOrbitRadiusLine(
   orbitPoint: { x: number; y: number },
   config?: Partial<OrbitalDebugConfig>,
 ): OrbitRadiusLine {
-  const cfg = { ...DEFAULT_CONFIG, ...config };
+  const _cfg = { ...DEFAULT_CONFIG, ...config };
   const colors = { ...DEFAULT_CONFIG.colors, ...config?.colors };
 
   return {
@@ -159,7 +159,7 @@ export function generateOrbitPointMarker(
   orbitPoint: { x: number; y: number },
   config?: Partial<OrbitalDebugConfig>,
 ): OrbitPointMarker {
-  const cfg = { ...DEFAULT_CONFIG, ...config };
+  const _cfg = { ...DEFAULT_CONFIG, ...config };
   const colors = { ...DEFAULT_CONFIG.colors, ...config?.colors };
 
   return {
