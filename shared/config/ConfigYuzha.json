@@ -119,7 +119,7 @@
         "imageId": "GEARMOON",
         "scale": [150, 150],
         "position": [1024, 1024],
-        "imageTip": 90,
+        "imageTip": 80,
         "imageBase": 270
       },
       "Spin Config": {
