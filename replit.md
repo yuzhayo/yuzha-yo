@@ -126,6 +126,24 @@ Communication: Simple, everyday language
 
 ## Recent Changes
 
+**October 5, 2025 - Ray Helper Debug Visualization**
+
+- ✅ Added ray helper visualization to `LayerCorePipelineImageMappingUtils.ts`
+- ✅ Created `ImageRay` type for ray visualization data
+- ✅ Implemented `generateImageRay()` function using exact computeImageMapping logic
+- ✅ Added Canvas 2D rendering support for ray helpers (dotted lines)
+- ✅ Added Three.js rendering support for ray helpers
+- ✅ Extended debug configuration with `showTipRay` and `showBaseRay` options
+- ✅ Ray colors: Orange for tip ray, Purple for base ray
+- ✅ Rays visualize center-to-border calculation path for imageTip/imageBase
+
+**Architecture Notes:**
+
+- Ray helpers use identical calculation as `computeImageMapping()` for accuracy
+- Rays show the actual geometric path from imageCenter to border intersection
+- Debug visualization layers: bounding box → rays → axis line → markers
+- Both Canvas and Three.js renderers support ray visualization
+
 **October 5, 2025 - ImageMapping Refactoring**
 
 - ✅ Refactored imageMapping calculation into separate processor file
