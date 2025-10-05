@@ -91,6 +91,7 @@ JSON Config → LayerCore (basic logic)
 
 - `shared/config/ConfigYuzha.json` - Layer definitions
 - `shared/layer/LayerCore.ts` - Core transform logic
+- `shared/layer/LayerCorePipelineImageMapping.ts` - Image geometry calculation
 - `shared/layer/LayerCorePipelineSpin.ts` - Spin animation
 - `shared/stages/StageThree.tsx` - Three.js renderer
 - `shared/stages/StageCanvas.tsx` - Canvas 2D renderer
@@ -124,6 +125,22 @@ Communication: Simple, everyday language
 ---
 
 ## Recent Changes
+
+**October 5, 2025 - ImageMapping Refactoring**
+
+- ✅ Refactored imageMapping calculation into separate processor file
+- ✅ Created `LayerCorePipelineImageMapping.ts` with `computeImageMapping()` function
+- ✅ Updated `LayerCore.ts` to import from new processor file (maintains backward compatibility)
+- ✅ Enhanced documentation in `LayerCorePipeline.ts` to clarify imageMapping calculation flow
+- ✅ All code passes TypeScript type checking, ESLint linting, and Prettier formatting
+- ✅ Display functionality verified - all 5 layers rendering correctly (stars, GEARMOON, clock, hand, orbital moon)
+- ✅ Cleaned up duplicate "Start Game" workflow
+
+**Architecture Notes:**
+
+- ImageMapping calculation remains in `LayerCore.prepareLayer()` (not in pipeline processors)
+- Separation of concerns: geometry calculation logic isolated in dedicated file
+- Pipeline processors (spin, orbital) add optional animation properties only
 
 **October 4, 2025 - GitHub Import Configured for Replit**
 
