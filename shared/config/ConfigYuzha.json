@@ -24,13 +24,13 @@
         "orbitDirection": "cw"
       },
       "Image Mapping Debug": {
-        "showCenter": true,
-        "showTip": true,
-        "showBase": true,
-        "showStageCenter": true,
-        "showAxisLine": true,
-        "showRotation": true,
-        "showTipRay": true,
+        "showCenter": false,
+        "showTip": false,
+        "showBase": false,
+        "showStageCenter": false,
+        "showAxisLine": false,
+        "showRotation": false,
+        "showTipRay": false,
         "showBaseRay": false,
         "showBoundingBox": false
       }
@@ -44,81 +44,7 @@
         "order": 100,
         "imageId": "CLOCKBG",
         "scale": [100, 100],
-        "position": [1024, 1024],
-        "imageTip": 90,
-        "imageBase": 270
-      },
-      "Spin Config": {
-        "spinCenter": [50, 50],
-        "spinSpeed": 0,
-        "spinDirection": "cw"
-      },
-      "Orbital Config": {
-        "orbitCenter": [1024, 1024],
-        "orbitImagePoint": [50, 50],
-        "orbitRadius": 0,
-        "orbitSpeed": 0,
-        "orbitDirection": "cw"
-      },
-      "Image Mapping Debug": {
-        "showCenter": true,
-        "showTip": true,
-        "showBase": true,
-        "showStageCenter": true,
-        "showAxisLine": true,
-        "showRotation": true,
-        "showTipRay": true,
-        "showBaseRay": true,
-        "showBoundingBox": true
-      }
-    }
-  },
-  {
-    "layerId": "hand",
-    "groups": {
-      "Basic Config": {
-        "renderer": "2D",
-        "order": 150,
-        "imageId": "UI_Clock_HourHand",
-        "scale": [100, 100],
-        "position": [1024, 1024],
-        "imageTip": 90,
-        "imageBase": 270
-      },
-      "Spin Config": {
-        "spinCenter": [50, 80],
-        "spinSpeed": 0,
-        "spinDirection": "cw"
-      },
-      "Orbital Config": {
-        "orbitCenter": [1024, 1024],
-        "orbitImagePoint": [50, 50],
-        "orbitRadius": 0,
-        "orbitSpeed": 0,
-        "orbitDirection": "cw"
-      },
-      "Image Mapping Debug": {
-        "showCenter": true,
-        "showTip": true,
-        "showBase": true,
-        "showStageCenter": true,
-        "showAxisLine": true,
-        "showRotation": true,
-        "showTipRay": true,
-        "showBaseRay": true,
-        "showBoundingBox": true
-      }
-    }
-  },
-  {
-    "layerId": "clock-GEARMOON",
-    "groups": {
-      "Basic Config": {
-        "renderer": "2D",
-        "order": 60,
-        "imageId": "GEARMOON",
-        "scale": [100, 100],
-        "position": [1024, 1024],
+        "position": [0, 0],
         "imageTip": 90,
         "imageBase": 270
       },
@@ -148,16 +74,53 @@
     }
   },
   {
+    "layerId": "hand",
+    "groups": {
+      "Basic Config": {
+        "renderer": "2D",
+        "order": 150,
+        "imageId": "UI_Clock_HourHand",
+        "scale": [10, 10],
+        "position": [0, 0],
+        "imageTip": 90,
+        "imageBase": 270
+      },
+      "Spin Config": {
+        "spinCenter": [50, 80],
+        "spinSpeed": 0,
+        "spinDirection": "cw"
+      },
+      "Orbital Config": {
+        "orbitCenter": [1024, 1024],
+        "orbitImagePoint": [50, 50],
+        "orbitRadius": 0,
+        "orbitSpeed": 0,
+        "orbitDirection": "cw"
+      },
+      "Image Mapping Debug": {
+        "showCenter": true,
+        "showTip": true,
+        "showBase": true,
+        "showStageCenter": true,
+        "showAxisLine": true,
+        "showRotation": true,
+        "showTipRay": true,
+        "showBaseRay": true,
+        "showBoundingBox": true
+      }
+    }
+  },
+  {
     "layerId": "orbiting-moon",
     "groups": {
       "Basic Config": {
         "renderer": "2D",
         "order": 200,
         "imageId": "GEARMOON",
-        "scale": [80, 80],
+        "scale": [150, 150],
         "position": [1024, 1024],
         "imageTip": 90,
-        "imageBase": 270
+        "imageBase": 280
       },
       "Spin Config": {
         "spinCenter": [50, 50],
