@@ -12,8 +12,9 @@
         "imageBase": 270
       },
       "Spin Config": {
-        "spinCenter": [50, 50],
-        "spinSpeed": 0,
+        "spinStagePoint": [1024, 1024],
+        "spinImagePoint": [50, 50],
+        "spinSpeed": 20,
         "spinDirection": "cw"
       },
       "Orbital Config": {
@@ -49,7 +50,8 @@
         "imageBase": 270
       },
       "Spin Config": {
-        "spinCenter": [50, 50],
+        "spinStagePoint": [1024, 1024],
+        "spinImagePoint": [50, 50],
         "spinSpeed": 0,
         "spinDirection": "cw"
       },
@@ -86,7 +88,8 @@
         "imageBase": 270
       },
       "Spin Config": {
-        "spinCenter": [50, 80],
+        "spinStagePoint": [1024, 1024],
+        "spinImagePoint": [50, 80],
         "spinSpeed": 0,
         "spinDirection": "cw"
       },
@@ -123,7 +126,8 @@
         "imageBase": 280
       },
       "Spin Config": {
-        "spinCenter": [50, 50],
+        "spinStagePoint": [1024, 1024],
+        "spinImagePoint": [50, 50],
         "spinSpeed": 0,
         "spinDirection": "cw"
       },

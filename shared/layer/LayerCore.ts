@@ -135,15 +135,14 @@ export async function prepareLayer(
   const imageTipStagePercent = stagePointToPercent(imageTipStage, stageSize);
   const imageBaseStagePercent = stagePointToPercent(imageBaseStage, stageSize);
 
-  const spinImagePercent = normalizePercentInput(entry.spinCenter, 50, 50);
-  const spinImagePoint = imagePercentToImagePoint(spinImagePercent, imageMapping.imageDimensions);
-  const spinStagePoint = imagePointToStagePoint(
-    spinImagePoint,
-    imageMapping.imageDimensions,
-    scale,
-    position,
-  );
+  // Spin point calculation with independent stage/image overrides
+  // Stage point: use entry.spinStagePoint if provided, else fall back to base position
+  const spinStagePoint = normalizeStagePointInput(entry.spinStagePoint, position, stageSize);
   const spinStagePercent = stagePointToPercent(spinStagePoint, stageSize);
+
+  // Image point: use entry.spinImagePoint if provided, else fall back to image center [50, 50]
+  const spinImagePercent = normalizePercentInput(entry.spinImagePoint, 50, 50);
+  const spinImagePoint = imagePercentToImagePoint(spinImagePercent, imageMapping.imageDimensions);
 
   const orbitStagePoint = normalizeStagePointInput(entry.orbitCenter, stageCenterPoint, stageSize);
   const orbitStagePercent = stagePointToPercent(orbitStagePoint, stageSize);

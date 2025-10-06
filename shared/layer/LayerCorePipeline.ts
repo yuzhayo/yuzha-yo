@@ -14,6 +14,7 @@ export type LayerProcessor = (layer: UniversalLayerData, timestamp?: number) => 
  * - imageMapping: Calculated by LayerCorePipelineImageMapping.computeImageMapping() in LayerCore.prepareLayer()
  *   Contains image geometry (center, tip, base, dimensions, axis angle, rotation, center offset)
  * - calculation: Precomputed coordinate aliases (stage/image/percent) for center, tip, base, spin, and orbit points
+ *   - spinPoint resolved from config spinStagePoint (stage pixels) and spinImagePoint (image percent) with fallbacks
  *
  * Processor-added properties:
  */

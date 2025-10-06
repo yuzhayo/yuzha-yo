@@ -12,7 +12,7 @@ import {
 } from "./LayerCoreAnimationUtils";
 
 export type SpinConfig = {
-  spinCenter?: [number, number] | PercentPoint; // 0-100% relative to image dimensions
+  spinCenter?: [number, number] | PercentPoint; // Runtime override: 0-100% relative to image dimensions
   spinSpeed?: number; // degrees per second (0 = no spin)
   spinDirection?: "cw" | "ccw";
   startTime?: number; // Optional animation start time (ms)
@@ -20,9 +20,12 @@ export type SpinConfig = {
 
 /**
  * Create a spin processor with the given configuration
- * spinCenter: [x, y] array or {x, y} object in 0-100% coordinates relative to image dimensions
+ * spinCenter: [x, y] array or {x, y} object in 0-100% coordinates relative to image dimensions (runtime override only)
  * spinSpeed: degrees per second (0 = no spin, default = 0)
  * spinDirection: "cw" (clockwise) or "ccw" (counter-clockwise), default = "cw"
+ *
+ * Note: spinCenter is a runtime override for image percent only.
+ * Base spin point is calculated in LayerCore from spinStagePoint and spinImagePoint config fields.
  */
 export function createSpinProcessor(config: SpinConfig): LayerProcessor {
   const spinSpeed = config.spinSpeed ?? 0;

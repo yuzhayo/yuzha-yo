@@ -24,7 +24,8 @@ export type LayerConfigEntry = {
   imageBase?: number;
 
   // Spin config
-  spinCenter?: number[]; // [x, y] in 0-100% coordinates
+  spinStagePoint?: number[]; // [x, y] absolute pixels in stage space (0-2048)
+  spinImagePoint?: number[]; // [x, y] percent in image space (0-100)
   spinSpeed?: number; // Degrees per second (0 = no spin)
   spinDirection?: "cw" | "ccw";
 
@@ -76,7 +77,8 @@ type ConfigYuzhaEntry = {
       position?: number[];
       imageTip?: number;
       imageBase?: number;
-      spinCenter?: number[];
+      spinStagePoint?: number[];
+      spinImagePoint?: number[];
       spinSpeed?: number;
       spinDirection?: "cw" | "ccw";
       orbitCenter?: number[];
