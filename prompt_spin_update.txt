@@ -1,0 +1,36 @@
+prompt_for_agent.txt
+You are continuing work on the shared/layer spin/orbital pipeline in the yuzha-yo project. The previous agent already introduced a calculation bundle on UniversalLayerData containing precomputed stage/image/percent coordinates, and the spin/orbital processors consume that data. You need to extend the spin configuration to accept explicit overrides for both image and stage anchor points.
+
+Requirements:
+1. Config Schema
+   - In shared/config/Config.ts adjust LayerConfigEntry so the spin block becomes:
+       spinStagePoint?: number[]; // optional [x, y] pixels in stage (0-2048)
+       spinImagePoint?: number[]; // optional [x, y] percent in image (0-100)
+       spinSpeed?: number;
+       spinDirection?: "cw" | "ccw";
+   - Update ConfigYuzha.json to use the new field names (spinStagePoint, spinImagePoint). Defaults should be omitted so the fallback logic kicks in.
+
+2. LayerCore Preparation
+   - In shared/layer/LayerCore.ts, update prepareLayer so calculation.spinPoint resolves:
+       • stage point: use entry.spinStagePoint if provided, else the base position.
+       • image point: use entry.spinImagePoint if provided, else the image centre (50,50).
+     Convert both to coordinate bundles (point + percent). Add helper logic if needed.
+
+3. Spin Processor
+   - In shared/layer/LayerCorePipelineSpin.ts, read the resolved values from layer.calculation.spinPoint. If the processor config supplies overrides, apply them; if not, use the precomputed values without re-derived math. Ensure the processor still returns spinStagePoint and spinPercent on the enhanced layer.
+
+4. Documentation
+   - Update shared/layer/LayerCorePipeline.ts comments (base property description) and any inline comments mentioning spin center so they reflect the new field names.
+
+5. Validation
+   - Run 
+pm run lint, 
+pm run typecheck:shared, and 
+pm run format (or ormat:fix if needed). Keep the repo free of temporary files.
+
+Implementation Plan:
+1. Modify config schema/types (shared/config/Config.ts) and sample JSON to use spinStagePoint / spinImagePoint.
+2. Adjust LayerCore.prepareLayer to compute resolved stage/image spin points using fallbacks, update calculation.spinPoint accordingly, and ensure stage percent is derived from the resolved stage point.
+3. Update LayerCorePipelineSpin to rely on layer.calculation.spinPoint while still honouring per-processor overrides.
+4. Update documentation/comments in LayerCorePipeline.ts (and any others referencing spin centre).
+5. Execute lint, typecheck, and format scripts; inspect git diff.

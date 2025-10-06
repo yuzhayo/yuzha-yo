@@ -135,15 +135,14 @@ export async function prepareLayer(
   const imageTipStagePercent = stagePointToPercent(imageTipStage, stageSize);
   const imageBaseStagePercent = stagePointToPercent(imageBaseStage, stageSize);
 
-  const spinImagePercent = normalizePercentInput(entry.spinCenter, 50, 50);
-  const spinImagePoint = imagePercentToImagePoint(spinImagePercent, imageMapping.imageDimensions);
-  const spinStagePoint = imagePointToStagePoint(
-    spinImagePoint,
-    imageMapping.imageDimensions,
-    scale,
-    position,
-  );
+  // Spin point calculation with independent stage/image overrides
+  // Stage point: use entry.spinStagePoint if provided, else fall back to base position
+  const spinStagePoint = normalizeStagePointInput(entry.spinStagePoint, position, stageSize);
   const spinStagePercent = stagePointToPercent(spinStagePoint, stageSize);
+
+  // Image point: use entry.spinImagePoint if provided, else fall back to image center [50, 50]
+  const spinImagePercent = normalizePercentInput(entry.spinImagePoint, 50, 50);
+  const spinImagePoint = imagePercentToImagePoint(spinImagePercent, imageMapping.imageDimensions);
 
   const orbitStagePoint = normalizeStagePointInput(entry.orbitCenter, stageCenterPoint, stageSize);
   const orbitStagePercent = stagePointToPercent(orbitStagePoint, stageSize);
@@ -232,12 +231,21 @@ export function imagePointToStagePoint(
   scale: Point2D,
   position: Point2D,
 ): Point2D {
-  const halfWidth = imageDimensions.width / 2;
-  const halfHeight = imageDimensions.height / 2;
-  return {
-    x: position.x + (imagePoint.x - halfWidth) * scale.x,
-    y: position.y + (imagePoint.y - halfHeight) * scale.y,
+  // Validate inputs
+  const validImagePoint = validatePoint(imagePoint);
+  const validDimensions = validateDimensions(imageDimensions);
+  const validScale = validateScale(scale);
+  const validPosition = validatePoint(position);
+
+  const halfWidth = validDimensions.width / 2;
+  const halfHeight = validDimensions.height / 2;
+
+  const result = {
+    x: validPosition.x + (validImagePoint.x - halfWidth) * validScale.x,
+    y: validPosition.y + (validImagePoint.y - halfHeight) * validScale.y,
   };
+
+  return validatePoint(result); // Validate output
 }
 
 export function stagePointToImagePoint(
@@ -246,12 +254,25 @@ export function stagePointToImagePoint(
   scale: Point2D,
   position: Point2D,
 ): Point2D {
-  const halfWidth = imageDimensions.width / 2;
-  const halfHeight = imageDimensions.height / 2;
-  return {
-    x: (stagePoint.x - position.x) / scale.x + halfWidth,
-    y: (stagePoint.y - position.y) / scale.y + halfHeight,
+  // Validate inputs
+  const validStagePoint = validatePoint(stagePoint);
+  const validDimensions = validateDimensions(imageDimensions);
+  const validScale = validateScale(scale);
+  const validPosition = validatePoint(position);
+
+  const halfWidth = validDimensions.width / 2;
+  const halfHeight = validDimensions.height / 2;
+
+  // Prevent division by zero
+  const safeScaleX = validScale.x !== 0 ? validScale.x : 1;
+  const safeScaleY = validScale.y !== 0 ? validScale.y : 1;
+
+  const result = {
+    x: (validStagePoint.x - validPosition.x) / safeScaleX + halfWidth,
+    y: (validStagePoint.y - validPosition.y) / safeScaleY + halfHeight,
   };
+
+  return validatePoint(result); // Validate output
 }
 
 export function imagePointToPercent(
@@ -268,10 +289,19 @@ export function imagePercentToImagePoint(
   imagePercent: PercentPoint,
   imageDimensions: { width: number; height: number },
 ): Point2D {
-  return {
-    x: (imagePercent.x / 100) * imageDimensions.width,
-    y: (imagePercent.y / 100) * imageDimensions.height,
+  // Validate inputs
+  const validPercent = {
+    x: clampPercent(imagePercent.x),
+    y: clampPercent(imagePercent.y),
   };
+  const validDimensions = validateDimensions(imageDimensions);
+
+  const result = {
+    x: (validPercent.x / 100) * validDimensions.width,
+    y: (validPercent.y / 100) * validDimensions.height,
+  };
+
+  return validatePoint(result);
 }
 
 export function stagePointToPercent(stagePoint: Point2D, stageSize: number): PercentPoint {
@@ -367,6 +397,47 @@ function normalizePair(
   const x = typeof first === "number" && Number.isFinite(first) ? first : fallbackX;
   const y = typeof second === "number" && Number.isFinite(second) ? second : fallbackY;
   return [x, y];
+}
+
+/**
+ * Validate and sanitize a 2D point
+ * Returns a safe point with finite coordinates
+ */
+export function validatePoint(point: Point2D, fallback: Point2D = { x: 0, y: 0 }): Point2D {
+  const x = Number.isFinite(point.x) ? point.x : fallback.x;
+  const y = Number.isFinite(point.y) ? point.y : fallback.y;
+  return { x, y };
+}
+
+/**
+ * Validate and sanitize scale values
+ * Ensures scale is positive and finite
+ */
+export function validateScale(scale: Point2D, fallback: Point2D = { x: 1, y: 1 }): Point2D {
+  let x = Number.isFinite(scale.x) && scale.x > 0 ? scale.x : fallback.x;
+  let y = Number.isFinite(scale.y) && scale.y > 0 ? scale.y : fallback.y;
+
+  // Clamp to reasonable range (0.01 to 10)
+  x = Math.max(0.01, Math.min(10, x));
+  y = Math.max(0.01, Math.min(10, y));
+
+  return { x, y };
+}
+
+/**
+ * Validate dimensions object
+ */
+export function validateDimensions(
+  dimensions: { width: number; height: number },
+  fallback: { width: number; height: number } = { width: 100, height: 100 },
+): { width: number; height: number } {
+  const width =
+    Number.isFinite(dimensions.width) && dimensions.width > 0 ? dimensions.width : fallback.width;
+  const height =
+    Number.isFinite(dimensions.height) && dimensions.height > 0
+      ? dimensions.height
+      : fallback.height;
+  return { width, height };
 }
 
 export function is2DLayer(entry: LayerConfigEntry): boolean {

@@ -5,9 +5,14 @@ import {
   type UniversalLayerData,
 } from "./LayerCore";
 import type { EnhancedLayerData, LayerProcessor } from "./LayerCorePipeline";
+import {
+  calculateElapsedTime,
+  applyRotationDirection,
+  normalizeAngle,
+} from "./LayerCoreAnimationUtils";
 
 export type SpinConfig = {
-  spinCenter?: [number, number] | PercentPoint; // 0-100% relative to image dimensions
+  spinCenter?: [number, number] | PercentPoint; // Runtime override: 0-100% relative to image dimensions
   spinSpeed?: number; // degrees per second (0 = no spin)
   spinDirection?: "cw" | "ccw";
   startTime?: number; // Optional animation start time (ms)
@@ -15,9 +20,12 @@ export type SpinConfig = {
 
 /**
  * Create a spin processor with the given configuration
- * spinCenter: [x, y] array or {x, y} object in 0-100% coordinates relative to image dimensions
+ * spinCenter: [x, y] array or {x, y} object in 0-100% coordinates relative to image dimensions (runtime override only)
  * spinSpeed: degrees per second (0 = no spin, default = 0)
  * spinDirection: "cw" (clockwise) or "ccw" (counter-clockwise), default = "cw"
+ *
+ * Note: spinCenter is a runtime override for image percent only.
+ * Base spin point is calculated in LayerCore from spinStagePoint and spinImagePoint config fields.
  */
 export function createSpinProcessor(config: SpinConfig): LayerProcessor {
   const spinSpeed = config.spinSpeed ?? 0;
@@ -26,26 +34,32 @@ export function createSpinProcessor(config: SpinConfig): LayerProcessor {
 
   const overridePercent = normalisePercent(config.spinCenter);
 
+  // Cache speed calculation
+  const speedPerMs = spinSpeed / 1000; // degrees per millisecond
+
   return (layer: UniversalLayerData, timestamp?: number): EnhancedLayerData => {
     if (spinSpeed === 0) {
       return layer as EnhancedLayerData;
     }
 
     const currentTime = timestamp ?? performance.now();
-    const startTime = configStartTime ?? currentTime; // Use config or current
 
-    const elapsed = currentTime - startTime;
-    const elapsedSeconds = elapsed / 1000;
-    let rotation = (elapsedSeconds * spinSpeed) % 360;
+    // Use utility function
+    const { elapsed } = calculateElapsedTime(currentTime, configStartTime);
 
-    if (spinDirection === "ccw") {
-      rotation = -rotation;
-    }
+    // Use cached calculations
+    let rotation = (elapsed * speedPerMs) % 360;
 
+    // Use utility functions
+    rotation = applyRotationDirection(rotation, spinDirection);
+    rotation = normalizeAngle(rotation);
+
+    // Cache dimension lookups
     const { imageDimensions } = layer.imageMapping;
     const resolvedPercent: PercentPoint =
       overridePercent ?? layer.calculation.spinPoint.image.percent;
 
+    // Use pre-calculated values when possible
     const spinImagePoint = overridePercent
       ? imagePercentToImagePoint(resolvedPercent, imageDimensions)
       : layer.calculation.spinPoint.image.point;

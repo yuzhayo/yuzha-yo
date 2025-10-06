@@ -1,0 +1,154 @@
+[
+  {
+    "layerId": "stars-background",
+    "groups": {
+      "Basic Config": {
+        "renderer": "2D",
+        "order": 50,
+        "imageId": "STARBG",
+        "scale": [100, 100],
+        "position": [1024, 1024],
+        "imageTip": 90,
+        "imageBase": 270
+      },
+      "Spin Config": {
+        "spinStagePoint": [1024, 1024],
+        "spinImagePoint": [50, 50],
+        "spinSpeed": 20,
+        "spinDirection": "cw"
+      },
+      "Orbital Config": {
+        "orbitCenter": [1024, 1024],
+        "orbitImagePoint": [50, 50],
+        "orbitRadius": 0,
+        "orbitSpeed": 0,
+        "orbitDirection": "cw"
+      },
+      "Image Mapping Debug": {
+        "showCenter": false,
+        "showTip": false,
+        "showBase": false,
+        "showStageCenter": false,
+        "showAxisLine": false,
+        "showRotation": false,
+        "showTipRay": false,
+        "showBaseRay": false,
+        "showBoundingBox": false
+      }
+    }
+  },
+  {
+    "layerId": "clock-bg",
+    "groups": {
+      "Basic Config": {
+        "renderer": "2D",
+        "order": 100,
+        "imageId": "CLOCKBG",
+        "scale": [100, 100],
+        "position": [0, 0],
+        "imageTip": 90,
+        "imageBase": 270
+      },
+      "Spin Config": {
+        "spinStagePoint": [1024, 1024],
+        "spinImagePoint": [50, 50],
+        "spinSpeed": 0,
+        "spinDirection": "cw"
+      },
+      "Orbital Config": {
+        "orbitCenter": [1024, 1024],
+        "orbitImagePoint": [50, 50],
+        "orbitRadius": 0,
+        "orbitSpeed": 0,
+        "orbitDirection": "cw"
+      },
+      "Image Mapping Debug": {
+        "showCenter": false,
+        "showTip": false,
+        "showBase": false,
+        "showStageCenter": false,
+        "showAxisLine": false,
+        "showRotation": false,
+        "showTipRay": false,
+        "showBaseRay": false,
+        "showBoundingBox": false
+      }
+    }
+  },
+  {
+    "layerId": "hand",
+    "groups": {
+      "Basic Config": {
+        "renderer": "2D",
+        "order": 150,
+        "imageId": "UI_Clock_HourHand",
+        "scale": [10, 10],
+        "position": [0, 0],
+        "imageTip": 90,
+        "imageBase": 270
+      },
+      "Spin Config": {
+        "spinStagePoint": [1024, 1024],
+        "spinImagePoint": [50, 80],
+        "spinSpeed": 0,
+        "spinDirection": "cw"
+      },
+      "Orbital Config": {
+        "orbitCenter": [1024, 1024],
+        "orbitImagePoint": [50, 50],
+        "orbitRadius": 0,
+        "orbitSpeed": 0,
+        "orbitDirection": "cw"
+      },
+      "Image Mapping Debug": {
+        "showCenter": true,
+        "showTip": true,
+        "showBase": true,
+        "showStageCenter": true,
+        "showAxisLine": true,
+        "showRotation": true,
+        "showTipRay": true,
+        "showBaseRay": true,
+        "showBoundingBox": true
+      }
+    }
+  },
+  {
+    "layerId": "orbiting-moon",
+    "groups": {
+      "Basic Config": {
+        "renderer": "2D",
+        "order": 200,
+        "imageId": "UI_Clock_HourHand",
+        "scale": [180, 180],
+        "position": [1024, 1024],
+        "imageTip": 40,
+        "imageBase": 280
+      },
+      "Spin Config": {
+        "spinStagePoint": [1024, 1024],
+        "spinImagePoint": [50, 50],
+        "spinSpeed": 0,
+        "spinDirection": "cw"
+      },
+      "Orbital Config": {
+        "orbitCenter": [1024, 1024],
+        "orbitImagePoint": [50, 50],
+        "orbitRadius": 0,
+        "orbitSpeed": 0,
+        "orbitDirection": "cw"
+      },
+      "Image Mapping Debug": {
+        "showCenter": true,
+        "showTip": true,
+        "showBase": true,
+        "showStageCenter": true,
+        "showAxisLine": true,
+        "showRotation": true,
+        "showTipRay": true,
+        "showBaseRay": true,
+        "showBoundingBox": true
+      }
+    }
+  }
+]
