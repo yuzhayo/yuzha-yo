@@ -4,6 +4,8 @@
  * Helps debug image orientation and axis alignment issues
  */
 
+import type { UniversalLayerData } from "./LayerCore";
+
 export type ImageCenterMarker = {
   type: "dot" | "crosshair";
   position: { x: number; y: number };
@@ -366,43 +368,19 @@ export function generateImageRay(
  * Generate complete image mapping debug visuals for a layer
  */
 export function generateImageMappingDebugVisuals(
-  layerData: {
-    position: { x: number; y: number };
-    scale: { x: number; y: number };
-    imageMapping: {
-      imageCenter: { x: number; y: number };
-      imageTip: { x: number; y: number };
-      imageBase: { x: number; y: number };
-      imageDimensions: { width: number; height: number };
-      displayAxisAngle: number;
-      displayRotation: number;
-    };
-    tipAngle?: number;
-    baseAngle?: number;
-  },
+  layer: UniversalLayerData,
   config?: Partial<ImageMappingDebugConfig>,
 ): ImageMappingDebugVisuals {
   const cfg = { ...DEFAULT_CONFIG, ...config };
   const visuals: ImageMappingDebugVisuals = {};
 
-  const { imageMapping, position, scale, tipAngle, baseAngle } = layerData;
+  const { imageMapping } = layer;
   const { width, height } = imageMapping.imageDimensions;
 
-  // Convert image-space coordinates to stage-space coordinates
-  const imageCenterStage = {
-    x: position.x + (imageMapping.imageCenter.x - width / 2) * scale.x,
-    y: position.y + (imageMapping.imageCenter.y - height / 2) * scale.y,
-  };
-
-  const imageTipStage = {
-    x: position.x + (imageMapping.imageTip.x - width / 2) * scale.x,
-    y: position.y + (imageMapping.imageTip.y - height / 2) * scale.y,
-  };
-
-  const imageBaseStage = {
-    x: position.x + (imageMapping.imageBase.x - width / 2) * scale.x,
-    y: position.y + (imageMapping.imageBase.y - height / 2) * scale.y,
-  };
+  // Use pre-calculated coordinates from layer.calculation
+  const imageCenterStage = layer.calculation.imageCenter.stage.point;
+  const imageTipStage = layer.calculation.imageTip.stage.point;
+  const imageBaseStage = layer.calculation.imageBase.stage.point;
 
   if (cfg.showCenter) {
     visuals.centerMarker = generateImageCenterMarker(imageCenterStage, config);
@@ -434,52 +412,58 @@ export function generateImageMappingDebugVisuals(
     );
   }
 
-  if (cfg.showTipRay && tipAngle !== undefined) {
+  if (cfg.showTipRay && layer.imageTip !== undefined) {
     const tipRayImageSpace = generateImageRay(
       imageMapping.imageCenter,
       imageMapping.imageDimensions,
-      tipAngle,
+      layer.imageTip,
       "tip",
       config,
     );
-    // Convert to stage space
+    // Use pre-calculated transformation for start point
+    const tipRayStart = layer.calculation.imageCenter.stage.point;
+    const tipRayEndImagePoint = tipRayImageSpace.end;
+
+    // Still need to transform the ray end point (not pre-calculated)
+    const tipRayEnd = {
+      x: layer.position.x + (tipRayEndImagePoint.x - width / 2) * layer.scale.x,
+      y: layer.position.y + (tipRayEndImagePoint.y - height / 2) * layer.scale.y,
+    };
+
     visuals.tipRay = {
       ...tipRayImageSpace,
-      start: {
-        x: position.x + (tipRayImageSpace.start.x - width / 2) * scale.x,
-        y: position.y + (tipRayImageSpace.start.y - height / 2) * scale.y,
-      },
-      end: {
-        x: position.x + (tipRayImageSpace.end.x - width / 2) * scale.x,
-        y: position.y + (tipRayImageSpace.end.y - height / 2) * scale.y,
-      },
+      start: tipRayStart,
+      end: tipRayEnd,
     };
   }
 
-  if (cfg.showBaseRay && baseAngle !== undefined) {
+  if (cfg.showBaseRay && layer.imageBase !== undefined) {
     const baseRayImageSpace = generateImageRay(
       imageMapping.imageCenter,
       imageMapping.imageDimensions,
-      baseAngle,
+      layer.imageBase,
       "base",
       config,
     );
-    // Convert to stage space
+    // Use pre-calculated transformation for start point
+    const baseRayStart = layer.calculation.imageCenter.stage.point;
+    const baseRayEndImagePoint = baseRayImageSpace.end;
+
+    // Still need to transform the ray end point (not pre-calculated)
+    const baseRayEnd = {
+      x: layer.position.x + (baseRayEndImagePoint.x - width / 2) * layer.scale.x,
+      y: layer.position.y + (baseRayEndImagePoint.y - height / 2) * layer.scale.y,
+    };
+
     visuals.baseRay = {
       ...baseRayImageSpace,
-      start: {
-        x: position.x + (baseRayImageSpace.start.x - width / 2) * scale.x,
-        y: position.y + (baseRayImageSpace.start.y - height / 2) * scale.y,
-      },
-      end: {
-        x: position.x + (baseRayImageSpace.end.x - width / 2) * scale.x,
-        y: position.y + (baseRayImageSpace.end.y - height / 2) * scale.y,
-      },
+      start: baseRayStart,
+      end: baseRayEnd,
     };
   }
 
   if (cfg.showBoundingBox) {
-    visuals.boundingBox = generateBoundingBox(position, width, height, scale, config);
+    visuals.boundingBox = generateBoundingBox(layer.position, width, height, layer.scale, config);
   }
 
   if (cfg.showStageCenter) {

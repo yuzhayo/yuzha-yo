@@ -10,6 +10,7 @@ export type SpinConfig = {
   spinCenter?: [number, number] | PercentPoint; // 0-100% relative to image dimensions
   spinSpeed?: number; // degrees per second (0 = no spin)
   spinDirection?: "cw" | "ccw";
+  startTime?: number; // Optional animation start time (ms)
 };
 
 /**
@@ -21,10 +22,9 @@ export type SpinConfig = {
 export function createSpinProcessor(config: SpinConfig): LayerProcessor {
   const spinSpeed = config.spinSpeed ?? 0;
   const spinDirection = config.spinDirection ?? "cw";
+  const configStartTime = config.startTime; // Read from config
 
   const overridePercent = normalisePercent(config.spinCenter);
-
-  let startTime: number | null = null;
 
   return (layer: UniversalLayerData, timestamp?: number): EnhancedLayerData => {
     if (spinSpeed === 0) {
@@ -32,9 +32,7 @@ export function createSpinProcessor(config: SpinConfig): LayerProcessor {
     }
 
     const currentTime = timestamp ?? performance.now();
-    if (startTime === null) {
-      startTime = currentTime;
-    }
+    const startTime = configStartTime ?? currentTime; // Use config or current
 
     const elapsed = currentTime - startTime;
     const elapsedSeconds = elapsed / 1000;

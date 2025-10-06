@@ -1,5 +1,6 @@
 import type { EnhancedLayerData } from "./LayerCorePipeline";
 import type { LayerProcessor } from "./LayerCorePipeline";
+import { loadImage } from "./LayerCore";
 
 const STAGE_SIZE = 2048;
 
@@ -102,13 +103,4 @@ export async function mountDOMLayers(
   return () => {
     containerEl.innerHTML = "";
   };
-}
-
-async function loadImage(src: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = src;
-  });
 }

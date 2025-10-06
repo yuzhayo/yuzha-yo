@@ -217,6 +217,15 @@ async function getImageDimensions(url: string): Promise<{ width: number; height:
   });
 }
 
+export async function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
 export function imagePointToStagePoint(
   imagePoint: Point2D,
   imageDimensions: { width: number; height: number },

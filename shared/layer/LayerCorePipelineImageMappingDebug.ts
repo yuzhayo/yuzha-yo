@@ -33,16 +33,7 @@ export function createImageMappingDebugProcessor(
 
   return (layer: UniversalLayerData): EnhancedLayerData => {
     // Generate debug visuals based on config
-    const debugVisuals: ImageMappingDebugVisuals = generateImageMappingDebugVisuals(
-      {
-        position: layer.position,
-        scale: layer.scale,
-        imageMapping: layer.imageMapping,
-        tipAngle: layer.imageTip,
-        baseAngle: layer.imageBase,
-      },
-      config,
-    );
+    const debugVisuals: ImageMappingDebugVisuals = generateImageMappingDebugVisuals(layer, config);
 
     return {
       ...layer,
