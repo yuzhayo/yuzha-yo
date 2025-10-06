@@ -5,6 +5,14 @@ import {
   type UniversalLayerData,
 } from "./LayerCore";
 import type { EnhancedLayerData, LayerProcessor } from "./LayerCorePipeline";
+import {
+  calculateElapsedTime,
+  applyRotationDirection,
+  calculateOrbitPosition,
+  calculateAngleToPoint,
+  calculateOrbitalVisibility,
+  normalizeAngle,
+} from "./LayerCoreAnimationUtils";
 
 export type OrbitalConfig = {
   orbitCenter?: [number, number]; // Stage coords (0-2048)
@@ -36,18 +44,26 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
   const overrideCenter = normaliseStagePoint(config.orbitCenter);
   const overrideImagePercent = normalisePercent(config.orbitImagePoint);
 
+  // Cache speed per second
+  const speedPerSecond = orbitSpeed;
+
   return (layer: EnhancedLayerData, timestamp?: number): EnhancedLayerData => {
     const currentTime = timestamp ?? performance.now();
-    const startTime = configStartTime ?? currentTime; // Use config or current
 
-    const elapsed = (currentTime - startTime) / 1000;
-    let orbitAngle = (elapsed * orbitSpeed) % 360;
-    if (orbitDirection === "ccw") {
-      orbitAngle = -orbitAngle;
-    }
+    // Use utility function
+    const { elapsed } = calculateElapsedTime(currentTime, configStartTime);
 
+    const elapsedSeconds = elapsed / 1000;
+    let orbitAngle = (elapsedSeconds * speedPerSecond) % 360;
+
+    // Use utility functions
+    orbitAngle = applyRotationDirection(orbitAngle, orbitDirection);
+    orbitAngle = normalizeAngle(orbitAngle);
+
+    // Cache stage size (calculated from pre-calculated value)
     const stageSize = layer.calculation.stageCenter.point.x * 2;
 
+    // Use pre-calculated coordinates when possible
     const baseOrbitCenter = layer.calculation.orbitPoint.stage.point;
     const resolvedOrbitCenter: Point2D = overrideCenter ?? baseOrbitCenter;
 
@@ -59,15 +75,14 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
       ? imagePercentToImagePoint(resolvedOrbitImagePercent, layer.imageMapping.imageDimensions)
       : baseOrbitImagePoint;
 
-    const orbitAngleRad = (orbitAngle * Math.PI) / 180;
-    const orbitPoint = {
-      x: resolvedOrbitCenter.x + orbitRadius * Math.cos(orbitAngleRad),
-      y: resolvedOrbitCenter.y + orbitRadius * Math.sin(orbitAngleRad),
-    };
+    // Use utility function
+    const orbitPoint = calculateOrbitPosition(resolvedOrbitCenter, orbitRadius, orbitAngle);
 
+    // Cache image dimensions
+    const { imageDimensions } = layer.imageMapping;
     const imageCenter = {
-      x: layer.imageMapping.imageDimensions.width / 2,
-      y: layer.imageMapping.imageDimensions.height / 2,
+      x: imageDimensions.width / 2,
+      y: imageDimensions.height / 2,
     };
 
     const newPosition = {
@@ -75,20 +90,16 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
       y: orbitPoint.y + (imageCenter.y - resolvedOrbitImagePoint.y),
     };
 
-    const halfWidth = layer.imageMapping.imageDimensions.width / 2;
-    const halfHeight = layer.imageMapping.imageDimensions.height / 2;
-    const isOffScreen =
-      newPosition.x + halfWidth < 0 ||
-      newPosition.x - halfWidth > stageSize ||
-      newPosition.y + halfHeight < 0 ||
-      newPosition.y - halfHeight > stageSize;
+    // Use utility function for visibility
+    const isVisible = calculateOrbitalVisibility(newPosition, imageDimensions, {
+      min: 0,
+      max: stageSize,
+    });
 
     let orbitRotation = 0;
     if (!layer.hasSpinAnimation) {
-      const dx = orbitPoint.x - resolvedOrbitCenter.x;
-      const dy = orbitPoint.y - resolvedOrbitCenter.y;
-      const outwardAngle = (Math.atan2(dy, dx) * 180) / Math.PI;
-      orbitRotation = outwardAngle - 90;
+      // Use utility function
+      orbitRotation = calculateAngleToPoint(resolvedOrbitCenter, orbitPoint) - 90;
     }
 
     return {
@@ -102,7 +113,7 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
       currentOrbitAngle: orbitAngle,
       orbitRotation,
       hasOrbitalAnimation: true,
-      visible: !isOffScreen,
+      visible: isVisible,
     };
   };
 }

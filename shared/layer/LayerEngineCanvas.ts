@@ -24,6 +24,7 @@ type LayerRenderData = {
   processors: LayerProcessor[];
   transformCache: TransformCache;
   isStatic: boolean;
+  hasAnimation: boolean;
 };
 
 export async function mountCanvasLayers(
@@ -42,6 +43,7 @@ export async function mountCanvasLayers(
 
       // All layers are static since processors are empty
       const isStatic = item.processors.length === 0;
+      const hasAnimation = !isStatic; // Track if layer needs animation loop
 
       // Pre-calculate transform constants
       const scaledWidth = image.width * item.data.scale.x;
@@ -85,6 +87,7 @@ export async function mountCanvasLayers(
         processors: item.processors,
         transformCache,
         isStatic,
+        hasAnimation,
       });
     } catch (error) {
       console.error(`[LayerEngineCanvas] Failed to load image for "${item.data.imageId}"`, error);
@@ -105,52 +108,177 @@ export async function mountCanvasLayers(
     }
   }
 
-  // Static scene - render once
-  ctx.clearRect(0, 0, STAGE_SIZE, STAGE_SIZE);
+  // Determine if we need animation loop
+  const hasAnyAnimation = layers.some((layer) => layer.hasAnimation);
 
-  // Render layers without rotation
-  for (const layer of noRotationLayers) {
-    const { image, baseData, transformCache } = layer;
-    const x = baseData.position.x - transformCache.scaledWidth / 2;
-    const y = baseData.position.y - transformCache.scaledHeight / 2;
-    ctx.drawImage(image, x, y, transformCache.scaledWidth, transformCache.scaledHeight);
-  }
+  if (hasAnyAnimation) {
+    console.log("[LayerEngineCanvas] Starting 60fps animation loop for dynamic layers");
 
-  // Render layers with rotation
-  for (const layer of withRotationLayers) {
-    const { image, baseData, transformCache } = layer;
-    const rotation = baseData.imageMapping.displayRotation ?? 0;
+    let animationFrameId: number | null = null;
 
-    ctx.save();
-    const dx = transformCache.dx;
-    const dy = transformCache.dy;
+    const renderFrame = (timestamp: number) => {
+      // Clear canvas
+      ctx.clearRect(0, 0, STAGE_SIZE, STAGE_SIZE);
 
-    ctx.translate(baseData.position.x, baseData.position.y);
-    ctx.translate(-dx, -dy);
-    ctx.rotate((rotation * Math.PI) / 180);
-    ctx.translate(dx, dy);
-    ctx.drawImage(
-      image,
-      -transformCache.centerX,
-      -transformCache.centerY,
-      transformCache.scaledWidth,
-      transformCache.scaledHeight,
-    );
-    ctx.restore();
-  }
+      // Render all layers (static and animated)
+      for (const layer of noRotationLayers) {
+        if (layer.hasAnimation) {
+          // Process through pipeline with current timestamp
+          const enhancedData = runPipeline(layer.baseData, layer.processors, timestamp);
 
-  console.log("[LayerEngineCanvas] Static scene - rendered once");
+          // Render with updated position/rotation
+          const x = enhancedData.position.x - layer.transformCache.scaledWidth / 2;
+          const y = enhancedData.position.y - layer.transformCache.scaledHeight / 2;
 
-  // Render debug visuals after all layers
-  for (const layer of layers) {
-    // Always run pipeline if there are processors (to generate debug visuals)
-    const enhancedData =
-      layer.processors.length > 0 ? runPipeline(layer.baseData, layer.processors) : layer.baseData;
+          // Check if layer has animation rotation
+          if (enhancedData.currentRotation !== undefined) {
+            ctx.save();
+            ctx.translate(enhancedData.position.x, enhancedData.position.y);
+            ctx.rotate((enhancedData.currentRotation * Math.PI) / 180);
+            ctx.drawImage(
+              layer.image,
+              -layer.transformCache.centerX,
+              -layer.transformCache.centerY,
+              layer.transformCache.scaledWidth,
+              layer.transformCache.scaledHeight,
+            );
+            ctx.restore();
+          } else {
+            ctx.drawImage(
+              layer.image,
+              x,
+              y,
+              layer.transformCache.scaledWidth,
+              layer.transformCache.scaledHeight,
+            );
+          }
+        } else {
+          // Static layer - simple render
+          const { image, baseData, transformCache } = layer;
+          const x = baseData.position.x - transformCache.scaledWidth / 2;
+          const y = baseData.position.y - transformCache.scaledHeight / 2;
+          ctx.drawImage(image, x, y, transformCache.scaledWidth, transformCache.scaledHeight);
+        }
+      }
 
-    if (enhancedData.imageMappingDebugVisuals) {
-      CanvasDebugRenderer.drawAll(ctx, enhancedData.imageMappingDebugVisuals);
+      // Render layers with rotation (similar logic)
+      for (const layer of withRotationLayers) {
+        if (layer.hasAnimation) {
+          const enhancedData = runPipeline(layer.baseData, layer.processors, timestamp);
+          const rotation =
+            enhancedData.currentRotation ?? layer.baseData.imageMapping.displayRotation ?? 0;
+
+          ctx.save();
+          const dx = layer.transformCache.dx;
+          const dy = layer.transformCache.dy;
+
+          ctx.translate(enhancedData.position.x, enhancedData.position.y);
+          ctx.translate(-dx, -dy);
+          ctx.rotate((rotation * Math.PI) / 180);
+          ctx.translate(dx, dy);
+          ctx.drawImage(
+            layer.image,
+            -layer.transformCache.centerX,
+            -layer.transformCache.centerY,
+            layer.transformCache.scaledWidth,
+            layer.transformCache.scaledHeight,
+          );
+          ctx.restore();
+        } else {
+          // Static layer with rotation
+          const { image, baseData, transformCache } = layer;
+          const rotation = baseData.imageMapping.displayRotation ?? 0;
+
+          ctx.save();
+          ctx.translate(baseData.position.x, baseData.position.y);
+          ctx.translate(-transformCache.dx, -transformCache.dy);
+          ctx.rotate((rotation * Math.PI) / 180);
+          ctx.translate(transformCache.dx, transformCache.dy);
+          ctx.drawImage(
+            image,
+            -transformCache.centerX,
+            -transformCache.centerY,
+            transformCache.scaledWidth,
+            transformCache.scaledHeight,
+          );
+          ctx.restore();
+        }
+      }
+
+      // Render debug visuals
+      for (const layer of layers) {
+        if (layer.hasAnimation) {
+          const enhancedData = runPipeline(layer.baseData, layer.processors, timestamp);
+          if (enhancedData.imageMappingDebugVisuals) {
+            CanvasDebugRenderer.drawAll(ctx, enhancedData.imageMappingDebugVisuals, STAGE_SIZE);
+          }
+        }
+      }
+
+      // Continue animation loop
+      animationFrameId = requestAnimationFrame(renderFrame);
+    };
+
+    // Start animation loop
+    animationFrameId = requestAnimationFrame(renderFrame);
+
+    // Return cleanup function
+    return () => {
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+        console.log("[LayerEngineCanvas] Animation loop stopped");
+      }
+    };
+  } else {
+    // Static scene rendering (existing code)
+    ctx.clearRect(0, 0, STAGE_SIZE, STAGE_SIZE);
+
+    // Render layers without rotation
+    for (const layer of noRotationLayers) {
+      const { image, baseData, transformCache } = layer;
+      const x = baseData.position.x - transformCache.scaledWidth / 2;
+      const y = baseData.position.y - transformCache.scaledHeight / 2;
+      ctx.drawImage(image, x, y, transformCache.scaledWidth, transformCache.scaledHeight);
     }
-  }
 
-  return () => {};
+    // Render layers with rotation
+    for (const layer of withRotationLayers) {
+      const { image, baseData, transformCache } = layer;
+      const rotation = baseData.imageMapping.displayRotation ?? 0;
+
+      ctx.save();
+      const dx = transformCache.dx;
+      const dy = transformCache.dy;
+
+      ctx.translate(baseData.position.x, baseData.position.y);
+      ctx.translate(-dx, -dy);
+      ctx.rotate((rotation * Math.PI) / 180);
+      ctx.translate(dx, dy);
+      ctx.drawImage(
+        image,
+        -transformCache.centerX,
+        -transformCache.centerY,
+        transformCache.scaledWidth,
+        transformCache.scaledHeight,
+      );
+      ctx.restore();
+    }
+
+    console.log("[LayerEngineCanvas] Static scene - rendered once");
+
+    // Render debug visuals after all layers
+    for (const layer of layers) {
+      // Always run pipeline if there are processors (to generate debug visuals)
+      const enhancedData =
+        layer.processors.length > 0
+          ? runPipeline(layer.baseData, layer.processors)
+          : layer.baseData;
+
+      if (enhancedData.imageMappingDebugVisuals) {
+        CanvasDebugRenderer.drawAll(ctx, enhancedData.imageMappingDebugVisuals);
+      }
+    }
+
+    return () => {};
+  }
 }

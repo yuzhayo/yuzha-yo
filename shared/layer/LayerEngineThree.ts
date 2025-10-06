@@ -20,6 +20,7 @@ type MeshRenderData = {
   processors: LayerProcessor[];
   transformCache: TransformCache;
   isStatic: boolean;
+  hasAnimation: boolean;
 };
 
 export async function mountThreeLayers(
@@ -62,6 +63,7 @@ export async function mountThreeLayers(
 
     // All layers are static since processors are empty
     const isStatic = processors.length === 0;
+    const hasAnimation = !isStatic; // Track if layer needs animation loop
 
     // Pre-calculate transform constants
     const scaledWidth = texture.image.width * data.scale.x;
@@ -87,6 +89,13 @@ export async function mountThreeLayers(
     });
 
     const mesh = new THREE.Mesh(planeGeometry, planeMaterial);
+
+    // Store processor reference and base data on mesh for animation loop
+    mesh.userData = {
+      baseData: data,
+      processors,
+      hasAnimation,
+    };
 
     // Create a group to handle rotation around off-center pivot
     const group = new THREE.Group();
@@ -116,6 +125,7 @@ export async function mountThreeLayers(
       processors,
       transformCache,
       isStatic,
+      hasAnimation,
     });
   }
 
@@ -158,33 +168,112 @@ export async function mountThreeLayers(
     }
   }
 
-  // Static scene - render once
-  renderer.render(scene, camera);
-  console.log("[LayerEngineThree] Static scene - rendered once, no animation loop");
+  // Check if any layer needs animation
+  const hasAnyAnimation = meshData.some((item) => item.hasAnimation);
 
-  return () => {
-    // Clean up debug meshes
-    for (const debugMesh of debugMeshes) {
-      scene.remove(debugMesh);
-      if (debugMesh instanceof THREE.Mesh) {
-        debugMesh.geometry.dispose();
-        if (debugMesh.material instanceof THREE.Material) {
-          debugMesh.material.dispose();
+  if (hasAnyAnimation) {
+    console.log("[LayerEngineThree] Starting 60fps animation loop");
+
+    let animationFrameId: number | null = null;
+
+    const animate = (timestamp: number) => {
+      // Update all animated layers
+      for (const item of meshData) {
+        if (item.hasAnimation && item.processors.length > 0) {
+          // Run pipeline with current timestamp
+          const enhancedData = runPipeline(item.baseData, item.processors, timestamp);
+
+          // Update Three.js group position
+          item.group.position.set(
+            enhancedData.position.x - STAGE_SIZE / 2,
+            -(enhancedData.position.y - STAGE_SIZE / 2),
+            0,
+          );
+
+          // Update rotation if present
+          if (enhancedData.currentRotation !== undefined) {
+            item.group.rotation.z = -(enhancedData.currentRotation * Math.PI) / 180;
+          }
+
+          // Update visibility for orbital animations
+          if (enhancedData.visible !== undefined) {
+            item.mesh.visible = enhancedData.visible;
+          }
         }
       }
-    }
-    for (const item of meshData) {
-      const { mesh, group } = item;
-      mesh.geometry.dispose();
-      if (mesh.material instanceof THREE.Material) {
-        const material = mesh.material as THREE.MeshBasicMaterial;
-        if (material.map) {
-          material.map.dispose();
-        }
-        material.dispose();
+
+      // Render scene
+      renderer.render(scene, camera);
+
+      // Continue loop
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    // Start animation
+    animationFrameId = requestAnimationFrame(animate);
+
+    // Return cleanup function
+    return () => {
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+        console.log("[LayerEngineThree] Animation loop stopped");
       }
-      group.remove(mesh);
-      scene.remove(group);
-    }
-  };
+
+      // Clean up debug meshes
+      for (const debugMesh of debugMeshes) {
+        scene.remove(debugMesh);
+        if (debugMesh instanceof THREE.Mesh) {
+          debugMesh.geometry.dispose();
+          if (debugMesh.material instanceof THREE.Material) {
+            debugMesh.material.dispose();
+          }
+        }
+      }
+      for (const item of meshData) {
+        const { mesh, group } = item;
+        mesh.geometry.dispose();
+        if (mesh.material instanceof THREE.Material) {
+          const material = mesh.material as THREE.MeshBasicMaterial;
+          if (material.map) {
+            material.map.dispose();
+          }
+          material.dispose();
+        }
+        group.remove(mesh);
+        scene.remove(group);
+      }
+      renderer.dispose();
+    };
+  } else {
+    // Static scene - render once
+    renderer.render(scene, camera);
+    console.log("[LayerEngineThree] Static scene - rendered once, no animation loop");
+
+    return () => {
+      // Clean up debug meshes
+      for (const debugMesh of debugMeshes) {
+        scene.remove(debugMesh);
+        if (debugMesh instanceof THREE.Mesh) {
+          debugMesh.geometry.dispose();
+          if (debugMesh.material instanceof THREE.Material) {
+            debugMesh.material.dispose();
+          }
+        }
+      }
+      for (const item of meshData) {
+        const { mesh, group } = item;
+        mesh.geometry.dispose();
+        if (mesh.material instanceof THREE.Material) {
+          const material = mesh.material as THREE.MeshBasicMaterial;
+          if (material.map) {
+            material.map.dispose();
+          }
+          material.dispose();
+        }
+        group.remove(mesh);
+        scene.remove(group);
+      }
+      renderer.dispose();
+    };
+  }
 }

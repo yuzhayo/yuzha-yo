@@ -773,32 +773,71 @@ export const CanvasDebugRenderer = {
     ctx.restore();
   },
 
-  drawAll(ctx: CanvasRenderingContext2D, visuals: ImageMappingDebugVisuals): void {
+  /**
+   * Check if point is in viewport
+   */
+  isInViewport(
+    point: { x: number; y: number },
+    stageSize: number = 2048,
+    margin: number = 100,
+  ): boolean {
+    return (
+      point.x >= -margin &&
+      point.x <= stageSize + margin &&
+      point.y >= -margin &&
+      point.y <= stageSize + margin
+    );
+  },
+
+  drawAll(
+    ctx: CanvasRenderingContext2D,
+    visuals: ImageMappingDebugVisuals,
+    stageSize: number = 2048,
+  ): void {
     // Draw in order: bounding box, rays (background), axis line, rotation, markers (foreground)
+
+    // Bounding box and stage center always draw (if present)
     if (visuals.boundingBox) {
       this.drawBoundingBox(ctx, visuals.boundingBox);
     }
-    if (visuals.tipRay) {
+
+    // Only draw rays if start point is visible
+    if (visuals.tipRay && this.isInViewport(visuals.tipRay.start, stageSize)) {
       this.drawImageRay(ctx, visuals.tipRay);
     }
-    if (visuals.baseRay) {
+    if (visuals.baseRay && this.isInViewport(visuals.baseRay.start, stageSize)) {
       this.drawImageRay(ctx, visuals.baseRay);
     }
+
+    // Draw axis line if either endpoint is visible
     if (visuals.axisLine) {
-      this.drawAxisLine(ctx, visuals.axisLine);
+      const startVisible = this.isInViewport(visuals.axisLine.start, stageSize);
+      const endVisible = this.isInViewport(visuals.axisLine.end, stageSize);
+      if (startVisible || endVisible) {
+        this.drawAxisLine(ctx, visuals.axisLine);
+      }
     }
-    if (visuals.rotationIndicator) {
+
+    // Draw rotation indicator if center is visible
+    if (
+      visuals.rotationIndicator &&
+      this.isInViewport(visuals.rotationIndicator.center, stageSize)
+    ) {
       this.drawRotationIndicator(ctx, visuals.rotationIndicator);
     }
-    if (visuals.baseMarker) {
+
+    // Only draw markers if in viewport
+    if (visuals.baseMarker && this.isInViewport(visuals.baseMarker.position, stageSize)) {
       this.drawImageBase(ctx, visuals.baseMarker);
     }
-    if (visuals.tipMarker) {
+    if (visuals.tipMarker && this.isInViewport(visuals.tipMarker.position, stageSize)) {
       this.drawImageTip(ctx, visuals.tipMarker);
     }
-    if (visuals.centerMarker) {
+    if (visuals.centerMarker && this.isInViewport(visuals.centerMarker.position, stageSize)) {
       this.drawImageCenter(ctx, visuals.centerMarker);
     }
+
+    // Stage center always draws
     if (visuals.stageCenterMarker) {
       this.drawStageCenter(ctx, visuals.stageCenterMarker);
     }
