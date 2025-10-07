@@ -39,6 +39,58 @@ export type Layer2DTransform = {
 
 export type { ImageMapping };
 
+/**
+ * Calculate layer position such that a specific image point appears at a stage point.
+ * This enables pivot-based positioning where any point on the image can be anchored
+ * to any point on the stage.
+ *
+ * @param stageAnchor - Where on stage we want the image point to appear
+ * @param imagePercent - Which point on image (0-100%)
+ * @param imageDimensions - Image width and height
+ * @param scale - Scale factors
+ * @returns Final position (where image center should be placed for rendering)
+ */
+function calculatePositionForPivot(
+  stageAnchor: Point2D,
+  imagePercent: PercentPoint,
+  imageDimensions: { width: number; height: number },
+  scale: Point2D,
+): Point2D {
+  // Convert percent to image pixels
+  const imagePointPixels: Point2D = {
+    x: (imagePercent.x / 100) * imageDimensions.width,
+    y: (imagePercent.y / 100) * imageDimensions.height,
+  };
+
+  // Image center in pixels
+  const imageCenter: Point2D = {
+    x: imageDimensions.width / 2,
+    y: imageDimensions.height / 2,
+  };
+
+  // Offset from center to desired point (in pixels)
+  const offsetFromCenter: Point2D = {
+    x: imagePointPixels.x - imageCenter.x,
+    y: imagePointPixels.y - imageCenter.y,
+  };
+
+  // Apply scale to offset
+  const scaledOffset: Point2D = {
+    x: offsetFromCenter.x * scale.x,
+    y: offsetFromCenter.y * scale.y,
+  };
+
+  // Calculate position: stageAnchor - scaledOffset
+  // This ensures when rendering engines place image center at position,
+  // the desired image point ends up at the stage anchor
+  const position: Point2D = {
+    x: stageAnchor.x - scaledOffset.x,
+    y: stageAnchor.y - scaledOffset.y,
+  };
+
+  return validatePoint(position);
+}
+
 export type UniversalLayerData = {
   layerId: string;
   imageId: string;
@@ -53,16 +105,48 @@ export type UniversalLayerData = {
   rotation?: number;
 };
 
-export function compute2DTransform(entry: LayerConfigEntry, stageSize: number): Layer2DTransform {
+export function compute2DTransform(
+  entry: LayerConfigEntry,
+  stageSize: number,
+  imageDimensions: { width: number; height: number },
+): Layer2DTransform {
   const [sxPercent, syPercent] = normalizePair(entry.scale, 100, 100);
   const sx = clampedPercentToScale(sxPercent);
   const sy = clampedPercentToScale(syPercent);
+
   const defaultCenter = stageSize / 2;
-  const [px, py] = normalizePair(entry.position, defaultCenter, defaultCenter);
-  return {
-    position: { x: px, y: py },
-    scale: { x: sx, y: sy },
-  };
+  const scale: Point2D = { x: sx, y: sy };
+
+  // Check for new BasicStagePoint/BasicImagePoint system
+  if (entry.BasicStagePoint !== undefined) {
+    // New pivot-based positioning system
+    const [stageX, stageY] = normalizePair(entry.BasicStagePoint, defaultCenter, defaultCenter);
+    const basicStagePoint: Point2D = { x: stageX, y: stageY };
+
+    // Default BasicImagePoint to [50, 50] (center) if not specified
+    const [imgPercentX, imgPercentY] = normalizePair(entry.BasicImagePoint, 50, 50);
+    const basicImagePercent: PercentPoint = {
+      x: clampPercent(imgPercentX),
+      y: clampPercent(imgPercentY),
+    };
+
+    // Calculate position that places BasicImagePoint at BasicStagePoint
+    const position = calculatePositionForPivot(
+      basicStagePoint,
+      basicImagePercent,
+      imageDimensions,
+      scale,
+    );
+
+    return { position, scale };
+  } else {
+    // Legacy position system (backward compatibility)
+    const [px, py] = normalizePair(entry.position, defaultCenter, defaultCenter);
+    return {
+      position: { x: px, y: py },
+      scale,
+    };
+  }
 }
 
 export function resolveAssetPath(imageId: string): string | null {
@@ -88,10 +172,12 @@ export async function prepareLayer(
   }
 
   const imageUrl = resolveAssetUrl(assetPath);
-  const { position, scale } = compute2DTransform(entry, stageSize);
 
-  // Get image dimensions - we need to load the image to get actual dimensions
+  // Get image dimensions FIRST - needed for new pivot-based positioning
   const dimensions = await getImageDimensions(imageUrl);
+
+  // Now compute transform with dimensions
+  const { position, scale } = compute2DTransform(entry, stageSize, dimensions);
 
   // Calculate image mapping with imageTip and imageBase from config
   const tipAngle = typeof entry.imageTip === "number" ? entry.imageTip : 90;

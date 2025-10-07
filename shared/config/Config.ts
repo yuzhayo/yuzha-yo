@@ -9,7 +9,12 @@ export type LayerConfigEntry = {
   imageId: string;
   /** Scale as percentage [x, y] (10-500, default 100). Values outside range are clamped. */
   scale?: number[];
+  /** @deprecated Use BasicStagePoint and BasicImagePoint instead */
   position?: number[];
+  /** Stage anchor point [x, y] in pixels (0-2048). Point on image will be placed here. */
+  BasicStagePoint?: number[];
+  /** Image point [x, y] as percentage (0-100). This point will be placed at BasicStagePoint. */
+  BasicImagePoint?: number[];
 
   // Image mapping config
   /**
@@ -75,6 +80,8 @@ type ConfigYuzhaEntry = {
       imageId?: string;
       scale?: number[];
       position?: number[];
+      BasicStagePoint?: number[];
+      BasicImagePoint?: number[];
       imageTip?: number;
       imageBase?: number;
       spinStagePoint?: number[];

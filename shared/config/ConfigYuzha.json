@@ -7,9 +7,10 @@
         "order": 50,
         "imageId": "STARBG",
         "scale": [100, 100],
-        "position": [1024, 1024],
         "imageTip": 90,
-        "imageBase": 270
+        "imageBase": 270,
+        "BasicStagePoint": [1024, 1024],
+        "BasicImagePoint": [50, 50]
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -45,9 +46,10 @@
         "order": 50,
         "imageId": "STARBG",
         "scale": [100, 100],
-        "position": [2, 1024],
         "imageTip": 90,
-        "imageBase": 270
+        "imageBase": 270,
+        "BasicStagePoint": [2, 1024],
+        "BasicImagePoint": [50, 50]
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -83,9 +85,10 @@
         "order": 50,
         "imageId": "STARBG",
         "scale": [100, 100],
-        "position": [2047, 1024],
         "imageTip": 90,
-        "imageBase": 270
+        "imageBase": 270,
+        "BasicStagePoint": [2047, 1024],
+        "BasicImagePoint": [50, 50]
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -121,9 +124,10 @@
         "order": 50,
         "imageId": "STARBG",
         "scale": [100, 100],
-        "position": [1024, 2],
         "imageTip": 90,
-        "imageBase": 270
+        "imageBase": 270,
+        "BasicStagePoint": [1024, 2],
+        "BasicImagePoint": [50, 50]
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -159,9 +163,10 @@
         "order": 50,
         "imageId": "STARBG",
         "scale": [100, 100],
-        "position": [1024, 2046],
         "imageTip": 90,
-        "imageBase": 270
+        "imageBase": 270,
+        "BasicStagePoint": [1024, 2046],
+        "BasicImagePoint": [50, 50]
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -197,9 +202,10 @@
         "order": 50,
         "imageId": "STARBG",
         "scale": [100, 100],
-        "position": [2, 0],
         "imageTip": 90,
-        "imageBase": 270
+        "imageBase": 270,
+        "BasicStagePoint": [2, 0],
+        "BasicImagePoint": [50, 50]
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -235,47 +241,10 @@
         "order": 50,
         "imageId": "STARBG",
         "scale": [100, 100],
-        "position": [2046, 2046],
         "imageTip": 90,
-        "imageBase": 270
-      },
-      "Spin Config": {
-        "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 50],
-        "spinSpeed": 0,
-        "spinDirection": "cw"
-      },
-      "Orbital Config": {
-        "orbitCenter": [1024, 1024],
-        "orbitImagePoint": [50, 50],
-        "orbitRadius": 0,
-        "orbitSpeed": 0,
-        "orbitDirection": "cw"
-      },
-      "Image Mapping Debug": {
-        "showCenter": false,
-        "showTip": false,
-        "showBase": false,
-        "showStageCenter": false,
-        "showAxisLine": false,
-        "showRotation": false,
-        "showTipRay": false,
-        "showBaseRay": false,
-        "showBoundingBox": false
-      }
-    }
-    },
-    {
-    "layerId": "stars-background",
-    "groups": {
-      "Basic Config": {
-        "renderer": "2D",
-        "order": 50,
-        "imageId": "STARBG",
-        "scale": [100, 100],
-        "position": [2046, 2],
-        "imageTip": 90,
-        "imageBase": 270
+        "imageBase": 270,
+        "BasicStagePoint": [2046, 2046],
+        "BasicImagePoint": [50, 50]
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -311,9 +280,49 @@
         "order": 50,
         "imageId": "STARBG",
         "scale": [100, 100],
-        "position": [2, 2046],
         "imageTip": 90,
-        "imageBase": 270
+        "imageBase": 270,
+        "BasicStagePoint": [2046, 2],
+        "BasicImagePoint": [50, 50]
+      },
+      "Spin Config": {
+        "spinStagePoint": [1024, 1024],
+        "spinImagePoint": [50, 50],
+        "spinSpeed": 0,
+        "spinDirection": "cw"
+      },
+      "Orbital Config": {
+        "orbitCenter": [1024, 1024],
+        "orbitImagePoint": [50, 50],
+        "orbitRadius": 0,
+        "orbitSpeed": 0,
+        "orbitDirection": "cw"
+      },
+      "Image Mapping Debug": {
+        "showCenter": false,
+        "showTip": false,
+        "showBase": false,
+        "showStageCenter": false,
+        "showAxisLine": false,
+        "showRotation": false,
+        "showTipRay": false,
+        "showBaseRay": false,
+        "showBoundingBox": false
+      }
+    }
+  },
+  {
+    "layerId": "stars-background",
+    "groups": {
+      "Basic Config": {
+        "renderer": "2D",
+        "order": 50,
+        "imageId": "STARBG",
+        "scale": [100, 100],
+        "imageTip": 90,
+        "imageBase": 270,
+        "BasicStagePoint": [2, 2046],
+        "BasicImagePoint": [50, 50]
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -349,9 +358,10 @@
         "order": 50,
         "imageId": "CLOCKBG",
         "scale": [100, 100],
-        "position": [1024, 1024],
         "imageTip": 90,
-        "imageBase": 270
+        "imageBase": 270,
+        "BasicStagePoint": [1024, 1024],
+        "BasicImagePoint": [50, 50]
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -387,9 +397,10 @@
         "order": 50,
         "imageId": "CLOCKBG",
         "scale": [100, 100],
-        "position": [1024, 1024],
         "imageTip": 90,
-        "imageBase": 270
+        "imageBase": 270,
+        "BasicStagePoint": [1024, 1024],
+        "BasicImagePoint": [50, 50]
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -417,7 +428,4 @@
       }
     }
   }
- 
- 
-  
 ]
