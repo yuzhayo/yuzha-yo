@@ -142,10 +142,34 @@ function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
       order: entry.order,
     };
 
-    // Merge all group properties
-    Object.values(entry.groups).forEach((group) => {
-      Object.assign(merged, group);
-    });
+    // Extract config groups
+    const basic = entry.groups["Basic Config"] || {};
+    const spin = entry.groups["Spin Config"] || {};
+    const orbital = entry.groups["Orbital Config"] || {};
+    const debug = entry.groups["Image Mapping Debug"] || {};
+
+    // Start with Basic Config (static positioning and rotation)
+    Object.assign(merged, basic);
+
+    // Spin Config overrides when active (spinSpeed > 0)
+    if (spin.spinSpeed && spin.spinSpeed > 0) {
+      // Merge all spin properties
+      Object.assign(merged, spin);
+      // Override position: spin positioning replaces basic positioning
+      if (spin.spinStagePoint) merged.BasicStagePoint = spin.spinStagePoint;
+      if (spin.spinImagePoint) merged.BasicImagePoint = spin.spinImagePoint;
+      // Reset static rotation: spin controls rotation (clean slate)
+      merged.BasicAngleImage = 0;
+    } else {
+      // Spin inactive: just copy spin config properties for reference
+      Object.assign(merged, spin);
+    }
+
+    // Orbital Config
+    Object.assign(merged, orbital);
+
+    // Image Mapping Debug Config (lowest priority, never overrides)
+    Object.assign(merged, debug);
 
     return merged as LayerConfigEntry;
   });
