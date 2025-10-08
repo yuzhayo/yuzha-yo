@@ -6,7 +6,7 @@ import type { EnhancedLayerData, LayerProcessor } from "../layer/LayerCorePipeli
 import { createImageMappingDebugProcessor } from "../layer/LayerCorePipelineImageMappingDebug";
 import { STAGE_SIZE, createStageTransformer } from "../utils/stage2048";
 
-export default function StageCanvas() {
+function StageCanvas() {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -106,3 +106,6 @@ export default function StageCanvas() {
     </div>
   );
 }
+
+// Memoize to prevent unnecessary re-renders when parent re-renders
+export default React.memo(StageCanvas);

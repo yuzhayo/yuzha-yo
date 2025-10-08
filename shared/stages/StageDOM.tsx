@@ -5,7 +5,7 @@ import { mountDOMLayers } from "../layer/LayerEngineDOM";
 import type { EnhancedLayerData, LayerProcessor } from "../layer/LayerCorePipeline";
 import { STAGE_SIZE, createStageTransformer } from "../utils/stage2048";
 
-export default function StageDOM() {
+function StageDOM() {
   const containerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
 
@@ -64,3 +64,6 @@ export default function StageDOM() {
     </div>
   );
 }
+
+// Memoize to prevent unnecessary re-renders when parent re-renders
+export default React.memo(StageDOM);

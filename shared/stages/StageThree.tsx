@@ -8,7 +8,7 @@ import { createImageMappingDebugProcessor } from "../layer/LayerCorePipelineImag
 import { STAGE_SIZE, createStageTransformer } from "../utils/stage2048";
 import { getDeviceCapability } from "../utils/DeviceCapability";
 
-export default function StageThree() {
+function StageThree() {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -129,3 +129,6 @@ export default function StageThree() {
     </div>
   );
 }
+
+// Memoize to prevent unnecessary re-renders when parent re-renders
+export default React.memo(StageThree);
