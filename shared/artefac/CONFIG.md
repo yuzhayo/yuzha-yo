@@ -3,6 +3,7 @@
 ## Proposed Change
 
 ### Current Structure
+
 ```json
 {
   \"layerId\": \"stars-background\",
@@ -22,6 +23,7 @@
 ```
 
 ### Proposed Structure
+
 ```json
 {
   \"layerId\": \"stars-background\",
@@ -48,7 +50,9 @@ With `imageTip` and `imageBase` moved to a separate future use group or removed 
 ### ✅ PROS
 
 #### 1. **Clearer Hierarchy** ⭐⭐⭐⭐⭐
+
 **Current**: Everything is nested inside groups, even layer identity properties
+
 ```json
 {
   \"layerId\": \"stars-background\",  // Layer identity
@@ -63,6 +67,7 @@ With `imageTip` and `imageBase` moved to a separate future use group or removed 
 ```
 
 **Proposed**: Layer identity at top level, positioning details in groups
+
 ```json
 {
   \"layerId\": \"stars-background\",  // Layer identity - clear
@@ -85,21 +90,25 @@ With `imageTip` and `imageBase` moved to a separate future use group or removed 
 ---
 
 #### 2. **Better Logical Grouping** ⭐⭐⭐⭐⭐
+
 **Proposed categorization makes sense**:
 
 **Top Level** (Layer Identification):
+
 - `layerId`: Unique identifier
 - `imageId`: Which image asset to use
 - `renderer`: How to render (2D/3D)
 - `order`: Rendering order/z-index
 
 **Basic Config Group** (Positioning & Transformation):
+
 - `scale`: Size
 - `BasicStagePoint`: Where on stage
 - `BasicImagePoint`: Which point of image
 - `BasicAngleImage`: Rotation
 
 **Other Groups** (Features):
+
 - Spin Config
 - Orbital Config
 - Image Mapping Debug
@@ -109,7 +118,9 @@ With `imageTip` and `imageBase` moved to a separate future use group or removed 
 ---
 
 #### 3. **Easier to Read** ⭐⭐⭐⭐
+
 **Current**: Need to dive into groups to see basic info
+
 ```json
 {
   \"layerId\": \"stars-background\",
@@ -124,6 +135,7 @@ With `imageTip` and `imageBase` moved to a separate future use group or removed 
 ```
 
 **Proposed**: Scan top level to understand the layer
+
 ```json
 {
   \"layerId\": \"stars-background\",
@@ -139,6 +151,7 @@ With `imageTip` and `imageBase` moved to a separate future use group or removed 
 ---
 
 #### 4. **More Scalable** ⭐⭐⭐⭐
+
 As you add more groups (Animation, Effects, Filters, etc.), top-level properties stay clean:
 
 ```json
@@ -164,7 +177,9 @@ As you add more groups (Animation, Effects, Filters, etc.), top-level properties
 ---
 
 #### 5. **Matches Industry Patterns** ⭐⭐⭐⭐
+
 Similar to game engines and animation tools:
+
 - Unity: GameObject properties at top, components nested
 - After Effects: Layer properties at top, transforms/effects nested
 - Blender: Object data at top, modifiers/properties nested
@@ -174,9 +189,11 @@ Similar to game engines and animation tools:
 ---
 
 #### 6. **Better for Tooling/UI** ⭐⭐⭐⭐⭐
+
 If you build a config editor UI:
 
 **Layer List Panel** (shows top-level properties):
+
 ```
 📄 stars-background
    Image: STARBG
@@ -190,6 +207,7 @@ If you build a config editor UI:
 ```
 
 **Properties Panel** (shows groups when layer selected):
+
 ```
 📦 Basic Config
    ├─ scale: [100, 100]
@@ -208,12 +226,15 @@ If you build a config editor UI:
 ---
 
 #### 7. **Reduced Nesting** ⭐⭐⭐
+
 **Current**: 3 levels to get to properties
+
 ```
 entry → groups → \"Basic Config\" → property
 ```
 
 **Proposed**: 2 levels for identity, 3 for details
+
 ```
 entry → property (for identity)
 entry → groups → \"Basic Config\" → property (for details)
@@ -224,7 +245,9 @@ entry → groups → \"Basic Config\" → property (for details)
 ---
 
 #### 8. **Cleaner for Simple Cases** ⭐⭐⭐⭐
+
 For layers that only need basics:
+
 ```json
 {
   \"layerId\": \"simple-bg\",
@@ -251,9 +274,11 @@ No need for Spin/Orbital groups if not using those features.
 ### ❌ CONS
 
 #### 1. **Code Changes Required** ⭐⭐⭐
+
 **Impact**: Need to update `Config.ts` transformation logic
 
 **Current code** (lines 134-146):
+
 ```typescript
 function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
   return raw.map((entry) => {
@@ -270,14 +295,15 @@ function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
 ```
 
 **New code needed**:
+
 ```typescript
 function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
   return raw.map((entry) => {
     const merged: Partial<LayerConfigEntry> = {
       layerId: entry.layerId,
-      imageId: entry.imageId,      // ← Add top-level properties
+      imageId: entry.imageId, // ← Add top-level properties
       renderer: entry.renderer,
-      order: entry.order
+      order: entry.order,
     };
 
     Object.values(entry.groups).forEach((group) => {
@@ -294,13 +320,15 @@ function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
 ---
 
 #### 2. **Breaking Change for Existing Configs** ⭐⭐⭐⭐
+
 **Impact**: All existing ConfigYuzha.json entries need migration
 
 **Current configs**: ~11 entries in ConfigYuzha.json (based on earlier grep results)
 
 **Migration needed**: For each entry, move `imageId`, `renderer`, `order` from groups to top level
 
-**Mitigation**: 
+**Mitigation**:
+
 - Write a migration script
 - Or manually update (relatively small number of entries)
 - Can support both formats temporarily
@@ -308,9 +336,11 @@ function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
 ---
 
 #### 3. **Type Definition Updates** ⭐⭐
+
 **Impact**: Need to update TypeScript types
 
 **Current** (Config.ts, lines 80-129):
+
 ```typescript
 type ConfigYuzhaEntry = {
   layerId: string;
@@ -326,12 +356,13 @@ type ConfigYuzhaEntry = {
 ```
 
 **New**:
+
 ```typescript
 type ConfigYuzhaEntry = {
   layerId: string;
-  imageId: string;        // ← Required at top level
-  renderer: string;       // ← Required at top level
-  order: number;          // ← Required at top level
+  imageId: string; // ← Required at top level
+  renderer: string; // ← Required at top level
+  order: number; // ← Required at top level
   groups: {
     [groupName: string]: {
       // renderer, order, imageId removed from here
@@ -348,16 +379,20 @@ type ConfigYuzhaEntry = {
 ---
 
 #### 4. **Inconsistency During Transition** ⭐⭐⭐
+
 **Impact**: If some configs use old format and some use new format, confusion
 
-**Mitigation**: 
+**Mitigation**:
+
 - Do all-at-once migration
 - Or support both formats with deprecation warning
 
 ---
 
 #### 5. **Documentation Updates** ⭐⭐
+
 **Impact**: Need to update:
+
 - Configuration examples
 - Documentation files
 - Comments in code
@@ -367,9 +402,11 @@ type ConfigYuzhaEntry = {
 ---
 
 #### 6. **imageTip/imageBase Placement Unclear** ⭐⭐⭐
+
 **Question**: Where do imageTip/imageBase go in new structure?
 
 **Option A**: Remove from config files entirely (calculated with defaults)
+
 ```json
 {
   \"groups\": {
@@ -381,6 +418,7 @@ type ConfigYuzhaEntry = {
 ```
 
 **Option B**: Create separate \"Image Mapping\" group
+
 ```json
 {
   \"groups\": {
@@ -394,6 +432,7 @@ type ConfigYuzhaEntry = {
 ```
 
 **Option C**: Keep in Basic Config but commented/optional
+
 ```json
 {
   \"groups\": {
@@ -413,16 +452,16 @@ type ConfigYuzhaEntry = {
 
 ## Comparison Table
 
-| Aspect | Current Structure | Proposed Structure | Winner |
-|--------|-------------------|-------------------|--------|
-| **Clarity** | Properties mixed in groups | Identity vs details separated | ✅ Proposed |
-| **Readability** | Need to dive into groups | Scan top level | ✅ Proposed |
-| **Logical Grouping** | Everything in groups | Natural categorization | ✅ Proposed |
-| **Scalability** | Can get cluttered | Clean top level | ✅ Proposed |
-| **UI/Tooling** | Harder to present | Natural panels | ✅ Proposed |
-| **Migration Effort** | No change needed | Requires migration | ✅ Current |
-| **Code Complexity** | Simple transform | Slightly more complex | ✅ Current |
-| **Type Safety** | Works fine | Works fine | 🟰 Tie |
+| Aspect               | Current Structure          | Proposed Structure            | Winner      |
+| -------------------- | -------------------------- | ----------------------------- | ----------- |
+| **Clarity**          | Properties mixed in groups | Identity vs details separated | ✅ Proposed |
+| **Readability**      | Need to dive into groups   | Scan top level                | ✅ Proposed |
+| **Logical Grouping** | Everything in groups       | Natural categorization        | ✅ Proposed |
+| **Scalability**      | Can get cluttered          | Clean top level               | ✅ Proposed |
+| **UI/Tooling**       | Harder to present          | Natural panels                | ✅ Proposed |
+| **Migration Effort** | No change needed           | Requires migration            | ✅ Current  |
+| **Code Complexity**  | Simple transform           | Slightly more complex         | ✅ Current  |
+| **Type Safety**      | Works fine                 | Works fine                    | 🟰 Tie      |
 
 ---
 
@@ -456,12 +495,13 @@ type ConfigYuzhaEntry = {
 ### Migration Strategy
 
 **Phase 1**: Update Type Definitions
+
 ```typescript
 type ConfigYuzhaEntry = {
   layerId: string;
-  imageId: string;       // Required
-  renderer: string;      // Required
-  order: number;         // Required
+  imageId: string; // Required
+  renderer: string; // Required
+  order: number; // Required
   groups: {
     [groupName: string]: {
       // Properties excluding imageId, renderer, order
@@ -471,6 +511,7 @@ type ConfigYuzhaEntry = {
 ```
 
 **Phase 2**: Update Transform Function
+
 ```typescript
 function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
   return raw.map((entry) => {
@@ -478,7 +519,7 @@ function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
       layerId: entry.layerId,
       imageId: entry.imageId,
       renderer: entry.renderer as LayerRenderer,
-      order: entry.order
+      order: entry.order,
     };
 
     Object.values(entry.groups).forEach((group) => {
@@ -491,11 +532,13 @@ function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
 ```
 
 **Phase 3**: Migrate ConfigYuzha.json
+
 - Write a script or manually update each entry
 - Move imageId, renderer, order to top level
 - Remove imageTip/imageBase from configs (use defaults)
 
 **Phase 4**: Test
+
 - Verify all layers load correctly
 - Check rendering is unchanged
 - Test debug visualization
@@ -505,6 +548,7 @@ function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
 ## Proposed Final Structure
 
 ### Clean Example
+
 ```json
 {
   \"layerId\": \"stars-background\",
@@ -543,10 +587,12 @@ function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
 ### What Happens to imageTip/imageBase?
 
 **Remove from config files** - They'll use defaults:
+
 - `imageTip`: 90° (top)
 - `imageBase`: 270° (bottom)
 
 **When needed in future**, add them back in a dedicated group:
+
 ```json
 {
   \"groups\": {
@@ -563,6 +609,7 @@ function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
 ## Summary
 
 ### Pros (8 major benefits)
+
 ✅ Clearer hierarchy
 ✅ Better logical grouping  
 ✅ Easier to read
@@ -573,6 +620,7 @@ function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
 ✅ Cleaner for simple cases
 
 ### Cons (6 manageable issues)
+
 ⚠️ Code changes required (small)
 ⚠️ Breaking change (one-time migration)
 ⚠️ Type updates needed (straightforward)
@@ -581,12 +629,11 @@ function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
 ⚠️ imageTip/imageBase placement (remove from configs)
 
 ### Verdict
+
 **✅ RECOMMEND RESTRUCTURING**
 
 The benefits for long-term maintainability, clarity, and scalability far outweigh the one-time migration cost.
 "
-
-
 
 "# Implementation Plan: Config Restructuring
 
@@ -603,6 +650,7 @@ This document provides a **complete step-by-step implementation plan** for restr
 #### Change 1.1: Update ConfigYuzhaEntry Type (Lines 80-129)
 
 **Current**:
+
 ```typescript
 type ConfigYuzhaEntry = {
   layerId: string;
@@ -657,6 +705,7 @@ type ConfigYuzhaEntry = {
 ```
 
 **New**:
+
 ```typescript
 type ConfigYuzhaEntry = {
   // Top-level identity properties (REQUIRED)
@@ -664,37 +713,37 @@ type ConfigYuzhaEntry = {
   imageId: string;
   renderer: \"2D\" | \"3D\";
   order: number;
-  
+
   // Configuration groups (OPTIONAL)
   groups: {
     [groupName: string]: {
       // Identity properties removed from groups
       // renderer, order, imageId are now top-level only
-      
+
       // Basic Config group properties
       scale?: number[];
       position?: number[];
       BasicStagePoint?: number[];
       BasicImagePoint?: number[];
       BasicAngleImage?: number;
-      
+
       // Image Mapping properties (future use - not in configs yet)
       imageTip?: number;
       imageBase?: number;
-      
+
       // Spin Config group properties
       spinStagePoint?: number[];
       spinImagePoint?: number[];
       spinSpeed?: number;
       spinDirection?: \"cw\" | \"ccw\";
-      
+
       // Orbital Config group properties
       orbitCenter?: number[];
       orbitImagePoint?: number[];
       orbitRadius?: number;
       orbitSpeed?: number;
       orbitDirection?: \"cw\" | \"ccw\";
-      
+
       // Image Mapping Debug group properties
       showCenter?: boolean;
       showTip?: boolean;
@@ -734,6 +783,7 @@ type ConfigYuzhaEntry = {
 #### Change 2.1: Update transformConfig Function (Lines 134-146)
 
 **Current**:
+
 ```typescript
 // Transform grouped structure to flat LayerConfigEntry format
 function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
@@ -751,6 +801,7 @@ function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
 ```
 
 **New**:
+
 ```typescript
 // Transform grouped structure to flat LayerConfigEntry format
 function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
@@ -760,7 +811,7 @@ function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
       layerId: entry.layerId,
       imageId: entry.imageId,
       renderer: entry.renderer as LayerRenderer,
-      order: entry.order
+      order: entry.order,
     };
 
     // Merge all group properties
@@ -774,6 +825,7 @@ function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
 ```
 
 **Key Changes**:
+
 - Added `imageId`, `renderer`, `order` to initial merged object
 - These come from top-level now, not from groups
 - Cast `renderer` to `LayerRenderer` type for type safety
@@ -789,6 +841,7 @@ We need to migrate ALL entries. Based on earlier analysis, there are ~11 entries
 #### Migration Pattern
 
 **Before (Current)**:
+
 ```json
 {
   \"layerId\": \"stars-background\",
@@ -811,6 +864,7 @@ We need to migrate ALL entries. Based on earlier analysis, there are ~11 entries
 ```
 
 **After (New)**:
+
 ```json
 {
   \"layerId\": \"stars-background\",
@@ -832,6 +886,7 @@ We need to migrate ALL entries. Based on earlier analysis, there are ~11 entries
 ```
 
 **Changes for each entry**:
+
 1. ✅ Move `imageId` from `groups[\"Basic Config\"]` to top level
 2. ✅ Move `renderer` from `groups[\"Basic Config\"]` to top level
 3. ✅ Move `order` from `groups[\"Basic Config\"]` to top level
@@ -846,47 +901,47 @@ We need to migrate ALL entries. Based on earlier analysis, there are ~11 entries
 ### File: `/app/scripts/migrate-config.mjs` (NEW)
 
 ```javascript
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const configPath = path.join(__dirname, '../shared/config/ConfigYuzha.json');
+const configPath = path.join(__dirname, "../shared/config/ConfigYuzha.json");
 
 // Read current config
-const rawConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+const rawConfig = JSON.parse(fs.readFileSync(configPath, "utf-8"));
 
 // Migrate each entry
 const migratedConfig = rawConfig.map((entry) => {
-  const basicConfig = entry.groups['Basic Config'] || {};
-  
+  const basicConfig = entry.groups["Basic Config"] || {};
+
   // Create new structure with top-level identity properties
   const newEntry = {
     layerId: entry.layerId,
     imageId: basicConfig.imageId,
     renderer: basicConfig.renderer,
     order: basicConfig.order,
-    groups: {}
+    groups: {},
   };
 
   // Process each group
   Object.entries(entry.groups).forEach(([groupName, groupProps]) => {
     const newGroupProps = { ...groupProps };
-    
+
     // If this is Basic Config, remove identity properties
-    if (groupName === 'Basic Config') {
+    if (groupName === "Basic Config") {
       delete newGroupProps.imageId;
       delete newGroupProps.renderer;
       delete newGroupProps.order;
-      delete newGroupProps.imageTip;  // Remove for future use
+      delete newGroupProps.imageTip; // Remove for future use
       delete newGroupProps.imageBase; // Remove for future use
-      
+
       // Add BasicAngleImage if not present
       if (newGroupProps.BasicAngleImage === undefined) {
         newGroupProps.BasicAngleImage = 0;
       }
     }
-    
+
     newEntry.groups[groupName] = newGroupProps;
   });
 
@@ -894,17 +949,14 @@ const migratedConfig = rawConfig.map((entry) => {
 });
 
 // Write migrated config
-fs.writeFileSync(
-  configPath,
-  JSON.stringify(migratedConfig, null, 2),
-  'utf-8'
-);
+fs.writeFileSync(configPath, JSON.stringify(migratedConfig, null, 2), "utf-8");
 
-console.log('✅ Migration complete!');
+console.log("✅ Migration complete!");
 console.log(`Migrated ${migratedConfig.length} entries`);
 ```
 
 **Usage**:
+
 ```bash
 node /app/scripts/migrate-config.mjs
 ```
@@ -916,7 +968,9 @@ node /app/scripts/migrate-config.mjs
 If you prefer manual migration, update each entry in ConfigYuzha.json:
 
 ### Entry 1: stars-background (first occurrence)
+
 **Before**:
+
 ```json
 {
   \"layerId\": \"stars-background\",
@@ -960,6 +1014,7 @@ If you prefer manual migration, update each entry in ConfigYuzha.json:
 ```
 
 **After**:
+
 ```json
 {
   \"layerId\": \"stars-background\",
@@ -1027,6 +1082,7 @@ Expected: No type errors
 ### 6.3: Console Log Verification
 
 Check browser console for:
+
 ```
 [LayerCore] Loaded layer \"stars-background\":
   imageId: STARBG
@@ -1050,14 +1106,14 @@ Add comments to clarify the new structure:
 ```typescript
 /**
  * Configuration entry from JSON file with new structure.
- * 
+ *
  * Structure:
  * - Top level: Layer identity (what is this layer?)
  *   - layerId: Unique identifier
  *   - imageId: Which image asset to use
  *   - renderer: How to render (2D or 3D)
  *   - order: Rendering order / z-index
- * 
+ *
  * - Groups: Layer configuration (how should it behave?)
  *   - Basic Config: Position, scale, rotation
  *   - Spin Config: Rotation animation
@@ -1105,17 +1161,18 @@ The transform function handles the conversion, so rendering code remains unchang
 Use this checklist during implementation:
 
 ### Phase 1: Type Updates
+
 - [ ] Update `ConfigYuzhaEntry` type in Config.ts
 - [ ] Update `transformConfig` function in Config.ts
 - [ ] Run `npx tsc --noEmit` to check for type errors
 - [ ] Fix any type errors
 
 ### Phase 2: Config Migration
+
 - [ ] **Option A**: Create and run migration script
   - [ ] Create `/app/scripts/migrate-config.mjs`
   - [ ] Run script: `node /app/scripts/migrate-config.mjs`
   - [ ] Review generated ConfigYuzha.json
-  
 - [ ] **Option B**: Manual migration
   - [ ] Migrate entry 1
   - [ ] Migrate entry 2
@@ -1123,6 +1180,7 @@ Use this checklist during implementation:
   - [ ] Review all entries
 
 ### Phase 3: Testing
+
 - [ ] Run TypeScript compiler: `npx tsc --noEmit`
 - [ ] Load application in browser
 - [ ] Check console for errors
@@ -1132,11 +1190,13 @@ Use this checklist during implementation:
 - [ ] Test debug visualization (if enabled)
 
 ### Phase 4: Documentation (Optional)
+
 - [ ] Add comments to Config.ts
 - [ ] Update README if applicable
 - [ ] Document new structure for team
 
 ### Phase 5: Cleanup
+
 - [ ] Remove migration script if no longer needed
 - [ ] Commit changes
 - [ ] Tag version if using git
@@ -1177,12 +1237,12 @@ cp /app/shared/config/Config.ts.backup /app/shared/config/Config.ts
 
 ## Risk Assessment
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Type errors | Low | Medium | TypeScript catches them |
-| Config syntax errors | Medium | High | Test incrementally |
-| Breaking rendering | Low | High | Keep backup, test thoroughly |
-| Missing properties | Low | Medium | TypeScript catches them |
+| Risk                 | Likelihood | Impact | Mitigation                   |
+| -------------------- | ---------- | ------ | ---------------------------- |
+| Type errors          | Low        | Medium | TypeScript catches them      |
+| Config syntax errors | Medium     | High   | Test incrementally           |
+| Breaking rendering   | Low        | High   | Keep backup, test thoroughly |
+| Missing properties   | Low        | Medium | TypeScript catches them      |
 
 ---
 
@@ -1224,6 +1284,7 @@ If you encounter any issues during implementation:
 ## Conclusion
 
 This implementation plan provides:
+
 - ✅ Complete code changes
 - ✅ Step-by-step instructions
 - ✅ Migration script option
@@ -1234,7 +1295,3 @@ This implementation plan provides:
 
 Follow the phases in order, and you'll have a cleaner, more maintainable configuration structure!
 "
-
-
-
-

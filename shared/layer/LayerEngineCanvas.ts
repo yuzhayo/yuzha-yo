@@ -166,8 +166,7 @@ export async function mountCanvasLayers(
       for (const layer of withRotationLayers) {
         if (layer.hasAnimation) {
           const enhancedData = runPipeline(layer.baseData, layer.processors, timestamp);
-          const rotation =
-            enhancedData.currentRotation ?? layer.baseData.rotation ?? 0;
+          const rotation = enhancedData.currentRotation ?? layer.baseData.rotation ?? 0;
 
           ctx.save();
           const dx = layer.transformCache.dx;

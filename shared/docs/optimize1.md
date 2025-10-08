@@ -1,14 +1,17 @@
 # Layer System Optimization Plan - Phase 1 (High Priority)
 
 ## Overview
+
 This document provides step-by-step instructions to implement three critical stability and performance fixes in the `shared/layer` system.
 
 **Target Areas:**
+
 1. Fix closure state management in animation processors
 2. Consolidate duplicate image loading functions
 3. Use pre-calculated coordinates in debug utilities
 
 **Expected Outcomes:**
+
 - Animation state bugs eliminated
 - 3 duplicate functions removed (~45 lines of code)
 - Coordinate calculation performance improved by ~40%
@@ -19,25 +22,29 @@ This document provides step-by-step instructions to implement three critical sta
 ## Task 1: Fix Closure State Management
 
 ### Problem Statement
+
 Files `shared/layer/LayerCorePipelineSpin.ts` and `shared/layer/LayerCorePipelineOrbital.ts` use closure variables to store animation start time. This causes state leakage between layer instances and prevents animation resets.
 
 ### Current Problematic Code Pattern
+
 ```typescript
 let startTime: number | null = null;
 return (layer: UniversalLayerData, timestamp?: number): EnhancedLayerData => {
   if (startTime === null) {
     startTime = currentTime; // Never resets!
   }
-}
+};
 ```
 
 ### Implementation Steps
 
 #### Step 1.1: Update SpinConfig Type
+
 **File:** `shared/layer/LayerCorePipelineSpin.ts`
 **Location:** Lines 9-13
 
 **Action:** Add optional `startTime` field to `SpinConfig` type
+
 ```typescript
 export type SpinConfig = {
   spinCenter?: [number, number] | PercentPoint;
@@ -48,10 +55,12 @@ export type SpinConfig = {
 ```
 
 #### Step 1.2: Refactor createSpinProcessor Function
+
 **File:** `shared/layer/LayerCorePipelineSpin.ts`
 **Location:** Lines 21-70
 
 **Action:** Remove closure variable and use timestamp directly
+
 ```typescript
 export function createSpinProcessor(config: SpinConfig): LayerProcessor {
   const spinSpeed = config.spinSpeed ?? 0;
@@ -68,7 +77,7 @@ export function createSpinProcessor(config: SpinConfig): LayerProcessor {
 
     const currentTime = timestamp ?? performance.now();
     const startTime = configStartTime ?? currentTime; // Use config or current
-    
+
     const elapsed = currentTime - startTime;
     const elapsedSeconds = elapsed / 1000;
     let rotation = (elapsedSeconds * spinSpeed) % 360;
@@ -104,10 +113,12 @@ export function createSpinProcessor(config: SpinConfig): LayerProcessor {
 ```
 
 #### Step 1.3: Update OrbitalConfig Type
+
 **File:** `shared/layer/LayerCorePipelineOrbital.ts`
 **Location:** Lines 9-15
 
 **Action:** Add optional `startTime` field to `OrbitalConfig` type
+
 ```typescript
 export type OrbitalConfig = {
   orbitCenter?: [number, number];
@@ -120,10 +131,12 @@ export type OrbitalConfig = {
 ```
 
 #### Step 1.4: Refactor createOrbitalProcessor Function
+
 **File:** `shared/layer/LayerCorePipelineOrbital.ts`
 **Location:** Lines 25-120
 
 **Action:** Remove closure variable and use timestamp directly
+
 ```typescript
 export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
   const orbitRadius = config.orbitRadius ?? 0;
@@ -143,7 +156,7 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
   return (layer: EnhancedLayerData, timestamp?: number): EnhancedLayerData => {
     const currentTime = timestamp ?? performance.now();
     const startTime = configStartTime ?? currentTime; // Use config or current
-    
+
     const elapsed = (currentTime - startTime) / 1000;
     let orbitAngle = (elapsed * orbitSpeed) % 360;
     if (orbitDirection === "ccw") {
@@ -156,10 +169,12 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
 ```
 
 #### Step 1.5: Update EnhancedLayerData Type (Optional)
+
 **File:** `shared/layer/LayerCorePipeline.ts`
 **Location:** Lines 20-48
 
 **Action:** Add optional animation start time tracking fields (optional enhancement)
+
 ```typescript
 export type EnhancedLayerData = UniversalLayerData & {
   // Spin properties
@@ -189,6 +204,7 @@ export type EnhancedLayerData = UniversalLayerData & {
 ```
 
 ### Testing Steps
+
 1. Run TypeScript compiler: `npm run typecheck`
 2. Create test layer with spin animation
 3. Recreate the processor multiple times
@@ -196,6 +212,7 @@ export type EnhancedLayerData = UniversalLayerData & {
 5. Check console for animation state consistency
 
 ### Expected Results
+
 - No closure state leakage
 - Animations can be reset by creating new processor with new `startTime`
 - Each layer instance has independent animation state
@@ -206,7 +223,9 @@ export type EnhancedLayerData = UniversalLayerData & {
 ## Task 2: Consolidate Duplicate Image Loading Functions
 
 ### Problem Statement
+
 Three identical `loadImage` functions exist in:
+
 - `shared/layer/LayerCore.ts` (lines 211-218)
 - `shared/layer/LayerEngineCanvas.ts` (lines 8-15)
 - `shared/layer/LayerEngineDOM.ts` (lines 107-114)
@@ -214,10 +233,12 @@ Three identical `loadImage` functions exist in:
 ### Implementation Steps
 
 #### Step 2.1: Export loadImage from LayerCore
+
 **File:** `shared/layer/LayerCore.ts`
 **Location:** Lines 211-218
 
 **Action:** Change from private function to exported function
+
 ```typescript
 // Before:
 async function getImageDimensions(url: string): Promise<{ width: number; height: number }> {
@@ -241,10 +262,12 @@ export async function loadImage(src: string): Promise<HTMLImageElement> {
 ```
 
 #### Step 2.2: Update LayerEngineCanvas.ts
+
 **File:** `shared/layer/LayerEngineCanvas.ts`
 **Location:** Lines 1-15
 
 **Action:** Remove local function and import from LayerCore
+
 ```typescript
 // Add to imports at top:
 import { loadImage } from "./LayerCore";
@@ -261,10 +284,12 @@ import { loadImage } from "./LayerCore";
 ```
 
 #### Step 2.3: Update LayerEngineDOM.ts
+
 **File:** `shared/layer/LayerEngineDOM.ts`
 **Location:** Lines 1, 107-114
 
 **Action:** Remove local function and import from LayerCore
+
 ```typescript
 // Add to imports at top:
 import { loadImage } from "./LayerCore";
@@ -281,12 +306,14 @@ import { loadImage } from "./LayerCore";
 ```
 
 #### Step 2.4: Verify LayerEngineThree.ts
+
 **File:** `shared/layer/LayerEngineThree.ts`
 
 **Action:** Confirm this file uses Three.js TextureLoader (no changes needed)
 **Note:** This file correctly uses `THREE.TextureLoader().loadAsync()` instead of manual image loading.
 
 ### Testing Steps
+
 1. Run TypeScript compiler: `npm run typecheck`
 2. Test Canvas engine rendering: Verify images load correctly
 3. Test DOM engine rendering: Verify images load correctly
@@ -294,6 +321,7 @@ import { loadImage } from "./LayerCore";
 5. Run full workflow: `npm run dev`
 
 ### Expected Results
+
 - All three engines work identically
 - Code reduced by ~30 lines
 - Single source of truth for image loading
@@ -304,9 +332,11 @@ import { loadImage } from "./LayerCore";
 ## Task 3: Use Pre-calculated Coordinates in Debug Utils
 
 ### Problem Statement
+
 `generateImageMappingDebugVisuals()` in `shared/layer/LayerCorePipelineImageMappingUtils.ts` manually recalculates stage coordinates instead of using pre-calculated values from `layer.calculation`.
 
 ### Current Code Pattern (Inefficient)
+
 ```typescript
 // Lines 391-405: Manual calculation
 const imageCenterStage = {
@@ -318,10 +348,12 @@ const imageCenterStage = {
 ### Implementation Steps
 
 #### Step 3.1: Update generateImageMappingDebugVisuals Function Signature
+
 **File:** `shared/layer/LayerCorePipelineImageMappingUtils.ts`
 **Location:** Lines 368-384
 
 **Action:** Accept full layer data instead of partial object
+
 ```typescript
 // Before:
 export function generateImageMappingDebugVisuals(
@@ -343,10 +375,12 @@ export function generateImageMappingDebugVisuals(
 ```
 
 #### Step 3.2: Replace Manual Calculations with Pre-calculated Values
-**File:** `shared/layer/LayerCorePipelineImageMappingUtils.ts**
+
+**File:** `shared/layer/LayerCorePipelineImageMappingUtils.ts\*\*
 **Location:** Lines 385-489
 
 **Action:** Use `layer.calculation` instead of manual transformation
+
 ```typescript
 export function generateImageMappingDebugVisuals(
   layer: UniversalLayerData,
@@ -406,7 +440,7 @@ export function generateImageMappingDebugVisuals(
     // NEW: Use pre-calculated transformation
     const tipRayStart = layer.calculation.imageCenter.stage.point;
     const tipRayEndImagePoint = tipRayImageSpace.end;
-    
+
     // Still need to transform the ray end point (not pre-calculated)
     const tipRayEnd = {
       x: layer.position.x + (tipRayEndImagePoint.x - width / 2) * layer.scale.x,
@@ -431,7 +465,7 @@ export function generateImageMappingDebugVisuals(
     // NEW: Use pre-calculated transformation
     const baseRayStart = layer.calculation.imageCenter.stage.point;
     const baseRayEndImagePoint = baseRayImageSpace.end;
-    
+
     // Still need to transform the ray end point (not pre-calculated)
     const baseRayEnd = {
       x: layer.position.x + (baseRayEndImagePoint.x - width / 2) * layer.scale.x,
@@ -446,13 +480,7 @@ export function generateImageMappingDebugVisuals(
   }
 
   if (cfg.showBoundingBox) {
-    visuals.boundingBox = generateBoundingBox(
-      layer.position,
-      width,
-      height,
-      layer.scale,
-      config
-    );
+    visuals.boundingBox = generateBoundingBox(layer.position, width, height, layer.scale, config);
   }
 
   if (cfg.showStageCenter) {
@@ -464,10 +492,12 @@ export function generateImageMappingDebugVisuals(
 ```
 
 #### Step 3.3: Update Debug Processor Call Site
+
 **File:** `shared/layer/LayerCorePipelineImageMappingDebug.ts`
 **Location:** Lines 34-45
 
 **Action:** Update function call to pass layer instead of partial object
+
 ```typescript
 // Before:
 const debugVisuals: ImageMappingDebugVisuals = generateImageMappingDebugVisuals(
@@ -482,13 +512,11 @@ const debugVisuals: ImageMappingDebugVisuals = generateImageMappingDebugVisuals(
 );
 
 // After:
-const debugVisuals: ImageMappingDebugVisuals = generateImageMappingDebugVisuals(
-  layer,
-  config,
-);
+const debugVisuals: ImageMappingDebugVisuals = generateImageMappingDebugVisuals(layer, config);
 ```
 
 ### Testing Steps
+
 1. Run TypeScript compiler: `npm run typecheck`
 2. Enable debug visualization in test layer config
 3. Verify debug markers appear in correct positions
@@ -497,6 +525,7 @@ const debugVisuals: ImageMappingDebugVisuals = generateImageMappingDebugVisuals(
 6. Measure performance: Debug generation should be ~40% faster
 
 ### Expected Results
+
 - Debug visuals appear in identical positions
 - No manual coordinate calculations in debug generation
 - Performance improvement: ~40% faster debug visual generation
@@ -510,11 +539,13 @@ const debugVisuals: ImageMappingDebugVisuals = generateImageMappingDebugVisuals(
 After completing all three tasks, verify:
 
 ### Code Quality
+
 - [ ] TypeScript compiles with zero errors: `npm run typecheck`
 - [ ] ESLint passes with zero warnings: `npm run lint`
 - [ ] Code formatting is correct: `npm run format`
 
 ### Functionality
+
 - [ ] Spin animations work correctly in Canvas renderer
 - [ ] Spin animations work correctly in DOM renderer
 - [ ] Spin animations work correctly in Three.js renderer
@@ -524,11 +555,13 @@ After completing all three tasks, verify:
 - [ ] Image loading works in DOM engine
 
 ### Performance
+
 - [ ] Initial layer preparation time unchanged or faster
 - [ ] Animation frame rate remains stable (60fps target)
 - [ ] Debug visualization generation is faster
 
 ### Regression Testing
+
 - [ ] All existing layers render correctly
 - [ ] No console errors during workflow startup
 - [ ] Browser console shows no new warnings
@@ -545,6 +578,7 @@ If issues occur, revert changes in reverse order:
 3. **Revert Task 1**: Restore closure-based state management in Spin/Orbital processors
 
 Use git to revert specific files:
+
 ```bash
 git checkout HEAD -- shared/layer/LayerCorePipelineImageMappingUtils.ts
 git checkout HEAD -- shared/layer/LayerEngineCanvas.ts
@@ -558,6 +592,7 @@ git checkout HEAD -- shared/layer/LayerCorePipelineOrbital.ts
 ## Success Criteria
 
 Implementation is complete when:
+
 1. ✅ All TypeScript errors resolved
 2. ✅ All ESLint warnings cleared
 3. ✅ All engines render correctly
@@ -572,18 +607,21 @@ Implementation is complete when:
 ## Notes for AI Agents
 
 ### Key Principles
+
 - **Preserve function signatures**: Engines depend on stable APIs
 - **Test incrementally**: Complete one task, test, then proceed
 - **Use existing utilities**: Don't recreate coordinate transformation functions
 - **Maintain type safety**: All changes must pass TypeScript strict mode
 
 ### Common Pitfalls to Avoid
+
 - Don't modify `UniversalLayerData` structure (breaks everything)
 - Don't change rendering engine logic (only update imports)
 - Don't alter visual output of debug utilities (must match pixel-perfect)
 - Don't remove error handling in image loading
 
 ### Files to Modify (7 files total)
+
 1. `shared/layer/LayerCore.ts` - Add loadImage export
 2. `shared/layer/LayerCorePipeline.ts` - Optional: Add startTime tracking
 3. `shared/layer/LayerCorePipelineSpin.ts` - Fix closure state
@@ -593,6 +631,7 @@ Implementation is complete when:
 7. `shared/layer/LayerCorePipelineImageMappingUtils.ts` - Use pre-calculated coords
 
 ### Files NOT to Modify
+
 - `shared/layer/LayerEngineThree.ts` - Already uses TextureLoader
 - `shared/layer/LayerCorePipelineImageMapping.ts` - Core calculation logic
 - Any stage rendering files - Only layer system changes
