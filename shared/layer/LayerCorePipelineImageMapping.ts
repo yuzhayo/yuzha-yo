@@ -73,9 +73,13 @@ function computeImageMappingInternal(
   const tipScaleY = tipDy !== 0 ? halfHeight / Math.abs(tipDy) : Infinity;
   const tipScale = Math.min(tipScaleX, tipScaleY);
 
+  // Guard against Infinity in tip calculation
+  const tipOffsetX = isFinite(tipScale) ? tipScale * tipDx : 0;
+  const tipOffsetY = isFinite(tipScale) ? tipScale * tipDy : 0;
+
   const imageTip = {
-    x: imageCenter.x + tipScale * tipDx,
-    y: imageCenter.y + tipScale * tipDy,
+    x: imageCenter.x + tipOffsetX,
+    y: imageCenter.y + tipOffsetY,
   };
 
   // Calculate base point independently at baseAngle from center
@@ -86,9 +90,13 @@ function computeImageMappingInternal(
   const baseScaleY = baseDy !== 0 ? halfHeight / Math.abs(baseDy) : Infinity;
   const baseScale = Math.min(baseScaleX, baseScaleY);
 
+  // Guard against Infinity in base calculation
+  const baseOffsetX = isFinite(baseScale) ? baseScale * baseDx : 0;
+  const baseOffsetY = isFinite(baseScale) ? baseScale * baseDy : 0;
+
   const imageBase = {
-    x: imageCenter.x + baseScale * baseDx,
-    y: imageCenter.y + baseScale * baseDy,
+    x: imageCenter.x + baseOffsetX,
+    y: imageCenter.y + baseOffsetY,
   };
 
   // Calculate display axis orientation
@@ -100,7 +108,8 @@ function computeImageMappingInternal(
   const displayAxisAngle = (Math.atan2(-axisDy, axisDx) * 180) / Math.PI;
 
   // Rotation needed to make axis point upward (90°)
-  const displayRotation = 90 - displayAxisAngle;
+  // Guard against NaN in rotation calculation
+  const displayRotation = isFinite(displayAxisAngle) ? 90 - displayAxisAngle : 0;
 
   // Midpoint of base-tip axis
   const axisMidpoint = {
