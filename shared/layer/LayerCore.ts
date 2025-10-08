@@ -184,63 +184,110 @@ export async function prepareLayer(
   const baseAngle = typeof entry.imageBase === "number" ? entry.imageBase : 270;
   const imageMapping = computeImageMapping(dimensions, tipAngle, baseAngle);
 
+  // Determine if we need full calculations (lazy evaluation for performance)
+  const needsFullCalculation =
+    entry.spinSpeed !== 0 ||
+    entry.orbitSpeed !== 0 ||
+    entry.showCenter ||
+    entry.showTip ||
+    entry.showBase ||
+    entry.showAxisLine ||
+    entry.showRotation ||
+    entry.showTipRay ||
+    entry.showBaseRay ||
+    entry.showBoundingBox;
+
   const stageCenterValue = stageSize / 2;
   const stageCenterPoint: Point2D = { x: stageCenterValue, y: stageCenterValue };
   const stageCenterPercent = stagePointToPercent(stageCenterPoint, stageSize);
 
+  // Always compute image center (needed for basic rendering)
   const imageCenterStage = imagePointToStagePoint(
     imageMapping.imageCenter,
     imageMapping.imageDimensions,
     scale,
     position,
   );
-  const imageTipStage = imagePointToStagePoint(
-    imageMapping.imageTip,
-    imageMapping.imageDimensions,
-    scale,
-    position,
-  );
-  const imageBaseStage = imagePointToStagePoint(
-    imageMapping.imageBase,
-    imageMapping.imageDimensions,
-    scale,
-    position,
-  );
-
   const imageCenterPercent = imagePointToPercent(
     imageMapping.imageCenter,
     imageMapping.imageDimensions,
   );
-  const imageTipPercent = imagePointToPercent(imageMapping.imageTip, imageMapping.imageDimensions);
-  const imageBasePercent = imagePointToPercent(
-    imageMapping.imageBase,
-    imageMapping.imageDimensions,
-  );
-
   const imageCenterStagePercent = stagePointToPercent(imageCenterStage, stageSize);
-  const imageTipStagePercent = stagePointToPercent(imageTipStage, stageSize);
-  const imageBaseStagePercent = stagePointToPercent(imageBaseStage, stageSize);
 
-  // Spin point calculation with independent stage/image overrides
-  // Stage point: use entry.spinStagePoint if provided, else fall back to base position
-  const spinStagePoint = normalizeStagePointInput(entry.spinStagePoint, position, stageSize);
-  const spinStagePercent = stagePointToPercent(spinStagePoint, stageSize);
+  // Lazy calculation: only compute tip/base/spin/orbit if actually needed
+  let imageTipStage: Point2D;
+  let imageBaseStage: Point2D;
+  let imageTipPercent: PercentPoint;
+  let imageBasePercent: PercentPoint;
+  let imageTipStagePercent: PercentPoint;
+  let imageBaseStagePercent: PercentPoint;
+  let spinStagePoint: Point2D;
+  let spinStagePercent: PercentPoint;
+  let spinImagePercent: PercentPoint;
+  let spinImagePoint: Point2D;
+  let orbitStagePoint: Point2D;
+  let orbitStagePercent: PercentPoint;
+  let orbitImagePercent: PercentPoint;
+  let orbitImagePoint: Point2D;
+  let orbitImageStagePoint: Point2D;
+  let orbitImageStagePercent: PercentPoint;
 
-  // Image point: use entry.spinImagePoint if provided, else fall back to image center [50, 50]
-  const spinImagePercent = normalizePercentInput(entry.spinImagePoint, 50, 50);
-  const spinImagePoint = imagePercentToImagePoint(spinImagePercent, imageMapping.imageDimensions);
+  if (needsFullCalculation) {
+    // Full calculation for animated or debug layers
+    imageTipStage = imagePointToStagePoint(
+      imageMapping.imageTip,
+      imageMapping.imageDimensions,
+      scale,
+      position,
+    );
+    imageBaseStage = imagePointToStagePoint(
+      imageMapping.imageBase,
+      imageMapping.imageDimensions,
+      scale,
+      position,
+    );
+    imageTipPercent = imagePointToPercent(imageMapping.imageTip, imageMapping.imageDimensions);
+    imageBasePercent = imagePointToPercent(imageMapping.imageBase, imageMapping.imageDimensions);
+    imageTipStagePercent = stagePointToPercent(imageTipStage, stageSize);
+    imageBaseStagePercent = stagePointToPercent(imageBaseStage, stageSize);
 
-  const orbitStagePoint = normalizeStagePointInput(entry.orbitCenter, stageCenterPoint, stageSize);
-  const orbitStagePercent = stagePointToPercent(orbitStagePoint, stageSize);
-  const orbitImagePercent = normalizePercentInput(entry.orbitImagePoint, 50, 50);
-  const orbitImagePoint = imagePercentToImagePoint(orbitImagePercent, imageMapping.imageDimensions);
-  const orbitImageStagePoint = imagePointToStagePoint(
-    orbitImagePoint,
-    imageMapping.imageDimensions,
-    scale,
-    position,
-  );
-  const orbitImageStagePercent = stagePointToPercent(orbitImageStagePoint, stageSize);
+    spinStagePoint = normalizeStagePointInput(entry.spinStagePoint, position, stageSize);
+    spinStagePercent = stagePointToPercent(spinStagePoint, stageSize);
+    spinImagePercent = normalizePercentInput(entry.spinImagePoint, 50, 50);
+    spinImagePoint = imagePercentToImagePoint(spinImagePercent, imageMapping.imageDimensions);
+
+    orbitStagePoint = normalizeStagePointInput(entry.orbitCenter, stageCenterPoint, stageSize);
+    orbitStagePercent = stagePointToPercent(orbitStagePoint, stageSize);
+    orbitImagePercent = normalizePercentInput(entry.orbitImagePoint, 50, 50);
+    orbitImagePoint = imagePercentToImagePoint(orbitImagePercent, imageMapping.imageDimensions);
+    orbitImageStagePoint = imagePointToStagePoint(
+      orbitImagePoint,
+      imageMapping.imageDimensions,
+      scale,
+      position,
+    );
+    orbitImageStagePercent = stagePointToPercent(orbitImageStagePoint, stageSize);
+  } else {
+    // Minimal calculation for static layers (use defaults/zero values)
+    const zeroPoint: Point2D = { x: 0, y: 0 };
+    const zeroPercent: PercentPoint = { x: 0, y: 0 };
+    imageTipStage = zeroPoint;
+    imageBaseStage = zeroPoint;
+    imageTipPercent = zeroPercent;
+    imageBasePercent = zeroPercent;
+    imageTipStagePercent = zeroPercent;
+    imageBaseStagePercent = zeroPercent;
+    spinStagePoint = zeroPoint;
+    spinStagePercent = zeroPercent;
+    spinImagePercent = zeroPercent;
+    spinImagePoint = zeroPoint;
+    orbitStagePoint = zeroPoint;
+    orbitStagePercent = zeroPercent;
+    orbitImagePercent = zeroPercent;
+    orbitImagePoint = zeroPoint;
+    orbitImageStagePoint = zeroPoint;
+    orbitImageStagePercent = zeroPercent;
+  }
 
   // Calculate rotation from BasicAngleImage (degrees)
   // Default: 0° (original image orientation, no rotation)
