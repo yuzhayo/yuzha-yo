@@ -300,10 +300,22 @@ export async function prepareLayer(
   };
 }
 
+// Cache for image dimensions to avoid redundant loading
+const IMAGE_DIMENSION_CACHE = new Map<string, { width: number; height: number }>();
+
 async function getImageDimensions(url: string): Promise<{ width: number; height: number }> {
+  // Return cached dimensions if available
+  if (IMAGE_DIMENSION_CACHE.has(url)) {
+    return IMAGE_DIMENSION_CACHE.get(url)!;
+  }
+
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.onload = () => resolve({ width: img.width, height: img.height });
+    img.onload = () => {
+      const dimensions = { width: img.width, height: img.height };
+      IMAGE_DIMENSION_CACHE.set(url, dimensions);
+      resolve(dimensions);
+    };
     img.onerror = reject;
     img.src = url;
   });
