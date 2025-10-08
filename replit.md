@@ -126,6 +126,40 @@ Communication: Simple, everyday language
 
 ## Recent Changes
 
+**October 8, 2025 - Configuration Structure Refactoring**
+
+- ✅ Restructured ConfigYuzha.json to move layer identity properties to top level
+- ✅ Updated ConfigYuzhaEntry type: imageId, renderer, order now required at top level
+- ✅ Updated transformConfig function to extract top-level properties first
+- ✅ Migrated all 11 layer entries to new structure
+- ✅ Removed imageTip/imageBase from configs (using default values: 90°, 270°)
+- ✅ All TypeScript, ESLint, and Prettier checks pass
+- ✅ Display functionality preserved - no regressions
+- ✅ Architect review: Pass
+
+**New Configuration Structure:**
+
+```json
+{
+  "layerId": "layer-name",        // Top level (identity)
+  "imageId": "ASSET_ID",          // Top level (identity)
+  "renderer": "2D",               // Top level (identity)
+  "order": 50,                    // Top level (identity)
+  "groups": {
+    "Basic Config": { ... },      // Positioning/transformation
+    "Spin Config": { ... },       // Features
+    "Orbital Config": { ... }     // Features
+  }
+}
+```
+
+**Benefits:**
+
+- Clearer separation: layer identity vs. configuration
+- More scalable for future feature groups
+- Easier to scan and understand at a glance
+- Better foundation for tooling/UI development
+
 **October 5, 2025 - Canvas 2D Renderer Complete Removal**
 
 - ✅ Deleted StageCanvas.tsx and LayerEngineCanvas.ts completely
