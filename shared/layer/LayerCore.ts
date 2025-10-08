@@ -321,6 +321,26 @@ async function getImageDimensions(url: string): Promise<{ width: number; height:
   });
 }
 
+/**
+ * Preload critical assets in parallel to populate dimension cache
+ * Call this early in app initialization for faster layer preparation
+ */
+export async function preloadCriticalAssets(imageIds: string[]): Promise<void> {
+  const preloadPromises = imageIds.map(async (imageId) => {
+    const assetPath = resolveAssetPath(imageId);
+    if (!assetPath) return;
+
+    const imageUrl = resolveAssetUrl(assetPath);
+    try {
+      await getImageDimensions(imageUrl);
+    } catch (error) {
+      console.warn(`[LayerCore] Failed to preload asset "${imageId}":`, error);
+    }
+  });
+
+  await Promise.all(preloadPromises);
+}
+
 export async function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
