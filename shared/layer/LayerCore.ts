@@ -2,7 +2,24 @@ import type { LayerConfigEntry } from "../config/Config";
 import registryData from "../config/ImageRegistry.json" assert { type: "json" };
 import { computeImageMapping, type ImageMapping } from "./LayerCorePipelineImageMapping";
 
-const registry = registryData as Array<{ id: string; path: string }>;
+// Type-safe registry with compile-time validation
+type AssetRegistryEntry = { id: string; path: string };
+const registry = registryData as Array<AssetRegistryEntry>;
+
+// Validate registry entries at initialization
+if (import.meta.env.DEV) {
+  registry.forEach((entry, index) => {
+    if (!entry.id || typeof entry.id !== "string") {
+      console.error(`[LayerCore] Invalid asset registry entry #${index}: missing or invalid id`);
+    }
+    if (!entry.path || typeof entry.path !== "string") {
+      console.error(
+        `[LayerCore] Invalid asset registry entry #${index} (${entry.id}): missing or invalid path`,
+      );
+    }
+  });
+}
+
 const pathMap = new Map(registry.map((entry) => [entry.id, entry.path]));
 
 export type Point2D = { x: number; y: number };
@@ -150,10 +167,19 @@ export function compute2DTransform(
 }
 
 export function resolveAssetPath(imageId: string): string | null {
-  return pathMap.get(imageId) ?? null;
+  const path = pathMap.get(imageId);
+  // Type guard: ensure path is a valid string
+  if (path && typeof path === "string" && path.length > 0) {
+    return path;
+  }
+  return null;
 }
 
 export function resolveAssetUrl(path: string): string {
+  // Type guard: ensure path is valid string
+  if (!path || typeof path !== "string") {
+    throw new Error(`Invalid asset path: ${path}`);
+  }
   if (!path.toLowerCase().startsWith("shared/asset/")) {
     throw new Error(`Unsupported asset path: ${path}`);
   }
