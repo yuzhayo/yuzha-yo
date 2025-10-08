@@ -11,7 +11,7 @@
         "imageBase": 270,
         "BasicStagePoint": [1024, 1024],
         "BasicImagePoint": [50, 50],
-        "BasicAngleImage": 90
+        "BasicAngleImage": 0
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -359,7 +359,7 @@
         "order": 50,
         "imageId": "CLOCKBG",
         "scale": [100, 100],
-        "imageTip": 90,
+        "imageTip": 70,
         "imageBase": 270,
         "BasicStagePoint": [1024, 1024],
         "BasicImagePoint": [50, 50],
@@ -399,7 +399,7 @@
         "order": 500,
         "imageId": "STARGG",
         "scale": [100, 100],
-        "imageTip": 90,
+        "imageTip": 70,
         "imageBase": 270,
         "BasicStagePoint": [1024, 1024],
         "BasicImagePoint": [50, 50],

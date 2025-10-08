@@ -16,8 +16,11 @@ export type LayerConfigEntry = {
   /** Image point [x, y] as percentage (0-100). This point will be placed at BasicStagePoint. */
   BasicImagePoint?: number[];
   /**
-   * Rotation angle in clock-based degrees (0-360, default 90°).
-   * Clock system: 9 o'clock = 0°, 12 o'clock = 90°, 3 o'clock = 180°, 6 o'clock = 270°.
+   * Rotation angle in degrees (0-360, default 0°).
+   * 0° = original image orientation (no rotation)
+   * 90° = rotated 90° counter-clockwise
+   * 180° = upside down
+   * 270° = rotated 90° clockwise
    * Rotates image around its center (50%, 50%). Separate from position calculation.
    */
   BasicAngleImage?: number;
