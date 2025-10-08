@@ -151,9 +151,73 @@ function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
   });
 }
 
-const config: LayerConfig = transformConfig(rawConfig as ConfigYuzhaEntry[])
-  .slice()
-  .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+/**
+ * Validate layer configuration entry for common errors
+ * @returns Array of error messages (empty if valid)
+ */
+export function validateLayerConfig(entry: LayerConfigEntry): string[] {
+  const errors: string[] = [];
+
+  // Required fields
+  if (!entry.layerId) errors.push(`Missing layerId`);
+  if (!entry.imageId) errors.push(`Missing imageId`);
+  if (!entry.renderer) errors.push(`Missing renderer`);
+  if (entry.order === undefined) errors.push(`Missing order`);
+
+  // Scale range validation
+  if (entry.scale) {
+    const [sx, sy] = entry.scale;
+    if (sx !== undefined && (sx < 10 || sx > 500)) {
+      errors.push(`Scale X out of range (10-500): ${sx}`);
+    }
+    if (sy !== undefined && (sy < 10 || sy > 500)) {
+      errors.push(`Scale Y out of range (10-500): ${sy}`);
+    }
+  }
+
+  // Angle validation
+  if (entry.BasicAngleImage !== undefined) {
+    if (entry.BasicAngleImage < 0 || entry.BasicAngleImage > 360) {
+      errors.push(`BasicAngleImage out of range (0-360): ${entry.BasicAngleImage}`);
+    }
+  }
+
+  // Speed validation (should be non-negative)
+  if (entry.spinSpeed !== undefined && entry.spinSpeed < 0) {
+    errors.push(`Negative spinSpeed: ${entry.spinSpeed}`);
+  }
+  if (entry.orbitSpeed !== undefined && entry.orbitSpeed < 0) {
+    errors.push(`Negative orbitSpeed: ${entry.orbitSpeed}`);
+  }
+
+  return errors;
+}
+
+/**
+ * Validate entire config and log warnings for any issues
+ */
+function validateConfig(config: LayerConfig): LayerConfig {
+  const IS_DEV = import.meta.env.DEV;
+  if (!IS_DEV) return config; // Skip validation in production for performance
+
+  config.forEach((entry, index) => {
+    const errors = validateLayerConfig(entry);
+    if (errors.length > 0) {
+      console.warn(
+        `[Config] Validation errors for layer #${index} (${entry.layerId || "unknown"}):`,
+        errors,
+      );
+    }
+  });
+
+  return config;
+}
+
+const config: LayerConfig = validateConfig(
+  transformConfig(rawConfig as ConfigYuzhaEntry[])
+    .slice()
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
+);
 
 export function loadLayerConfig(): LayerConfig {
   return config;
