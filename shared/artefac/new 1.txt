@@ -1,0 +1,3 @@
+correct. now proceed, ensure your code pass typecheck, enlist, prettier and no console error while preserve display functionality,
+create a comprehensive task list and then execute it immediately.
+create end to end plan then implement it immediately.
