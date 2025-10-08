@@ -126,6 +126,25 @@ Communication: Simple, everyday language
 
 ## Recent Changes
 
+**October 8, 2025 - Conditional Spin Config Override System**
+
+- ✅ Implemented smart config override logic in `transformConfig` function
+- ✅ Spin Config now conditionally overrides Basic Config based on `spinSpeed` value
+- ✅ When `spinSpeed > 0`: Spin positioning replaces basic positioning, rotation reset to 0 (clean slate)
+- ✅ When `spinSpeed = 0`: Basic Config values preserved (layer remains static)
+- ✅ Complete wiring verified: Config → LayerCore → Rendering Engines
+- ✅ All TypeScript, ESLint, and Prettier checks pass
+- ✅ Architect review: Pass - architecture sound, no gaps in data flow
+
+**Implementation Details:**
+- **Config Priority Order**: Basic Config → Spin Config (conditional) → Orbital Config → Debug Config
+- **Override Logic**: 
+  - `BasicStagePoint ← spinStagePoint` when spin active
+  - `BasicImagePoint ← spinImagePoint` when spin active  
+  - `BasicAngleImage ← 0` when spin active (spin controls rotation)
+- **Benefits**: Same preset for all layers, behavior controlled by `spinSpeed` value
+- **Design Philosophy**: Clean separation between static (Basic) and animated (Spin) states
+
 **October 8, 2025 - Update Function Optimization**
 
 - ✅ Optimized `clearCachesAndReload` function in MainScreenUtils.tsx for better performance
