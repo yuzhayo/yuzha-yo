@@ -1,14 +1,12 @@
 [
   {
     "layerId": "stars-background",
+    "imageId": "STARBG",
+    "renderer": "2D",
+    "order": 50,
     "groups": {
       "Basic Config": {
-        "renderer": "2D",
-        "order": 50,
-        "imageId": "STARBG",
         "scale": [100, 100],
-        "imageTip": 90,
-        "imageBase": 270,
         "BasicStagePoint": [1024, 1024],
         "BasicImagePoint": [50, 50],
         "BasicAngleImage": 0
@@ -41,16 +39,15 @@
   },
   {
     "layerId": "stars-background",
+    "imageId": "STARBG",
+    "renderer": "2D",
+    "order": 50,
     "groups": {
       "Basic Config": {
-        "renderer": "2D",
-        "order": 50,
-        "imageId": "STARBG",
         "scale": [100, 100],
-        "imageTip": 90,
-        "imageBase": 270,
         "BasicStagePoint": [2, 1024],
-        "BasicImagePoint": [50, 50]
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage": 0
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -80,16 +77,15 @@
   },
   {
     "layerId": "stars-background",
+    "imageId": "STARBG",
+    "renderer": "2D",
+    "order": 50,
     "groups": {
       "Basic Config": {
-        "renderer": "2D",
-        "order": 50,
-        "imageId": "STARBG",
         "scale": [100, 100],
-        "imageTip": 90,
-        "imageBase": 270,
         "BasicStagePoint": [2047, 1024],
-        "BasicImagePoint": [50, 50]
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage": 0
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -119,16 +115,15 @@
   },
   {
     "layerId": "stars-background",
+    "imageId": "STARBG",
+    "renderer": "2D",
+    "order": 50,
     "groups": {
       "Basic Config": {
-        "renderer": "2D",
-        "order": 50,
-        "imageId": "STARBG",
         "scale": [100, 100],
-        "imageTip": 90,
-        "imageBase": 270,
         "BasicStagePoint": [1024, 2],
-        "BasicImagePoint": [50, 50]
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage": 0
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -158,16 +153,15 @@
   },
   {
     "layerId": "stars-background",
+    "imageId": "STARBG",
+    "renderer": "2D",
+    "order": 50,
     "groups": {
       "Basic Config": {
-        "renderer": "2D",
-        "order": 50,
-        "imageId": "STARBG",
         "scale": [100, 100],
-        "imageTip": 90,
-        "imageBase": 270,
         "BasicStagePoint": [1024, 2046],
-        "BasicImagePoint": [50, 50]
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage": 0
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -197,16 +191,15 @@
   },
   {
     "layerId": "stars-background",
+    "imageId": "STARBG",
+    "renderer": "2D",
+    "order": 50,
     "groups": {
       "Basic Config": {
-        "renderer": "2D",
-        "order": 50,
-        "imageId": "STARBG",
         "scale": [100, 100],
-        "imageTip": 90,
-        "imageBase": 270,
         "BasicStagePoint": [2, 0],
-        "BasicImagePoint": [50, 50]
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage": 0
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -236,16 +229,15 @@
   },
   {
     "layerId": "stars-background",
+    "imageId": "STARBG",
+    "renderer": "2D",
+    "order": 50,
     "groups": {
       "Basic Config": {
-        "renderer": "2D",
-        "order": 50,
-        "imageId": "STARBG",
         "scale": [100, 100],
-        "imageTip": 90,
-        "imageBase": 270,
         "BasicStagePoint": [2046, 2046],
-        "BasicImagePoint": [50, 50]
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage": 0
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -275,16 +267,15 @@
   },
   {
     "layerId": "stars-background",
+    "imageId": "STARBG",
+    "renderer": "2D",
+    "order": 50,
     "groups": {
       "Basic Config": {
-        "renderer": "2D",
-        "order": 50,
-        "imageId": "STARBG",
         "scale": [100, 100],
-        "imageTip": 90,
-        "imageBase": 270,
         "BasicStagePoint": [2046, 2],
-        "BasicImagePoint": [50, 50]
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage": 0
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -314,16 +305,15 @@
   },
   {
     "layerId": "stars-background",
+    "imageId": "STARBG",
+    "renderer": "2D",
+    "order": 50,
     "groups": {
       "Basic Config": {
-        "renderer": "2D",
-        "order": 50,
-        "imageId": "STARBG",
         "scale": [100, 100],
-        "imageTip": 90,
-        "imageBase": 270,
         "BasicStagePoint": [2, 2046],
-        "BasicImagePoint": [50, 50]
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage": 0
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -353,18 +343,16 @@
   },
   {
     "layerId": "CLOCKBG",
+    "imageId": "CLOCKBG",
+    "renderer": "2D",
+    "order": 50,
     "groups": {
       "Basic Config": {
-        "renderer": "2D",
-        "order": 50,
-        "imageId": "CLOCKBG",
         "scale": [100, 100],
-        "imageTip": 70,
-        "imageBase": 270,
         "BasicStagePoint": [1024, 1024],
         "BasicImagePoint": [50, 50],
         "BasicAngleImage": 0
-      },  
+      },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
         "spinImagePoint": [50, 50],
@@ -393,14 +381,12 @@
   },
   {
     "layerId": "CLOCKBG",
+    "imageId": "STARGG",
+    "renderer": "2D",
+    "order": 500,
     "groups": {
       "Basic Config": {
-        "renderer": "2D",
-        "order": 500,
-        "imageId": "STARGG",
         "scale": [100, 100],
-        "imageTip": 70,
-        "imageBase": 270,
         "BasicStagePoint": [1024, 1024],
         "BasicImagePoint": [50, 50],
         "BasicAngleImage": 0
