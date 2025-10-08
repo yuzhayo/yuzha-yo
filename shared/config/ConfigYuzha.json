@@ -363,7 +363,7 @@
         "imageBase": 270,
         "BasicStagePoint": [1024, 1024],
         "BasicImagePoint": [50, 50],
-        "BasicAngleImage": 0
+        "BasicAngleImage": 90
       },  
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -396,14 +396,14 @@
     "groups": {
       "Basic Config": {
         "renderer": "2D",
-        "order": 50,
-        "imageId": "CLOCKB",
+        "order": 500,
+        "imageId": "STARGG",
         "scale": [100, 100],
         "imageTip": 90,
         "imageBase": 270,
         "BasicStagePoint": [1024, 1024],
         "BasicImagePoint": [50, 50],
-        "BasicAngleImage": 0
+        "BasicAngleImage": 90
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -420,7 +420,7 @@
       },
       "Image Mapping Debug": {
         "showCenter": false,
-        "showTip": false,
+        "showTip": true,
         "showBase": false,
         "showStageCenter": false,
         "showAxisLine": false,
