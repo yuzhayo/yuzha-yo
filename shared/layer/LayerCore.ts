@@ -165,6 +165,10 @@ export async function prepareLayer(
   entry: LayerConfigEntry,
   stageSize: number,
 ): Promise<UniversalLayerData | null> {
+  // Performance tracking (development only)
+  const IS_DEV = import.meta.env.DEV;
+  const perfStart = IS_DEV ? performance.now() : 0;
+
   const assetPath = resolveAssetPath(entry.imageId);
   if (!assetPath) {
     console.warn(`[LayerCore] Missing asset for imageId "${entry.imageId}"`);
@@ -332,7 +336,7 @@ export async function prepareLayer(
     },
   };
 
-  return {
+  const result = {
     layerId: entry.layerId,
     imageId: entry.imageId,
     imageUrl,
@@ -345,6 +349,20 @@ export async function prepareLayer(
     calculation,
     rotation,
   };
+
+  // Log performance metrics in development
+  if (IS_DEV) {
+    const perfEnd = performance.now();
+    const duration = perfEnd - perfStart;
+    if (duration > 10) {
+      // Only log if > 10ms
+      console.log(
+        `[LayerCore] prepareLayer "${entry.layerId}" took ${duration.toFixed(2)}ms (lazy: ${!needsFullCalculation})`,
+      );
+    }
+  }
+
+  return result;
 }
 
 // Cache for image dimensions to avoid redundant loading
