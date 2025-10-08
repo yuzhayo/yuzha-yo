@@ -102,18 +102,26 @@ export type MainScreenBtnGestureAreaProps = {
 // ===================================================================
 
 async function clearCachesAndReload() {
-  try {
-    if ("serviceWorker" in navigator) {
-      const regs = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(regs.map((r) => r.unregister().catch(() => {})));
-    }
-  } catch {}
-  try {
-    if ("caches" in window) {
-      const keys = await caches.keys();
-      await Promise.all(keys.map((k) => caches.delete(k)));
-    }
-  } catch {}
+  // Run cleanup operations in parallel for better performance
+  await Promise.allSettled([
+    // Service worker cleanup
+    (async () => {
+      if ("serviceWorker" in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.unregister()));
+      }
+    })(),
+
+    // Cache cleanup
+    (async () => {
+      if ("caches" in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+    })(),
+  ]);
+
+  // Force reload with cache bust, fallback to simple reload
   try {
     const url = new URL(window.location.href);
     url.searchParams.set("_ts", String(Date.now()));
