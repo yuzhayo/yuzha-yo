@@ -10,7 +10,8 @@
         "imageTip": 90,
         "imageBase": 270,
         "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50]
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage": 90
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -363,7 +364,7 @@
         "BasicStagePoint": [1024, 1024],
         "BasicImagePoint": [50, 50],
         "BasicAngleImage": 0
-      },
+      },  
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
         "spinImagePoint": [50, 50],
