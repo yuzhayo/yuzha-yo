@@ -361,7 +361,8 @@
         "imageTip": 90,
         "imageBase": 270,
         "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50]
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage": 0
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -395,12 +396,13 @@
       "Basic Config": {
         "renderer": "2D",
         "order": 50,
-        "imageId": "CLOCKBG",
+        "imageId": "CLOCKB",
         "scale": [100, 100],
         "imageTip": 90,
         "imageBase": 270,
         "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50]
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage": 0
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],

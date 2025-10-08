@@ -69,7 +69,7 @@ export async function mountThreeLayers(
     const scaledWidth = texture.image.width * data.scale.x;
     const scaledHeight = texture.image.height * data.scale.y;
     const imageCenter = { ...data.imageMapping.imageCenter };
-    const displayRotation = data.imageMapping.displayRotation ?? 0;
+    const displayRotation = data.rotation ?? 0;
     const hasRotation = displayRotation !== 0;
 
     const transformCache: TransformCache = {
@@ -141,7 +141,7 @@ export async function mountThreeLayers(
     const { mesh, group, baseData } = item;
 
     // Use only basic display rotation
-    const rotation = baseData.imageMapping.displayRotation ?? 0;
+    const rotation = baseData.rotation ?? 0;
 
     // No pivot offset needed for basic rotation - mesh stays centered in group
     mesh.position.set(0, 0, 0);

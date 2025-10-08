@@ -58,7 +58,8 @@ export async function mountCanvasLayers(
       const dx = centerX - pivotX;
       const dy = centerY - pivotY;
 
-      const displayRotation = item.data.imageMapping.displayRotation ?? 0;
+      // Use rotation from BasicAngleImage (now in item.data.rotation)
+      const displayRotation = item.data.rotation ?? 0;
       const hasRotation = displayRotation !== 0;
 
       const transformCache: TransformCache = {
@@ -166,7 +167,7 @@ export async function mountCanvasLayers(
         if (layer.hasAnimation) {
           const enhancedData = runPipeline(layer.baseData, layer.processors, timestamp);
           const rotation =
-            enhancedData.currentRotation ?? layer.baseData.imageMapping.displayRotation ?? 0;
+            enhancedData.currentRotation ?? layer.baseData.rotation ?? 0;
 
           ctx.save();
           const dx = layer.transformCache.dx;
@@ -187,7 +188,7 @@ export async function mountCanvasLayers(
         } else {
           // Static layer with rotation
           const { image, baseData, transformCache } = layer;
-          const rotation = baseData.imageMapping.displayRotation ?? 0;
+          const rotation = baseData.rotation ?? 0;
 
           ctx.save();
           ctx.translate(baseData.position.x, baseData.position.y);
@@ -244,7 +245,7 @@ export async function mountCanvasLayers(
     // Render layers with rotation
     for (const layer of withRotationLayers) {
       const { image, baseData, transformCache } = layer;
-      const rotation = baseData.imageMapping.displayRotation ?? 0;
+      const rotation = baseData.rotation ?? 0;
 
       ctx.save();
       const dx = transformCache.dx;

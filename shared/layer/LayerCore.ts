@@ -242,6 +242,12 @@ export async function prepareLayer(
   );
   const orbitImageStagePercent = stagePointToPercent(orbitImageStagePoint, stageSize);
 
+  // Calculate rotation from BasicAngleImage (clock-based degrees)
+  // Default: 90° (12 o'clock, pointing up)
+  // Direct use: rotation = BasicAngleImage
+  const basicAngleImage = typeof entry.BasicAngleImage === "number" ? entry.BasicAngleImage : 90;
+  const rotation = basicAngleImage;
+
   const calculation: LayerCalculationPoints = {
     stageCenter: createCoordinateBundle(stageCenterPoint, stageCenterPercent),
     imageCenter: createDualSpaceCoordinate(
@@ -290,6 +296,7 @@ export async function prepareLayer(
     imageTip: tipAngle,
     imageBase: baseAngle,
     calculation,
+    rotation,
   };
 }
 

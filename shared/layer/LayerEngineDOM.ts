@@ -37,8 +37,8 @@ export async function mountDOMLayers(
       layerDiv.style.pointerEvents = "none";
 
       // Calculate transform based on imageMapping
-      const { position, scale, imageMapping } = item.data;
-      const displayRotation = imageMapping.displayRotation ?? 0;
+      const { position, scale, rotation } = item.data;
+      const displayRotation = rotation ?? 0;
 
       // Get the natural image dimensions
       const naturalWidth = img.naturalWidth;
