@@ -82,11 +82,11 @@ export type LayerConfig = LayerConfigEntry[];
 // New grouped JSON structure
 type ConfigYuzhaEntry = {
   layerId: string;
+  imageId: string;
+  renderer: "2D" | "3D";
+  order: number;
   groups: {
     [groupName: string]: {
-      renderer?: string;
-      order?: number;
-      imageId?: string;
       scale?: number[];
       position?: number[];
       BasicStagePoint?: number[];
@@ -134,9 +134,15 @@ type ConfigYuzhaEntry = {
 // Transform grouped structure to flat LayerConfigEntry format
 function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
   return raw.map((entry) => {
-    // Merge all groups into a single config entry
-    const merged: Partial<LayerConfigEntry> = { layerId: entry.layerId };
+    // Start with top-level identity properties
+    const merged: Partial<LayerConfigEntry> = {
+      layerId: entry.layerId,
+      imageId: entry.imageId,
+      renderer: entry.renderer as LayerRenderer,
+      order: entry.order,
+    };
 
+    // Merge all group properties
     Object.values(entry.groups).forEach((group) => {
       Object.assign(merged, group);
     });
