@@ -381,7 +381,7 @@
   },
   {
     "layerId": "CLOCKBG",
-    "imageId": "STARGG",
+    "imageId": "CLOCKBG",
     "renderer": "2D",
     "order": 500,
     "groups": {
