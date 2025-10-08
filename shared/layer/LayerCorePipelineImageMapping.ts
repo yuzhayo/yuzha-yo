@@ -8,6 +8,9 @@ export type ImageMapping = {
   axisCenterOffset: { x: number; y: number };
 };
 
+// Cache for standard orientation image mappings (90°/270°)
+const STANDARD_MAPPING_CACHE = new Map<string, ImageMapping>();
+
 /**
  * Calculate image mapping (center, tip, base, axis angle, rotation)
  * @param imageDimensions - Width and height of the image
@@ -18,6 +21,28 @@ export function computeImageMapping(
   imageDimensions: { width: number; height: number },
   tipAngle: number = 90,
   baseAngle: number = 270,
+): ImageMapping {
+  // Cache standard orientation (90°/270°) to avoid redundant trig calculations
+  if (tipAngle === 90 && baseAngle === 270) {
+    const key = `${imageDimensions.width}x${imageDimensions.height}`;
+    if (STANDARD_MAPPING_CACHE.has(key)) {
+      return STANDARD_MAPPING_CACHE.get(key)!;
+    }
+    const result = computeImageMappingInternal(imageDimensions, tipAngle, baseAngle);
+    STANDARD_MAPPING_CACHE.set(key, result);
+    return result;
+  }
+
+  return computeImageMappingInternal(imageDimensions, tipAngle, baseAngle);
+}
+
+/**
+ * Internal implementation of image mapping calculation
+ */
+function computeImageMappingInternal(
+  imageDimensions: { width: number; height: number },
+  tipAngle: number,
+  baseAngle: number,
 ): ImageMapping {
   const { width, height } = imageDimensions;
 
