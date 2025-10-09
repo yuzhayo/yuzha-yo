@@ -345,37 +345,13 @@
     "layerId": "CLOCKBG",
     "imageId": "CLOCKBG",
     "renderer": "2D",
-    "order": 500,
+    "order": 600,
     "groups": {
       "Basic Config": {
         "scale": [100, 100],
         "BasicStagePoint": [1024, 1024],
         "BasicImagePoint": [50, 50],
         "BasicAngleImage": 0
-      },
-      "Spin Config": {
-        "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 50],
-        "spinSpeed": 0,
-        "spinDirection": "cw"
-      },
-      "Orbital Config": {
-        "orbitCenter": [1024, 1024],
-        "orbitImagePoint": [50, 50],
-        "orbitRadius": 0,
-        "orbitSpeed": 0,
-        "orbitDirection": "cw"
-      },
-      "Image Mapping Debug": {
-        "showCenter": false,
-        "showTip": false,
-        "showBase": false,
-        "showStageCenter": false,
-        "showAxisLine": false,
-        "showRotation": false,
-        "showTipRay": false,
-        "showBaseRay": false,
-        "showBoundingBox": false
       }
     }
   },
@@ -386,6 +362,26 @@
     "order": 490,
     "groups": {
       "Basic Config": {
+        "scale": [110, 110],
+        "BasicStagePoint": [1024, 1024],
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage": 0
+      },
+      "Spin Config": {
+        "spinStagePoint": [1024, 1024],
+        "spinImagePoint": [50, 50],
+        "spinSpeed": 10,
+        "spinDirection": "cw"
+      }
+    }
+  },
+  {
+    "layerId": "CLOCKBG",
+    "imageId": "STARBGHOLE1",
+    "renderer": "2D",
+    "order": 590,
+    "groups": {
+      "Basic Config": {
         "scale": [100, 100],
         "BasicStagePoint": [1024, 1024],
         "BasicImagePoint": [50, 50],
@@ -394,26 +390,8 @@
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
         "spinImagePoint": [50, 50],
-        "spinSpeed": 30,
+        "spinSpeed": 1,
         "spinDirection": "cw"
-      },
-      "Orbital Config": {
-        "orbitCenter": [1024, 1024],
-        "orbitImagePoint": [50, 50],
-        "orbitRadius": 0,
-        "orbitSpeed": 0,
-        "orbitDirection": "cw"
-      },
-      "Image Mapping Debug": {
-        "showCenter": false,
-        "showTip": true,
-        "showBase": false,
-        "showStageCenter": false,
-        "showAxisLine": false,
-        "showRotation": false,
-        "showTipRay": false,
-        "showBaseRay": false,
-        "showBoundingBox": false
       }
     }
   }
