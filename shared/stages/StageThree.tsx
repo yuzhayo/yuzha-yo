@@ -5,6 +5,7 @@ import { is2DLayer, prepareLayer } from "../layer/LayerCore";
 import { mountThreeLayers } from "../layer/LayerEngineThree";
 import type { EnhancedLayerData, LayerProcessor } from "../layer/LayerCorePipeline";
 import { createImageMappingDebugProcessor } from "../layer/LayerCorePipelineImageMappingDebug";
+import { createSpinProcessor } from "../layer/LayerCorePipelineSpin";
 import { STAGE_SIZE, createStageTransformer } from "../utils/stage2048";
 import { getDeviceCapability } from "../utils/DeviceCapability";
 
@@ -95,6 +96,15 @@ function StageThree() {
               baseStyle: entry.baseStyle,
               stageCenterStyle: entry.stageCenterStyle,
               colors: entry.debugColors,
+            }),
+          );
+        }
+
+        if (entry.spinSpeed && entry.spinSpeed > 0) {
+          processors.push(
+            createSpinProcessor({
+              spinSpeed: entry.spinSpeed,
+              spinDirection: entry.spinDirection,
             }),
           );
         }
