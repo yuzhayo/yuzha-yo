@@ -381,7 +381,7 @@
   },
   {
     "layerId": "CLOCKBG",
-    "imageId": "CLOCKMOON",
+    "imageId": "GEARMOON",
     "renderer": "2D",
     "order": 500,
     "groups": {
@@ -394,7 +394,7 @@
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
         "spinImagePoint": [50, 50],
-        "spinSpeed": 10,
+        "spinSpeed": 50,
         "spinDirection": "cw"
       },
       "Orbital Config": {
