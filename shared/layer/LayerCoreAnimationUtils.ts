@@ -1,20 +1,38 @@
 /**
- * Animation Utilities
+ * ============================================================================
+ * ANIMATION UTILITIES
  * Shared functions for animation processors and rendering engines
+ * ============================================================================
  */
+
+// ============================================================================
+// SECTION 1: MATH CONSTANTS & CONVERSIONS
+// ============================================================================
+
+/**
+ * Pre-calculated constants for performance
+ * Use these instead of calculating Math.PI / 180 every frame
+ */
+export const AnimationConstants = {
+  DEG_TO_RAD: Math.PI / 180,
+  RAD_TO_DEG: 180 / Math.PI,
+  TWO_PI: Math.PI * 2,
+  HALF_PI: Math.PI / 2,
+  QUARTER_PI: Math.PI / 4,
+} as const;
 
 /**
  * Convert degrees to radians
  */
 export function degreesToRadians(degrees: number): number {
-  return (degrees * Math.PI) / 180;
+  return degrees * AnimationConstants.DEG_TO_RAD;
 }
 
 /**
  * Convert radians to degrees
  */
 export function radiansToDegrees(radians: number): number {
-  return (radians * 180) / Math.PI;
+  return radians * AnimationConstants.RAD_TO_DEG;
 }
 
 /**
@@ -28,14 +46,18 @@ export function normalizeAngle(angle: number): number {
 
 /**
  * Calculate elapsed time with optional start time
+ * For continuous animations without a start time, use timestamp directly as elapsed time
  */
 export function calculateElapsedTime(
   timestamp: number,
   startTime?: number,
 ): { elapsed: number; effectiveStartTime: number } {
-  const effectiveStartTime = startTime ?? timestamp;
-  const elapsed = timestamp - effectiveStartTime;
-  return { elapsed, effectiveStartTime };
+  if (startTime === undefined) {
+    // For continuous animations, use timestamp directly as elapsed time
+    return { elapsed: timestamp, effectiveStartTime: 0 };
+  }
+  const elapsed = timestamp - startTime;
+  return { elapsed, effectiveStartTime: startTime };
 }
 
 /**
@@ -145,4 +167,155 @@ export class FrameRateTracker {
   reset(): void {
     this.frameTimes = [];
   }
+}
+
+// ============================================================================
+// SECTION 2: PERFORMANCE UTILITIES - PIPELINE CACHING
+// ============================================================================
+
+/**
+ * Pipeline result cache for reducing duplicate calculations per frame
+ * Use this to cache runPipeline() results when the same layer is processed multiple times
+ */
+export class PipelineCache {
+  private cache = new Map<string, unknown>();
+  private frameId: number = 0;
+
+  get<T>(key: string, computeFn: () => T): T {
+    if (!this.cache.has(key)) {
+      this.cache.set(key, computeFn());
+    }
+    return this.cache.get(key) as T;
+  }
+
+  clear(): void {
+    this.cache.clear();
+  }
+
+  nextFrame(): void {
+    this.clear();
+    this.frameId++;
+  }
+
+  getFrameId(): number {
+    return this.frameId;
+  }
+}
+
+export function createPipelineCache(): PipelineCache {
+  return new PipelineCache();
+}
+
+// ============================================================================
+// SECTION 3: PERFORMANCE UTILITIES - STATIC LAYER OPTIMIZATION
+// ============================================================================
+
+/**
+ * OffscreenCanvas helper for rendering static layers once
+ */
+export class StaticLayerBuffer {
+  private offscreenCanvas: OffscreenCanvas | null = null;
+  private offscreenCtx: OffscreenCanvasRenderingContext2D | null = null;
+  private isRendered: boolean = false;
+
+  constructor(width: number, height: number) {
+    if (typeof OffscreenCanvas !== "undefined") {
+      this.offscreenCanvas = new OffscreenCanvas(width, height);
+      this.offscreenCtx = this.offscreenCanvas.getContext("2d");
+    }
+  }
+
+  getContext(): OffscreenCanvasRenderingContext2D | null {
+    return this.offscreenCtx;
+  }
+
+  markRendered(): void {
+    this.isRendered = true;
+  }
+
+  isAlreadyRendered(): boolean {
+    return this.isRendered;
+  }
+
+  compositeTo(ctx: CanvasRenderingContext2D, x: number = 0, y: number = 0): void {
+    if (this.offscreenCanvas && this.isRendered) {
+      ctx.drawImage(this.offscreenCanvas, x, y);
+    }
+  }
+
+  static isSupported(): boolean {
+    return typeof OffscreenCanvas !== "undefined";
+  }
+}
+
+// ============================================================================
+// SECTION 4: PERFORMANCE UTILITIES - RENDER OPTIMIZATION
+// ============================================================================
+
+/**
+ * Throttled debug renderer - renders debug visuals at lower FPS
+ */
+export class ThrottledDebugRenderer {
+  private frameCounter: number = 0;
+  private throttleFactor: number;
+
+  constructor(throttleFactor: number = 2) {
+    this.throttleFactor = Math.max(1, Math.floor(throttleFactor));
+  }
+
+  shouldRender(): boolean {
+    this.frameCounter++;
+    return this.frameCounter % this.throttleFactor === 0;
+  }
+
+  reset(): void {
+    this.frameCounter = 0;
+  }
+
+  setThrottleFactor(factor: number): void {
+    this.throttleFactor = Math.max(1, Math.floor(factor));
+  }
+}
+
+export type LayerBatch<T> = {
+  static: T[];
+  spinOnly: T[];
+  orbital: T[];
+  complex: T[];
+};
+
+/**
+ * Batch layers by animation type for optimized rendering
+ */
+export function batchLayersByAnimation<
+  T extends {
+    hasSpinAnimation?: boolean;
+    hasOrbitalAnimation?: boolean;
+    isStatic?: boolean;
+  },
+>(layers: T[]): LayerBatch<T> {
+  const batched: LayerBatch<T> = {
+    static: [],
+    spinOnly: [],
+    orbital: [],
+    complex: [],
+  };
+
+  for (const layer of layers) {
+    if (layer.isStatic) {
+      batched.static.push(layer);
+    } else if (layer.hasOrbitalAnimation) {
+      if (layer.hasSpinAnimation) {
+        batched.complex.push(layer);
+      } else {
+        batched.orbital.push(layer);
+      }
+    } else if (layer.hasSpinAnimation) {
+      batched.spinOnly.push(layer);
+    } else {
+      batched.static.push(layer);
+    }
+  }
+
+  return batched;
 }

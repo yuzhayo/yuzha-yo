@@ -3,6 +3,7 @@ import type { EnhancedLayerData } from "./LayerCorePipeline";
 import type { LayerProcessor } from "./LayerCorePipeline";
 import { runPipeline } from "./LayerCorePipeline";
 import { ThreeDebugRenderer } from "./LayerCorePipelineImageMappingUtils";
+import { AnimationConstants, createPipelineCache } from "./LayerCoreAnimationUtils";
 
 const STAGE_SIZE = 2048;
 
@@ -175,13 +176,15 @@ export async function mountThreeLayers(
     console.log("[LayerEngineThree] Starting 60fps animation loop");
 
     let animationFrameId: number | null = null;
+    const pipelineCache = createPipelineCache();
 
     const animate = (timestamp: number) => {
       // Update all animated layers
       for (const item of meshData) {
         if (item.hasAnimation && item.processors.length > 0) {
-          // Run pipeline with current timestamp
-          const enhancedData = runPipeline(item.baseData, item.processors, timestamp);
+          const enhancedData = pipelineCache.get(item.baseData.layerId, () =>
+            runPipeline(item.baseData, item.processors, timestamp),
+          );
 
           // Update Three.js group position
           item.group.position.set(
@@ -192,7 +195,7 @@ export async function mountThreeLayers(
 
           // Update rotation if present
           if (enhancedData.currentRotation !== undefined) {
-            item.group.rotation.z = -(enhancedData.currentRotation * Math.PI) / 180;
+            item.group.rotation.z = -(enhancedData.currentRotation * AnimationConstants.DEG_TO_RAD);
           }
 
           // Update visibility for orbital animations
@@ -204,6 +207,9 @@ export async function mountThreeLayers(
 
       // Render scene
       renderer.render(scene, camera);
+
+      // Clear cache for next frame
+      pipelineCache.nextFrame();
 
       // Continue loop
       animationFrameId = requestAnimationFrame(animate);

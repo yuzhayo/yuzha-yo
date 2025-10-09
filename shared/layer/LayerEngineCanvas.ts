@@ -3,6 +3,7 @@ import type { LayerProcessor } from "./LayerCorePipeline";
 import { runPipeline } from "./LayerCorePipeline";
 import { CanvasDebugRenderer } from "./LayerCorePipelineImageMappingUtils";
 import { loadImage } from "./LayerCore";
+import { AnimationConstants, createPipelineCache } from "./LayerCoreAnimationUtils";
 
 const STAGE_SIZE = 2048;
 
@@ -95,7 +96,11 @@ export async function mountCanvasLayers(
     }
   }
 
-  console.log(`[LayerEngineCanvas] Total layers loaded: ${layers.length} (all static)`);
+  const staticCount = layers.filter((l) => l.isStatic).length;
+  const animatedCount = layers.length - staticCount;
+  console.log(
+    `[LayerEngineCanvas] Total layers loaded: ${layers.length} (${staticCount} static, ${animatedCount} animated)`,
+  );
 
   // Split layers by rotation for optimal rendering
   const noRotationLayers: LayerRenderData[] = [];
@@ -116,6 +121,7 @@ export async function mountCanvasLayers(
     console.log("[LayerEngineCanvas] Starting 60fps animation loop for dynamic layers");
 
     let animationFrameId: number | null = null;
+    const pipelineCache = createPipelineCache();
 
     const renderFrame = (timestamp: number) => {
       // Clear canvas
@@ -124,8 +130,10 @@ export async function mountCanvasLayers(
       // Render all layers (static and animated)
       for (const layer of noRotationLayers) {
         if (layer.hasAnimation) {
-          // Process through pipeline with current timestamp
-          const enhancedData = runPipeline(layer.baseData, layer.processors, timestamp);
+          // Process through pipeline with caching
+          const enhancedData = pipelineCache.get(layer.baseData.layerId, () =>
+            runPipeline(layer.baseData, layer.processors, timestamp),
+          );
 
           // Render with updated position/rotation
           const x = enhancedData.position.x - layer.transformCache.scaledWidth / 2;
@@ -135,7 +143,7 @@ export async function mountCanvasLayers(
           if (enhancedData.currentRotation !== undefined) {
             ctx.save();
             ctx.translate(enhancedData.position.x, enhancedData.position.y);
-            ctx.rotate((enhancedData.currentRotation * Math.PI) / 180);
+            ctx.rotate(enhancedData.currentRotation * AnimationConstants.DEG_TO_RAD);
             ctx.drawImage(
               layer.image,
               -layer.transformCache.centerX,
@@ -165,7 +173,9 @@ export async function mountCanvasLayers(
       // Render layers with rotation (similar logic)
       for (const layer of withRotationLayers) {
         if (layer.hasAnimation) {
-          const enhancedData = runPipeline(layer.baseData, layer.processors, timestamp);
+          const enhancedData = pipelineCache.get(layer.baseData.layerId, () =>
+            runPipeline(layer.baseData, layer.processors, timestamp),
+          );
           const rotation = enhancedData.currentRotation ?? layer.baseData.rotation ?? 0;
 
           ctx.save();
@@ -174,7 +184,7 @@ export async function mountCanvasLayers(
 
           ctx.translate(enhancedData.position.x, enhancedData.position.y);
           ctx.translate(-dx, -dy);
-          ctx.rotate((rotation * Math.PI) / 180);
+          ctx.rotate(rotation * AnimationConstants.DEG_TO_RAD);
           ctx.translate(dx, dy);
           ctx.drawImage(
             layer.image,
@@ -192,7 +202,7 @@ export async function mountCanvasLayers(
           ctx.save();
           ctx.translate(baseData.position.x, baseData.position.y);
           ctx.translate(-transformCache.dx, -transformCache.dy);
-          ctx.rotate((rotation * Math.PI) / 180);
+          ctx.rotate(rotation * AnimationConstants.DEG_TO_RAD);
           ctx.translate(transformCache.dx, transformCache.dy);
           ctx.drawImage(
             image,
@@ -208,12 +218,17 @@ export async function mountCanvasLayers(
       // Render debug visuals
       for (const layer of layers) {
         if (layer.hasAnimation) {
-          const enhancedData = runPipeline(layer.baseData, layer.processors, timestamp);
+          const enhancedData = pipelineCache.get(layer.baseData.layerId, () =>
+            runPipeline(layer.baseData, layer.processors, timestamp),
+          );
           if (enhancedData.imageMappingDebugVisuals) {
             CanvasDebugRenderer.drawAll(ctx, enhancedData.imageMappingDebugVisuals, STAGE_SIZE);
           }
         }
       }
+
+      // Clear cache for next frame
+      pipelineCache.nextFrame();
 
       // Continue animation loop
       animationFrameId = requestAnimationFrame(renderFrame);

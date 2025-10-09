@@ -1,6 +1,6 @@
 [
   {
-    "layerId": "stars-background",
+    "layerId": "stars-background-middle",
     "imageId": "STARBG",
     "renderer": "2D",
     "order": 50,
@@ -38,7 +38,7 @@
     }
   },
   {
-    "layerId": "stars-background",
+    "layerId": "stars-background-kiri",
     "imageId": "STARBG",
     "renderer": "2D",
     "order": 50,
@@ -76,7 +76,7 @@
     }
   },
   {
-    "layerId": "stars-background",
+    "layerId": "stars-background-kanan",
     "imageId": "STARBG",
     "renderer": "2D",
     "order": 50,
@@ -114,7 +114,7 @@
     }
   },
   {
-    "layerId": "stars-background",
+    "layerId": "stars-background-atas",
     "imageId": "STARBG",
     "renderer": "2D",
     "order": 50,
@@ -152,7 +152,7 @@
     }
   },
   {
-    "layerId": "stars-background",
+    "layerId": "stars-background-bawah",
     "imageId": "STARBG",
     "renderer": "2D",
     "order": 50,
@@ -190,14 +190,14 @@
     }
   },
   {
-    "layerId": "stars-background",
+    "layerId": "stars-background-kiri-atas",
     "imageId": "STARBG",
     "renderer": "2D",
     "order": 50,
     "groups": {
       "Basic Config": {
         "scale": [100, 100],
-        "BasicStagePoint": [2, 0],
+        "BasicStagePoint": [2, 1],
         "BasicImagePoint": [50, 50],
         "BasicAngleImage": 0
       },
@@ -228,7 +228,7 @@
     }
   },
   {
-    "layerId": "stars-background",
+    "layerId": "stars-background-kanan-bawah",
     "imageId": "STARBG",
     "renderer": "2D",
     "order": 50,
@@ -266,7 +266,7 @@
     }
   },
   {
-    "layerId": "stars-background",
+    "layerId": "stars-background-kanan-atas",
     "imageId": "STARBG",
     "renderer": "2D",
     "order": 50,
@@ -304,7 +304,7 @@
     }
   },
   {
-    "layerId": "stars-background",
+    "layerId": "stars-background-kiri-bawah",
     "imageId": "STARBG",
     "renderer": "2D",
     "order": 50,
@@ -312,44 +312,6 @@
       "Basic Config": {
         "scale": [100, 100],
         "BasicStagePoint": [2, 2046],
-        "BasicImagePoint": [50, 50],
-        "BasicAngleImage": 0
-      },
-      "Spin Config": {
-        "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 50],
-        "spinSpeed": 0,
-        "spinDirection": "cw"
-      },
-      "Orbital Config": {
-        "orbitCenter": [1024, 1024],
-        "orbitImagePoint": [50, 50],
-        "orbitRadius": 0,
-        "orbitSpeed": 0,
-        "orbitDirection": "cw"
-      },
-      "Image Mapping Debug": {
-        "showCenter": false,
-        "showTip": false,
-        "showBase": false,
-        "showStageCenter": false,
-        "showAxisLine": false,
-        "showRotation": false,
-        "showTipRay": false,
-        "showBaseRay": false,
-        "showBoundingBox": false
-      }
-    }
-  },
-  {
-    "layerId": "CLOCKBG",
-    "imageId": "CLOCKBG",
-    "renderer": "2D",
-    "order": 50,
-    "groups": {
-      "Basic Config": {
-        "scale": [100, 100],
-        "BasicStagePoint": [1024, 1024],
         "BasicImagePoint": [50, 50],
         "BasicAngleImage": 0
       },
@@ -395,6 +357,44 @@
         "spinStagePoint": [1024, 1024],
         "spinImagePoint": [50, 50],
         "spinSpeed": 0,
+        "spinDirection": "cw"
+      },
+      "Orbital Config": {
+        "orbitCenter": [1024, 1024],
+        "orbitImagePoint": [50, 50],
+        "orbitRadius": 0,
+        "orbitSpeed": 0,
+        "orbitDirection": "cw"
+      },
+      "Image Mapping Debug": {
+        "showCenter": false,
+        "showTip": false,
+        "showBase": false,
+        "showStageCenter": false,
+        "showAxisLine": false,
+        "showRotation": false,
+        "showTipRay": false,
+        "showBaseRay": false,
+        "showBoundingBox": false
+      }
+    }
+  },
+  {
+    "layerId": "CLOCKBG",
+    "imageId": "GEARMOON",
+    "renderer": "2D",
+    "order": 490,
+    "groups": {
+      "Basic Config": {
+        "scale": [100, 100],
+        "BasicStagePoint": [1024, 1024],
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage": 0
+      },
+      "Spin Config": {
+        "spinStagePoint": [1024, 1024],
+        "spinImagePoint": [50, 50],
+        "spinSpeed": 30,
         "spinDirection": "cw"
       },
       "Orbital Config": {
