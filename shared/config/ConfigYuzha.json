@@ -376,7 +376,48 @@
     }
   },
   {
-    "layerId": "CLOCKBG",
+    "layerId": "GEAR3",
+    "imageId": "GEAR3",
+    "renderer": "2D",
+    "order": 480,
+    "groups": {
+      "Basic Config": {
+        "scale": [95, 95],
+        "BasicStagePoint": [1024, 1024],
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage": 0
+      },
+      "Spin Config": {
+        "spinStagePoint": [960, 1024],
+        "spinImagePoint": [50, 50],
+        "spinSpeed": 10,
+        "spinDirection": "ccw"
+      }
+    }
+  },
+  {
+    "layerId": "GEAR2",
+    "imageId": "GEAR2",
+    "renderer": "2D",
+    "order": 480,
+    "groups": {
+      "Basic Config": {
+        "scale": [70, 70],
+        "BasicStagePoint": [1024, 1024],
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage": 0
+      },
+      "Spin Config": {
+        "spinStagePoint": [1024, 1024],
+        "spinImagePoint": [50, 50],
+        "spinSpeed": 15,
+        "spinDirection": "cw"
+      }
+    }
+  },
+  
+  {
+    "layerId": "stars-background-hole",
     "imageId": "STARBGHOLE1",
     "renderer": "2D",
     "order": 590,
@@ -390,8 +431,36 @@
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
         "spinImagePoint": [50, 50],
-        "spinSpeed": 1,
+        "spinSpeed": 0,
         "spinDirection": "cw"
+      }
+    }
+  },
+  {
+    "layerId": "CLOCKGLOW",
+    "imageId": "CLOCKGLOW",
+    "renderer": "2D",
+    "order": 610,
+    "groups": {
+      "Basic Config": {
+        "scale": [95, 95],
+        "BasicStagePoint": [1024, 1024],
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage": 0
+      }
+    }
+  },
+  {
+    "layerId": "CLOCKGLOW2",
+    "imageId": "CLOCKGLOW2",
+    "renderer": "2D",
+    "order": 610,
+    "groups": {
+      "Basic Config": {
+        "scale": [130, 130],
+        "BasicStagePoint": [1024, 1024],
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage": 0
       }
     }
   }
