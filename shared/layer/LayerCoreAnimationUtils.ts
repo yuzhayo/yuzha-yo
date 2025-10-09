@@ -46,14 +46,18 @@ export function normalizeAngle(angle: number): number {
 
 /**
  * Calculate elapsed time with optional start time
+ * For continuous animations without a start time, use timestamp directly as elapsed time
  */
 export function calculateElapsedTime(
   timestamp: number,
   startTime?: number,
 ): { elapsed: number; effectiveStartTime: number } {
-  const effectiveStartTime = startTime ?? timestamp;
-  const elapsed = timestamp - effectiveStartTime;
-  return { elapsed, effectiveStartTime };
+  if (startTime === undefined) {
+    // For continuous animations, use timestamp directly as elapsed time
+    return { elapsed: timestamp, effectiveStartTime: 0 };
+  }
+  const elapsed = timestamp - startTime;
+  return { elapsed, effectiveStartTime: startTime };
 }
 
 /**
