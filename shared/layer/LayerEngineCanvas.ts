@@ -96,7 +96,11 @@ export async function mountCanvasLayers(
     }
   }
 
-  console.log(`[LayerEngineCanvas] Total layers loaded: ${layers.length} (all static)`);
+  const staticCount = layers.filter((l) => l.isStatic).length;
+  const animatedCount = layers.length - staticCount;
+  console.log(
+    `[LayerEngineCanvas] Total layers loaded: ${layers.length} (${staticCount} static, ${animatedCount} animated)`,
+  );
 
   // Split layers by rotation for optimal rendering
   const noRotationLayers: LayerRenderData[] = [];
