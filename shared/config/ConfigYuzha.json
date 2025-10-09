@@ -1,6 +1,6 @@
 [
   {
-    "layerId": "stars-background",
+    "layerId": "stars-background-middle",
     "imageId": "STARBG",
     "renderer": "2D",
     "order": 50,
