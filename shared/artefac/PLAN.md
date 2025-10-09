@@ -1,7 +1,7 @@
-
 Action: file_editor create /app/SPIN_ONLY_FIX_PLAN.md --file-text "# 🔧 Spin Animation Fix - Implementation Plan (SPIN ONLY)
 
 ## Executive Summary
+
 **Problem**: Spin processors are never instantiated in Stage components  
 **Solution**: Add spin processor instantiation logic to all three Stage files  
 **Scope**: SPIN ONLY (skipping orbital for now)  
@@ -17,12 +17,14 @@ Action: file_editor create /app/SPIN_ONLY_FIX_PLAN.md --file-text "# 🔧 Spin A
 **File**: `/app/shared/stages/StageCanvas.tsx`
 
 #### Step 1.1: Add Import (Line 6)
+
 ```typescript
 // Add after line 6:
 import { createSpinProcessor } from \"../layer/LayerCorePipelineSpin\";
 ```
 
 #### Step 1.2: Add Spin Processor Instantiation (After Line 78)
+
 ```typescript
 // Add after the debug processor block (after line 78):
 
@@ -32,7 +34,7 @@ if (entry.spinSpeed && entry.spinSpeed > 0) {
     createSpinProcessor({
       spinSpeed: entry.spinSpeed,
       spinDirection: entry.spinDirection,
-    })
+    }),
   );
 }
 ```
@@ -44,6 +46,7 @@ if (entry.spinSpeed && entry.spinSpeed > 0) {
 **File**: `/app/shared/stages/StageDOM.tsx`
 
 #### Step 2.1: Add Imports (Line 5)
+
 ```typescript
 // Add after line 5:
 import { createSpinProcessor } from \"../layer/LayerCorePipelineSpin\";
@@ -51,6 +54,7 @@ import { createImageMappingDebugProcessor } from \"../layer/LayerCorePipelineIma
 ```
 
 #### Step 2.2: Add Processor Instantiation (After Line 36)
+
 ```typescript
 // Replace lines 36-41 with:
 const processors: LayerProcessor[] = [];
@@ -94,7 +98,7 @@ if (entry.spinSpeed && entry.spinSpeed > 0) {
     createSpinProcessor({
       spinSpeed: entry.spinSpeed,
       spinDirection: entry.spinDirection,
-    })
+    }),
   );
 }
 ```
@@ -106,12 +110,14 @@ if (entry.spinSpeed && entry.spinSpeed > 0) {
 **File**: `/app/shared/stages/StageThree.tsx`
 
 #### Step 3.1: Add Import (Line 7)
+
 ```typescript
 // Add after line 7:
 import { createSpinProcessor } from \"../layer/LayerCorePipelineSpin\";
 ```
 
 #### Step 3.2: Add Spin Processor Instantiation (After Line 100)
+
 ```typescript
 // Add after the debug processor block (after line 100):
 
@@ -121,7 +127,7 @@ if (entry.spinSpeed && entry.spinSpeed > 0) {
     createSpinProcessor({
       spinSpeed: entry.spinSpeed,
       spinDirection: entry.spinDirection,
-    })
+    }),
   );
 }
 ```
@@ -130,22 +136,24 @@ if (entry.spinSpeed && entry.spinSpeed > 0) {
 
 ## 📊 Changes Summary
 
-| File | Imports Added | Lines Added | Complexity |
-|------|---------------|-------------|------------|
-| StageCanvas.tsx | 1 | ~10 | Low |
-| StageDOM.tsx | 2 | ~35 | Medium |
-| StageThree.tsx | 1 | ~10 | Low |
-| **Total** | **4** | **~55** | **Low** |
+| File            | Imports Added | Lines Added | Complexity |
+| --------------- | ------------- | ----------- | ---------- |
+| StageCanvas.tsx | 1             | ~10         | Low        |
+| StageDOM.tsx    | 2             | ~35         | Medium     |
+| StageThree.tsx  | 1             | ~10         | Low        |
+| **Total**       | **4**         | **~55**     | **Low**    |
 
 ---
 
 ## 🎯 Expected Outcome
 
 ### Before Fix
+
 - CLOCKBG layer is static (no spin)
 - Console: `[LayerEngineCanvas] Total layers loaded: 10 (all static)`
 
 ### After Fix
+
 - CLOCKBG layer spins at 50°/second clockwise
 - Console: `[LayerEngineCanvas] Starting 60fps animation loop for dynamic layers`
 - Static layers remain unaffected

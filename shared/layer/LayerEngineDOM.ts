@@ -2,7 +2,7 @@ import type { EnhancedLayerData } from "./LayerCorePipeline";
 import type { LayerProcessor } from "./LayerCorePipeline";
 import { runPipeline } from "./LayerCorePipeline";
 import { loadImage } from "./LayerCore";
-import { AnimationConstants, createPipelineCache } from "./LayerCoreAnimationUtils";
+import { createPipelineCache } from "./LayerCoreAnimationUtils";
 
 const STAGE_SIZE = 2048;
 

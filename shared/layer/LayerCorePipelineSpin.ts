@@ -9,7 +9,6 @@ import {
   calculateElapsedTime,
   applyRotationDirection,
   normalizeAngle,
-  AnimationConstants,
 } from "./LayerCoreAnimationUtils";
 
 export type SpinConfig = {

@@ -137,10 +137,11 @@ Communication: Simple, everyday language
 - ✅ Architect review: Pass - architecture sound, no gaps in data flow
 
 **Implementation Details:**
+
 - **Config Priority Order**: Basic Config → Spin Config (conditional) → Orbital Config → Debug Config
-- **Override Logic**: 
+- **Override Logic**:
   - `BasicStagePoint ← spinStagePoint` when spin active
-  - `BasicImagePoint ← spinImagePoint` when spin active  
+  - `BasicImagePoint ← spinImagePoint` when spin active
   - `BasicAngleImage ← 0` when spin active (spin controls rotation)
 - **Benefits**: Same preset for all layers, behavior controlled by `spinSpeed` value
 - **Design Philosophy**: Clean separation between static (Basic) and animated (Spin) states
@@ -155,6 +156,7 @@ Communication: Simple, everyday language
 - ✅ Architect review: Pass - parallel execution correct, safety net intact
 
 **Optimization Details:**
+
 - Service worker unregistration and cache deletion now run in parallel (previously sequential)
 - `Promise.allSettled` ensures both operations complete independently
 - Preserved fallback behavior: `window.location.reload()` if cache-busting URL fails
@@ -185,6 +187,7 @@ Communication: Simple, everyday language
   - All edge cases handled
 
 **Performance Results:**
+
 - Layer preparation: 13-15ms per layer (with lazy calculation)
 - Image dimension cache hits: ~8x faster
 - Image mapping cache hits: ~40% faster
