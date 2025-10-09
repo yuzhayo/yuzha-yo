@@ -1,6 +1,8 @@
 import type { EnhancedLayerData } from "./LayerCorePipeline";
 import type { LayerProcessor } from "./LayerCorePipeline";
+import { runPipeline } from "./LayerCorePipeline";
 import { loadImage } from "./LayerCore";
+import { AnimationConstants, createPipelineCache } from "./LayerCoreAnimationUtils";
 
 const STAGE_SIZE = 2048;
 
@@ -9,6 +11,8 @@ type LayerElement = {
   img: HTMLImageElement;
   baseData: EnhancedLayerData;
   processors: LayerProcessor[];
+  isStatic: boolean;
+  hasAnimation: boolean;
 };
 
 export async function mountDOMLayers(
@@ -78,12 +82,16 @@ export async function mountDOMLayers(
       layerDiv.appendChild(img);
       containerEl.appendChild(layerDiv);
 
+      const isStatic = item.processors.length === 0;
+      const hasAnimation = !isStatic;
+
       console.log(`[LayerEngineDOM] Loaded layer "${item.data.layerId}":`, {
         imageId: item.data.imageId,
         imageDimensions: `${naturalWidth}x${naturalHeight}`,
         position: item.data.position,
         scale: item.data.scale,
         rotation: displayRotation,
+        isStatic,
       });
 
       layers.push({
@@ -91,16 +99,82 @@ export async function mountDOMLayers(
         img,
         baseData: item.data,
         processors: item.processors,
+        isStatic,
+        hasAnimation,
       });
     } catch (error) {
       console.error(`[LayerEngineDOM] Failed to load image for "${item.data.imageId}"`, error);
     }
   }
 
-  console.log(`[LayerEngineDOM] Total layers loaded: ${layers.length}`);
+  const staticCount = layers.filter((l) => l.isStatic).length;
+  const animatedCount = layers.length - staticCount;
 
-  // Cleanup function
-  return () => {
-    containerEl.innerHTML = "";
-  };
+  console.log(
+    `[LayerEngineDOM] Total layers loaded: ${layers.length} (${staticCount} static, ${animatedCount} animated)`,
+  );
+
+  const hasAnyAnimation = layers.some((layer) => layer.hasAnimation);
+
+  if (hasAnyAnimation) {
+    console.log("[LayerEngineDOM] Starting 60fps animation loop for dynamic layers");
+
+    let animationFrameId: number | null = null;
+    const pipelineCache = createPipelineCache();
+
+    const animate = (timestamp: number) => {
+      for (const layer of layers) {
+        if (layer.hasAnimation && layer.processors.length > 0) {
+          const enhancedData = pipelineCache.get(layer.baseData.layerId, () =>
+            runPipeline(layer.baseData, layer.processors, timestamp),
+          );
+
+          const transforms: string[] = [];
+          if (enhancedData.scale.x !== 1 || enhancedData.scale.y !== 1) {
+            transforms.push(`scale(${enhancedData.scale.x}, ${enhancedData.scale.y})`);
+          }
+
+          const rotation = enhancedData.currentRotation ?? enhancedData.rotation ?? 0;
+          if (rotation !== 0) {
+            transforms.push(`rotate(${rotation}deg)`);
+          }
+
+          if (transforms.length > 0) {
+            layer.img.style.transform = transforms.join(" ");
+          }
+
+          const naturalWidth = layer.img.naturalWidth;
+          const naturalHeight = layer.img.naturalHeight;
+          const left = enhancedData.position.x - naturalWidth / 2;
+          const top = enhancedData.position.y - naturalHeight / 2;
+
+          layer.img.style.left = `${left}px`;
+          layer.img.style.top = `${top}px`;
+
+          if (enhancedData.visible !== undefined) {
+            layer.img.style.display = enhancedData.visible ? "block" : "none";
+          }
+        }
+      }
+
+      pipelineCache.nextFrame();
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    animationFrameId = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+        console.log("[LayerEngineDOM] Animation loop stopped");
+      }
+      containerEl.innerHTML = "";
+    };
+  } else {
+    console.log("[LayerEngineDOM] Static scene - no animation loop");
+
+    return () => {
+      containerEl.innerHTML = "";
+    };
+  }
 }
