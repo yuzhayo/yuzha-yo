@@ -382,13 +382,13 @@
     "order": 480,
     "groups": {
       "Basic Config": {
-        "scale": [95, 95],
+        "scale": [130, 130],
         "BasicStagePoint": [1024, 1024],
         "BasicImagePoint": [50, 50],
         "BasicAngleImage": 0
       },
       "Spin Config": {
-        "spinStagePoint": [960, 1024],
+        "spinStagePoint": [910, 1024],
         "spinImagePoint": [50, 50],
         "spinSpeed": 10,
         "spinDirection": "ccw"
@@ -396,10 +396,50 @@
     }
   },
   {
+    "layerId": "GEAR3A",
+    "imageId": "GEAR3",
+    "renderer": "2D",
+    "order": 481,
+    "groups": {
+      "Basic Config": {
+        "scale": [105, 105],
+        "BasicStagePoint": [1024, 1024],
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage": 0
+      },
+      "Spin Config": {
+        "spinStagePoint": [910, 1024],
+        "spinImagePoint": [50, 50],
+        "spinSpeed": 15,
+        "spinDirection": "cw"
+      }
+    }
+  },
+  {
+    "layerId": "GEAR1",
+    "imageId": "GEAR1",
+    "renderer": "2D",
+    "order": 485,
+    "groups": {
+      "Basic Config": {
+        "scale": [80, 80],
+        "BasicStagePoint": [1300, 1024],
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage": 0
+      },
+      "Spin Config": {
+        "spinStagePoint": [1190, 1024],
+        "spinImagePoint": [50, 50],
+        "spinSpeed": 10,
+        "spinDirection": "cw"
+      }
+    }
+  },
+  {
     "layerId": "GEAR2",
     "imageId": "GEAR2",
     "renderer": "2D",
-    "order": 480,
+    "order": 486,
     "groups": {
       "Basic Config": {
         "scale": [70, 70],
@@ -410,12 +450,11 @@
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
         "spinImagePoint": [50, 50],
-        "spinSpeed": 15,
+        "spinSpeed": 10,
         "spinDirection": "cw"
       }
     }
   },
-  
   {
     "layerId": "stars-background-hole",
     "imageId": "STARBGHOLE1",
