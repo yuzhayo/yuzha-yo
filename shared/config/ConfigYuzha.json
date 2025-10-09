@@ -443,7 +443,7 @@
     "order": 610,
     "groups": {
       "Basic Config": {
-        "scale": [95, 95],
+        "scale": [98, 98],
         "BasicStagePoint": [1024, 1024],
         "BasicImagePoint": [50, 50],
         "BasicAngleImage": 0
@@ -458,6 +458,48 @@
     "groups": {
       "Basic Config": {
         "scale": [130, 130],
+        "BasicStagePoint": [1024, 1024],
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage": 0
+      }
+    }
+  },
+  {
+    "layerId": "CLOCKGLOW1",
+    "imageId": "CLOCKGLOW1",
+    "renderer": "2D",
+    "order": 610,
+    "groups": {
+      "Basic Config": {
+        "scale": [100, 100],
+        "BasicStagePoint": [1024, 1024],
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage": 30
+      }
+    }
+  },
+  {
+    "layerId": "CLOCKGLOW1",
+    "imageId": "CLOCKGLOW1",
+    "renderer": "2D",
+    "order": 610,
+    "groups": {
+      "Basic Config": {
+        "scale": [100, 100],
+        "BasicStagePoint": [1024, 1024],
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage": 60
+      }
+    }
+  },
+  {
+    "layerId": "CLOCKGLOW1",
+    "imageId": "CLOCKGLOW1",
+    "renderer": "2D",
+    "order": 610,
+    "groups": {
+      "Basic Config": {
+        "scale": [100, 100],
         "BasicStagePoint": [1024, 1024],
         "BasicImagePoint": [50, 50],
         "BasicAngleImage": 0
