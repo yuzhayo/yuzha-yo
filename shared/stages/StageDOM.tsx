@@ -81,7 +81,7 @@ function StageDOM() {
         }
 
         // Add Orbital processor if orbital motion is configured
-        if (entry.orbitSpeed && entry.orbitSpeed > 0) {
+        if (entry.orbitRadius && entry.orbitRadius > 0) {
           processors.push(
             createOrbitalProcessor({
               orbitCenter: entry.orbitCenter as [number, number] | undefined,

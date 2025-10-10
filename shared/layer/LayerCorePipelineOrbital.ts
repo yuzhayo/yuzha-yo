@@ -34,7 +34,7 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
   const orbitSpeed = config.orbitSpeed ?? 0;
   const orbitDirection = config.orbitDirection ?? "cw";
 
-  if (orbitSpeed === 0 || orbitRadius === 0) {
+  if (orbitRadius === 0) {
     return (layer: UniversalLayerData): EnhancedLayerData => layer as EnhancedLayerData;
   }
 
@@ -49,7 +49,7 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
 
     // Calculate elapsed time in seconds from current timestamp
     const elapsedSeconds = currentTime / 1000;
-    let orbitAngle = (elapsedSeconds * speedPerSecond) % 360;
+    let orbitAngle = orbitSpeed === 0 ? 0 : (elapsedSeconds * speedPerSecond) % 360;
 
     // Use utility functions
     orbitAngle = applyRotationDirection(orbitAngle, orbitDirection);
