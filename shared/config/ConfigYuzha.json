@@ -582,7 +582,7 @@
   },
   {
     "layerId": "test-sun-ray-1",
-    "imageId": "GEAR2",
+    "imageId": "UI_Clock_HourHand",
     "renderer": "2D",
     "order": 701,
     "groups": {
