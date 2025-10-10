@@ -5,6 +5,8 @@ import { mountCanvasLayers } from "../layer/LayerEngineCanvas";
 import type { EnhancedLayerData, LayerProcessor } from "../layer/LayerCorePipeline";
 import { createImageMappingDebugProcessor } from "../layer/LayerCorePipelineImageMappingDebug";
 import { createSpinProcessor } from "../layer/LayerCorePipelineSpin";
+import { createOrbitalProcessor } from "../layer/LayerCorePipelineOrbital";
+import { createBaseTipRotationProcessor } from "../layer/LayerCorePipelineBaseTipRotation";
 import { STAGE_SIZE, createStageTransformer } from "../utils/stage2048";
 
 function StageCanvas() {
@@ -85,6 +87,22 @@ function StageCanvas() {
               spinDirection: entry.spinDirection,
             }),
           );
+        }
+
+        // Add Orbital processor if orbital motion is configured
+        if (entry.orbitSpeed && entry.orbitSpeed > 0) {
+          processors.push(
+            createOrbitalProcessor({
+              orbitCenter: entry.orbitCenter as [number, number] | undefined,
+              orbitImagePoint: entry.orbitImagePoint as [number, number] | undefined,
+              orbitRadius: entry.orbitRadius,
+              orbitSpeed: entry.orbitSpeed,
+              orbitDirection: entry.orbitDirection,
+            }),
+          );
+
+          // Add BaseTip processor (only when orbital is active)
+          processors.push(createBaseTipRotationProcessor());
         }
 
         layersWithProcessors.push({

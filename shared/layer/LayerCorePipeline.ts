@@ -38,6 +38,10 @@ export type EnhancedLayerData = UniversalLayerData & {
   orbitRotation?: number;
   hasOrbitalAnimation?: boolean;
   visible?: boolean;
+  orbitPoint?: { x: number; y: number }; // NEW: Exposed for BaseTip processor
+
+  // BaseTip Rotation properties (added by LayerCorePipelineBaseTipRotation)
+  baseTipRotation?: number; // NEW: Calculated rotation for radial alignment
 
   // Image Mapping Debug properties (added by LayerCorePipelineImageMappingDebug)
   imageMappingDebugVisuals?: ImageMappingDebugVisuals;

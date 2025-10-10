@@ -91,22 +91,16 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
       max: stageSize,
     });
 
-    let orbitRotation = 0;
-    if (!layer.hasSpinAnimation) {
-      // Use utility function
-      orbitRotation = calculateAngleToPoint(resolvedOrbitCenter, orbitPoint) - 90;
-    }
-
     return {
       ...layer,
       position: newPosition,
+      orbitPoint, // NEW: Expose for BaseTip processor
       orbitCenter: resolvedOrbitCenter,
       orbitImagePoint: resolvedOrbitImagePercent,
       orbitRadius,
       orbitSpeed,
       orbitDirection,
       currentOrbitAngle: orbitAngle,
-      orbitRotation,
       hasOrbitalAnimation: true,
       visible: isVisible,
     };
