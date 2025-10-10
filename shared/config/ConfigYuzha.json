@@ -584,10 +584,10 @@
     "layerId": "test-sun-ray-1",
     "imageId": "GEAR2",
     "renderer": "2D",
-    "order": 201,
+    "order": 701,
     "groups": {
       "Basic Config": {
-        "scale": [40, 40],
+        "scale": [150, 150],
         "BasicStagePoint": [1024, 1024],
         "BasicImagePoint": [50, 50],
         "BasicAngleImage": 0,
@@ -604,7 +604,7 @@
         "orbitCenter": [1024, 1024],
         "orbitImagePoint": [50, 50],
         "orbitRadius": 400,
-        "orbitSpeed": 0,
+        "orbitSpeed": 10,
         "orbitDirection": "cw"
       },
       "Image Mapping Debug": {
