@@ -8,7 +8,6 @@ import type { EnhancedLayerData, LayerProcessor } from "./LayerCorePipeline";
 import {
   applyRotationDirection,
   calculateOrbitPosition,
-  calculateAngleToPoint,
   calculateOrbitalVisibility,
   normalizeAngle,
 } from "./LayerCoreAnimationUtils";

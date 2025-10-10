@@ -555,9 +555,7 @@
         "scale": [30, 30],
         "BasicStagePoint": [1024, 1024],
         "BasicImagePoint": [50, 50],
-        "BasicAngleImage": 0,
-        "imageTip": 90,
-        "imageBase": 270
+        "BasicAngleImage": 0
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -570,7 +568,9 @@
         "orbitImagePoint": [50, 50],
         "orbitRadius": 300,
         "orbitSpeed": 30,
-        "orbitDirection": "cw"
+        "orbitDirection": "cw",
+        "imageTip": 90,
+        "imageBase": 270
       },
       "Image Mapping Debug": {
         "showCenter": false,
@@ -582,7 +582,7 @@
   },
   {
     "layerId": "test-sun-ray-1",
-    "imageId": "UI_Clock_HourHand",
+    "imageId": "UI_Clock_MinuteHand",
     "renderer": "2D",
     "order": 701,
     "groups": {
@@ -590,9 +590,7 @@
         "scale": [150, 150],
         "BasicStagePoint": [1024, 1024],
         "BasicImagePoint": [50, 50],
-        "BasicAngleImage": 0,
-        "imageTip": 90,
-        "imageBase": 270
+        "BasicAngleImage": 0
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -603,9 +601,11 @@
       "Orbital Config": {
         "orbitCenter": [1024, 1024],
         "orbitImagePoint": [50, 50],
-        "orbitRadius": 400,
-        "orbitSpeed": 10,
-        "orbitDirection": "cw"
+        "orbitRadius": 600,
+        "orbitSpeed": 20,
+        "orbitDirection": "cw",
+        "imageTip": 270,
+        "imageBase": 90
       },
       "Image Mapping Debug": {
         "showCenter": false,
@@ -625,9 +625,7 @@
         "scale": [25, 25],
         "BasicStagePoint": [1024, 1024],
         "BasicImagePoint": [50, 50],
-        "BasicAngleImage": 0,
-        "imageTip": 90,
-        "imageBase": 270
+        "BasicAngleImage": 0
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -640,7 +638,9 @@
         "orbitImagePoint": [50, 50],
         "orbitRadius": 250,
         "orbitSpeed": 45,
-        "orbitDirection": "ccw"
+        "orbitDirection": "ccw",
+        "imageTip": 90,
+        "imageBase": 270
       },
       "Image Mapping Debug": {
         "showCenter": false,

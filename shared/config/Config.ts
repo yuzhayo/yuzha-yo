@@ -143,9 +143,17 @@ function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
     };
 
     // Extract config groups
-    const basic = entry.groups["Basic Config"] || {};
+    const {
+      imageTip: _basicImageTip,
+      imageBase: _basicImageBase,
+      ...basic
+    } = entry.groups["Basic Config"] || {};
     const spin = entry.groups["Spin Config"] || {};
-    const orbital = entry.groups["Orbital Config"] || {};
+    const {
+      imageTip: orbitalImageTip,
+      imageBase: orbitalImageBase,
+      ...orbital
+    } = entry.groups["Orbital Config"] || {};
     const debug = entry.groups["Image Mapping Debug"] || {};
 
     // Start with Basic Config (static positioning and rotation)
@@ -167,6 +175,13 @@ function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
 
     // Orbital Config
     Object.assign(merged, orbital);
+
+    if (orbitalImageTip !== undefined) {
+      merged.imageTip = orbitalImageTip;
+    }
+    if (orbitalImageBase !== undefined) {
+      merged.imageBase = orbitalImageBase;
+    }
 
     // Image Mapping Debug Config (lowest priority, never overrides)
     Object.assign(merged, debug);
