@@ -6,7 +6,6 @@ import {
 } from "./LayerCore";
 import type { EnhancedLayerData, LayerProcessor } from "./LayerCorePipeline";
 import {
-  calculateElapsedTime,
   applyRotationDirection,
   normalizeAngle,
 } from "./LayerCoreAnimationUtils";
@@ -15,7 +14,6 @@ export type SpinConfig = {
   spinCenter?: [number, number] | PercentPoint; // Runtime override: 0-100% relative to image dimensions
   spinSpeed?: number; // degrees per second (0 = no spin)
   spinDirection?: "cw" | "ccw";
-  startTime?: number; // Optional animation start time (ms)
 };
 
 /**
@@ -30,7 +28,6 @@ export type SpinConfig = {
 export function createSpinProcessor(config: SpinConfig): LayerProcessor {
   const spinSpeed = config.spinSpeed ?? 0;
   const spinDirection = config.spinDirection ?? "cw";
-  const configStartTime = config.startTime; // Read from config
 
   const overridePercent = normalisePercent(config.spinCenter);
 
@@ -44,8 +41,8 @@ export function createSpinProcessor(config: SpinConfig): LayerProcessor {
 
     const currentTime = timestamp ?? performance.now();
 
-    // Use utility function
-    const { elapsed } = calculateElapsedTime(currentTime, configStartTime);
+    // Calculate elapsed time from current timestamp
+    const elapsed = currentTime;
 
     // Use cached calculations
     let rotation = (elapsed * speedPerMs) % 360;

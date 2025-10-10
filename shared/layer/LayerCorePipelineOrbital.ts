@@ -6,7 +6,6 @@ import {
 } from "./LayerCore";
 import type { EnhancedLayerData, LayerProcessor } from "./LayerCorePipeline";
 import {
-  calculateElapsedTime,
   applyRotationDirection,
   calculateOrbitPosition,
   calculateAngleToPoint,
@@ -20,7 +19,6 @@ export type OrbitalConfig = {
   orbitRadius?: number; // Pixels (0-2048)
   orbitSpeed?: number; // Degrees per second (0 = no orbit)
   orbitDirection?: "cw" | "ccw"; // Default "cw"
-  startTime?: number; // Optional animation start time (ms)
 };
 
 /**
@@ -35,7 +33,6 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
   const orbitRadius = config.orbitRadius ?? 0;
   const orbitSpeed = config.orbitSpeed ?? 0;
   const orbitDirection = config.orbitDirection ?? "cw";
-  const configStartTime = config.startTime; // Read from config
 
   if (orbitSpeed === 0 || orbitRadius === 0) {
     return (layer: UniversalLayerData): EnhancedLayerData => layer as EnhancedLayerData;
@@ -50,10 +47,8 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
   return (layer: EnhancedLayerData, timestamp?: number): EnhancedLayerData => {
     const currentTime = timestamp ?? performance.now();
 
-    // Use utility function
-    const { elapsed } = calculateElapsedTime(currentTime, configStartTime);
-
-    const elapsedSeconds = elapsed / 1000;
+    // Calculate elapsed time in seconds from current timestamp
+    const elapsedSeconds = currentTime / 1000;
     let orbitAngle = (elapsedSeconds * speedPerSecond) % 360;
 
     // Use utility functions

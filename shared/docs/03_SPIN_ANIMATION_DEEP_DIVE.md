@@ -178,13 +178,12 @@ if (spin.spinSpeed && spin.spinSpeed > 0) {
 
 ```typescript
 const currentTime = timestamp ?? performance.now();
-const elapsed = currentTime;  // If no startTime, use timestamp directly
 
 // Speed in degrees per millisecond
 const speedPerMs = spinSpeed / 1000;
 
-// Calculate rotation
-let rotation = (elapsed * speedPerMs) % 360;
+// Calculate rotation from current timestamp
+let rotation = (currentTime * speedPerMs) % 360;
 
 // Apply direction
 rotation = spinDirection === "ccw" ? -rotation : rotation;
@@ -610,21 +609,6 @@ const spinImagePoint = layer.calculation.spinPoint.image.point;
 ---
 
 ## Advanced Topics
-
-### Custom Start Time
-
-**Currently:** Animation starts when app loads
-
-**Future:** Support custom start time
-
-```typescript
-{
-  "Spin Config": {
-    "spinSpeed": 30,
-    "startTime": 1000  // Start after 1 second
-  }
-}
-```
 
 ### Spin + Orbital (Planned)
 

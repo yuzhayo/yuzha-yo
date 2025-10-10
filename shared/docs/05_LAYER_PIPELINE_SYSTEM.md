@@ -460,12 +460,11 @@ return (layer, timestamp) => {
 ```typescript
 import { 
   normalizeAngle, 
-  applyRotationDirection,
-  calculateElapsedTime 
+  applyRotationDirection
 } from "./LayerCoreAnimationUtils";
 
-const { elapsed } = calculateElapsedTime(timestamp, startTime);
-let angle = (elapsed * speed) % 360;
+const currentTime = timestamp ?? performance.now();
+let angle = (currentTime * speed) % 360;
 angle = applyRotationDirection(angle, direction);
 angle = normalizeAngle(angle);
 ```
