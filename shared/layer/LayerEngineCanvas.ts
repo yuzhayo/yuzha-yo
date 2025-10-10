@@ -127,103 +127,55 @@ export async function mountCanvasLayers(
       // Clear canvas
       ctx.clearRect(0, 0, STAGE_SIZE, STAGE_SIZE);
 
-      // Render all layers (static and animated)
-      for (const layer of noRotationLayers) {
-        if (layer.hasAnimation) {
-          // Process through pipeline with caching
-          const enhancedData = pipelineCache.get(layer.baseData.layerId, () =>
-            runPipeline(layer.baseData, layer.processors, timestamp),
-          );
+      const frameData = new Map<string, EnhancedLayerData>();
 
-          // Render with updated position/rotation
-          const x = enhancedData.position.x - layer.transformCache.scaledWidth / 2;
-          const y = enhancedData.position.y - layer.transformCache.scaledHeight / 2;
+      for (const layer of layers) {
+        const enhancedData =
+          layer.hasAnimation && layer.processors.length > 0
+            ? pipelineCache.get(layer.baseData.layerId, () =>
+                runPipeline(layer.baseData, layer.processors, timestamp),
+              )
+            : layer.baseData;
 
-          // Check if layer has animation rotation
-          if (enhancedData.currentRotation !== undefined) {
-            ctx.save();
-            ctx.translate(enhancedData.position.x, enhancedData.position.y);
-            ctx.rotate(enhancedData.currentRotation * AnimationConstants.DEG_TO_RAD);
-            ctx.drawImage(
-              layer.image,
-              -layer.transformCache.centerX,
-              -layer.transformCache.centerY,
-              layer.transformCache.scaledWidth,
-              layer.transformCache.scaledHeight,
-            );
-            ctx.restore();
-          } else {
-            ctx.drawImage(
-              layer.image,
-              x,
-              y,
-              layer.transformCache.scaledWidth,
-              layer.transformCache.scaledHeight,
-            );
-          }
-        } else {
-          // Static layer - simple render
-          const { image, baseData, transformCache } = layer;
-          const x = baseData.position.x - transformCache.scaledWidth / 2;
-          const y = baseData.position.y - transformCache.scaledHeight / 2;
-          ctx.drawImage(image, x, y, transformCache.scaledWidth, transformCache.scaledHeight);
+        frameData.set(layer.baseData.layerId, enhancedData);
+
+        if (enhancedData.visible === false) {
+          continue;
         }
-      }
 
-      // Render layers with rotation (similar logic)
-      for (const layer of withRotationLayers) {
-        if (layer.hasAnimation) {
-          const enhancedData = pipelineCache.get(layer.baseData.layerId, () =>
-            runPipeline(layer.baseData, layer.processors, timestamp),
-          );
-          const rotation = enhancedData.currentRotation ?? layer.baseData.rotation ?? 0;
+        const rotation =
+          enhancedData.currentRotation ??
+          enhancedData.rotation ??
+          layer.baseData.rotation ??
+          0;
 
-          ctx.save();
-          const dx = layer.transformCache.dx;
-          const dy = layer.transformCache.dy;
+        const { transformCache } = layer;
+        const position = enhancedData.position;
 
-          ctx.translate(enhancedData.position.x, enhancedData.position.y);
-          ctx.translate(-dx, -dy);
-          ctx.rotate(rotation * AnimationConstants.DEG_TO_RAD);
-          ctx.translate(dx, dy);
-          ctx.drawImage(
-            layer.image,
-            -layer.transformCache.centerX,
-            -layer.transformCache.centerY,
-            layer.transformCache.scaledWidth,
-            layer.transformCache.scaledHeight,
-          );
-          ctx.restore();
-        } else {
-          // Static layer with rotation
-          const { image, baseData, transformCache } = layer;
-          const rotation = baseData.rotation ?? 0;
+        ctx.save();
+        ctx.translate(position.x, position.y);
 
-          ctx.save();
-          ctx.translate(baseData.position.x, baseData.position.y);
+        if (rotation !== 0) {
           ctx.translate(-transformCache.dx, -transformCache.dy);
           ctx.rotate(rotation * AnimationConstants.DEG_TO_RAD);
           ctx.translate(transformCache.dx, transformCache.dy);
-          ctx.drawImage(
-            image,
-            -transformCache.centerX,
-            -transformCache.centerY,
-            transformCache.scaledWidth,
-            transformCache.scaledHeight,
-          );
-          ctx.restore();
         }
+
+        ctx.drawImage(
+          layer.image,
+          -transformCache.centerX,
+          -transformCache.centerY,
+          transformCache.scaledWidth,
+          transformCache.scaledHeight,
+        );
+        ctx.restore();
       }
 
       // Render debug visuals
       for (const layer of layers) {
-        if (layer.hasAnimation) {
-          const enhancedData = pipelineCache.get(layer.baseData.layerId, () =>
-            runPipeline(layer.baseData, layer.processors, timestamp),
-          );
-          if (enhancedData.imageMappingDebugVisuals) {
-            CanvasDebugRenderer.drawAll(ctx, enhancedData.imageMappingDebugVisuals, STAGE_SIZE);
-          }
+        const enhancedData = frameData.get(layer.baseData.layerId);
+        if (enhancedData?.imageMappingDebugVisuals) {
+          CanvasDebugRenderer.drawAll(ctx, enhancedData.imageMappingDebugVisuals, STAGE_SIZE);
         }
       }
 

@@ -193,10 +193,13 @@ export async function mountThreeLayers(
             0,
           );
 
-          // Update rotation if present
-          if (enhancedData.currentRotation !== undefined) {
-            item.group.rotation.z = -(enhancedData.currentRotation * AnimationConstants.DEG_TO_RAD);
-          }
+          const rotation =
+            enhancedData.currentRotation ??
+            enhancedData.rotation ??
+            item.baseData.rotation ??
+            0;
+
+          item.group.rotation.z = -(rotation * AnimationConstants.DEG_TO_RAD);
 
           // Update visibility for orbital animations
           if (enhancedData.visible !== undefined) {
