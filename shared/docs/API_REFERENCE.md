@@ -445,8 +445,9 @@ export function createSpinProcessor(config: SpinConfig): LayerProcessor;
 **Config:**
 ```typescript
 export type SpinConfig = {
-  spinSpeed: number;           // Degrees per second (0 = disabled)
-  spinDirection?: "cw" | "ccw"; // Default: "cw"
+  spinCenter?: [number, number] | PercentPoint; // Runtime override: 0-100% relative to image dimensions
+  spinSpeed?: number;                           // Degrees per second (0 = disabled)
+  spinDirection?: "cw" | "ccw";                 // Default: "cw"
 };
 ```
 
@@ -454,12 +455,16 @@ export type SpinConfig = {
 - `currentRotation` - Current angle (0-360°)
 - `hasSpinAnimation` - Animation flag
 - `spinSpeed`, `spinDirection` - Config values
+- `spinCenter` - Spin center point (image coordinates)
+- `spinStagePoint` - Spin center (stage coordinates)
+- `spinPercent` - Spin center (percent coordinates)
 
 **Example:**
 ```typescript
 const processor = createSpinProcessor({
   spinSpeed: 30,        // 12 seconds per rotation
-  spinDirection: "cw"
+  spinDirection: "cw",
+  spinCenter: [50, 50]  // Optional: override spin center (50%, 50%)
 });
 ```
 
