@@ -90,11 +90,12 @@ function StageCanvas() {
 
         // Add Orbital processor if orbital motion is configured
         const hasOrbitalConfig =
+          entry.orbitStagePoint !== undefined ||
+          entry.orbitOrient === true ||
           (entry.orbitSpeed !== undefined && entry.orbitSpeed !== 0) ||
           entry.orbitLine === true ||
           entry.orbitLinePoint !== undefined ||
           entry.orbitImagePoint !== undefined;
-
         if (hasOrbitalConfig) {
           processors.push(
             createOrbitalProcessor({

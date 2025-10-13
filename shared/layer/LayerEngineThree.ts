@@ -17,6 +17,7 @@ type TransformCache = {
 type MeshRenderData = {
   mesh: THREE.Mesh;
   group: THREE.Group;
+  orbitLine?: THREE.Line;
   baseData: EnhancedLayerData;
   processors: LayerProcessor[];
   transformCache: TransformCache;
@@ -108,6 +109,32 @@ export async function mountThreeLayers(
     // Initially, mesh is at center (no offset)
     mesh.position.set(0, 0, 0);
 
+    let orbitLine: THREE.Line | undefined;
+    if (data.orbitLineVisible && (data.orbitRadius ?? 0) > 0 && data.orbitStagePoint) {
+      const baseRadius = data.orbitRadius ?? 0;
+      const segments = 64;
+      const points: THREE.Vector3[] = [];
+      for (let i = 0; i <= segments; i += 1) {
+        const angle = (i / segments) * Math.PI * 2;
+        points.push(new THREE.Vector3(Math.cos(angle), Math.sin(angle), 0));
+      }
+      const circleGeometry = new THREE.BufferGeometry().setFromPoints(points);
+      const circleMaterial = new THREE.LineBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.25,
+      });
+      orbitLine = new THREE.LineLoop(circleGeometry, circleMaterial);
+      orbitLine.userData = { baseRadius };
+      orbitLine.position.set(
+        data.orbitStagePoint.x - STAGE_SIZE / 2,
+        STAGE_SIZE / 2 - data.orbitStagePoint.y,
+        0,
+      );
+      orbitLine.scale.set(baseRadius, baseRadius, 1);
+      scene.add(orbitLine);
+    }
+
     group.add(mesh);
     scene.add(group);
 
@@ -122,6 +149,7 @@ export async function mountThreeLayers(
     meshData.push({
       mesh,
       group,
+      orbitLine,
       baseData: data,
       processors,
       transformCache,
@@ -194,12 +222,31 @@ export async function mountThreeLayers(
           );
 
           const rotation =
-            enhancedData.currentRotation ??
-            enhancedData.rotation ??
-            item.baseData.rotation ??
-            0;
+            enhancedData.currentRotation ?? enhancedData.rotation ?? item.baseData.rotation ?? 0;
 
           item.group.rotation.z = -(rotation * AnimationConstants.DEG_TO_RAD);
+
+          if (item.orbitLine) {
+            if (
+              enhancedData.orbitLineStyle?.visible &&
+              enhancedData.orbitStagePoint &&
+              enhancedData.orbitLineStyle.radius > 0 &&
+              enhancedData.visible !== false
+            ) {
+              const baseRadius = item.orbitLine.userData?.baseRadius ?? 1;
+              const targetRadius = enhancedData.orbitLineStyle.radius;
+              const scale = baseRadius > 0 ? targetRadius / baseRadius : 1;
+              item.orbitLine.visible = true;
+              item.orbitLine.position.set(
+                enhancedData.orbitStagePoint.x - STAGE_SIZE / 2,
+                -(enhancedData.orbitStagePoint.y - STAGE_SIZE / 2),
+                0,
+              );
+              item.orbitLine.scale.set(baseRadius * scale, baseRadius * scale, 1);
+            } else {
+              item.orbitLine.visible = false;
+            }
+          }
 
           // Update visibility for orbital animations
           if (enhancedData.visible !== undefined) {
@@ -240,6 +287,13 @@ export async function mountThreeLayers(
       }
       for (const item of meshData) {
         const { mesh, group } = item;
+        if (item.orbitLine) {
+          scene.remove(item.orbitLine);
+          item.orbitLine.geometry.dispose();
+          if (item.orbitLine.material instanceof THREE.Material) {
+            item.orbitLine.material.dispose();
+          }
+        }
         mesh.geometry.dispose();
         if (mesh.material instanceof THREE.Material) {
           const material = mesh.material as THREE.MeshBasicMaterial;
@@ -271,6 +325,13 @@ export async function mountThreeLayers(
       }
       for (const item of meshData) {
         const { mesh, group } = item;
+        if (item.orbitLine) {
+          scene.remove(item.orbitLine);
+          item.orbitLine.geometry.dispose();
+          if (item.orbitLine.material instanceof THREE.Material) {
+            item.orbitLine.material.dispose();
+          }
+        }
         mesh.geometry.dispose();
         if (mesh.material instanceof THREE.Material) {
           const material = mesh.material as THREE.MeshBasicMaterial;

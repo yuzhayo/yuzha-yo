@@ -47,6 +47,7 @@ export type LayerCalculationPoints = {
   imageBase: DualSpaceCoordinate;
   spinPoint: DualSpaceCoordinate;
   orbitPoint: OrbitCoordinate;
+  orbitLine?: CoordinateBundle;
 };
 
 export type Layer2DTransform = {
@@ -120,6 +121,13 @@ export type UniversalLayerData = {
   imageBase: number;
   calculation: LayerCalculationPoints;
   rotation?: number;
+  orbitStagePoint?: Point2D;
+  orbitLinePoint?: Point2D;
+  orbitLineVisible?: boolean;
+  orbitRadius?: number;
+  orbitImagePercent?: PercentPoint;
+  orbitImagePoint?: Point2D;
+  orbitOrient?: boolean;
 };
 
 export function compute2DTransform(
@@ -218,6 +226,11 @@ export async function prepareLayer(
   const needsFullCalculation =
     entry.spinSpeed !== 0 ||
     entry.orbitSpeed !== 0 ||
+    entry.orbitStagePoint !== undefined ||
+    entry.orbitLinePoint !== undefined ||
+    entry.orbitLine === true ||
+    entry.orbitOrient === true ||
+    entry.orbitImagePoint !== undefined ||
     entry.showCenter ||
     entry.showTip ||
     entry.showBase ||
@@ -257,6 +270,10 @@ export async function prepareLayer(
   let spinImagePoint: Point2D;
   let orbitStagePoint: Point2D;
   let orbitStagePercent: PercentPoint;
+  let orbitLinePoint: Point2D;
+  let orbitLinePercent: PercentPoint;
+  let orbitLineVisible: boolean;
+  let orbitRadius: number;
   let orbitImagePercent: PercentPoint;
   let orbitImagePoint: Point2D;
   let orbitImageStagePoint: Point2D;
@@ -286,8 +303,14 @@ export async function prepareLayer(
     spinImagePercent = normalizePercentInput(entry.spinImagePoint, 50, 50);
     spinImagePoint = imagePercentToImagePoint(spinImagePercent, imageMapping.imageDimensions);
 
-    orbitStagePoint = normalizeStagePointInput(entry.orbitCenter, stageCenterPoint, stageSize);
+    orbitStagePoint = normalizeStagePointInput(entry.orbitStagePoint, stageCenterPoint, stageSize);
     orbitStagePercent = stagePointToPercent(orbitStagePoint, stageSize);
+    orbitLinePoint = normalizeStagePointInput(entry.orbitLinePoint, orbitStagePoint, stageSize);
+    orbitLinePercent = stagePointToPercent(orbitLinePoint, stageSize);
+    orbitLineVisible = Boolean(entry.orbitLine);
+    const radiusDx = orbitLinePoint.x - orbitStagePoint.x;
+    const radiusDy = orbitLinePoint.y - orbitStagePoint.y;
+    orbitRadius = Math.sqrt(radiusDx * radiusDx + radiusDy * radiusDy);
     orbitImagePercent = normalizePercentInput(entry.orbitImagePoint, 50, 50);
     orbitImagePoint = imagePercentToImagePoint(orbitImagePercent, imageMapping.imageDimensions);
     orbitImageStagePoint = imagePointToStagePoint(
@@ -313,6 +336,10 @@ export async function prepareLayer(
     spinImagePoint = zeroPoint;
     orbitStagePoint = zeroPoint;
     orbitStagePercent = zeroPercent;
+    orbitLinePoint = zeroPoint;
+    orbitLinePercent = zeroPercent;
+    orbitLineVisible = false;
+    orbitRadius = 0;
     orbitImagePercent = zeroPercent;
     orbitImagePoint = zeroPoint;
     orbitImageStagePoint = zeroPoint;
@@ -360,6 +387,7 @@ export async function prepareLayer(
       ),
       stageAnchor: createCoordinateBundle(orbitImageStagePoint, orbitImageStagePercent),
     },
+    orbitLine: createCoordinateBundle(orbitLinePoint, orbitLinePercent),
   };
 
   const result = {
@@ -374,6 +402,13 @@ export async function prepareLayer(
     imageBase: baseAngle,
     calculation,
     rotation,
+    orbitStagePoint,
+    orbitLinePoint,
+    orbitLineVisible,
+    orbitRadius,
+    orbitImagePercent,
+    orbitImagePoint,
+    orbitOrient: Boolean(entry.orbitOrient),
   };
 
   // Log performance metrics in development

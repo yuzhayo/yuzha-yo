@@ -43,11 +43,13 @@ export type LayerConfigEntry = {
   spinSpeed?: number; // Degrees per second (0 = no spin)
   spinDirection?: "cw" | "ccw";
 
-  // Orbital config
-  orbitCenter?: number[]; // [x, y] stage coordinates (0-2048), default [1024, 1024]
-  orbitImagePoint?: number[]; // [x, y] in 0-100% coordinates, default [50, 50]
-  orbitRadius?: number; // Pixels (0-2048)
-  orbitSpeed?: number; // Degrees per second (0 = no orbit)
+  // Orbital config (refined)
+  orbitStagePoint?: number[]; // [x, y] stage coordinates (0-2048), default [1024, 1024]
+  orbitLinePoint?: number[]; // [x, y] stage coordinates defining orbit radius
+  orbitImagePoint?: number[]; // [x, y] image percent (0-100) placed on orbit path
+  orbitLine?: boolean; // Whether to render the orbit line
+  orbitOrient?: boolean; // Auto-orient image along orbit radius
+  orbitSpeed?: number; // Degrees per second (0 = static)
   orbitDirection?: "cw" | "ccw";
 
   // Image Mapping Debug config
@@ -98,9 +100,11 @@ type ConfigYuzhaEntry = {
       spinImagePoint?: number[];
       spinSpeed?: number;
       spinDirection?: "cw" | "ccw";
-      orbitCenter?: number[];
+      orbitStagePoint?: number[];
+      orbitLinePoint?: number[];
       orbitImagePoint?: number[];
-      orbitRadius?: number;
+      orbitLine?: boolean;
+      orbitOrient?: boolean;
       orbitSpeed?: number;
       orbitDirection?: "cw" | "ccw";
       showCenter?: boolean;
@@ -149,11 +153,15 @@ function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
       ...basic
     } = entry.groups["Basic Config"] || {};
     const spin = entry.groups["Spin Config"] || {};
-    const {
-      imageTip: orbitalImageTip,
-      imageBase: orbitalImageBase,
-      ...orbital
-    } = entry.groups["Orbital Config"] || {};
+  const {
+    orbitStagePoint,
+    orbitLinePoint,
+    orbitImagePoint,
+    orbitLine,
+    orbitOrient,
+    orbitSpeed,
+    orbitDirection,
+  } = entry.groups["Orbital Config"] || {};
     const debug = entry.groups["Image Mapping Debug"] || {};
 
     // Start with Basic Config (static positioning and rotation)
@@ -174,14 +182,13 @@ function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
     }
 
     // Orbital Config
-    Object.assign(merged, orbital);
-
-    if (orbitalImageTip !== undefined) {
-      merged.imageTip = orbitalImageTip;
-    }
-    if (orbitalImageBase !== undefined) {
-      merged.imageBase = orbitalImageBase;
-    }
+    if (orbitStagePoint) merged.orbitStagePoint = orbitStagePoint;
+    if (orbitLinePoint) merged.orbitLinePoint = orbitLinePoint;
+    if (orbitImagePoint) merged.orbitImagePoint = orbitImagePoint;
+    if (orbitLine !== undefined) merged.orbitLine = orbitLine;
+    if (orbitOrient !== undefined) merged.orbitOrient = orbitOrient;
+    if (orbitSpeed !== undefined) merged.orbitSpeed = orbitSpeed;
+    if (orbitDirection) merged.orbitDirection = orbitDirection;
 
     // Image Mapping Debug Config (lowest priority, never overrides)
     Object.assign(merged, debug);

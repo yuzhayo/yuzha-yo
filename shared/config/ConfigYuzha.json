@@ -18,9 +18,11 @@
         "spinDirection": "cw"
       },
       "Orbital Config": {
-        "orbitCenter": [1024, 1024],
+        "orbitStagePoint": [1024, 1024],
+        "orbitLinePoint": [1024, 1024],
         "orbitImagePoint": [50, 50],
-        "orbitRadius": 0,
+        "orbitLine": false,
+        "orbitOrient": true,
         "orbitSpeed": 0,
         "orbitDirection": "cw"
       },
@@ -56,9 +58,10 @@
         "spinDirection": "cw"
       },
       "Orbital Config": {
-        "orbitCenter": [1024, 1024],
+        "orbitStagePoint": [1024, 1024],
+        "orbitLinePoint": [1024, 1024],
         "orbitImagePoint": [50, 50],
-        "orbitRadius": 0,
+        "orbitLine": false,
         "orbitSpeed": 0,
         "orbitDirection": "cw"
       },
@@ -94,9 +97,10 @@
         "spinDirection": "cw"
       },
       "Orbital Config": {
-        "orbitCenter": [1024, 1024],
+        "orbitStagePoint": [1024, 1024],
+        "orbitLinePoint": [1024, 1024],
         "orbitImagePoint": [50, 50],
-        "orbitRadius": 0,
+        "orbitLine": false,
         "orbitSpeed": 0,
         "orbitDirection": "cw"
       },
@@ -132,9 +136,10 @@
         "spinDirection": "cw"
       },
       "Orbital Config": {
-        "orbitCenter": [1024, 1024],
+        "orbitStagePoint": [1024, 1024],
+        "orbitLinePoint": [1024, 1024],
         "orbitImagePoint": [50, 50],
-        "orbitRadius": 0,
+        "orbitLine": false,
         "orbitSpeed": 0,
         "orbitDirection": "cw"
       },
@@ -170,9 +175,10 @@
         "spinDirection": "cw"
       },
       "Orbital Config": {
-        "orbitCenter": [1024, 1024],
+        "orbitStagePoint": [1024, 1024],
+        "orbitLinePoint": [1024, 1024],
         "orbitImagePoint": [50, 50],
-        "orbitRadius": 0,
+        "orbitLine": false,
         "orbitSpeed": 0,
         "orbitDirection": "cw"
       },
@@ -208,9 +214,10 @@
         "spinDirection": "cw"
       },
       "Orbital Config": {
-        "orbitCenter": [1024, 1024],
+        "orbitStagePoint": [1024, 1024],
+        "orbitLinePoint": [1024, 1024],
         "orbitImagePoint": [50, 50],
-        "orbitRadius": 0,
+        "orbitLine": false,
         "orbitSpeed": 0,
         "orbitDirection": "cw"
       },
@@ -246,9 +253,10 @@
         "spinDirection": "cw"
       },
       "Orbital Config": {
-        "orbitCenter": [1024, 1024],
+        "orbitStagePoint": [1024, 1024],
+        "orbitLinePoint": [1024, 1024],
         "orbitImagePoint": [50, 50],
-        "orbitRadius": 0,
+        "orbitLine": false,
         "orbitSpeed": 0,
         "orbitDirection": "cw"
       },
@@ -284,9 +292,10 @@
         "spinDirection": "cw"
       },
       "Orbital Config": {
-        "orbitCenter": [1024, 1024],
+        "orbitStagePoint": [1024, 1024],
+        "orbitLinePoint": [1024, 1024],
         "orbitImagePoint": [50, 50],
-        "orbitRadius": 0,
+        "orbitLine": false,
         "orbitSpeed": 0,
         "orbitDirection": "cw"
       },
@@ -322,9 +331,10 @@
         "spinDirection": "cw"
       },
       "Orbital Config": {
-        "orbitCenter": [1024, 1024],
+        "orbitStagePoint": [1024, 1024],
+        "orbitLinePoint": [1024, 1024],
         "orbitImagePoint": [50, 50],
-        "orbitRadius": 0,
+        "orbitLine": false,
         "orbitSpeed": 0,
         "orbitDirection": "cw"
       },
@@ -564,13 +574,12 @@
         "spinDirection": "cw"
       },
       "Orbital Config": {
-        "orbitCenter": [1024, 1024],
+        "orbitStagePoint": [1024, 1024],
+        "orbitLinePoint": [1324, 1024],
         "orbitImagePoint": [50, 50],
-        "orbitRadius": 300,
+        "orbitLine": false,
         "orbitSpeed": 30,
-        "orbitDirection": "cw",
-        "imageTip": 90,
-        "imageBase": 270
+        "orbitDirection": "cw"
       },
       "Image Mapping Debug": {
         "showCenter": false,
@@ -590,7 +599,7 @@
         "scale": [150, 150],
         "BasicStagePoint": [1024, 1024],
         "BasicImagePoint": [50, 50],
-        "BasicAngleImage": 0
+        "BasicAngleImage":180
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -599,13 +608,13 @@
         "spinDirection": "cw"
       },
       "Orbital Config": {
-        "orbitCenter": [1024, 1024],
+        "orbitStagePoint": [1024, 1024],
+        "orbitLinePoint": [1624, 1024],
         "orbitImagePoint": [50, 50],
-        "orbitRadius": 600,
+        "orbitLine": true,
+        "orbitOrient": true,
         "orbitSpeed": 20,
-        "orbitDirection": "cw",
-        "imageTip": 270,
-        "imageBase": 90
+        "orbitDirection": "cw"
       },
       "Image Mapping Debug": {
         "showCenter": false,
@@ -634,13 +643,13 @@
         "spinDirection": "cw"
       },
       "Orbital Config": {
-        "orbitCenter": [1024, 1024],
+        "orbitStagePoint": [1024, 1024],
+        "orbitLinePoint": [1274, 1024],
         "orbitImagePoint": [50, 50],
-        "orbitRadius": 250,
+        "orbitLine": false,
+        "orbitOrient": true,
         "orbitSpeed": 45,
-        "orbitDirection": "ccw",
-        "imageTip": 90,
-        "imageBase": 270
+        "orbitDirection": "ccw"
       },
       "Image Mapping Debug": {
         "showCenter": false,

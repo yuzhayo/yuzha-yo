@@ -9,6 +9,7 @@ const STAGE_SIZE = 2048;
 type LayerElement = {
   container: HTMLDivElement;
   img: HTMLImageElement;
+  orbitLineEl?: HTMLDivElement;
   baseData: EnhancedLayerData;
   processors: LayerProcessor[];
   isStatic: boolean;
@@ -67,6 +68,17 @@ export async function mountDOMLayers(
       img.style.left = `${left}px`;
       img.style.top = `${top}px`;
 
+      let orbitLineEl: HTMLDivElement | undefined;
+      if (item.data.orbitLineVisible && (item.data.orbitRadius ?? 0) > 0) {
+        orbitLineEl = document.createElement("div");
+        orbitLineEl.style.position = "absolute";
+        orbitLineEl.style.border = "1px dashed rgba(255,255,255,0.25)";
+        orbitLineEl.style.borderRadius = "50%";
+        orbitLineEl.style.pointerEvents = "none";
+        orbitLineEl.style.display = "none";
+        layerDiv.appendChild(orbitLineEl);
+      }
+
       // Apply both scale and rotation transforms
       const transforms: string[] = [];
       if (scale.x !== 1 || scale.y !== 1) {
@@ -80,6 +92,20 @@ export async function mountDOMLayers(
       }
 
       layerDiv.appendChild(img);
+
+      if (
+        orbitLineEl &&
+        item.data.orbitLineVisible &&
+        (item.data.orbitRadius ?? 0) > 0 &&
+        item.data.orbitStagePoint
+      ) {
+        const diameter = (item.data.orbitRadius ?? 0) * 2;
+        orbitLineEl.style.display = "block";
+        orbitLineEl.style.width = `${diameter}px`;
+        orbitLineEl.style.height = `${diameter}px`;
+        orbitLineEl.style.left = `${item.data.orbitStagePoint.x - diameter / 2}px`;
+        orbitLineEl.style.top = `${item.data.orbitStagePoint.y - diameter / 2}px`;
+      }
       containerEl.appendChild(layerDiv);
 
       const isStatic = item.processors.length === 0;
@@ -97,6 +123,7 @@ export async function mountDOMLayers(
       layers.push({
         container: layerDiv,
         img,
+        orbitLineEl,
         baseData: item.data,
         processors: item.processors,
         isStatic,
@@ -151,8 +178,29 @@ export async function mountDOMLayers(
           layer.img.style.left = `${left}px`;
           layer.img.style.top = `${top}px`;
 
+          if (layer.orbitLineEl) {
+            if (
+              enhancedData.orbitLineStyle?.visible &&
+              enhancedData.orbitStagePoint &&
+              enhancedData.orbitLineStyle.radius > 0 &&
+              enhancedData.visible !== false
+            ) {
+              const diameter = enhancedData.orbitLineStyle.radius * 2;
+              layer.orbitLineEl.style.display = "block";
+              layer.orbitLineEl.style.width = `${diameter}px`;
+              layer.orbitLineEl.style.height = `${diameter}px`;
+              layer.orbitLineEl.style.left = `${enhancedData.orbitStagePoint.x - diameter / 2}px`;
+              layer.orbitLineEl.style.top = `${enhancedData.orbitStagePoint.y - diameter / 2}px`;
+            } else {
+              layer.orbitLineEl.style.display = "none";
+            }
+          }
+
           if (enhancedData.visible !== undefined) {
             layer.img.style.display = enhancedData.visible ? "block" : "none";
+            if (!enhancedData.visible && layer.orbitLineEl) {
+              layer.orbitLineEl.style.display = "none";
+            }
           }
         }
       }

@@ -12,6 +12,7 @@ export type OrbitalConfig = {
   orbitLinePoint?: [number, number];
   orbitImagePoint?: [number, number];
   orbitLine?: boolean;
+  orbitOrient?: boolean;
   orbitSpeed?: number;
   orbitDirection?: "cw" | "ccw";
 };
@@ -21,6 +22,7 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
   const overrideLinePoint = normaliseStagePoint(config.orbitLinePoint);
   const overrideImagePercent = normalisePercent(config.orbitImagePoint);
   const overrideOrbitLine = config.orbitLine;
+  const overrideOrient = config.orbitOrient;
   const orbitSpeed = config.orbitSpeed ?? 0;
   const orbitDirection = config.orbitDirection ?? "cw";
   const speedPerSecond = orbitSpeed;
@@ -72,6 +74,21 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
       max: stageSize,
     });
 
+    const orient = overrideOrient ?? layer.orbitOrient ?? false;
+    const hasSpin = typeof layer.spinSpeed === "number" && layer.spinSpeed > 0;
+    let currentRotation = layer.currentRotation;
+
+    if (orient && !hasSpin && orbitRadius > 0) {
+      const radiusAngle = normalizeAngle(
+        (Math.atan2(-(orbitPoint.y - baseStagePoint.y), orbitPoint.x - baseStagePoint.x) * 180) /
+          Math.PI,
+      );
+      const axisAngle = normalizeAngle(layer.imageMapping.displayAxisAngle ?? 0);
+      const alignDelta = normalizeAngle(axisAngle - radiusAngle);
+      const baseRotation = layer.rotation ?? 0;
+      currentRotation = normalizeAngle(baseRotation + alignDelta);
+    }
+
     return {
       ...layer,
       position: newPosition,
@@ -84,6 +101,8 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
       orbitSpeed,
       orbitDirection,
       currentOrbitAngle: orbitAngle,
+      currentRotation,
+      orbitOrient: orient,
       hasOrbitalAnimation: orbitRadius > 0 || orbitSpeed !== 0,
       visible: isVisible,
       orbitLineStyle: {

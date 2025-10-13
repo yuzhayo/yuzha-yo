@@ -80,6 +80,8 @@ function StageDOM() {
         }
 
         const hasOrbitalConfig =
+          entry.orbitStagePoint !== undefined ||
+          entry.orbitOrient === true ||
           (entry.orbitSpeed !== undefined && entry.orbitSpeed !== 0) ||
           entry.orbitLine === true ||
           entry.orbitLinePoint !== undefined ||

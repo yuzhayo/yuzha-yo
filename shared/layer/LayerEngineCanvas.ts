@@ -143,11 +143,30 @@ export async function mountCanvasLayers(
           continue;
         }
 
+        if (
+          enhancedData.orbitLineStyle?.visible &&
+          enhancedData.orbitStagePoint &&
+          enhancedData.orbitLineStyle.radius > 0
+        ) {
+          ctx.save();
+          ctx.strokeStyle = "rgba(255,255,255,0.25)";
+          ctx.lineWidth = 1;
+          ctx.setLineDash([6, 6]);
+          ctx.beginPath();
+          ctx.arc(
+            enhancedData.orbitStagePoint.x,
+            enhancedData.orbitStagePoint.y,
+            enhancedData.orbitLineStyle.radius,
+            0,
+            Math.PI * 2,
+          );
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.restore();
+        }
+
         const rotation =
-          enhancedData.currentRotation ??
-          enhancedData.rotation ??
-          layer.baseData.rotation ??
-          0;
+          enhancedData.currentRotation ?? enhancedData.rotation ?? layer.baseData.rotation ?? 0;
 
         const { transformCache } = layer;
         const position = enhancedData.position;
@@ -173,7 +192,7 @@ export async function mountCanvasLayers(
 
       // Render debug visuals
       for (const layer of layers) {
-        const enhancedData = frameData.get(layer.baseData.layerId);
+        const enhancedData = frameData.get(layer.baseData.layerId) ?? layer.baseData;
         if (enhancedData?.imageMappingDebugVisuals) {
           CanvasDebugRenderer.drawAll(ctx, enhancedData.imageMappingDebugVisuals, STAGE_SIZE);
         }
@@ -200,35 +219,70 @@ export async function mountCanvasLayers(
     // Static scene rendering (existing code)
     ctx.clearRect(0, 0, STAGE_SIZE, STAGE_SIZE);
 
-    // Render layers without rotation
-    for (const layer of noRotationLayers) {
-      const { image, baseData, transformCache } = layer;
-      const x = baseData.position.x - transformCache.scaledWidth / 2;
-      const y = baseData.position.y - transformCache.scaledHeight / 2;
-      ctx.drawImage(image, x, y, transformCache.scaledWidth, transformCache.scaledHeight);
-    }
+    const renderStaticLayer = (layer: LayerRenderData) => {
+      const enhancedData =
+        layer.processors.length > 0
+          ? runPipeline(layer.baseData, layer.processors)
+          : layer.baseData;
 
-    // Render layers with rotation
-    for (const layer of withRotationLayers) {
-      const { image, baseData, transformCache } = layer;
-      const rotation = baseData.rotation ?? 0;
+      if (
+        enhancedData.orbitLineStyle?.visible &&
+        enhancedData.orbitStagePoint &&
+        enhancedData.orbitLineStyle.radius > 0
+      ) {
+        ctx.save();
+        ctx.strokeStyle = "rgba(255,255,255,0.25)";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([6, 6]);
+        ctx.beginPath();
+        ctx.arc(
+          enhancedData.orbitStagePoint.x,
+          enhancedData.orbitStagePoint.y,
+          enhancedData.orbitLineStyle.radius,
+          0,
+          Math.PI * 2,
+        );
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+      }
+
+      const rotation =
+        enhancedData.currentRotation ?? enhancedData.rotation ?? layer.baseData.rotation ?? 0;
+
+      const { transformCache } = layer;
 
       ctx.save();
-      const dx = transformCache.dx;
-      const dy = transformCache.dy;
-
-      ctx.translate(baseData.position.x, baseData.position.y);
-      ctx.translate(-dx, -dy);
-      ctx.rotate((rotation * Math.PI) / 180);
-      ctx.translate(dx, dy);
+      ctx.translate(enhancedData.position.x, enhancedData.position.y);
+      if (rotation !== 0) {
+        ctx.translate(-transformCache.dx, -transformCache.dy);
+        ctx.rotate((rotation * Math.PI) / 180);
+        ctx.translate(transformCache.dx, transformCache.dy);
+      }
       ctx.drawImage(
-        image,
+        layer.image,
         -transformCache.centerX,
         -transformCache.centerY,
         transformCache.scaledWidth,
         transformCache.scaledHeight,
       );
       ctx.restore();
+
+      return enhancedData;
+    };
+
+    const frameData = new Map<string, EnhancedLayerData>();
+
+    // Render layers without rotation
+    for (const layer of noRotationLayers) {
+      const enhanced = renderStaticLayer(layer);
+      frameData.set(layer.baseData.layerId, enhanced);
+    }
+
+    // Render layers with rotation
+    for (const layer of withRotationLayers) {
+      const enhanced = renderStaticLayer(layer);
+      frameData.set(layer.baseData.layerId, enhanced);
     }
 
     console.log("[LayerEngineCanvas] Static scene - rendered once");
@@ -236,10 +290,7 @@ export async function mountCanvasLayers(
     // Render debug visuals after all layers
     for (const layer of layers) {
       // Always run pipeline if there are processors (to generate debug visuals)
-      const enhancedData =
-        layer.processors.length > 0
-          ? runPipeline(layer.baseData, layer.processors)
-          : layer.baseData;
+      const enhancedData = frameData.get(layer.baseData.layerId) ?? layer.baseData;
 
       if (enhancedData.imageMappingDebugVisuals) {
         CanvasDebugRenderer.drawAll(ctx, enhancedData.imageMappingDebugVisuals);

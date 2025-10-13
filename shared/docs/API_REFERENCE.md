@@ -69,12 +69,12 @@ export type LayerConfigEntry = {
   spinDirection?: "cw" | "ccw";
 
   // Orbital Config
-  orbitCenter?: [number, number];
+  orbitStagePoint?: [number, number];
+  orbitLinePoint?: [number, number];
   orbitImagePoint?: [number, number];
-  orbitRadius?: number;
+  orbitLine?: boolean;
   orbitSpeed?: number;
   orbitDirection?: "cw" | "ccw";
-  orbitAutoRotate?: boolean;
 
   // Debug Config
   showCenter?: boolean;
@@ -108,12 +108,12 @@ export type LayerConfigEntry = {
 
 ```typescript
 export type BasicConfigGroup = {
-  scale?: [number, number];              // [10-500, 10-500] percent
-  BasicStagePoint?: [number, number];    // [0-2048, 0-2048] stage pixels
-  BasicImagePoint?: [number, number];    // [0-100, 0-100] percent
-  BasicAngleImage?: number;              // 0-360 degrees
-  imageTip?: number;                     // 0-360 degrees (default: 90)
-  imageBase?: number;                    // 0-360 degrees (default: 270)
+  scale?: [number, number]; // [10-500, 10-500] percent
+  BasicStagePoint?: [number, number]; // [0-2048, 0-2048] stage pixels
+  BasicImagePoint?: [number, number]; // [0-100, 0-100] percent
+  BasicAngleImage?: number; // 0-360 degrees
+  imageTip?: number; // 0-360 degrees (default: 90)
+  imageBase?: number; // 0-360 degrees (default: 270)
 };
 ```
 
@@ -121,10 +121,10 @@ export type BasicConfigGroup = {
 
 ```typescript
 export type SpinConfigGroup = {
-  spinStagePoint?: [number, number];     // [0-2048, 0-2048] stage pixels
-  spinImagePoint?: [number, number];     // [0-100, 0-100] percent
-  spinSpeed?: number;                    // 0-360+ degrees per second
-  spinDirection?: "cw" | "ccw";          // clockwise or counter-clockwise
+  spinStagePoint?: [number, number]; // [0-2048, 0-2048] stage pixels
+  spinImagePoint?: [number, number]; // [0-100, 0-100] percent
+  spinSpeed?: number; // 0-360+ degrees per second
+  spinDirection?: "cw" | "ccw"; // clockwise or counter-clockwise
 };
 ```
 
@@ -132,12 +132,12 @@ export type SpinConfigGroup = {
 
 ```typescript
 export type OrbitalConfigGroup = {
-  orbitCenter?: [number, number];        // [0-2048, 0-2048] stage pixels
-  orbitImagePoint?: [number, number];    // [0-100, 0-100] percent
-  orbitRadius?: number;                  // 0-2048 pixels
-  orbitSpeed?: number;                   // 0-360+ degrees per second
-  orbitDirection?: "cw" | "ccw";         // clockwise or counter-clockwise
-  orbitAutoRotate?: boolean;             // face orbit center
+  orbitCenter?: [number, number]; // [0-2048, 0-2048] stage pixels
+  orbitImagePoint?: [number, number]; // [0-100, 0-100] percent
+  orbitRadius?: number; // 0-2048 pixels
+  orbitSpeed?: number; // 0-360+ degrees per second
+  orbitDirection?: "cw" | "ccw"; // clockwise or counter-clockwise
+  orbitAutoRotate?: boolean; // face orbit center
 };
 ```
 
@@ -179,8 +179,8 @@ export type Point2D = {
 
 ```typescript
 export type PercentPoint = {
-  x: number;  // 0-100
-  y: number;  // 0-100
+  x: number; // 0-100
+  y: number; // 0-100
 };
 ```
 
@@ -295,10 +295,7 @@ export type LayerCalculationPoints = {
 **Location:** `LayerCorePipeline.ts`
 
 ```typescript
-export type LayerProcessor = (
-  layer: UniversalLayerData,
-  timestamp?: number
-) => EnhancedLayerData;
+export type LayerProcessor = (layer: UniversalLayerData, timestamp?: number) => EnhancedLayerData;
 ```
 
 ---
@@ -318,6 +315,7 @@ export function loadLayerConfig(): LayerConfig;
 **Returns:** `LayerConfig` - Array of transformed and sorted layer configurations
 
 **Example:**
+
 ```typescript
 const config = loadLayerConfig();
 console.log(config.length); // Number of layers
@@ -334,11 +332,13 @@ function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig;
 ```
 
 **Parameters:**
+
 - `raw` - Array of grouped config entries
 
 **Returns:** `LayerConfig` - Flat, merged, sorted configurations
 
 **Override Priority:**
+
 1. Orbital Config (highest)
 2. Spin Config
 3. Basic Config
@@ -353,17 +353,19 @@ Convert config entry to universal layer data with all calculations.
 ```typescript
 export async function prepareLayer(
   entry: LayerConfigEntry,
-  stageSize: number
+  stageSize: number,
 ): Promise<UniversalLayerData | null>;
 ```
 
 **Parameters:**
+
 - `entry` - Layer configuration
 - `stageSize` - Stage dimensions (usually 2048)
 
 **Returns:** `Promise<UniversalLayerData | null>` - Prepared layer or null if error
 
 **Example:**
+
 ```typescript
 const layer = await prepareLayer(configEntry, 2048);
 if (layer) {
@@ -381,11 +383,12 @@ Execute processor pipeline on layer data.
 export function runPipeline(
   baseLayer: UniversalLayerData,
   processors: LayerProcessor[],
-  timestamp?: number
+  timestamp?: number,
 ): EnhancedLayerData;
 ```
 
 **Parameters:**
+
 - `baseLayer` - Base layer data
 - `processors` - Array of processors to apply
 - `timestamp` - Optional animation timestamp (ms)
@@ -393,12 +396,9 @@ export function runPipeline(
 **Returns:** `EnhancedLayerData` - Layer with all processor enhancements
 
 **Example:**
+
 ```typescript
-const enhanced = runPipeline(
-  baseLayer,
-  [spinProcessor, debugProcessor],
-  5000
-);
+const enhanced = runPipeline(baseLayer, [spinProcessor, debugProcessor], 5000);
 console.log(enhanced.currentRotation); // 150
 ```
 
@@ -412,7 +412,7 @@ Process multiple layers through same pipeline.
 export function processBatch(
   baseLayers: UniversalLayerData[],
   processors: LayerProcessor[],
-  timestamp?: number
+  timestamp?: number,
 ): EnhancedLayerData[];
 ```
 
@@ -443,15 +443,17 @@ export function createSpinProcessor(config: SpinConfig): LayerProcessor;
 ```
 
 **Config:**
+
 ```typescript
 export type SpinConfig = {
   spinCenter?: [number, number] | PercentPoint; // Runtime override: 0-100% relative to image dimensions
-  spinSpeed?: number;                           // Degrees per second (0 = disabled)
-  spinDirection?: "cw" | "ccw";                 // Default: "cw"
+  spinSpeed?: number; // Degrees per second (0 = disabled)
+  spinDirection?: "cw" | "ccw"; // Default: "cw"
 };
 ```
 
 **Adds to layer:**
+
 - `currentRotation` - Current angle (0-360°)
 - `hasSpinAnimation` - Animation flag
 - `spinSpeed`, `spinDirection` - Config values
@@ -460,11 +462,12 @@ export type SpinConfig = {
 - `spinPercent` - Spin center (percent coordinates)
 
 **Example:**
+
 ```typescript
 const processor = createSpinProcessor({
-  spinSpeed: 30,        // 12 seconds per rotation
+  spinSpeed: 30, // 12 seconds per rotation
   spinDirection: "cw",
-  spinCenter: [50, 50]  // Optional: override spin center (50%, 50%)
+  spinCenter: [50, 50], // Optional: override spin center (50%, 50%)
 });
 ```
 
@@ -479,18 +482,20 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor;
 ```
 
 **Config:**
+
 ```typescript
 export type OrbitalConfig = {
   orbitCenter: [number, number];
   orbitImagePoint: [number, number];
   orbitRadius: number;
-  orbitSpeed: number;              // Degrees per second
-  orbitDirection?: "cw" | "ccw";   // Default: "cw"
-  orbitAutoRotate?: boolean;       // Default: false
+  orbitSpeed: number; // Degrees per second
+  orbitDirection?: "cw" | "ccw"; // Default: "cw"
+  orbitAutoRotate?: boolean; // Default: false
 };
 ```
 
 **Adds to layer:**
+
 - `position` - Updated position (overrides base)
 - `currentOrbitAngle` - Current angle around center
 - `orbitRotation` - Auto-rotation angle
@@ -498,6 +503,7 @@ export type OrbitalConfig = {
 - `hasOrbitalAnimation` - Animation flag
 
 **Example:**
+
 ```typescript
 const processor = createOrbitalProcessor({
   orbitCenter: [1024, 1024],
@@ -505,7 +511,7 @@ const processor = createOrbitalProcessor({
   orbitRadius: 200,
   orbitSpeed: 45,
   orbitDirection: "cw",
-  orbitAutoRotate: true
+  orbitAutoRotate: true,
 });
 ```
 
@@ -517,11 +523,12 @@ Create debug visualization processor.
 
 ```typescript
 export function createImageMappingDebugProcessor(
-  config: Partial<ImageMappingDebugConfig>
+  config: Partial<ImageMappingDebugConfig>,
 ): LayerProcessor;
 ```
 
 **Config:**
+
 ```typescript
 export type ImageMappingDebugConfig = {
   showCenter?: boolean;
@@ -542,15 +549,17 @@ export type ImageMappingDebugConfig = {
 ```
 
 **Adds to layer:**
+
 - `imageMappingDebugVisuals` - Visual marker data
 - `imageMappingDebugConfig` - Config copy
 
 **Example:**
+
 ```typescript
 const processor = createImageMappingDebugProcessor({
   showCenter: true,
   showTip: true,
-  showStageCenter: true
+  showStageCenter: true,
 });
 ```
 
@@ -567,16 +576,14 @@ Convert percent coordinates to image pixel coordinates.
 ```typescript
 function imagePercentToImagePoint(
   imagePercent: PercentPoint,
-  imageDimensions: { width: number; height: number }
+  imageDimensions: { width: number; height: number },
 ): Point2D;
 ```
 
 **Example:**
+
 ```typescript
-const point = imagePercentToImagePoint(
-  { x: 50, y: 50 },
-  { width: 512, height: 512 }
-);
+const point = imagePercentToImagePoint({ x: 50, y: 50 }, { width: 512, height: 512 });
 // { x: 256, y: 256 }
 ```
 
@@ -587,7 +594,7 @@ Convert image pixels to percent coordinates.
 ```typescript
 function imagePointToPercent(
   imagePoint: Point2D,
-  imageDimensions: { width: number; height: number }
+  imageDimensions: { width: number; height: number },
 ): PercentPoint;
 ```
 
@@ -602,11 +609,12 @@ function imagePointToStagePoint(
   imagePoint: Point2D,
   imageDimensions: { width: number; height: number },
   scale: Point2D,
-  position: Point2D
+  position: Point2D,
 ): Point2D;
 ```
 
 **Parameters:**
+
 - `imagePoint` - Point in image space
 - `imageDimensions` - Image size
 - `scale` - Layer scale
@@ -623,7 +631,7 @@ function stagePointToImagePoint(
   stagePoint: Point2D,
   imageDimensions: { width: number; height: number },
   scale: Point2D,
-  position: Point2D
+  position: Point2D,
 ): Point2D;
 ```
 
@@ -637,11 +645,12 @@ Convert browser viewport coordinates to stage coordinates.
 export function viewportToStageCoords(
   viewportX: number,
   viewportY: number,
-  transform: StageTransform
+  transform: StageTransform,
 ): { x: number; y: number };
 ```
 
 **Example:**
+
 ```typescript
 const stageCoords = viewportToStageCoords(960, 540, transform);
 // { x: 1024, y: 1024 } - stage center
@@ -655,7 +664,7 @@ Convert stage coordinates to browser viewport coordinates.
 export function stageToViewportCoords(
   stageX: number,
   stageY: number,
-  transform: StageTransform
+  transform: StageTransform,
 ): { x: number; y: number };
 ```
 
@@ -670,17 +679,18 @@ function calculatePositionForPivot(
   stageAnchor: Point2D,
   imagePercent: PercentPoint,
   imageDimensions: { width: number; height: number },
-  scale: Point2D
+  scale: Point2D,
 ): Point2D;
 ```
 
 **Example:**
+
 ```typescript
 const position = calculatePositionForPivot(
-  { x: 1024, y: 1024 },  // Place here
-  { x: 0, y: 0 },        // Top-left corner
+  { x: 1024, y: 1024 }, // Place here
+  { x: 0, y: 0 }, // Top-left corner
   { width: 512, height: 512 },
-  { x: 1.0, y: 1.0 }
+  { x: 1.0, y: 1.0 },
 );
 // Returns position where image top-left appears at stage center
 ```
@@ -702,24 +712,23 @@ export function normalizeAngle(angle: number): number;
 Normalize angle to 0-360° range.
 
 **Example:**
+
 ```typescript
-normalizeAngle(370);  // 10
-normalizeAngle(-10);  // 350
+normalizeAngle(370); // 10
+normalizeAngle(-10); // 350
 ```
 
 #### applyRotationDirection()
 
 ```typescript
-export function applyRotationDirection(
-  angle: number,
-  direction: "cw" | "ccw"
-): number;
+export function applyRotationDirection(angle: number, direction: "cw" | "ccw"): number;
 ```
 
 **Example:**
+
 ```typescript
-applyRotationDirection(90, "cw");   // 90
-applyRotationDirection(90, "ccw");  // -90
+applyRotationDirection(90, "cw"); // 90
+applyRotationDirection(90, "ccw"); // -90
 ```
 
 #### degreesToRadians()
@@ -747,7 +756,7 @@ Quadratic easing function (0-1 input/output).
 ```typescript
 export function calculateElapsedTime(
   timestamp: number,
-  startTime?: number
+  startTime?: number,
 ): { elapsed: number; currentTime: number };
 ```
 
@@ -762,11 +771,12 @@ Calculate scale/offset for cover mode.
 ```typescript
 export function computeCoverTransform(
   viewportWidth: number,
-  viewportHeight: number
+  viewportHeight: number,
 ): StageTransform;
 ```
 
 **Returns:**
+
 ```typescript
 type StageTransform = {
   scale: number;
@@ -778,6 +788,7 @@ type StageTransform = {
 ```
 
 **Example:**
+
 ```typescript
 const transform = computeCoverTransform(1920, 1080);
 // {
@@ -797,23 +808,25 @@ Auto-apply stage transform with resize handling.
 export function createStageTransformer(
   stageElement: HTMLElement,
   container: HTMLElement,
-  options?: StageTransformerOptions
+  options?: StageTransformerOptions,
 ): () => void;
 ```
 
 **Options:**
+
 ```typescript
 type StageTransformerOptions = {
-  resizeDebounce?: number;  // Default: 0 (no debounce)
+  resizeDebounce?: number; // Default: 0 (no debounce)
 };
 ```
 
 **Returns:** Cleanup function
 
 **Example:**
+
 ```typescript
 const cleanup = createStageTransformer(stage, container, {
-  resizeDebounce: 100
+  resizeDebounce: 100,
 });
 
 // Later: cleanup();
@@ -832,14 +845,13 @@ export function createPipelineCache(): PipelineCache;
 ```
 
 **Usage:**
+
 ```typescript
 const cache = createPipelineCache();
 
-const result = cache.get("layer1", () => 
-  runPipeline(baseLayer, processors, timestamp)
-);
+const result = cache.get("layer1", () => runPipeline(baseLayer, processors, timestamp));
 
-cache.nextFrame();  // Clear for next frame
+cache.nextFrame(); // Clear for next frame
 ```
 
 #### FrameRateTracker
@@ -854,6 +866,7 @@ export class FrameRateTracker {
 ```
 
 **Example:**
+
 ```typescript
 const tracker = new FrameRateTracker();
 
@@ -872,9 +885,7 @@ requestAnimationFrame((timestamp) => {
 Get image dimensions (cached).
 
 ```typescript
-async function getImageDimensions(
-  url: string
-): Promise<{ width: number; height: number }>;
+async function getImageDimensions(url: string): Promise<{ width: number; height: number }>;
 ```
 
 #### resolveAssetPath()
@@ -910,7 +921,7 @@ export function mountLayersToDOM(
     processors: LayerProcessor[];
   }>,
   container: HTMLElement,
-  stageSize: number
+  stageSize: number,
 ): () => void;
 ```
 
@@ -929,7 +940,7 @@ export function renderLayersToCanvas(
     processors: LayerProcessor[];
   }>,
   canvas: HTMLCanvasElement,
-  stageSize: number
+  stageSize: number,
 ): () => void;
 ```
 
@@ -947,7 +958,7 @@ export function renderLayersWithThree(
   }>,
   canvas: HTMLCanvasElement,
   stageSize: number,
-  THREE: typeof import("three")
+  THREE: typeof import("three"),
 ): () => void;
 ```
 
@@ -1064,15 +1075,15 @@ type StageCenterStyle = "star" | "crosshair" | "dot";
 
 ```typescript
 const DEFAULT_DEBUG_COLORS = {
-  center: "#FF0000",       // Red
-  tip: "#00FF00",          // Green
-  base: "#0000FF",         // Blue
-  stageCenter: "#00FFFF",  // Cyan
-  axisLine: "#FFFF00",     // Yellow
-  rotation: "#00FFFF",     // Cyan
-  tipRay: "#FFA500",       // Orange
-  baseRay: "#9370DB",      // Purple
-  boundingBox: "#FF00FF"   // Magenta
+  center: "#FF0000", // Red
+  tip: "#00FF00", // Green
+  base: "#0000FF", // Blue
+  stageCenter: "#00FFFF", // Cyan
+  axisLine: "#FFFF00", // Yellow
+  rotation: "#00FFFF", // Cyan
+  tipRay: "#FFA500", // Orange
+  baseRay: "#9370DB", // Purple
+  boundingBox: "#FF00FF", // Magenta
 };
 ```
 
@@ -1082,29 +1093,29 @@ const DEFAULT_DEBUG_COLORS = {
 
 ### Config Field Ranges
 
-| Field | Type | Range | Default |
-|-------|------|-------|---------|
-| `scale` | `[number, number]` | [10-500, 10-500] % | `[100, 100]` |
+| Field             | Type               | Range               | Default        |
+| ----------------- | ------------------ | ------------------- | -------------- |
+| `scale`           | `[number, number]` | [10-500, 10-500] %  | `[100, 100]`   |
 | `BasicStagePoint` | `[number, number]` | [0-2048, 0-2048] px | `[1024, 1024]` |
-| `BasicImagePoint` | `[number, number]` | [0-100, 0-100] % | `[50, 50]` |
-| `BasicAngleImage` | `number` | 0-360° | `0` |
-| `imageTip` | `number` | 0-360° | `90` |
-| `imageBase` | `number` | 0-360° | `270` |
-| `spinSpeed` | `number` | 0-360+° per second | `0` |
-| `orbitSpeed` | `number` | 0-360+° per second | `0` |
-| `orbitRadius` | `number` | 0-2048 px | `0` |
+| `BasicImagePoint` | `[number, number]` | [0-100, 0-100] %    | `[50, 50]`     |
+| `BasicAngleImage` | `number`           | 0-360°              | `0`            |
+| `imageTip`        | `number`           | 0-360°              | `90`           |
+| `imageBase`       | `number`           | 0-360°              | `270`          |
+| `spinSpeed`       | `number`           | 0-360+° per second  | `0`            |
+| `orbitSpeed`      | `number`           | 0-360+° per second  | `0`            |
+| `orbitRadius`     | `number`           | 0-2048 px           | `0`            |
 
 ### Speed to Rotation Time
 
-| Speed (°/s) | Time per Rotation |
-|-------------|-------------------|
-| `360` | 1 second |
-| `180` | 2 seconds |
-| `90` | 4 seconds |
-| `45` | 8 seconds |
-| `30` | 12 seconds |
-| `10` | 36 seconds |
-| `6` | 60 seconds (1 minute) |
+| Speed (°/s) | Time per Rotation     |
+| ----------- | --------------------- |
+| `360`       | 1 second              |
+| `180`       | 2 seconds             |
+| `90`        | 4 seconds             |
+| `45`        | 8 seconds             |
+| `30`        | 12 seconds            |
+| `10`        | 36 seconds            |
+| `6`         | 60 seconds (1 minute) |
 
 ---
 
@@ -1115,7 +1126,7 @@ const DEFAULT_DEBUG_COLORS = {
 ```typescript
 // 1. Load config
 const config = loadLayerConfig();
-const entry = config.find(c => c.layerId === "my-layer");
+const entry = config.find((c) => c.layerId === "my-layer");
 
 // 2. Prepare layer
 const layer = await prepareLayer(entry, 2048);
@@ -1124,10 +1135,12 @@ const layer = await prepareLayer(entry, 2048);
 const processors: LayerProcessor[] = [];
 
 if (entry.spinSpeed > 0) {
-  processors.push(createSpinProcessor({
-    spinSpeed: entry.spinSpeed,
-    spinDirection: entry.spinDirection
-  }));
+  processors.push(
+    createSpinProcessor({
+      spinSpeed: entry.spinSpeed,
+      spinDirection: entry.spinDirection,
+    }),
+  );
 }
 
 // 4. Run pipeline in animation loop
@@ -1231,7 +1244,7 @@ cache.nextFrame();
 ```typescript
 const hasAnimation = processors.length > 0;
 if (!hasAnimation) {
-  renderOnce();  // Don't start animation loop
+  renderOnce(); // Don't start animation loop
 }
 ```
 
@@ -1254,7 +1267,7 @@ return (layer, timestamp) => {
 
 ```typescript
 if (config.speed === 0) {
-  return (layer) => layer;  // No-op processor
+  return (layer) => layer; // No-op processor
 }
 ```
 
@@ -1264,11 +1277,7 @@ if (config.speed === 0) {
 
 ```typescript
 // Configuration
-import type { 
-  ConfigYuzhaEntry,
-  LayerConfigEntry,
-  LayerConfig 
-} from "@shared/config/Config";
+import type { ConfigYuzhaEntry, LayerConfigEntry, LayerConfig } from "@shared/config/Config";
 
 // Layer Data
 import type {
@@ -1276,14 +1285,11 @@ import type {
   Point2D,
   PercentPoint,
   ImageMapping,
-  LayerCalculationPoints
+  LayerCalculationPoints,
 } from "@shared/layer/LayerCore";
 
 // Pipeline
-import type {
-  LayerProcessor,
-  EnhancedLayerData
-} from "@shared/layer/LayerCorePipeline";
+import type { LayerProcessor, EnhancedLayerData } from "@shared/layer/LayerCorePipeline";
 
 // Stage
 import type { StageTransform } from "@shared/utils/stage2048";

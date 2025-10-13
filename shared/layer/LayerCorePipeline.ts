@@ -29,19 +29,22 @@ export type EnhancedLayerData = UniversalLayerData & {
   spinPercent?: { x: number; y: number };
 
   // Orbital properties (added by LayerCorePipelineOrbital)
-  orbitCenter?: { x: number; y: number };
+  orbitStagePoint?: { x: number; y: number };
+  orbitLinePoint?: { x: number; y: number };
+  orbitLineVisible?: boolean;
   orbitImagePoint?: { x: number; y: number };
   orbitRadius?: number;
+  orbitOrient?: boolean;
   orbitSpeed?: number;
   orbitDirection?: "cw" | "ccw";
   currentOrbitAngle?: number;
-  orbitRotation?: number;
   hasOrbitalAnimation?: boolean;
   visible?: boolean;
-  orbitPoint?: { x: number; y: number }; // NEW: Exposed for BaseTip processor
-
-  // BaseTip Rotation properties (added by LayerCorePipelineBaseTipRotation)
-  baseTipRotation?: number; // NEW: Calculated rotation for radial alignment
+  orbitPoint?: { x: number; y: number };
+  orbitLineStyle?: {
+    radius: number;
+    visible: boolean;
+  };
 
   // Image Mapping Debug properties (added by LayerCorePipelineImageMappingDebug)
   imageMappingDebugVisuals?: ImageMappingDebugVisuals;
