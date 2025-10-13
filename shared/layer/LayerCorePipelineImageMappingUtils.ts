@@ -5,6 +5,111 @@
  */
 
 import type { UniversalLayerData } from "./LayerCore";
+import type { EnhancedLayerData, LayerProcessor } from "./LayerCorePipeline";
+
+export type ImageMapping = {
+  imageCenter: { x: number; y: number };
+  imageTip: { x: number; y: number };
+  imageBase: { x: number; y: number };
+  imageDimensions: { width: number; height: number };
+  displayAxisAngle: number;
+  displayRotation: number;
+  axisCenterOffset: { x: number; y: number };
+};
+
+const STANDARD_MAPPING_CACHE = new Map<string, ImageMapping>();
+
+export function computeImageMapping(
+  imageDimensions: { width: number; height: number },
+  tipAngle: number = 90,
+  baseAngle: number = 270,
+): ImageMapping {
+  if (tipAngle === 90 && baseAngle === 270) {
+    const key = `${imageDimensions.width}x${imageDimensions.height}`;
+    const cached = STANDARD_MAPPING_CACHE.get(key);
+    if (cached) return cached;
+    const result = computeImageMappingInternal(imageDimensions, tipAngle, baseAngle);
+    STANDARD_MAPPING_CACHE.set(key, result);
+    return result;
+  }
+
+  return computeImageMappingInternal(imageDimensions, tipAngle, baseAngle);
+}
+
+function computeImageMappingInternal(
+  imageDimensions: { width: number; height: number },
+  tipAngle: number,
+  baseAngle: number,
+): ImageMapping {
+  const { width, height } = imageDimensions;
+
+  const imageCenter = {
+    x: width / 2,
+    y: height / 2,
+  };
+
+  const tipAngleRad = (-tipAngle * Math.PI) / 180;
+  const baseAngleRad = (-baseAngle * Math.PI) / 180;
+
+  const tipDx = Math.cos(tipAngleRad);
+  const tipDy = Math.sin(tipAngleRad);
+
+  const halfWidth = width / 2;
+  const halfHeight = height / 2;
+
+  const tipScaleX = tipDx !== 0 ? halfWidth / Math.abs(tipDx) : Infinity;
+  const tipScaleY = tipDy !== 0 ? halfHeight / Math.abs(tipDy) : Infinity;
+  const tipScale = Math.min(tipScaleX, tipScaleY);
+
+  const tipOffsetX = Number.isFinite(tipScale) ? tipScale * tipDx : 0;
+  const tipOffsetY = Number.isFinite(tipScale) ? tipScale * tipDy : 0;
+
+  const imageTip = {
+    x: imageCenter.x + tipOffsetX,
+    y: imageCenter.y + tipOffsetY,
+  };
+
+  const baseDx = Math.cos(baseAngleRad);
+  const baseDy = Math.sin(baseAngleRad);
+
+  const baseScaleX = baseDx !== 0 ? halfWidth / Math.abs(baseDx) : Infinity;
+  const baseScaleY = baseDy !== 0 ? halfHeight / Math.abs(baseDy) : Infinity;
+  const baseScale = Math.min(baseScaleX, baseScaleY);
+
+  const baseOffsetX = Number.isFinite(baseScale) ? baseScale * baseDx : 0;
+  const baseOffsetY = Number.isFinite(baseScale) ? baseScale * baseDy : 0;
+
+  const imageBase = {
+    x: imageCenter.x + baseOffsetX,
+    y: imageCenter.y + baseOffsetY,
+  };
+
+  const axisDx = imageTip.x - imageBase.x;
+  const axisDy = imageTip.y - imageBase.y;
+
+  const displayAxisAngle = (Math.atan2(-axisDy, axisDx) * 180) / Math.PI;
+  const displayRotation = Number.isFinite(displayAxisAngle) ? 90 - displayAxisAngle : 0;
+
+  const axisMidpoint = {
+    x: (imageBase.x + imageTip.x) / 2,
+    y: (imageBase.y + imageTip.y) / 2,
+  };
+
+  const axisCenterOffset = {
+    x: imageCenter.x - axisMidpoint.x,
+    y: imageCenter.y - axisMidpoint.y,
+  };
+
+  return {
+    imageCenter,
+    imageTip,
+    imageBase,
+    imageDimensions,
+    displayAxisAngle,
+    displayRotation,
+    axisCenterOffset,
+  };
+}
 
 export type ImageCenterMarker = {
   type: "dot" | "crosshair";
@@ -165,6 +270,36 @@ const DEFAULT_CONFIG: ResolvedImageMappingDebugConfig = {
     boundingBox: "#FF00FF", // Magenta - bounding box
   },
 };
+
+export type ImageMappingDebugProcessorConfig = ImageMappingDebugConfig;
+
+export function createImageMappingDebugProcessor(
+  config: Partial<ImageMappingDebugProcessorConfig>,
+): LayerProcessor {
+  const hasAnyDebug =
+    config.showCenter ||
+    config.showTip ||
+    config.showBase ||
+    config.showStageCenter ||
+    config.showAxisLine ||
+    config.showRotation ||
+    config.showTipRay ||
+    config.showBaseRay ||
+    config.showBoundingBox;
+
+  if (!hasAnyDebug) {
+    return (layer: UniversalLayerData): EnhancedLayerData => layer as EnhancedLayerData;
+  }
+
+  return (layer: UniversalLayerData): EnhancedLayerData => {
+    const debugVisuals = generateImageMappingDebugVisuals(layer, config);
+    return {
+      ...layer,
+      imageMappingDebugVisuals: debugVisuals,
+      imageMappingDebugConfig: config,
+    } as EnhancedLayerData;
+  };
+}
 
 /**
  * Generate image center marker visualization data

@@ -10,9 +10,9 @@ ConfigYuzha.json
 LayerConfigEntry[]
    -> prepareLayer()
 UniversalLayerData[]
-   -> attach processors
-EnhancedLayerData (per frame)
-   -> LayerEngine
+   -> createStagePipeline()
+PreparedLayer[] (data + processors)
+   -> Renderer adapters -> LayerEngines
 Renderer output
 ```
 
@@ -34,18 +34,20 @@ Renderer output
   - Helper exports such as `validatePoint`, `imagePointToStagePoint`, `stagePointToPercent` are reusable by processors.
 
 ## Phase 3 - Processor Attachment
-- `shared/stages/Stage{DOM,Canvas,Three}.tsx`
-  - Determine which processors to attach based on config flags.
-  - Provide optional override parameters (e.g., forcing orbit speed).
-  - Build an array of `LayerProcessor` functions per layer.
+- `shared/layer/pipeline/ProcessorRegistry.ts`
+  - Registers processor plugins (`spin`, `orbital`, `image-mapping-debug`, etc.).
+  - `getProcessorsForEntry(entry)` evaluates plugins against config and returns attachable processors.
+- `shared/layer/pipeline/StagePipeline.ts`
+  - `createStagePipeline({ stageSize? })`: prepares each layer then uses the registry to assemble `{ data, processors }` tuples.
+  - `toRendererInput(pipeline)`: convenience helper for renderer adapters.
 
 ### Provided Processor Modules
 - `LayerCorePipelineSpin.ts`
   - `createSpinProcessor(config)`: adds timed rotation updates.
 - `LayerCorePipelineOrbital.ts`
   - `createOrbitalProcessor(config)`: moves layers along circular paths, optionally auto-orienting them.
-- `LayerCorePipelineImageMappingDebug.ts`
-  - `createImageMappingDebugProcessor(config)`: generates debug geometry from `layer.calculation`.
+- `LayerCorePipelineImageMappingUtils.ts`
+  - Combines image mapping math, debug visual generation, and `createImageMappingDebugProcessor(config)`.
 
 Processors follow the signature:
 ```ts
@@ -58,9 +60,10 @@ They should treat `layer` as immutable and return a new object (or shallow clone
   - `runPipeline(baseLayer, processors, timestamp)`: sequentially applies processors and returns `EnhancedLayerData`.
   - `processBatch(baseLayers, processors, timestamp)`: convenience helper for running the same processors on multiple layers.
 - Renderers call `runPipeline()` on every frame that requires animation and reuse cached results for static layers.
-- `createPipelineCache()` (from `LayerCoreAnimationUtils.ts`) memoises processor output keyed by `layerId` and timestamp bucket.
+- `createPipelineCache()` (from `LayerCorePipeline.ts`) memoises processor output keyed by `layerId` and timestamp bucket.
 
 ## Phase 5 - Rendering
+- Renderer adapters under `shared/layer/pipeline/renderers/` mount the pipeline into each backend (DOM, Canvas, Three) and wire up viewport transforms.
 - Renderer engines consume `EnhancedLayerData`:
   - `layer.position`, `layer.scale`, and `layer.rotation` control base transforms.
   - `layer.currentRotation` (spin processor) and `layer.currentOrbitAngle` (orbital processor) provide per-frame adjustments.
@@ -77,7 +80,7 @@ They should treat `layer` as immutable and return a new object (or shallow clone
    - Export `createMyProcessor(config): LayerProcessor`.
    - Accept overrides and use defaults from `layer.calculation`.
    - Return the original layer if your feature is disabled by config.
-2. **Attach the processor** in each stage component with consistent conditions.
+2. **Register the processor** via `registerProcessor({ name, shouldAttach, create })` so the pipeline can attach it automatically.
 3. **Update docs**:
    - Document new config fields in `01_CONFIG_SYSTEM_GUIDE.md`.
    - Extend this file with the new processor description.
@@ -85,6 +88,7 @@ They should treat `layer` as immutable and return a new object (or shallow clone
    - Add unit tests under `shared/layer/__tests__` to cover the new processor logic.
 
 ## AI Agent Notes
+- Call `createStagePipeline()` in isolation when you need a snapshot of prepared layers and attached processors.
 - The pipeline is deterministic given the same config, timestamp, and processor set. Use this property for snapshot testing.
 - Avoid side effects inside processors. Cache objects inside closures instead.
 - When debugging, log `layer.layerId` and relevant calculated fields; each processor receives the enriched state from the previous one.

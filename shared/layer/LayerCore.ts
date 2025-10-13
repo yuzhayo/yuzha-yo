@@ -1,6 +1,6 @@
 import type { LayerConfigEntry } from "../config/Config";
 import registryData from "../config/ImageRegistry.json" assert { type: "json" };
-import { computeImageMapping, type ImageMapping } from "./LayerCorePipelineImageMapping";
+import { computeImageMapping, type ImageMapping } from "./LayerCorePipelineImageMappingUtils";
 
 // Type-safe registry with compile-time validation
 type AssetRegistryEntry = { id: string; path: string };

@@ -14,17 +14,17 @@ Enable flags inside the "Image Mapping Debug" group of `ConfigYuzha.json`:
 
 Any truthy flag causes the debug processor to be attached to that layer.
 
-## Processor (`LayerCorePipelineImageMappingDebug.ts`)
+## Processor (`LayerCorePipelineImageMappingUtils.ts`)
 ```ts
 export function createImageMappingDebugProcessor(config): LayerProcessor
 ```
 - Reads `layer.calculation` values prepared by `LayerCore`.
-- Generates geometric primitives (lines, circles, markers) via helpers in `LayerCorePipelineImageMappingUtils.ts`.
+- Generates geometric primitives (lines, circles, markers) via helpers co-located in `LayerCorePipelineImageMappingUtils.ts`.
 - Populates `layer.imageMappingDebugVisuals` with instructions for renderers.
 - Does not mutate base layer data beyond adding the debug visuals.
 
 ## Renderer Support
-- **DOM**: `LayerEngineDOM.ts` converts visuals into HTML elements styled with CSS (e.g., absolutely positioned divs, rotated lines).
+- **DOM**: `LayerEngines.ts` converts visuals into HTML elements styled with CSS (e.g., absolutely positioned divs, rotated lines).
 - **Canvas**: `CanvasDebugRenderer.drawAll(ctx, visuals, stageSize)` draws markers directly on the canvas layer.
 - **Three.js**: Uses line geometries and helper meshes to render markers in 3D space.
 
@@ -35,7 +35,7 @@ Renderers guard the debug pass so static layers without visuals incur no additio
 - **Rays**: line segments from pivots to tips/bases.
 - **Axis Line**: orientation vector derived from `imageMapping.displayAxisAngle`.
 - **Bounding box**: outlines the scaled image boundary.
-- **Orbit helpers**: generated separately by `LayerCorePipelineOrbitalUtils.ts` when orbital config enables them.
+- **Orbit helpers**: generated from `generateOrbitalDebugVisuals()` inside `LayerCorePipelineOrbital.ts` when orbital config enables them.
 
 ## Usage Tips
 - Combine debug flags with spin/orbit configs to verify that pivots follow the intended trajectories.

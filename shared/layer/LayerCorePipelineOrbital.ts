@@ -5,7 +5,7 @@ import {
   calculateOrbitPosition,
   calculateOrbitalVisibility,
   normalizeAngle,
-} from "./LayerCoreAnimationUtils";
+} from "./LayerCorePipeline";
 
 export type OrbitalConfig = {
   orbitStagePoint?: [number, number];
@@ -182,4 +182,163 @@ function clampPercent(value: number): number {
 function clampStage(value: number): number {
   if (!Number.isFinite(value)) return 0;
   return Math.max(0, Math.min(2048, value));
+}
+
+export type OrbitCenterMarker = {
+  type: "dot" | "crosshair";
+  center: { x: number; y: number };
+  size: number;
+  color: string;
+};
+
+export type OrbitLineTrace = {
+  center: { x: number; y: number };
+  radius: number;
+  points: Array<{ x: number; y: number }>;
+  thickness: number;
+  color: string;
+  opacity: number;
+};
+
+export type OrbitRadiusLine = {
+  start: { x: number; y: number };
+  end: { x: number; y: number };
+  thickness: number;
+  color: string;
+  opacity: number;
+};
+
+export type OrbitPointMarker = {
+  type: "circle";
+  position: { x: number; y: number };
+  size: number;
+  color: string;
+};
+
+export type OrbitalDebugVisuals = {
+  centerMarker?: OrbitCenterMarker;
+  lineTrace?: OrbitLineTrace;
+  radiusLine?: OrbitRadiusLine;
+  pointMarker?: OrbitPointMarker;
+};
+
+export type OrbitalDebugConfig = {
+  showCenter?: boolean;
+  showOrbitLine?: boolean;
+  showRadiusLine?: boolean;
+  showOrbitPoint?: boolean;
+  centerStyle?: "dot" | "crosshair";
+  colors?: {
+    center?: string;
+    orbitLine?: string;
+    radiusLine?: string;
+    orbitPoint?: string;
+  };
+};
+
+const DEFAULT_DEBUG_CONFIG: Required<OrbitalDebugConfig> & {
+  colors: { center: string; orbitLine: string; radiusLine: string; orbitPoint: string };
+} = {
+  showCenter: true,
+  showOrbitLine: true,
+  showRadiusLine: true,
+  showOrbitPoint: true,
+  centerStyle: "crosshair",
+  colors: {
+    center: "#FF0000",
+    orbitLine: "#00FF00",
+    radiusLine: "#FFFF00",
+    orbitPoint: "#0000FF",
+  },
+};
+
+export function generateOrbitCenterMarker(
+  orbitCenter: [number, number],
+  config?: Partial<OrbitalDebugConfig>,
+): OrbitCenterMarker {
+  const merged = { ...DEFAULT_DEBUG_CONFIG, ...config };
+  const colors = { ...DEFAULT_DEBUG_CONFIG.colors, ...config?.colors };
+  return {
+    type: merged.centerStyle,
+    center: { x: orbitCenter[0], y: orbitCenter[1] },
+    size: merged.centerStyle === "dot" ? 6 : 15,
+    color: colors.center,
+  };
+}
+
+export function generateOrbitLineTrace(
+  orbitCenter: [number, number],
+  orbitRadius: number,
+  config?: Partial<OrbitalDebugConfig>,
+): OrbitLineTrace {
+  const colors = { ...DEFAULT_DEBUG_CONFIG.colors, ...config?.colors };
+  const segments = 64;
+  const points: Array<{ x: number; y: number }> = [];
+  for (let i = 0; i <= segments; i++) {
+    const angle = (i / segments) * Math.PI * 2;
+    const x = orbitCenter[0] + orbitRadius * Math.cos(angle);
+    const y = orbitCenter[1] + orbitRadius * Math.sin(angle);
+    points.push({ x, y });
+  }
+  return {
+    center: { x: orbitCenter[0], y: orbitCenter[1] },
+    radius: orbitRadius,
+    points,
+    thickness: 1,
+    color: colors.orbitLine,
+    opacity: 0.25,
+  };
+}
+
+export function generateOrbitRadiusLine(
+  orbitCenter: [number, number],
+  orbitPoint: { x: number; y: number },
+  config?: Partial<OrbitalDebugConfig>,
+): OrbitRadiusLine {
+  const colors = { ...DEFAULT_DEBUG_CONFIG.colors, ...config?.colors };
+  return {
+    start: { x: orbitCenter[0], y: orbitCenter[1] },
+    end: orbitPoint,
+    thickness: 1,
+    color: colors.radiusLine,
+    opacity: 0.35,
+  };
+}
+
+export function generateOrbitPointMarker(
+  orbitPoint: { x: number; y: number },
+  config?: Partial<OrbitalDebugConfig>,
+): OrbitPointMarker {
+  const colors = { ...DEFAULT_DEBUG_CONFIG.colors, ...config?.colors };
+  return {
+    type: "circle",
+    position: orbitPoint,
+    size: 8,
+    color: colors.orbitPoint,
+  };
+}
+
+export function generateOrbitalDebugVisuals(
+  orbitCenter: [number, number],
+  orbitRadius: number,
+  currentOrbitPoint: { x: number; y: number },
+  config?: Partial<OrbitalDebugConfig>,
+): OrbitalDebugVisuals {
+  const merged = { ...DEFAULT_DEBUG_CONFIG, ...config };
+  const visuals: OrbitalDebugVisuals = {};
+
+  if (merged.showCenter) {
+    visuals.centerMarker = generateOrbitCenterMarker(orbitCenter, config);
+  }
+  if (merged.showOrbitLine) {
+    visuals.lineTrace = generateOrbitLineTrace(orbitCenter, orbitRadius, config);
+  }
+  if (merged.showRadiusLine) {
+    visuals.radiusLine = generateOrbitRadiusLine(orbitCenter, currentOrbitPoint, config);
+  }
+  if (merged.showOrbitPoint) {
+    visuals.pointMarker = generateOrbitPointMarker(currentOrbitPoint, config);
+  }
+
+  return visuals;
 }

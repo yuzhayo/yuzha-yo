@@ -5,10 +5,7 @@ import {
   type UniversalLayerData,
 } from "./LayerCore";
 import type { EnhancedLayerData, LayerProcessor } from "./LayerCorePipeline";
-import {
-  applyRotationDirection,
-  normalizeAngle,
-} from "./LayerCoreAnimationUtils";
+import { applyRotationDirection, normalizeAngle } from "./LayerCorePipeline";
 
 export type SpinConfig = {
   spinCenter?: [number, number] | PercentPoint; // Runtime override: 0-100% relative to image dimensions

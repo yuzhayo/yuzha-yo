@@ -34,13 +34,13 @@ export function createSpinProcessor(config: SpinConfig): LayerProcessor
   6. Expose `spinStagePoint`, `spinPercent`, and `spinCenter` for renderers.
 
 ## Renderer Handling
-- **LayerEngineDOM**
+- **LayerEngines**
   - Injects inline CSS transforms: `translate -> rotate -> translate` around the calculated pivot.
   - Applies `currentRotation` if present, else falls back to `rotation` from config (static).
-- **LayerEngineCanvas**
+- **LayerEngines**
   - Performs `ctx.translate` to the pivot, `ctx.rotate(angleRadians)`, then draws the image.
   - Resets the context after each layer to avoid bleed.
-- **LayerEngineThree**
+- **LayerEngines**
   - Adjusts the mesh `rotation.z` to reflect the current spin angle in radians.
 
 All engines test for `layer.hasSpinAnimation` to decide whether to keep a requestAnimationFrame loop alive.
@@ -52,7 +52,7 @@ All engines test for `layer.hasSpinAnimation` to decide whether to keep a reques
 - Compare DOM vs. Canvas vs. Three.js. If only one environment misbehaves, the issue is renderer-specific.
 
 ## Extending Spin Behaviour
-- Override easing: wrap `createSpinProcessor()` and replace the linear `elapsed * spinSpeed` with any easing function (e.g., `easeInOutQuad` from `LayerCoreAnimationUtils.ts`).
+- Override easing: wrap `createSpinProcessor()` and replace the linear `elapsed * spinSpeed` with any easing function (e.g., `easeInOutQuad` from `LayerCorePipeline.ts`).
 - Sync with other processors: because processors run in order, you can add a follow-up processor that reads `layer.currentRotation` to spawn particle effects or debug trails.
 - Persist rotation: if you need to resume from a given angle, inject a `startAngle` override via the processor config.
 

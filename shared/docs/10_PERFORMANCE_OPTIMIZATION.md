@@ -10,7 +10,7 @@ The Yuzha runtime targets smooth animation at 60 fps even with multiple layers. 
 - Layers that fail preparation (missing assets) are skipped early, avoiding work downstream.
 
 ### 2. Processor Memoisation
-- `createPipelineCache()` from `LayerCoreAnimationUtils.ts` stores per-layer processor output keyed by layer id and timestamp bucket.
+- `createPipelineCache()` from `LayerCorePipeline.ts` stores per-layer processor output keyed by layer id and timestamp bucket.
 - Canvas and Three renderers reuse cached results when no animated processors are attached.
 
 ### 3. Conditional Animation Loops

@@ -38,7 +38,7 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor
 - **Three.js**: Builds a `THREE.LineLoop` mesh to represent the orbit path; updates mesh position alongside the sprite.
 
 ## Debug Helpers
-- `LayerCorePipelineOrbitalUtils.ts` provides marker generators:
+- `LayerCorePipelineOrbital.ts` now ships marker generators alongside the processor:
   - `generateOrbitCenterMarker`
   - `generateOrbitLineTrace`
   - `generateOrbitRadiusLine`

@@ -69,6 +69,25 @@ Types of interest:
 | `EnhancedLayerData` | `UniversalLayerData & {...}` | Layer data augmented by processors. |
 | `runPipeline` | `(layer, processors, timestamp?) => EnhancedLayerData` | Calls processors sequentially. |
 | `processBatch` | `(layers, processors, timestamp?) => EnhancedLayerData[]` | Applies the same processors to multiple layers. |
+| `AnimationConstants` | `{ DEG_TO_RAD, RAD_TO_DEG, ... }` | Precomputed constants used by spin/orbit math. |
+| `normalizeAngle` | `(angle: number) => number` | Utility to clamp angles to 0-360 range. |
+| `calculateOrbitPosition` | `(center, radius, angle) => { x: number; y: number }` | Reusable circular motion helper. |
+| `createPipelineCache` | `() => PipelineCache` | Memoises processor output per frame. |
+| `batchLayersByAnimation` | `(layers) => LayerBatch` | Splits layers into static/spin/orbital buckets.
+| `easeInOutQuad` | `(t: number) => number` | Shared easing helper. |
+
+---
+
+## Stage Pipeline (`shared/layer/pipeline`)
+
+| Export | Signature | Description |
+| ------ | --------- | ----------- |
+| `createStagePipeline` | `({ stageSize?, processorContext? }?) => Promise<StagePipeline>` | Loads config, prepares layers, attaches processors. |
+| `StagePipeline` | `{ stageSize: number; layers: PreparedLayer[] }` | Result bundle fed to renderer adapters. |
+| `PreparedLayer` | `{ entry: LayerConfigEntry; data: EnhancedLayerData; processors: LayerProcessor[] }` | Per-layer payload delivered to engines. |
+| `toRendererInput` | `(pipeline) => { data, processors }[]` | Convenience helper for adapter calls. |
+| `registerProcessor` | `(plugin: ProcessorPlugin) => void` | Adds or replaces a processor plugin. |
+| `getProcessorsForEntry` | `(entry, context?) => LayerProcessor[]` | Evaluates plugins against a config entry. |
 
 ---
 
@@ -78,10 +97,7 @@ Types of interest:
 | ------ | ---------- | ------- |
 | `LayerCorePipelineSpin.ts` | `createSpinProcessor(config: SpinConfig)` | Adds rotational animation based on spin config. |
 | `LayerCorePipelineOrbital.ts` | `createOrbitalProcessor(config: OrbitalConfig)` | Adds orbital motion, auto orientation, and orbit line data. |
-| `LayerCorePipelineImageMappingDebug.ts` | `createImageMappingDebugProcessor(config)` | Generates debug visuals (markers, rays, axis lines). |
-| `LayerCoreAnimationUtils.ts` | `AnimationConstants`, `normalizeAngle`, `applyRotationDirection`, `calculateOrbitPosition`, `createPipelineCache`, `batchLayersByAnimation` | Shared math helpers and caches. |
-| `LayerCorePipelineImageMappingUtils.ts` | `CanvasDebugRenderer`, `DomDebugRenderer`, `generate*` helpers | Rendering utilities for debug visuals. |
-| `LayerCorePipelineOrbitalUtils.ts` | `generateOrbit*` helpers | Adds orbit-specific debug primitives. |
+| `LayerCorePipelineImageMappingUtils.ts` | `computeImageMapping`, `createImageMappingDebugProcessor`, `CanvasDebugRenderer`, `DomDebugRenderer`, `ThreeDebugRenderer`, `generate*` helpers | Image mapping math & debug visuals. |
 
 Types:
 - `SpinConfig`, `OrbitalConfig`
@@ -93,11 +109,19 @@ Types:
 
 | File | Export | Description |
 | ---- | ------ | ----------- |
-| `LayerEngineDOM.ts` | `mountDomLayers(rootElement, layers)` | Creates DOM nodes, runs processor loop (if needed), returns cleanup. |
-| `LayerEngineCanvas.ts` | `mountCanvasLayers(ctx, layersWithProcessors)` | Draws layers to a 2D context with optional animation loop. |
-| `LayerEngineThree.ts` | `mountThreeLayers(scene, renderer, camera, layers)` | Adds textured meshes to a Three.js scene and animates them. |
+| `LayerEngines.ts` | `mountDomLayers`, `mountCanvasLayers`, `mountThreeLayers` | Shared DOM/Canvas/Three mounting logic. |
 
 Each mount function resolves images, initialises renderer-specific resources, and returns a cleanup callback.
+
+---
+
+## Renderer Adapters (`shared/layer/pipeline/renderers`)
+
+| File | Export | Description |
+| ---- | ------ | ----------- |
+| `DomRendererAdapter.ts` | `mountDomRenderer({ container, stage }, pipeline)` | Wires the stage pipeline into the DOM engine and viewport transformer. |
+| `CanvasRendererAdapter.ts` | `mountCanvasRenderer({ container, canvas }, pipeline)` | Sets up the 2D context, transformer, and delegates to `mountCanvasLayers`. |
+| `ThreeRendererAdapter.ts` | `mountThreeRenderer({ container, canvas }, pipeline)` | Configures WebGL renderer/camera and delegates to `mountThreeLayers`. |
 
 ---
 
@@ -105,11 +129,9 @@ Each mount function resolves images, initialises renderer-specific resources, an
 
 | Component | Description |
 | --------- | ----------- |
-| `StageDOM.tsx` | React component mounting the DOM renderer; sets up transformer and cleanup. |
-| `StageCanvas.tsx` | React component mounting the Canvas renderer. |
-| `StageThree.tsx` | React component mounting the Three.js renderer, configures WebGL settings via `getDeviceCapability()`. |
-
-All stage components share the same workflow: load config, prepare layers, attach processors, mount renderer, initialise `createStageTransformer`.
+| `StageDOM.tsx` | React wrapper that calls `createStagePipeline()` then delegates to `mountDomRenderer`. |
+| `StageCanvas.tsx` | React wrapper that calls `createStagePipeline()` then delegates to `mountCanvasRenderer`. |
+| `StageThree.tsx` | React wrapper that calls `createStagePipeline()` then delegates to `mountThreeRenderer`. |
 
 ---
 
@@ -161,8 +183,8 @@ All stage components share the same workflow: load config, prepare layers, attac
 
 ## Usage Patterns
 - **Load configuration**: call `loadLayerConfig()` once during init; reuse the returned array.
-- **Prepare layers**: call `prepareLayer(entry, STAGE_SIZE)` for each 2D layer.
-- **Attach processors**: push `createSpinProcessor`, `createOrbitalProcessor`, or custom processors into the per-layer array.
+- **Prepare layers**: either call `prepareLayer(entry, STAGE_SIZE)` manually or rely on `createStagePipeline()` to do it for you.
+- **Attach processors**: register plugins via `registerProcessor()` so the pipeline can attach them automatically.
 - **Render frames**: inside the renderer, call `runPipeline(layer, processors, timestamp)` for animated layers.
 - **Transform coordinates**: use `viewportToStageCoords()` and `stageToViewportCoords()` for input/output alignment.
 
