@@ -1,9 +1,4 @@
-import {
-  imagePercentToImagePoint,
-  type PercentPoint,
-  type Point2D,
-  type UniversalLayerData,
-} from "./LayerCore";
+import { imagePercentToImagePoint, type PercentPoint, type Point2D } from "./LayerCore";
 import type { EnhancedLayerData, LayerProcessor } from "./LayerCorePipeline";
 import {
   applyRotationDirection,
@@ -13,66 +8,53 @@ import {
 } from "./LayerCoreAnimationUtils";
 
 export type OrbitalConfig = {
-  orbitCenter?: [number, number]; // Stage coords (0-2048)
-  orbitImagePoint?: [number, number]; // Image coords (0-100%)
-  orbitRadius?: number; // Pixels (0-2048)
-  orbitSpeed?: number; // Degrees per second (0 = no orbit)
-  orbitDirection?: "cw" | "ccw"; // Default "cw"
+  orbitStagePoint?: [number, number];
+  orbitLinePoint?: [number, number];
+  orbitImagePoint?: [number, number];
+  orbitLine?: boolean;
+  orbitSpeed?: number;
+  orbitDirection?: "cw" | "ccw";
 };
 
-/**
- * Create an orbital processor with the given configuration
- * orbitCenter: [x, y] center point on stage (0-2048)
- * orbitImagePoint: [x, y] point on image that follows orbit (0-100%)
- * orbitRadius: radius of orbit in pixels (0-2048)
- * orbitSpeed: degrees per second (0 = no orbit, default = 0)
- * orbitDirection: "cw" (clockwise) or "ccw" (counter-clockwise), default = "cw"
- */
 export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
-  const orbitRadius = config.orbitRadius ?? 0;
+  const overrideStagePoint = normaliseStagePoint(config.orbitStagePoint);
+  const overrideLinePoint = normaliseStagePoint(config.orbitLinePoint);
+  const overrideImagePercent = normalisePercent(config.orbitImagePoint);
+  const overrideOrbitLine = config.orbitLine;
   const orbitSpeed = config.orbitSpeed ?? 0;
   const orbitDirection = config.orbitDirection ?? "cw";
-
-  if (orbitRadius === 0) {
-    return (layer: UniversalLayerData): EnhancedLayerData => layer as EnhancedLayerData;
-  }
-
-  const overrideCenter = normaliseStagePoint(config.orbitCenter);
-  const overrideImagePercent = normalisePercent(config.orbitImagePoint);
-
-  // Cache speed per second
   const speedPerSecond = orbitSpeed;
 
   return (layer: EnhancedLayerData, timestamp?: number): EnhancedLayerData => {
-    const currentTime = timestamp ?? performance.now();
+    const baseStagePoint = overrideStagePoint ??
+      layer.orbitStagePoint ?? {
+        x: layer.calculation.stageCenter.point.x,
+        y: layer.calculation.stageCenter.point.y,
+      };
 
-    // Calculate elapsed time in seconds from current timestamp
+    const baseLinePoint = overrideLinePoint ??
+      layer.orbitLinePoint ?? { x: baseStagePoint.x, y: baseStagePoint.y };
+
+    const radiusDx = baseLinePoint.x - baseStagePoint.x;
+    const radiusDy = baseLinePoint.y - baseStagePoint.y;
+    const orbitRadius = Math.sqrt(radiusDx * radiusDx + radiusDy * radiusDy);
+
+    const imagePercent =
+      overrideImagePercent ?? layer.orbitImagePercent ?? ({ x: 50, y: 50 } satisfies PercentPoint);
+    const imagePoint =
+      overrideImagePercent !== undefined
+        ? imagePercentToImagePoint(imagePercent, layer.imageMapping.imageDimensions)
+        : (layer.orbitImagePoint ??
+          imagePercentToImagePoint(imagePercent, layer.imageMapping.imageDimensions));
+
+    const currentTime = timestamp ?? performance.now();
     const elapsedSeconds = currentTime / 1000;
     let orbitAngle = orbitSpeed === 0 ? 0 : (elapsedSeconds * speedPerSecond) % 360;
-
-    // Use utility functions
     orbitAngle = applyRotationDirection(orbitAngle, orbitDirection);
     orbitAngle = normalizeAngle(orbitAngle);
 
-    // Cache stage size (calculated from pre-calculated value)
-    const stageSize = layer.calculation.stageCenter.point.x * 2;
+    const orbitPoint = calculateOrbitPosition(baseStagePoint, orbitRadius, orbitAngle);
 
-    // Use pre-calculated coordinates when possible
-    const baseOrbitCenter = layer.calculation.orbitPoint.stage.point;
-    const resolvedOrbitCenter: Point2D = overrideCenter ?? baseOrbitCenter;
-
-    const baseOrbitImagePercent = layer.calculation.orbitPoint.image.percent;
-    const resolvedOrbitImagePercent: PercentPoint = overrideImagePercent ?? baseOrbitImagePercent;
-
-    const baseOrbitImagePoint = layer.calculation.orbitPoint.image.point;
-    const resolvedOrbitImagePoint = overrideImagePercent
-      ? imagePercentToImagePoint(resolvedOrbitImagePercent, layer.imageMapping.imageDimensions)
-      : baseOrbitImagePoint;
-
-    // Use utility function
-    const orbitPoint = calculateOrbitPosition(resolvedOrbitCenter, orbitRadius, orbitAngle);
-
-    // Cache image dimensions
     const { imageDimensions } = layer.imageMapping;
     const imageCenter = {
       x: imageDimensions.width / 2,
@@ -80,11 +62,11 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
     };
 
     const newPosition = {
-      x: orbitPoint.x + (imageCenter.x - resolvedOrbitImagePoint.x),
-      y: orbitPoint.y + (imageCenter.y - resolvedOrbitImagePoint.y),
+      x: orbitPoint.x + (imageCenter.x - imagePoint.x),
+      y: orbitPoint.y + (imageCenter.y - imagePoint.y),
     };
 
-    // Use utility function for visibility
+    const stageSize = layer.calculation.stageCenter.point.x * 2;
     const isVisible = calculateOrbitalVisibility(newPosition, imageDimensions, {
       min: 0,
       max: stageSize,
@@ -93,15 +75,21 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
     return {
       ...layer,
       position: newPosition,
-      orbitPoint, // NEW: Expose for BaseTip processor
-      orbitCenter: resolvedOrbitCenter,
-      orbitImagePoint: resolvedOrbitImagePercent,
+      orbitPoint,
+      orbitStagePoint: baseStagePoint,
+      orbitLinePoint: baseLinePoint,
+      orbitLineVisible: overrideOrbitLine ?? layer.orbitLineVisible ?? false,
+      orbitImagePoint: imagePercent,
       orbitRadius,
       orbitSpeed,
       orbitDirection,
       currentOrbitAngle: orbitAngle,
-      hasOrbitalAnimation: true,
+      hasOrbitalAnimation: orbitRadius > 0 || orbitSpeed !== 0,
       visible: isVisible,
+      orbitLineStyle: {
+        radius: orbitRadius,
+        visible: overrideOrbitLine ?? layer.orbitLineVisible ?? false,
+      },
     };
   };
 }

@@ -6,7 +6,6 @@ import type { EnhancedLayerData, LayerProcessor } from "../layer/LayerCorePipeli
 import { createImageMappingDebugProcessor } from "../layer/LayerCorePipelineImageMappingDebug";
 import { createSpinProcessor } from "../layer/LayerCorePipelineSpin";
 import { createOrbitalProcessor } from "../layer/LayerCorePipelineOrbital";
-import { createBaseTipRotationProcessor } from "../layer/LayerCorePipelineBaseTipRotation";
 import { STAGE_SIZE, createStageTransformer } from "../utils/stage2048";
 
 function StageDOM() {
@@ -80,21 +79,23 @@ function StageDOM() {
           );
         }
 
-        // Add Orbital processor if orbital motion is configured
-        if (entry.orbitRadius && entry.orbitRadius > 0) {
+        const hasOrbitalConfig =
+          (entry.orbitSpeed !== undefined && entry.orbitSpeed !== 0) ||
+          entry.orbitLine === true ||
+          entry.orbitLinePoint !== undefined ||
+          entry.orbitImagePoint !== undefined;
+
+        if (hasOrbitalConfig) {
           processors.push(
             createOrbitalProcessor({
-              orbitCenter: entry.orbitCenter as [number, number] | undefined,
+              orbitStagePoint: entry.orbitStagePoint as [number, number] | undefined,
+              orbitLinePoint: entry.orbitLinePoint as [number, number] | undefined,
               orbitImagePoint: entry.orbitImagePoint as [number, number] | undefined,
-              orbitRadius: entry.orbitRadius,
+              orbitLine: entry.orbitLine,
               orbitSpeed: entry.orbitSpeed,
               orbitDirection: entry.orbitDirection,
             }),
           );
-
-          // Add BaseTip processor (only when orbital is active)
-          // This makes imageTip point outward from orbit center
-          processors.push(createBaseTipRotationProcessor());
         }
 
         layersWithProcessors.push({
