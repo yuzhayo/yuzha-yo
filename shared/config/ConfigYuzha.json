@@ -599,7 +599,7 @@
         "scale": [150, 150],
         "BasicStagePoint": [1024, 1024],
         "BasicImagePoint": [50, 50],
-        "BasicAngleImage":180
+        "BasicAngleImage":0
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -609,7 +609,7 @@
       },
       "Orbital Config": {
         "orbitStagePoint": [1024, 1024],
-        "orbitLinePoint": [1624, 1024],
+        "orbitLinePoint": [1024,1024],
         "orbitImagePoint": [50, 50],
         "orbitLine": true,
         "orbitOrient": true,
