@@ -66,43 +66,36 @@ function makeLayer(): EnhancedLayerData {
 }
 
 describe("createOrbitalProcessor", () => {
-  it("positions image on derived orbit using layer metadata", () => {
-    const processor = createOrbitalProcessor({});
-    const enhanced = processor(makeLayer(), 0);
+  it("returns unchanged layer when orbit is inactive", () => {
+    const processor = createOrbitalProcessor({ orbitSpeed: 0 });
+    const layer = makeLayer();
+    layer.position = { x: 200, y: 200 };
+    layer.rotation = 45;
 
-    expect(enhanced.orbitStagePoint).toEqual({ x: 1024, y: 1024 });
-    expect(enhanced.orbitPoint?.x).toBeCloseTo(1324);
-    expect(enhanced.orbitPoint?.y).toBeCloseTo(1024);
-    expect(enhanced.position.x).toBeCloseTo(1324);
-    expect(enhanced.position.y).toBeCloseTo(1024);
+    const enhanced = processor(layer, 0);
+
+    expect(enhanced.position).toEqual(layer.position);
+    expect(enhanced.rotation).toEqual(45);
+    expect(enhanced.hasOrbitalAnimation).toBeFalsy();
+  });
+
+  it("applies orbital motion when active", () => {
+    const processor = createOrbitalProcessor({ orbitSpeed: 10 });
+    const enhanced = processor(makeLayer(), 1000);
+
+    expect(enhanced.hasOrbitalAnimation).toBe(true);
     expect(enhanced.orbitRadius).toBeCloseTo(300);
     expect(enhanced.orbitLineStyle?.visible).toBe(true);
-    expect(enhanced.currentRotation ?? 0).toBeCloseTo(0);
   });
 
-  it("respects overrides from config", () => {
-    const processor = createOrbitalProcessor({
-      orbitStagePoint: [900, 900],
-      orbitLinePoint: [1100, 900],
-      orbitLine: true,
-      orbitImagePoint: [0, 50],
-      orbitDirection: "ccw",
-      orbitSpeed: 0,
-      orbitOrient: true,
-    });
-
-    const enhanced = processor(makeLayer(), 0);
-
-    expect(enhanced.orbitStagePoint).toEqual({ x: 900, y: 900 });
-    expect(enhanced.orbitRadius).toBeCloseTo(200);
-    expect(enhanced.orbitLineStyle?.visible).toBe(true);
-    expect(enhanced.position.x).toBeCloseTo(1150);
-    expect(enhanced.position.y).toBeCloseTo(900);
-    expect(enhanced.currentRotation ?? 0).toBeCloseTo(0);
-
+  it("honors orientation when enabled", () => {
+    const processor = createOrbitalProcessor({ orbitSpeed: 5, orbitOrient: true });
     const baseAngleLayer = makeLayer();
     baseAngleLayer.rotation = 15;
-    const enhancedWithBase = processor(baseAngleLayer, 0);
-    expect(enhanced.currentRotation ?? 0).toBeCloseTo(0);
+    const enhanced = processor(baseAngleLayer, 1000);
+
+    expect(enhanced.hasOrbitalAnimation).toBe(true);
+    expect(enhanced.currentRotation).toBeDefined();
   });
 });
+

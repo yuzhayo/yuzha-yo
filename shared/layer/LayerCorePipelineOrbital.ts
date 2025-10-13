@@ -25,17 +25,36 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
   const overrideOrient = config.orbitOrient;
   const orbitSpeed = config.orbitSpeed ?? 0;
   const orbitDirection = config.orbitDirection ?? "cw";
-  const speedPerSecond = orbitSpeed;
+
+  if (orbitSpeed <= 0 && !overrideOrient && !overrideOrbitLine) {
+    return (layer: EnhancedLayerData): EnhancedLayerData => layer;
+  }
+
+  let startTime: number | undefined;
 
   return (layer: EnhancedLayerData, timestamp?: number): EnhancedLayerData => {
-    const baseStagePoint = overrideStagePoint ??
-      layer.orbitStagePoint ?? {
-        x: layer.calculation.stageCenter.point.x,
-        y: layer.calculation.stageCenter.point.y,
+    const orient = overrideOrient ?? layer.orbitOrient ?? false;
+    const requestedLine = overrideOrbitLine ?? layer.orbitLineVisible ?? false;
+    const hasSpin = Boolean((layer as EnhancedLayerData).hasSpinAnimation);
+
+    const hasMotion = orbitSpeed > 0;
+    const shouldUpdatePath = hasMotion || orient;
+    const shouldRenderLine = requestedLine || shouldUpdatePath;
+
+    if (!shouldRenderLine) {
+      return layer;
+    }
+
+    const stageCenterPoint = layer.calculation.stageCenter.point;
+    const baseStagePoint:
+      | Point2D
+      | { x: number; y: number } =
+      overrideStagePoint ?? layer.orbitStagePoint ?? {
+        x: stageCenterPoint.x,
+        y: stageCenterPoint.y,
       };
 
-    const baseLinePoint = overrideLinePoint ??
-      layer.orbitLinePoint ?? { x: baseStagePoint.x, y: baseStagePoint.y };
+    const baseLinePoint = overrideLinePoint ?? layer.orbitLinePoint ?? baseStagePoint;
 
     const radiusDx = baseLinePoint.x - baseStagePoint.x;
     const radiusDy = baseLinePoint.y - baseStagePoint.y;
@@ -46,16 +65,8 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
     const imagePoint =
       overrideImagePercent !== undefined
         ? imagePercentToImagePoint(imagePercent, layer.imageMapping.imageDimensions)
-        : (layer.orbitImagePoint ??
-          imagePercentToImagePoint(imagePercent, layer.imageMapping.imageDimensions));
-
-    const currentTime = timestamp ?? performance.now();
-    const elapsedSeconds = currentTime / 1000;
-    let orbitAngle = orbitSpeed === 0 ? 0 : (elapsedSeconds * speedPerSecond) % 360;
-    orbitAngle = applyRotationDirection(orbitAngle, orbitDirection);
-    orbitAngle = normalizeAngle(orbitAngle);
-
-    const orbitPoint = calculateOrbitPosition(baseStagePoint, orbitRadius, orbitAngle);
+        : layer.orbitImagePoint ??
+            imagePercentToImagePoint(imagePercent, layer.imageMapping.imageDimensions);
 
     const { imageDimensions } = layer.imageMapping;
     const imageCenter = {
@@ -63,53 +74,87 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
       y: imageDimensions.height / 2,
     };
 
-    const newPosition = {
-      x: orbitPoint.x + (imageCenter.x - imagePoint.x),
-      y: orbitPoint.y + (imageCenter.y - imagePoint.y),
-    };
+    let orbitPoint: Point2D = baseLinePoint;
+    let newPosition = layer.position;
+    let currentOrbitAngle = layer.currentOrbitAngle;
+    let visibility = layer.visible;
+    let rotationOverride: number | undefined;
 
-    const stageSize = layer.calculation.stageCenter.point.x * 2;
-    const isVisible = calculateOrbitalVisibility(newPosition, imageDimensions, {
-      min: 0,
-      max: stageSize,
-    });
+    if (shouldUpdatePath && orbitRadius > 0) {
+      let orbitAngle = 0;
+      if (hasMotion) {
+        const baseTime = timestamp ?? performance.now();
+        if (startTime === undefined) {
+          startTime = baseTime;
+        }
+        const elapsedSeconds = (baseTime - startTime) / 1000;
+        orbitAngle = (elapsedSeconds * orbitSpeed) % 360;
+        orbitAngle = applyRotationDirection(orbitAngle, orbitDirection);
+        orbitAngle = normalizeAngle(orbitAngle);
+        orbitPoint = calculateOrbitPosition(baseStagePoint, orbitRadius, orbitAngle);
+      } else {
+        orbitPoint = baseLinePoint;
+        orbitAngle = normalizeAngle(
+          (Math.atan2(-(orbitPoint.y - baseStagePoint.y), orbitPoint.x - baseStagePoint.x) * 180) /
+            Math.PI,
+        );
+      }
 
-    const orient = overrideOrient ?? layer.orbitOrient ?? false;
-    const hasSpin = typeof layer.spinSpeed === "number" && layer.spinSpeed > 0;
-    let currentRotation = layer.currentRotation;
+      currentOrbitAngle = orbitAngle;
+      newPosition = {
+        x: orbitPoint.x + (imageCenter.x - imagePoint.x),
+        y: orbitPoint.y + (imageCenter.y - imagePoint.y),
+      };
 
-    if (orient && !hasSpin && orbitRadius > 0) {
-      const radiusAngle = normalizeAngle(
-        (Math.atan2(-(orbitPoint.y - baseStagePoint.y), orbitPoint.x - baseStagePoint.x) * 180) /
-          Math.PI,
-      );
-      const axisAngle = normalizeAngle(layer.imageMapping.displayAxisAngle ?? 0);
-      const alignDelta = normalizeAngle(axisAngle - radiusAngle);
-      const baseRotation = layer.rotation ?? 0;
-      currentRotation = normalizeAngle(baseRotation + alignDelta);
+      const stageSize = stageCenterPoint.x * 2;
+      visibility = calculateOrbitalVisibility(newPosition, imageDimensions, {
+        min: 0,
+        max: stageSize,
+      });
+
+      if (orient && !hasSpin && orbitRadius > 0) {
+        const radiusAngle = normalizeAngle(
+          (Math.atan2(-(orbitPoint.y - baseStagePoint.y), orbitPoint.x - baseStagePoint.x) * 180) /
+            Math.PI,
+        );
+        const axisAngle = normalizeAngle(layer.imageMapping.displayAxisAngle ?? 0);
+        const alignDelta = normalizeAngle(axisAngle - radiusAngle);
+        const baseRotation = layer.rotation ?? 0;
+        rotationOverride = normalizeAngle(baseRotation + alignDelta);
+      }
     }
 
-    return {
+    const result: EnhancedLayerData = {
       ...layer,
-      position: newPosition,
       orbitPoint,
       orbitStagePoint: baseStagePoint,
       orbitLinePoint: baseLinePoint,
-      orbitLineVisible: overrideOrbitLine ?? layer.orbitLineVisible ?? false,
+      orbitLineVisible: requestedLine,
       orbitImagePoint: imagePercent,
       orbitRadius,
       orbitSpeed,
       orbitDirection,
-      currentOrbitAngle: orbitAngle,
-      currentRotation,
       orbitOrient: orient,
-      hasOrbitalAnimation: orbitRadius > 0 || orbitSpeed !== 0,
-      visible: isVisible,
-      orbitLineStyle: {
-        radius: orbitRadius,
-        visible: overrideOrbitLine ?? layer.orbitLineVisible ?? false,
-      },
-    };
+      hasOrbitalAnimation: hasMotion,
+      orbitLineStyle: requestedLine
+        ? {
+            radius: orbitRadius,
+            visible: true,
+          }
+        : undefined,
+    } as EnhancedLayerData;
+
+    if (shouldUpdatePath) {
+      result.position = newPosition;
+      result.visible = visibility;
+      result.currentOrbitAngle = currentOrbitAngle;
+    }
+
+    if (rotationOverride !== undefined) {
+      result.currentRotation = rotationOverride;
+    }
+
+    return result;
   };
 }
 
