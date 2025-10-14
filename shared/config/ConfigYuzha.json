@@ -609,11 +609,11 @@
       },
       "Orbital Config": {
         "orbitStagePoint": [1024, 1024],
-        "orbitLinePoint": [1024,1024],
+        "orbitLinePoint": [400,1024],
         "orbitImagePoint": [50, 50],
         "orbitLine": true,
         "orbitOrient": true,
-        "orbitSpeed": 0,
+        "orbitSpeed": 20,
         "orbitDirection": "cw"
       },
       "Image Mapping Debug": {

@@ -4,6 +4,7 @@ import type { LayerProcessor } from "./LayerCorePipeline";
 import { runPipeline, AnimationConstants, createPipelineCache } from "./LayerCorePipeline";
 import { loadImage } from "./LayerCore";
 import { CanvasDebugRenderer, ThreeDebugRenderer } from "./LayerCorePipelineImageMappingUtils";
+import { roundStagePoint } from "../utils/stage2048";
 
 const STAGE_SIZE = 2048;
 
@@ -53,13 +54,15 @@ export async function mountDomLayers(
       img.style.position = "absolute";
       img.style.transformOrigin = "center center";
 
-      const left = position.x - naturalWidth / 2;
-      const top = position.y - naturalHeight / 2;
+      const roundedPosition = roundStagePoint(position);
+      const left = roundedPosition.x - naturalWidth / 2;
+      const top = roundedPosition.y - naturalHeight / 2;
       img.style.left = `${left}px`;
       img.style.top = `${top}px`;
 
+      const initialOrbitRadius = Math.max(0, Math.round(item.data.orbitRadius ?? 0));
       let orbitLineEl: HTMLDivElement | undefined;
-      if (item.data.orbitLineVisible && (item.data.orbitRadius ?? 0) > 0) {
+      if (item.data.orbitLineVisible && initialOrbitRadius > 0) {
         orbitLineEl = document.createElement("div");
         orbitLineEl.style.position = "absolute";
         orbitLineEl.style.border = "1px dashed rgba(255,255,255,0.25)";
@@ -79,15 +82,16 @@ export async function mountDomLayers(
       if (
         orbitLineEl &&
         item.data.orbitLineVisible &&
-        (item.data.orbitRadius ?? 0) > 0 &&
+        initialOrbitRadius > 0 &&
         item.data.orbitStagePoint
       ) {
-        const diameter = (item.data.orbitRadius ?? 0) * 2;
+        const roundedOrbitPoint = roundStagePoint(item.data.orbitStagePoint);
+        const diameter = initialOrbitRadius * 2;
         orbitLineEl.style.display = "block";
         orbitLineEl.style.width = `${diameter}px`;
         orbitLineEl.style.height = `${diameter}px`;
-        orbitLineEl.style.left = `${item.data.orbitStagePoint.x - diameter / 2}px`;
-        orbitLineEl.style.top = `${item.data.orbitStagePoint.y - diameter / 2}px`;
+        orbitLineEl.style.left = `${roundedOrbitPoint.x - diameter / 2}px`;
+        orbitLineEl.style.top = `${roundedOrbitPoint.y - diameter / 2}px`;
       }
 
       containerEl.appendChild(layerDiv);
@@ -138,24 +142,29 @@ export async function mountDomLayers(
 
       const naturalWidth = layer.img.naturalWidth;
       const naturalHeight = layer.img.naturalHeight;
-      const left = enhancedData.position.x - naturalWidth / 2;
-      const top = enhancedData.position.y - naturalHeight / 2;
+      const roundedPosition = roundStagePoint(enhancedData.position);
+      const left = roundedPosition.x - naturalWidth / 2;
+      const top = roundedPosition.y - naturalHeight / 2;
       layer.img.style.left = `${left}px`;
       layer.img.style.top = `${top}px`;
 
       if (layer.orbitLineEl) {
+        const roundedStagePoint = enhancedData.orbitStagePoint
+          ? roundStagePoint(enhancedData.orbitStagePoint)
+          : undefined;
+        const radius = Math.max(0, Math.round(enhancedData.orbitLineStyle?.radius ?? 0));
         if (
           enhancedData.orbitLineStyle?.visible &&
-          enhancedData.orbitStagePoint &&
-          enhancedData.orbitLineStyle.radius > 0 &&
+          roundedStagePoint &&
+          radius > 0 &&
           enhancedData.visible !== false
         ) {
-          const diameter = enhancedData.orbitLineStyle.radius * 2;
+          const diameter = radius * 2;
           layer.orbitLineEl.style.display = "block";
           layer.orbitLineEl.style.width = `${diameter}px`;
           layer.orbitLineEl.style.height = `${diameter}px`;
-          layer.orbitLineEl.style.left = `${enhancedData.orbitStagePoint.x - diameter / 2}px`;
-          layer.orbitLineEl.style.top = `${enhancedData.orbitStagePoint.y - diameter / 2}px`;
+          layer.orbitLineEl.style.left = `${roundedStagePoint.x - diameter / 2}px`;
+          layer.orbitLineEl.style.top = `${roundedStagePoint.y - diameter / 2}px`;
         } else {
           layer.orbitLineEl.style.display = "none";
         }
@@ -265,7 +274,8 @@ export async function mountCanvasLayers(
       enhancedData.currentRotation ?? enhancedData.rotation ?? layer.baseData.rotation ?? 0;
 
     ctx.save();
-    ctx.translate(enhancedData.position.x, enhancedData.position.y);
+    const roundedPosition = roundStagePoint(enhancedData.position);
+    ctx.translate(roundedPosition.x, roundedPosition.y);
 
     if (rotation !== 0) {
       ctx.translate(-transformCache.dx, -transformCache.dy);
@@ -417,13 +427,18 @@ export async function mountThreeLayers(
 
     const mesh = new THREE.Mesh(planeGeometry, planeMaterial);
     const group = new THREE.Group();
-    group.position.set(data.position.x - STAGE_SIZE / 2, STAGE_SIZE / 2 - data.position.y, 0);
+    const initialPosition = roundStagePoint(data.position);
+    group.position.set(
+      initialPosition.x - STAGE_SIZE / 2,
+      STAGE_SIZE / 2 - initialPosition.y,
+      0,
+    );
     group.add(mesh);
     scene.add(group);
 
     let orbitLine: THREE.Line | undefined;
-    if (data.orbitLineVisible && (data.orbitRadius ?? 0) > 0 && data.orbitStagePoint) {
-      const baseRadius = data.orbitRadius ?? 0;
+    const baseRadiusRounded = Math.max(0, Math.round(data.orbitRadius ?? 0));
+    if (data.orbitLineVisible && baseRadiusRounded > 0 && data.orbitStagePoint) {
       const segments = 64;
       const points: THREE.Vector3[] = [];
       for (let i = 0; i <= segments; i += 1) {
@@ -437,13 +452,14 @@ export async function mountThreeLayers(
         opacity: 0.25,
       });
       orbitLine = new THREE.LineLoop(circleGeometry, circleMaterial);
-      orbitLine.userData = { baseRadius };
+      orbitLine.userData = { baseRadius: Math.max(baseRadiusRounded, 1) };
+      const roundedStagePoint = roundStagePoint(data.orbitStagePoint);
       orbitLine.position.set(
-        data.orbitStagePoint.x - STAGE_SIZE / 2,
-        STAGE_SIZE / 2 - data.orbitStagePoint.y,
+        roundedStagePoint.x - STAGE_SIZE / 2,
+        STAGE_SIZE / 2 - roundedStagePoint.y,
         0,
       );
-      orbitLine.scale.set(baseRadius, baseRadius, 1);
+      orbitLine.scale.set(baseRadiusRounded, baseRadiusRounded, 1);
       scene.add(orbitLine);
     }
 
@@ -474,9 +490,10 @@ export async function mountThreeLayers(
       entry.group.visible = enhanced.visible !== false;
       if (!entry.group.visible) continue;
 
+      const roundedPosition = roundStagePoint(enhanced.position);
       entry.group.position.set(
-        enhanced.position.x - STAGE_SIZE / 2,
-        STAGE_SIZE / 2 - enhanced.position.y,
+        roundedPosition.x - STAGE_SIZE / 2,
+        STAGE_SIZE / 2 - roundedPosition.y,
         0,
       );
 
@@ -485,19 +502,22 @@ export async function mountThreeLayers(
       entry.group.rotation.z = -(rotation * AnimationConstants.DEG_TO_RAD);
 
       if (entry.orbitLine) {
+        const roundedStagePoint = enhanced.orbitStagePoint
+          ? roundStagePoint(enhanced.orbitStagePoint)
+          : undefined;
+        const roundedRadius = Math.max(0, Math.round(enhanced.orbitLineStyle?.radius ?? 0));
         if (
           enhanced.orbitLineStyle?.visible &&
-          enhanced.orbitStagePoint &&
-          enhanced.orbitLineStyle.radius > 0 &&
+          roundedStagePoint &&
+          roundedRadius > 0 &&
           enhanced.visible !== false
         ) {
           const baseRadius = entry.orbitLine.userData?.baseRadius ?? 1;
-          const targetRadius = enhanced.orbitLineStyle.radius;
-          const scale = baseRadius > 0 ? targetRadius / baseRadius : 1;
+          const scale = baseRadius > 0 ? roundedRadius / baseRadius : 1;
           entry.orbitLine.visible = true;
           entry.orbitLine.position.set(
-            enhanced.orbitStagePoint.x - STAGE_SIZE / 2,
-            -(enhanced.orbitStagePoint.y - STAGE_SIZE / 2),
+            roundedStagePoint.x - STAGE_SIZE / 2,
+            -(roundedStagePoint.y - STAGE_SIZE / 2),
             0,
           );
           entry.orbitLine.scale.set(baseRadius * scale, baseRadius * scale, 1);

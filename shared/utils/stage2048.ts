@@ -201,3 +201,15 @@ export function stageToViewportCoords(
     y: stageY * transform.scale + transform.offsetY,
   };
 }
+
+/**
+ * Rounds stage coordinates to the nearest whole pixel.
+ * Useful for preventing sub-pixel jitter when positioning render elements.
+ */
+export function roundStagePoint<T extends { x: number; y: number }>(point: T): T {
+  return {
+    ...point,
+    x: Math.round(point.x),
+    y: Math.round(point.y),
+  };
+}
