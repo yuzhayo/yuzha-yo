@@ -88,9 +88,16 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
           startTime = baseTime;
         }
         const elapsedSeconds = (baseTime - startTime) / 1000;
-        orbitAngle = (elapsedSeconds * orbitSpeed) % 360;
-        orbitAngle = applyRotationDirection(orbitAngle, orbitDirection);
-        orbitAngle = normalizeAngle(orbitAngle);
+        
+        // Calculate initial angle offset from orbitLinePoint position
+        const initialAngle = normalizeAngle(
+          (Math.atan2(-(baseLinePoint.y - baseStagePoint.y), baseLinePoint.x - baseStagePoint.x) * 180) /
+            Math.PI,
+        );
+        
+        // Add initial angle to time-based rotation
+        const timeBasedAngle = (elapsedSeconds * orbitSpeed) % 360;
+        orbitAngle = normalizeAngle(initialAngle + applyRotationDirection(timeBasedAngle, orbitDirection));
         orbitPoint = calculateOrbitPosition(baseStagePoint, orbitRadius, orbitAngle);
       } else {
         orbitPoint = baseLinePoint;
