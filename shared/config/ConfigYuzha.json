@@ -62,7 +62,7 @@
         "orbitLinePoint": [1024, 1024],
         "orbitImagePoint": [50, 50],
         "orbitLine": false,
-        "orbitSpeed": 0,
+        "orbitSpeed": 20,
         "orbitDirection": "cw"
       },
       "Image Mapping Debug": {
