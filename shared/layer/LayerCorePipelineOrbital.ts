@@ -46,10 +46,8 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
     }
 
     const stageCenterPoint = layer.calculation.stageCenter.point;
-    const baseStagePoint:
-      | Point2D
-      | { x: number; y: number } =
-      overrideStagePoint ?? layer.orbitStagePoint ?? {
+    const baseStagePoint: Point2D | { x: number; y: number } = overrideStagePoint ??
+      layer.orbitStagePoint ?? {
         x: stageCenterPoint.x,
         y: stageCenterPoint.y,
       };
@@ -65,8 +63,8 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
     const imagePoint =
       overrideImagePercent !== undefined
         ? imagePercentToImagePoint(imagePercent, layer.imageMapping.imageDimensions)
-        : layer.orbitImagePoint ??
-            imagePercentToImagePoint(imagePercent, layer.imageMapping.imageDimensions);
+        : (layer.orbitImagePoint ??
+          imagePercentToImagePoint(imagePercent, layer.imageMapping.imageDimensions));
 
     const { imageDimensions } = layer.imageMapping;
     const imageCenter = {
@@ -88,16 +86,19 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
           startTime = baseTime;
         }
         const elapsedSeconds = (baseTime - startTime) / 1000;
-        
+
         // Calculate initial angle offset from orbitLinePoint position
         const initialAngle = normalizeAngle(
-          (Math.atan2(-(baseLinePoint.y - baseStagePoint.y), baseLinePoint.x - baseStagePoint.x) * 180) /
+          (Math.atan2(-(baseLinePoint.y - baseStagePoint.y), baseLinePoint.x - baseStagePoint.x) *
+            180) /
             Math.PI,
         );
-        
+
         // Add initial angle to time-based rotation
         const timeBasedAngle = (elapsedSeconds * orbitSpeed) % 360;
-        orbitAngle = normalizeAngle(initialAngle + applyRotationDirection(timeBasedAngle, orbitDirection));
+        orbitAngle = normalizeAngle(
+          initialAngle + applyRotationDirection(timeBasedAngle, orbitDirection),
+        );
         orbitPoint = calculateOrbitPosition(baseStagePoint, orbitRadius, orbitAngle);
       } else {
         orbitPoint = baseLinePoint;
