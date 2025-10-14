@@ -7,6 +7,7 @@ import { CanvasDebugRenderer, ThreeDebugRenderer } from "./LayerCorePipelineImag
 import { roundStagePoint } from "../utils/stage2048";
 
 const STAGE_SIZE = 2048;
+const IS_DEV = import.meta.env.DEV;
 
 // ---------------------------------------------------------------------------
 // DOM Renderer
@@ -109,7 +110,9 @@ export async function mountDomLayers(
         hasAnimation,
       });
     } catch (error) {
-      console.error(`[LayerEngineDOM] Failed to load image for "${item.data.imageId}"`, error);
+      if (IS_DEV) {
+        console.error(`[LayerEngineDOM] Failed to load image for "${item.data.imageId}"`, error);
+      }
     }
   }
 
@@ -259,7 +262,9 @@ export async function mountCanvasLayers(
         hasAnimation,
       });
     } catch (error) {
-      console.error(`[LayerEngineCanvas] Failed to load image for "${item.data.imageId}"`, error);
+      if (IS_DEV) {
+        console.error(`[LayerEngineCanvas] Failed to load image for "${item.data.imageId}"`, error);
+      }
     }
   }
 
@@ -391,7 +396,12 @@ export async function mountThreeLayers(
       texture.generateMipmaps = false;
       return { item, texture };
     } catch (error) {
-      console.error(`[LayerEngineThree] Failed to load texture for "${item.data.imageId}"`, error);
+      if (IS_DEV) {
+        console.error(
+          `[LayerEngineThree] Failed to load texture for "${item.data.imageId}"`,
+          error,
+        );
+      }
       return null;
     }
   });

@@ -42,31 +42,34 @@ export async function createStagePipeline(
   const config = loadLayerConfig();
   const twoDLayers = config.filter(is2DLayer);
 
-  const prepared: PreparedLayer[] = [];
+  const prepared = (
+    await Promise.all(
+      twoDLayers.map(async (entry) => {
+        try {
+          const layer = await prepareLayer(entry, stageSize);
+          if (!layer) {
+            console.warn(
+              `[StagePipeline] Skipping layer "${entry.layerId}" - prepareLayer returned null`,
+            );
+            return null;
+          }
 
-  for (const entry of twoDLayers) {
-    try {
-      const layer = await prepareLayer(entry, stageSize);
-      if (!layer) {
-        console.warn(
-          `[StagePipeline] Skipping layer "${entry.layerId}" - prepareLayer returned null`,
-        );
-        continue;
-      }
-
-      const processors = getProcessorsForEntry(entry, processorContext);
-      prepared.push({
-        entry,
-        data: layer as EnhancedLayerData,
-        processors,
-      });
-    } catch (error) {
-      console.error(
-        `[StagePipeline] Failed to prepare layer "${entry.layerId}" (renderer=${entry.renderer})`,
-        error,
-      );
-    }
-  }
+          const processors = getProcessorsForEntry(entry, processorContext);
+          return {
+            entry,
+            data: layer as EnhancedLayerData,
+            processors,
+          } satisfies PreparedLayer;
+        } catch (error) {
+          console.error(
+            `[StagePipeline] Failed to prepare layer "${entry.layerId}" (renderer=${entry.renderer})`,
+            error,
+          );
+          return null;
+        }
+      }),
+    )
+  ).filter((layer): layer is PreparedLayer => layer !== null);
 
   return {
     stageSize,
