@@ -315,12 +315,12 @@
     "layerId": "test-sun-ray-1",
     "imageId": "UI_Clock_MinuteHand",
     "renderer": "2D",
-    "order": 701,
+    "order": 850,
     "groups": {
       "Basic Config": {
-        "scale": [150, 150],
+        "scale": [100, 100],
         "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
+       
         "BasicAngleImage":0
       },
       "Spin Config": {
@@ -331,8 +331,8 @@
       },
       "Orbital Config": {
         "orbitStagePoint": [1024, 1024],
-        "orbitLinePoint": [400,1024],
-        "orbitImagePoint": [50, 50],
+        "orbitLinePoint": [1220,1024],
+        "orbitImagePoint": [80, 50],
         "orbitLine": true,
         "orbitOrient": true,
         "orbitSpeed": 0,
@@ -345,40 +345,6 @@
         "showStageCenter": false
       }
     }
-  },
-  {
-    "layerId": "test-spin-plus-orbital",
-    "imageId": "GEAR3",
-    "renderer": "2D",
-    "order": 202,
-    "groups": {
-      "Basic Config": {
-        "scale": [25, 25],
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
-        "BasicAngleImage": 0
-      },
-      "Spin Config": {
-        "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 50],
-        "spinSpeed": 60,
-        "spinDirection": "cw"
-      },
-      "Orbital Config": {
-        "orbitStagePoint": [1024, 1024],
-        "orbitLinePoint": [1274, 1024],
-        "orbitImagePoint": [50, 50],
-        "orbitLine": false,
-        "orbitOrient": true,
-        "orbitSpeed": 45,
-        "orbitDirection": "ccw"
-      },
-      "Image Mapping Debug": {
-        "showCenter": false,
-        "showTip": false,
-        "showBase": false,
-        "showStageCenter": false
-      }
-    }
   }
+  
 ]
