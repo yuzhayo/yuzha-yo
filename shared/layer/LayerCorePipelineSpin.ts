@@ -28,8 +28,7 @@ export function createSpinProcessor(config: SpinConfig): LayerProcessor {
 
   const overridePercent = normalisePercent(config.spinCenter);
 
-  // Cache speed calculation
-  const speedPerMs = spinSpeed / 1000; // degrees per millisecond
+  let startTime: number | undefined;
 
   return (layer: UniversalLayerData, timestamp?: number): EnhancedLayerData => {
     if (spinSpeed === 0) {
@@ -37,12 +36,15 @@ export function createSpinProcessor(config: SpinConfig): LayerProcessor {
     }
 
     const currentTime = timestamp ?? performance.now();
+    
+    // Use elapsed time from start like orbit processor does
+    if (startTime === undefined) {
+      startTime = currentTime;
+    }
+    const elapsedSeconds = (currentTime - startTime) / 1000;
 
-    // Calculate elapsed time from current timestamp
-    const elapsed = currentTime;
-
-    // Use cached calculations
-    let rotation = (elapsed * speedPerMs) % 360;
+    // Calculate rotation from elapsed time
+    let rotation = (elapsedSeconds * spinSpeed) % 360;
 
     // Use utility functions
     rotation = applyRotationDirection(rotation, spinDirection);

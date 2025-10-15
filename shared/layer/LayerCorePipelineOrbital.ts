@@ -80,6 +80,7 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
 
     if (shouldUpdatePath && orbitRadius > 0) {
       let orbitAngle = 0;
+      let timeBasedAngle = 0;
       if (hasMotion) {
         const baseTime = timestamp ?? performance.now();
         if (startTime === undefined) {
@@ -95,7 +96,7 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
         );
 
         // Add initial angle to time-based rotation
-        const timeBasedAngle = (elapsedSeconds * orbitSpeed) % 360;
+        timeBasedAngle = (elapsedSeconds * orbitSpeed) % 360;
         orbitAngle = normalizeAngle(
           initialAngle + applyRotationDirection(timeBasedAngle, orbitDirection),
         );
@@ -121,14 +122,11 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
       });
 
       if (orient && !hasSpin && hasMotion && orbitRadius > 0) {
-        const radiusAngle = normalizeAngle(
-          (Math.atan2(-(orbitPoint.y - baseStagePoint.y), orbitPoint.x - baseStagePoint.x) * 180) /
-            Math.PI,
-        );
-        const axisAngle = normalizeAngle(layer.imageMapping.displayAxisAngle ?? 0);
-        const alignDelta = normalizeAngle(axisAngle - radiusAngle);
+        // Use timeBasedAngle (same for all pieces) instead of radiusAngle (different per piece)
+        // This ensures all pieces in a tiled background rotate together by the same amount
+        const rotationDelta = applyRotationDirection(timeBasedAngle, orbitDirection);
         const baseRotation = layer.rotation ?? 0;
-        rotationOverride = normalizeAngle(baseRotation + alignDelta);
+        rotationOverride = normalizeAngle(baseRotation + rotationDelta);
       }
     }
 

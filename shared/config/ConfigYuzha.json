@@ -14,7 +14,7 @@
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
         "spinImagePoint": [50, 50],
-        "spinSpeed": 0,
+        "spinSpeed": 20,
         "spinDirection": "cw"
       },
       "Orbital Config": {
@@ -54,11 +54,12 @@
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
         "spinImagePoint": [50, 50],
-        "spinSpeed": 0,
+        "spinSpeed": 20,
         "spinDirection": "cw"
       }
     }
   },
+  
   {
     "layerId": "stars-background-kiri",
     "imageId": "STARBG",
@@ -72,12 +73,12 @@
         "BasicAngleImage":0
       },
       "Orbital Config": {
-        "orbitStagePoint": [2, 1024],
-        "orbitLinePoint": [1024, 1024],
+        "orbitStagePoint": [1024, 1024],
+        "orbitLinePoint": [2, 1024],
         "orbitImagePoint": [50, 50],
         "orbitLine": true,
         "orbitOrient": true,
-        "orbitSpeed": 0,
+        "orbitSpeed": 20,
         "orbitDirection": "cw"
       }
     }
@@ -90,17 +91,155 @@
     "groups": {
       "Basic Config": {
         "scale": [100, 100],
-        "BasicStagePoint": [1024, 1024],
+        "BasicStagePoint": [2046, 1024],
         "BasicImagePoint": [50, 50],
         "BasicAngleImage":0
       },
       "Orbital Config": {
         "orbitStagePoint": [1024, 1024],
-        "orbitLinePoint": [1024, 1024],
+        "orbitLinePoint": [2046, 1024],
         "orbitImagePoint": [50, 50],
         "orbitLine": true,
         "orbitOrient": true,
-        "orbitSpeed": 0,
+        "orbitSpeed": 20,
+        "orbitDirection": "cw"
+      }
+    }
+  },
+  {
+    "layerId": "stars-background-atas",
+    "imageId": "STARBG",
+    "renderer": "2D",
+    "order": 50,
+    "groups": {
+      "Basic Config": {
+        "scale": [100, 100],
+        "BasicStagePoint": [1024, 2],
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage":0
+      },
+      "Orbital Config": {
+        "orbitStagePoint": [1024, 1024],
+        "orbitLinePoint": [1024, 2],
+        "orbitImagePoint": [50, 50],
+        "orbitLine": true,
+        "orbitOrient": true,
+        "orbitSpeed": 20,
+        "orbitDirection": "cw"
+      }
+    }
+  },
+  {
+    "layerId": "stars-background-bawah",
+    "imageId": "STARBG",
+    "renderer": "2D",
+    "order": 50,
+    "groups": {
+      "Basic Config": {
+        "scale": [100, 100],
+        "BasicStagePoint": [1024, 2048],
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage":0
+      },
+      "Orbital Config": {
+        "orbitStagePoint": [1024, 1024],
+        "orbitLinePoint": [1024, 2048],
+        "orbitImagePoint": [50, 50],
+        "orbitLine": true,
+        "orbitOrient": true,
+        "orbitSpeed": 20,
+        "orbitDirection": "cw"
+      }
+    }
+  },
+  {
+    "layerId": "stars-background-atas-kiri",
+    "imageId": "STARBG",
+    "renderer": "2D",
+    "order": 50,
+    "groups": {
+      "Basic Config": {
+        "scale": [100, 100],
+        "BasicStagePoint": [2, 2],
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage":0
+      },
+      "Orbital Config": {
+        "orbitStagePoint": [1024, 1024],
+        "orbitLinePoint": [2, 2],
+        "orbitImagePoint": [50, 50],
+        "orbitLine": true,
+        "orbitOrient": true,
+        "orbitSpeed": 20,
+        "orbitDirection": "cw"
+      }
+    }
+  },
+  {
+    "layerId": "stars-background-atas-kanan",
+    "imageId": "STARBG",
+    "renderer": "2D",
+    "order": 50,
+    "groups": {
+      "Basic Config": {
+        "scale": [100, 100],
+        "BasicStagePoint": [2046, 2],
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage":0
+      },
+      "Orbital Config": {
+        "orbitStagePoint": [1024, 1024],
+        "orbitLinePoint": [2046, 2],
+        "orbitImagePoint": [50, 50],
+        "orbitLine": true,
+        "orbitOrient": true,
+        "orbitSpeed": 20,
+        "orbitDirection": "cw"
+      }
+    }
+  },
+  {
+    "layerId": "stars-background-bawah-kiri",
+    "imageId": "STARBG",
+    "renderer": "2D",
+    "order": 50,
+    "groups": {
+      "Basic Config": {
+        "scale": [100, 100],
+        "BasicStagePoint": [2, 2046],
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage":0
+      },
+      "Orbital Config": {
+        "orbitStagePoint": [1024, 1024],
+        "orbitLinePoint": [2, 2046],
+        "orbitImagePoint": [50, 50],
+        "orbitLine": true,
+        "orbitOrient": true,
+        "orbitSpeed": 20,
+        "orbitDirection": "cw"
+      }
+    }
+  },
+  {
+    "layerId": "stars-background--bawah-kanan",
+    "imageId": "STARBG",
+    "renderer": "2D",
+    "order": 50,
+    "groups": {
+      "Basic Config": {
+        "scale": [100, 100],
+        "BasicStagePoint": [2046, 2046],
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage":0
+      },
+      "Orbital Config": {
+        "orbitStagePoint": [1024, 1024],
+        "orbitLinePoint": [2046, 2046],
+        "orbitImagePoint": [50, 50],
+        "orbitLine": true,
+        "orbitOrient": true,
+        "orbitSpeed": 20,
         "orbitDirection": "cw"
       }
     }
