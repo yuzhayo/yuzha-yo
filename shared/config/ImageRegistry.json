@@ -1,9 +1,5 @@
 [
   {
-    "id": "AchieveMedal_Desk_Short02",
-    "path": "shared/asset/AchieveMedal_Desk_Short02.png"
-  },
-  {
     "id": "BG_ArtifactCraft_Center",
     "path": "shared/asset/BG_ArtifactCraft_Center.png"
   },
@@ -76,8 +72,20 @@
     "path": "shared/asset/SAMPLE.png"
   },
   {
+    "id": "sprite_005",
+    "path": "shared/asset/sprite_005.png"
+  },
+  {
     "id": "STARBG",
     "path": "shared/asset/STARBG.png"
+  },
+  {
+    "id": "STARBG9",
+    "path": "shared/asset/STARBG9.png"
+  },
+  {
+    "id": "STARBG9H",
+    "path": "shared/asset/STARBG9H.png"
   },
   {
     "id": "STARBGHOLE1",
@@ -110,18 +118,6 @@
   {
     "id": "UI_ClockIcon_Noon",
     "path": "shared/asset/UI_ClockIcon_Noon.png"
-  },
-  {
-    "id": "UI_Img_SlimeCannont_Pic_06",
-    "path": "shared/asset/UI_Img_SlimeCannont_Pic_06.png"
-  },
-  {
-    "id": "UI_Img_SlimeCannont_Pic_07",
-    "path": "shared/asset/UI_Img_SlimeCannont_Pic_07.png"
-  },
-  {
-    "id": "UI_Img_SlimeCannont_Pic_08",
-    "path": "shared/asset/UI_Img_SlimeCannont_Pic_08.png"
   },
   {
     "id": "UI_ItemIcon_221",
