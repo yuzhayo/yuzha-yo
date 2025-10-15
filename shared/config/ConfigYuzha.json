@@ -318,25 +318,51 @@
     "order": 850,
     "groups": {
       "Basic Config": {
-        "scale": [100, 100],
+        "scale": [140, 140],
         "BasicStagePoint": [1024, 1024],
-       
+        "BasicImagePoint": [50, 50],       
         "BasicAngleImage":0
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 50],
+        "spinImagePoint": [50, 0],
         "spinSpeed": 0,
         "spinDirection": "cw"
       },
       "Orbital Config": {
         "orbitStagePoint": [1024, 1024],
-        "orbitLinePoint": [1220,1024],
-        "orbitImagePoint": [80, 50],
+        "orbitLinePoint": [1024,1020],
+        "orbitImagePoint": [50, 0],
         "orbitLine": true,
         "orbitOrient": true,
-        "orbitSpeed": 0,
+        "orbitSpeed": 10,
         "orbitDirection": "cw"
+      },
+      "Image Mapping Debug": {
+        "showCenter": false,
+        "showTip": false,
+        "showBase": false,
+        "showStageCenter": false
+      }
+    }
+  },
+  {
+    "layerId": "test-spin-pivot-fix",
+    "imageId": "GEAR2",
+    "renderer": "2D",
+    "order": 840,
+    "groups": {
+      "Basic Config": {
+        "scale": [160, 160],
+        "BasicStagePoint": [1024, 1024],
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage": 0
+      },
+      "Spin Config": {
+        "spinStagePoint": [1024, 1024],
+        "spinImagePoint": [50, 50],
+        "spinSpeed": 30,
+        "spinDirection": "ccw"
       },
       "Image Mapping Debug": {
         "showCenter": false,
