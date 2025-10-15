@@ -40,6 +40,26 @@
     }
   },
   {
+    "layerId": "stars-background-hole1",
+    "imageId": "STARBGHOLE1",
+    "renderer": "2D",
+    "order": 590,
+    "groups": {
+      "Basic Config": {
+        "scale": [100, 100],
+        "BasicStagePoint": [1024, 1024],
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage": 0
+      },
+      "Spin Config": {
+        "spinStagePoint": [1024, 1024],
+        "spinImagePoint": [50, 50],
+        "spinSpeed": 20,
+        "spinDirection": "cw"
+      }
+    }
+  },
+  {
     "layerId": "stars-background-kiri",
     "imageId": "STARBG",
     "renderer": "2D",
@@ -57,11 +77,46 @@
         "orbitImagePoint": [50, 50],
         "orbitLine": true,
         "orbitOrient": true,
-        "orbitSpeed": 20,
+        "orbitSpeed": 0,
         "orbitDirection": "cw"
       }
     }
   },
+  {
+    "layerId": "stars-background-kanan",
+    "imageId": "STARBG",
+    "renderer": "2D",
+    "order": 50,
+    "groups": {
+      "Basic Config": {
+        "scale": [100, 100],
+        "BasicStagePoint": [2, 2048],
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage":0
+      },
+      "Orbital Config": {
+        "orbitStagePoint": [1024, 1024],
+        "orbitLinePoint": [2, 2048],
+        "orbitImagePoint": [50, 50],
+        "orbitLine": true,
+        "orbitOrient": true,
+        "orbitSpeed": 0,
+        "orbitDirection": "cw"
+      }
+    }
+  },
+
+
+
+
+
+
+
+
+
+
+
+
   
   {
     "layerId": "CLOCKBG",
@@ -177,26 +232,7 @@
       }
     }
   },
-  {
-    "layerId": "stars-background-hole1",
-    "imageId": "STARBGHOLE1",
-    "renderer": "2D",
-    "order": 590,
-    "groups": {
-      "Basic Config": {
-        "scale": [100, 100],
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
-        "BasicAngleImage": 0
-      },
-      "Spin Config": {
-        "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 50],
-        "spinSpeed": 20,
-        "spinDirection": "cw"
-      }
-    }
-  },
+
   {
     "layerId": "CLOCKGLOW",
     "imageId": "CLOCKGLOW",
