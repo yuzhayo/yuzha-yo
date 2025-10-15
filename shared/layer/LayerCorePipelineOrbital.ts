@@ -120,7 +120,7 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
         max: stageSize,
       });
 
-      if (orient && !hasSpin && orbitRadius > 0) {
+      if (orient && !hasSpin && hasMotion && orbitRadius > 0) {
         const radiusAngle = normalizeAngle(
           (Math.atan2(-(orbitPoint.y - baseStagePoint.y), orbitPoint.x - baseStagePoint.x) * 180) /
             Math.PI,
