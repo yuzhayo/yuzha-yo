@@ -153,8 +153,11 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
     } as EnhancedLayerData;
 
     if (shouldUpdatePath) {
-      result.position = newPosition;
-      result.visible = visibility;
+      // Only override position when orbital motion is active
+      if (hasMotion) {
+        result.position = newPosition;
+        result.visible = visibility;
+      }
       result.currentOrbitAngle = currentOrbitAngle;
     }
 
