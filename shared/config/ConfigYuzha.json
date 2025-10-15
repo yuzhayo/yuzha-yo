@@ -14,7 +14,7 @@
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
         "spinImagePoint": [50, 50],
-        "spinSpeed": 20,
+        "spinSpeed": 0,
         "spinDirection": "cw"
       },
       "Orbital Config": {
@@ -54,7 +54,7 @@
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
         "spinImagePoint": [50, 50],
-        "spinSpeed": 20,
+        "spinSpeed": 0,
         "spinDirection": "cw"
       }
     }
@@ -78,7 +78,7 @@
         "orbitImagePoint": [50, 50],
         "orbitLine": true,
         "orbitOrient": true,
-        "orbitSpeed": 20,
+        "orbitSpeed": 0,
         "orbitDirection": "cw"
       }
     }
@@ -101,7 +101,7 @@
         "orbitImagePoint": [50, 50],
         "orbitLine": true,
         "orbitOrient": true,
-        "orbitSpeed": 20,
+        "orbitSpeed": 0,
         "orbitDirection": "cw"
       }
     }
@@ -124,7 +124,7 @@
         "orbitImagePoint": [50, 50],
         "orbitLine": true,
         "orbitOrient": true,
-        "orbitSpeed": 20,
+        "orbitSpeed": 0,
         "orbitDirection": "cw"
       }
     }
@@ -147,7 +147,7 @@
         "orbitImagePoint": [50, 50],
         "orbitLine": true,
         "orbitOrient": true,
-        "orbitSpeed": 20,
+        "orbitSpeed": 0,
         "orbitDirection": "cw"
       }
     }
@@ -170,7 +170,7 @@
         "orbitImagePoint": [50, 50],
         "orbitLine": true,
         "orbitOrient": true,
-        "orbitSpeed": 20,
+        "orbitSpeed": 0,
         "orbitDirection": "cw"
       }
     }
