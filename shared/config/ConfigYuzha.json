@@ -14,7 +14,7 @@
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
         "spinImagePoint": [50, 50],
-        "spinSpeed": 0,
+        "spinSpeed": 3,
         "spinDirection": "cw"
       },
       "Orbital Config": {
@@ -54,7 +54,7 @@
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
         "spinImagePoint": [50, 50],
-        "spinSpeed": 0,
+        "spinSpeed": 3,
         "spinDirection": "cw"
       }
     }
@@ -78,7 +78,7 @@
         "orbitImagePoint": [50, 50],
         "orbitLine": true,
         "orbitOrient": true,
-        "orbitSpeed": 0,
+        "orbitSpeed": 3,
         "orbitDirection": "cw"
       }
     }
@@ -101,7 +101,7 @@
         "orbitImagePoint": [50, 50],
         "orbitLine": true,
         "orbitOrient": true,
-        "orbitSpeed": 0,
+        "orbitSpeed": 3,
         "orbitDirection": "cw"
       }
     }
@@ -124,7 +124,7 @@
         "orbitImagePoint": [50, 50],
         "orbitLine": true,
         "orbitOrient": true,
-        "orbitSpeed": 0,
+        "orbitSpeed": 3,
         "orbitDirection": "cw"
       }
     }
@@ -143,11 +143,11 @@
       },
       "Orbital Config": {
         "orbitStagePoint": [1024, 1024],
-        "orbitLinePoint": [1024, 2048],
+        "orbitLinePoint": [1024, 2046],
         "orbitImagePoint": [50, 50],
         "orbitLine": true,
         "orbitOrient": true,
-        "orbitSpeed": 0,
+        "orbitSpeed": 3,
         "orbitDirection": "cw"
       }
     }
@@ -170,7 +170,7 @@
         "orbitImagePoint": [50, 50],
         "orbitLine": true,
         "orbitOrient": true,
-        "orbitSpeed": 0,
+        "orbitSpeed": 3,
         "orbitDirection": "cw"
       }
     }
@@ -193,7 +193,7 @@
         "orbitImagePoint": [50, 50],
         "orbitLine": true,
         "orbitOrient": true,
-        "orbitSpeed": 20,
+        "orbitSpeed": 3,
         "orbitDirection": "cw"
       }
     }
@@ -216,7 +216,7 @@
         "orbitImagePoint": [50, 50],
         "orbitLine": true,
         "orbitOrient": true,
-        "orbitSpeed": 20,
+        "orbitSpeed": 3,
         "orbitDirection": "cw"
       }
     }
@@ -239,7 +239,7 @@
         "orbitImagePoint": [50, 50],
         "orbitLine": true,
         "orbitOrient": true,
-        "orbitSpeed": 20,
+        "orbitSpeed": 3,
         "orbitDirection": "cw"
       }
     }
@@ -500,7 +500,7 @@
         "orbitImagePoint": [50, 50],
         "orbitLine": true,
         "orbitOrient": true,
-        "orbitSpeed": 20,
+        "orbitSpeed": 0,
         "orbitDirection": "cw"
       },
       "Image Mapping Debug": {
