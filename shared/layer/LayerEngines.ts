@@ -145,9 +145,12 @@ export async function mountDomLayers(
 
       const naturalWidth = layer.img.naturalWidth;
       const naturalHeight = layer.img.naturalHeight;
-      const roundedPosition = roundStagePoint(enhancedData.position);
-      const left = roundedPosition.x - naturalWidth / 2;
-      const top = roundedPosition.y - naturalHeight / 2;
+      // Preserve sub-pixel precision for orbital animation to prevent jitter at low speeds
+      const position = enhancedData.hasOrbitalAnimation
+        ? enhancedData.position
+        : roundStagePoint(enhancedData.position);
+      const left = position.x - naturalWidth / 2;
+      const top = position.y - naturalHeight / 2;
       layer.img.style.left = `${left}px`;
       layer.img.style.top = `${top}px`;
 
@@ -279,8 +282,11 @@ export async function mountCanvasLayers(
       enhancedData.currentRotation ?? enhancedData.rotation ?? layer.baseData.rotation ?? 0;
 
     ctx.save();
-    const roundedPosition = roundStagePoint(enhancedData.position);
-    ctx.translate(roundedPosition.x, roundedPosition.y);
+    // Preserve sub-pixel precision for orbital animation to prevent jitter at low speeds
+    const position = enhancedData.hasOrbitalAnimation
+      ? enhancedData.position
+      : roundStagePoint(enhancedData.position);
+    ctx.translate(position.x, position.y);
 
     if (rotation !== 0) {
       ctx.translate(-transformCache.dx, -transformCache.dy);
@@ -500,10 +506,13 @@ export async function mountThreeLayers(
       entry.group.visible = enhanced.visible !== false;
       if (!entry.group.visible) continue;
 
-      const roundedPosition = roundStagePoint(enhanced.position);
+      // Preserve sub-pixel precision for orbital animation to prevent jitter at low speeds
+      const position = enhanced.hasOrbitalAnimation
+        ? enhanced.position
+        : roundStagePoint(enhanced.position);
       entry.group.position.set(
-        roundedPosition.x - STAGE_SIZE / 2,
-        STAGE_SIZE / 2 - roundedPosition.y,
+        position.x - STAGE_SIZE / 2,
+        STAGE_SIZE / 2 - position.y,
         0,
       );
 
