@@ -30,6 +30,24 @@ The core animation logic revolves around a Layer System where JSON configuration
 - **Debugging:** `ImageMappingDebugConfig` allows enabling various visual helpers (markers, axis lines, rays, bounding boxes) for both Canvas 2D and Three.js renderers.
 - **TypeScript:** Strict type checking used throughout the project, with Vite handling compilation.
 
+## Recent Changes
+
+### Code Consolidation (Latest)
+- **Merged Renderer Adapters**: Combined renderer adapter files with their corresponding stage components for cleaner architecture:
+  - `DomRendererAdapter.ts` → merged into `StageDOM.tsx`
+  - `CanvasRendererAdapter.ts` → merged into `StageCanvas.tsx`
+  - `ThreeRendererAdapter.ts` → merged into `StageThree.tsx`
+- **Removed**: `shared/layer/pipeline/renderers/` folder (now empty after consolidation)
+
+### Planned Simplified System
+A new simplified layer system is planned in `shared/logic/` to replace the complex grouped configuration:
+- **New Config**: `config/Config.json` with 4 essential fields (layerID, layerOrder, imageID, imageScale)
+- **Core Logic**: `shared/logic/core.ts` with 4 standalone functions for simple image rendering
+- **Goal**: Enable image display, scale adjustment, and layer ordering without complex animations
+- **Documentation**: See `shared/logic/log.md` for complete implementation plan
+
+Current complex system in `shared/layer/` will remain for reference but new simplified approach will be self-contained.
+
 ## External Dependencies
 
 - **React 18:** Frontend UI library.
