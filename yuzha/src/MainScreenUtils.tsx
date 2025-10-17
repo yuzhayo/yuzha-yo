@@ -9,7 +9,6 @@
 
 import React from "react";
 import type { CSSProperties } from "react";
-import { ConfigYuzhaPopup } from "@shared/config/ConfigYuzhaPopup";
 
 // ===================================================================
 // 🔴 BLOCK 1: STAGE CONSTANTS
@@ -301,8 +300,6 @@ export function MainScreenRendererBadge(props: MainScreenRendererBadgeProps) {
 // ===================================================================
 
 export function MainScreenUpdater(props: MainScreenUpdaterProps) {
-  const [isConfigOpen, setIsConfigOpen] = React.useState(false);
-
   const currentMode = props.rendererMode ?? "auto";
 
   const getRendererButtonClass = (mode: "auto" | "dom" | "canvas" | "three") => {
@@ -324,7 +321,7 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
     }
   };
 
-  if (!props.visible && !isConfigOpen) return null;
+  if (!props.visible) return null;
 
   return (
     <>
@@ -374,20 +371,8 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
           >
             Update
           </button>
-          <button
-            type="button"
-            onClick={() => setIsConfigOpen(true)}
-            className="text-[10px] px-2 py-0.5 rounded bg-indigo-600/80 hover:bg-indigo-500/80 active:bg-indigo-600 text-white shadow-sm border border-white/10"
-          >
-            Config
-          </button>
         </div>
       )}
-      <ConfigYuzhaPopup
-        isOpen={isConfigOpen}
-        onClose={() => setIsConfigOpen(false)}
-        title="Configuration"
-      />
     </>
   );
 }
