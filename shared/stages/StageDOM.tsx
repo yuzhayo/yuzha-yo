@@ -1,6 +1,24 @@
 import React, { useEffect, useRef } from "react";
-import { createStagePipeline } from "../layer/pipeline/StagePipeline";
-import { mountDomRenderer } from "../layer/pipeline/renderers/DomRendererAdapter";
+import { createStagePipeline, toRendererInput, type StagePipeline } from "../layer/pipeline/StagePipeline";
+import { createStageTransformer } from "../utils/stage2048";
+import { mountDomLayers } from "../layer/LayerEngines";
+
+async function mountDomRenderer(
+  container: HTMLDivElement,
+  stage: HTMLDivElement,
+  pipeline: StagePipeline,
+): Promise<() => void> {
+  const cleanupTransform = createStageTransformer(stage, container, {
+    resizeDebounce: 100,
+  });
+
+  const cleanupLayers = await mountDomLayers(stage, toRendererInput(pipeline));
+
+  return () => {
+    cleanupTransform?.();
+    cleanupLayers?.();
+  };
+}
 
 function StageDOM() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -17,7 +35,7 @@ function StageDOM() {
     (async () => {
       const pipeline = await createStagePipeline();
       if (!active) return;
-      cleanup = await mountDomRenderer({ container, stage }, pipeline);
+      cleanup = await mountDomRenderer(container, stage, pipeline);
     })().catch((error) => {
       console.error("Failed to initialise DOM stage", error);
     });
@@ -35,5 +53,4 @@ function StageDOM() {
   );
 }
 
-// Memoize to prevent unnecessary re-renders when parent re-renders
 export default React.memo(StageDOM);
