@@ -1,6 +1,32 @@
 import React, { useEffect, useRef } from "react";
-import { createStagePipeline } from "../layer/pipeline/StagePipeline";
-import { mountCanvasRenderer } from "../layer/pipeline/renderers/CanvasRendererAdapter";
+import { createStagePipeline, toRendererInput, type StagePipeline } from "../layer/pipeline/StagePipeline";
+import { createStageTransformer } from "../utils/stage2048";
+import { mountCanvasLayers } from "../layer/LayerEngines";
+
+async function mountCanvasRenderer(
+  container: HTMLDivElement,
+  canvas: HTMLCanvasElement,
+  pipeline: StagePipeline,
+): Promise<() => void> {
+  const context = canvas.getContext("2d");
+  if (!context) {
+    throw new Error("[CanvasRenderer] Failed to acquire 2D context");
+  }
+
+  canvas.width = pipeline.stageSize;
+  canvas.height = pipeline.stageSize;
+
+  const cleanupTransform = createStageTransformer(canvas, container, {
+    resizeDebounce: 100,
+  });
+
+  const cleanupLayers = await mountCanvasLayers(context, toRendererInput(pipeline));
+
+  return () => {
+    cleanupTransform?.();
+    cleanupLayers?.();
+  };
+}
 
 function StageCanvas() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -17,7 +43,7 @@ function StageCanvas() {
     (async () => {
       const pipeline = await createStagePipeline();
       if (!active) return;
-      cleanup = await mountCanvasRenderer({ container, canvas }, pipeline);
+      cleanup = await mountCanvasRenderer(container, canvas, pipeline);
     })().catch((error) => {
       console.error("Failed to initialise Canvas stage", error);
     });
@@ -35,5 +61,4 @@ function StageCanvas() {
   );
 }
 
-// Memoize to prevent unnecessary re-renders when parent re-renders
 export default React.memo(StageCanvas);
