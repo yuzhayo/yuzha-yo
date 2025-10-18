@@ -32,29 +32,56 @@ The core animation logic revolves around a Layer System where JSON configuration
 
 ## Recent Changes
 
-### Layer Pipeline System Consolidation (Latest - Oct 18, 2025)
+### Layer System Modular Refactoring (Latest - Oct 18, 2025)
 
-Major refactoring to simplify the layer processing architecture for future AI agents:
+Complete modular refactoring of the layer system for improved maintainability and separation of concerns:
 
-- **Created layer.ts**: Merged `LayerCorePipeline.ts` and `ProcessorRegistry.ts` into a single unified `shared/layer/layer.ts` file
-  - Section 1: Types & Core Pipeline (EnhancedLayerData, LayerProcessor, runPipeline)
-  - Section 2: Processor Registry (plugin system for spin, orbital, debug processors)
-  - Section 3: Animation Utilities (angle calculations, easing functions, orbit helpers)
-  - Section 4: Performance Utilities (PipelineCache, StaticLayerBuffer, layer batching)
-  - Comprehensive inline documentation for future AI agents with usage examples
+- **New Modular Structure**: Split monolithic `LayerCore.ts` into specialized modules:
+  - **layerBasic.ts** - Pure math utilities and coordinate transformations (no dependencies)
+  - **layerCore.ts** - Core layer preparation, asset resolution, image mapping
+  - **layerDebug.ts** - Debug visualization code (Canvas/Three.js renderers, markers, processors)
+  - **layerSpin.ts** - Spin animation system
+  - **layerOrbit.ts** - Orbital motion system
+  - **layer.ts** - Processor pipeline orchestrator and registry
+  - **index.ts** - Unified module exports
 
-- **Updated All Imports**: Refactored 9 files across the codebase to use the new unified module:
-  - `StageSystem.ts`, `StageCanvas.tsx`, `StageDOM.tsx`, `StageThree.tsx`
-  - `LayerCorePipelineSpin.ts`, `LayerCorePipelineOrbital.ts`, `LayerCorePipelineImageMappingUtils.ts`
-  - `shared/layer/index.ts` (updated re-exports)
+- **Clean Architecture**: Layered dependency structure with no circular dependencies:
+  ```
+  layerBasic (foundation, no deps)
+    ↑
+  layerCore (imports layerBasic)
+    ↑
+  layerDebug, layerSpin, layerOrbit (import layerCore + layerBasic)
+    ↑
+  layer.ts (orchestrator, imports all)
+  ```
 
-- **Deleted Legacy Files**: Removed `LayerCorePipeline.ts` and `pipeline/ProcessorRegistry.ts` after successful merger
+- **Deleted Legacy Files**: Removed after successful migration:
+  - `LayerCore.ts` → refactored to `layerCore.ts` + `layerBasic.ts`
+  - `LayerCorePipelineSpin.ts` → renamed to `layerSpin.ts`
+  - `LayerCorePipelineOrbital.ts` → renamed to `layerOrbit.ts`
+  - `LayerCorePipelineImageMappingUtils.ts` → refactored to `layerDebug.ts`
 
-- **Why This Refactor**: Reduces file jumping for AI agents - all layer pipeline functionality now in one well-documented file instead of scattered across two files
+- **Documentation**: Comprehensive inline documentation added to all modules with usage examples for future AI agents. Created `shared/layer/README.md` with architecture overview and historical context.
 
-- **Architecture Flow**: ConfigYuzha.json → Config.ts → LayerCore → layer.ts (pipeline + processors) → Renderers → MainScreen
+- **Architecture Flow**: ConfigYuzha.json → Config.ts → layerCore.prepareLayer() → layer.ts processors → Renderers → MainScreen
 
-- **Verified**: No regressions, typecheck passed (no new errors), eslint passed, prettier passed, workflow runs successfully, display functionality preserved via screenshot
+- **Verified**: 
+  - ✅ Architect reviewed and approved with Pass rating
+  - ✅ No regressions, all functionality preserved
+  - ✅ Application tested and rendering correctly
+  - ✅ Prettier formatting applied
+  - ✅ No circular dependencies
+  - ✅ Clean separation of concerns achieved
+
+### Previous Layer Pipeline System Consolidation (Oct 18, 2025)
+
+Earlier refactoring to simplify the layer processing architecture:
+
+- **Created layer.ts**: Merged `LayerCorePipeline.ts` and `ProcessorRegistry.ts` into unified `shared/layer/layer.ts`
+- **Updated All Imports**: Refactored 9 files across the codebase to use the new unified module
+- **Deleted Legacy Files**: Removed `LayerCorePipeline.ts` and `pipeline/ProcessorRegistry.ts`
+- **Why**: Reduced file jumping for AI agents - all pipeline functionality in one well-documented file
 
 ### Stage System Architecture Refactoring (Oct 18, 2025)
 
