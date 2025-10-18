@@ -42,7 +42,7 @@ import {
   type StagePipeline,
   type EnhancedLayerData,
   type LayerProcessor,
-} from "../stage/StageSystem";
+} from "./StageSystem";
 import { loadImage } from "../layer/LayerCore";
 import { runPipeline, AnimationConstants, createPipelineCache } from "../layer/LayerCorePipeline";
 import { CanvasDebugRenderer } from "../layer/LayerCorePipelineImageMappingUtils";

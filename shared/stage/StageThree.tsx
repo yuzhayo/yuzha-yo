@@ -43,7 +43,7 @@ import {
   type StagePipeline,
   type EnhancedLayerData,
   type LayerProcessor,
-} from "../stage/StageSystem";
+} from "./StageSystem";
 import { runPipeline, AnimationConstants, createPipelineCache } from "../layer/LayerCorePipeline";
 import { ThreeDebugRenderer } from "../layer/LayerCorePipelineImageMappingUtils";
 import { getDeviceCapability } from "../utils/DeviceCapability";

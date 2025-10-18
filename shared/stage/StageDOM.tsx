@@ -41,7 +41,7 @@ import {
   type StagePipeline,
   type EnhancedLayerData,
   type LayerProcessor,
-} from "../stage/StageSystem";
+} from "./StageSystem";
 import { loadImage } from "../layer/LayerCore";
 import { runPipeline, createPipelineCache } from "../layer/LayerCorePipeline";
 
