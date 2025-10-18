@@ -43,7 +43,7 @@ import {
   type LayerProcessor,
 } from "./StageSystem";
 import { loadImage } from "../layer/LayerCore";
-import { runPipeline, createPipelineCache } from "../layer/LayerCorePipeline";
+import { runPipeline, createPipelineCache } from "../layer/layer";
 
 const IS_DEV = import.meta.env.DEV;
 

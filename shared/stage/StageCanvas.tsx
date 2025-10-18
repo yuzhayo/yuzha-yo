@@ -44,7 +44,7 @@ import {
   type LayerProcessor,
 } from "./StageSystem";
 import { loadImage } from "../layer/LayerCore";
-import { runPipeline, AnimationConstants, createPipelineCache } from "../layer/LayerCorePipeline";
+import { runPipeline, AnimationConstants, createPipelineCache } from "../layer/layer";
 import { CanvasDebugRenderer } from "../layer/LayerCorePipelineImageMappingUtils";
 
 const IS_DEV = import.meta.env.DEV;

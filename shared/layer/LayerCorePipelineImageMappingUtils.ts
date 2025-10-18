@@ -5,7 +5,7 @@
  */
 
 import type { UniversalLayerData } from "./LayerCore";
-import type { EnhancedLayerData, LayerProcessor } from "./LayerCorePipeline";
+import type { EnhancedLayerData, LayerProcessor } from "./layer";
 
 export type ImageMapping = {
   imageCenter: { x: number; y: number };

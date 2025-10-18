@@ -5,8 +5,12 @@ import {
   type Point2D,
   type UniversalLayerData,
 } from "./LayerCore";
-import type { EnhancedLayerData, LayerProcessor } from "./LayerCorePipeline";
-import { applyRotationDirection, normalizeAngle } from "./LayerCorePipeline";
+import {
+  applyRotationDirection,
+  normalizeAngle,
+  type EnhancedLayerData,
+  type LayerProcessor,
+} from "./layer";
 
 export type SpinConfig = {
   spinCenter?: [number, number] | PercentPoint; // Runtime override: 0-100% relative to image dimensions

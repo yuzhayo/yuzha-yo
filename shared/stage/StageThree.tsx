@@ -44,7 +44,7 @@ import {
   type EnhancedLayerData,
   type LayerProcessor,
 } from "./StageSystem";
-import { runPipeline, AnimationConstants, createPipelineCache } from "../layer/LayerCorePipeline";
+import { runPipeline, AnimationConstants, createPipelineCache } from "../layer/layer";
 import { ThreeDebugRenderer } from "../layer/LayerCorePipelineImageMappingUtils";
 import { getDeviceCapability } from "../utils/DeviceCapability";
 

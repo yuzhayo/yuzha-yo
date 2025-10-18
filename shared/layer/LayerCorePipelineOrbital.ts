@@ -1,11 +1,12 @@
 import { imagePercentToImagePoint, type PercentPoint, type Point2D } from "./LayerCore";
-import type { EnhancedLayerData, LayerProcessor } from "./LayerCorePipeline";
 import {
   applyRotationDirection,
   calculateOrbitPosition,
   calculateOrbitalVisibility,
   normalizeAngle,
-} from "./LayerCorePipeline";
+  type EnhancedLayerData,
+  type LayerProcessor,
+} from "./layer";
 
 export type OrbitalConfig = {
   orbitStagePoint?: [number, number];

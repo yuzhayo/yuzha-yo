@@ -37,8 +37,12 @@
 
 import { loadLayerConfig, type LayerConfigEntry } from "../config/Config";
 import { is2DLayer, prepareLayer } from "../layer/LayerCore";
-import type { EnhancedLayerData, LayerProcessor } from "../layer/LayerCorePipeline";
-import { getProcessorsForEntry, type ProcessorContext } from "../layer/pipeline/ProcessorRegistry";
+import {
+  getProcessorsForEntry,
+  type ProcessorContext,
+  type EnhancedLayerData,
+  type LayerProcessor,
+} from "../layer/layer";
 
 // ============================================================================
 // SECTION 1: COORDINATE SYSTEM
@@ -435,6 +439,5 @@ export async function createStagePipeline(
 // Re-export types and functions that are commonly used together with this module
 // ============================================================================
 
-export type { ProcessorContext } from "../layer/pipeline/ProcessorRegistry";
+export type { ProcessorContext, EnhancedLayerData, LayerProcessor } from "../layer/layer";
 export type { LayerConfigEntry } from "../config/Config";
-export type { EnhancedLayerData, LayerProcessor } from "../layer/LayerCorePipeline";

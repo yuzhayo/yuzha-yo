@@ -8,14 +8,14 @@
  * NOTE FOR FUTURE AI AGENTS:
  * - LayerEngines.ts has been DELETED - rendering logic moved to stage renderers
  * - StagePipeline.ts has been DELETED - merged into StageSystem
+ * - LayerCorePipeline.ts and ProcessorRegistry.ts have been MERGED into layer.ts
  * - For stage rendering, import from @shared/stage/StageSystem instead
  *
  * @module layer/index
  */
 
 export * from "./LayerCore";
-export * from "./LayerCorePipeline";
+export * from "./layer";
 export * from "./LayerCorePipelineSpin";
 export * from "./LayerCorePipelineOrbital";
 export * from "./LayerCorePipelineImageMappingUtils";
-export * from "./pipeline/ProcessorRegistry";
