@@ -43,9 +43,9 @@ import {
   type EnhancedLayerData,
   type LayerProcessor,
 } from "./StageSystem";
-import { loadImage } from "../layer/LayerCore";
+import { loadImage } from "../layer/layerCore";
 import { runPipeline, AnimationConstants, createPipelineCache } from "../layer/layer";
-import { CanvasDebugRenderer } from "../layer/LayerCorePipelineImageMappingUtils";
+import { CanvasDebugRenderer } from "../layer/layerDebug";
 
 const IS_DEV = import.meta.env.DEV;
 

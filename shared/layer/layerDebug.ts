@@ -1,116 +1,79 @@
 /**
- * Image Mapping Visual Debug Utilities
- * Helper functions to visualize imageTip, imageBase, and imageCenter points
- * Helps debug image orientation and axis alignment issues
+ * ============================================================================
+ * LAYER DEBUG - Debug Visualization System
+ * ============================================================================
+ *
+ * This module provides comprehensive debug visualization tools for the layer
+ * system. It helps visualize coordinate transformations, image mapping, and
+ * animation states during development.
+ *
+ * PURPOSE FOR FUTURE AI AGENTS:
+ * ------------------------------
+ * This is the DEBUG TOOLKIT for the layer system. When you're debugging
+ * positioning issues, rotation problems, or orbital animations, use these
+ * tools to visualize what's happening.
+ *
+ * RESPONSIBILITIES:
+ * -----------------
+ * 1. Image Mapping Debug Visuals
+ *    - Visualize imageCenter, imageTip, imageBase points
+ *    - Show axis lines and rotation indicators
+ *    - Display rays showing calculation geometry
+ *    - Draw bounding boxes and stage center markers
+ *
+ * 2. Orbital Motion Debug Visuals
+ *    - Visualize orbit center, orbit path, radius lines
+ *    - Show current orbit point markers
+ *    - Display orbit trace circles
+ *
+ * 3. Rendering Functions
+ *    - CanvasDebugRenderer - Canvas 2D rendering functions
+ *    - ThreeDebugRenderer - Three.js rendering functions
+ *
+ * 4. Debug Processor
+ *    - createImageMappingDebugProcessor - Attaches debug visuals to layers
+ *
+ * WHEN TO USE:
+ * ------------
+ * Enable debug visualization in ConfigYuzha.json by setting:
+ * - showCenter: true - Shows image center point
+ * - showTip: true - Shows image tip point
+ * - showBase: true - Shows image base point
+ * - showAxisLine: true - Shows tip-base axis line
+ * - showRotation: true - Shows rotation indicator arc
+ * - showTipRay: true - Shows calculation ray for tip
+ * - showBaseRay: true - Shows calculation ray for base
+ * - showBoundingBox: true - Shows image bounding box
+ * - showStageCenter: true - Shows stage center at (1024, 1024)
+ *
+ * COORDINATE SYSTEMS:
+ * -------------------
+ * - Image Space: Pixels within image (0,0 = top-left)
+ * - Stage Space: Pixels on 2048x2048 stage (0,0 = top-left)
+ * - Debug visuals are drawn in stage space
+ *
+ * USED BY:
+ * --------
+ * - layer.ts (registers image mapping debug processor)
+ * - StageCanvas.tsx (renders debug visuals with CanvasDebugRenderer)
+ * - StageThree.tsx (renders debug visuals with ThreeDebugRenderer)
+ *
+ * @module layer/layerDebug
  */
 
-import type { UniversalLayerData } from "./LayerCore";
+import type { UniversalLayerData } from "./layerCore";
 import type { EnhancedLayerData, LayerProcessor } from "./layer";
 
-export type ImageMapping = {
-  imageCenter: { x: number; y: number };
-  imageTip: { x: number; y: number };
-  imageBase: { x: number; y: number };
-  imageDimensions: { width: number; height: number };
-  displayAxisAngle: number;
-  displayRotation: number;
-  axisCenterOffset: { x: number; y: number };
-};
+// ============================================================================
+// IMAGE MAPPING DEBUG TYPES
+// ============================================================================
+// These types define the shape of debug visualization data.
+// FOR FUTURE AI AGENTS: Renderers use these to draw debug overlays.
+// ============================================================================
 
-const STANDARD_MAPPING_CACHE = new Map<string, ImageMapping>();
-
-export function computeImageMapping(
-  imageDimensions: { width: number; height: number },
-  tipAngle: number = 90,
-  baseAngle: number = 270,
-): ImageMapping {
-  if (tipAngle === 90 && baseAngle === 270) {
-    const key = `${imageDimensions.width}x${imageDimensions.height}`;
-    const cached = STANDARD_MAPPING_CACHE.get(key);
-    if (cached) return cached;
-    const result = computeImageMappingInternal(imageDimensions, tipAngle, baseAngle);
-    STANDARD_MAPPING_CACHE.set(key, result);
-    return result;
-  }
-
-  return computeImageMappingInternal(imageDimensions, tipAngle, baseAngle);
-}
-
-function computeImageMappingInternal(
-  imageDimensions: { width: number; height: number },
-  tipAngle: number,
-  baseAngle: number,
-): ImageMapping {
-  const { width, height } = imageDimensions;
-
-  const imageCenter = {
-    x: width / 2,
-    y: height / 2,
-  };
-
-  const tipAngleRad = (-tipAngle * Math.PI) / 180;
-  const baseAngleRad = (-baseAngle * Math.PI) / 180;
-
-  const tipDx = Math.cos(tipAngleRad);
-  const tipDy = Math.sin(tipAngleRad);
-
-  const halfWidth = width / 2;
-  const halfHeight = height / 2;
-
-  const tipScaleX = tipDx !== 0 ? halfWidth / Math.abs(tipDx) : Infinity;
-  const tipScaleY = tipDy !== 0 ? halfHeight / Math.abs(tipDy) : Infinity;
-  const tipScale = Math.min(tipScaleX, tipScaleY);
-
-  const tipOffsetX = Number.isFinite(tipScale) ? tipScale * tipDx : 0;
-  const tipOffsetY = Number.isFinite(tipScale) ? tipScale * tipDy : 0;
-
-  const imageTip = {
-    x: imageCenter.x + tipOffsetX,
-    y: imageCenter.y + tipOffsetY,
-  };
-
-  const baseDx = Math.cos(baseAngleRad);
-  const baseDy = Math.sin(baseAngleRad);
-
-  const baseScaleX = baseDx !== 0 ? halfWidth / Math.abs(baseDx) : Infinity;
-  const baseScaleY = baseDy !== 0 ? halfHeight / Math.abs(baseDy) : Infinity;
-  const baseScale = Math.min(baseScaleX, baseScaleY);
-
-  const baseOffsetX = Number.isFinite(baseScale) ? baseScale * baseDx : 0;
-  const baseOffsetY = Number.isFinite(baseScale) ? baseScale * baseDy : 0;
-
-  const imageBase = {
-    x: imageCenter.x + baseOffsetX,
-    y: imageCenter.y + baseOffsetY,
-  };
-
-  const axisDx = imageTip.x - imageBase.x;
-  const axisDy = imageTip.y - imageBase.y;
-
-  const displayAxisAngle = (Math.atan2(-axisDy, axisDx) * 180) / Math.PI;
-  const displayRotation = Number.isFinite(displayAxisAngle) ? 90 - displayAxisAngle : 0;
-
-  const axisMidpoint = {
-    x: (imageBase.x + imageTip.x) / 2,
-    y: (imageBase.y + imageTip.y) / 2,
-  };
-
-  const axisCenterOffset = {
-    x: imageCenter.x - axisMidpoint.x,
-    y: imageCenter.y - axisMidpoint.y,
-  };
-
-  return {
-    imageCenter,
-    imageTip,
-    imageBase,
-    imageDimensions,
-    displayAxisAngle,
-    displayRotation,
-    axisCenterOffset,
-  };
-}
-
+/**
+ * Image center marker (crosshair or dot at image center)
+ */
 export type ImageCenterMarker = {
   type: "dot" | "crosshair";
   position: { x: number; y: number };
@@ -119,6 +82,9 @@ export type ImageCenterMarker = {
   label?: string;
 };
 
+/**
+ * Image tip marker (circle or arrow at image tip point)
+ */
 export type ImageTipMarker = {
   type: "circle" | "arrow";
   position: { x: number; y: number };
@@ -127,6 +93,9 @@ export type ImageTipMarker = {
   label?: string;
 };
 
+/**
+ * Image base marker (circle or square at image base point)
+ */
 export type ImageBaseMarker = {
   type: "circle" | "square";
   position: { x: number; y: number };
@@ -135,6 +104,9 @@ export type ImageBaseMarker = {
   label?: string;
 };
 
+/**
+ * Stage center marker (shows stage center at 1024, 1024)
+ */
 export type StageCenterMarker = {
   type: "dot" | "crosshair" | "star";
   position: { x: number; y: number };
@@ -143,6 +115,9 @@ export type StageCenterMarker = {
   label?: string;
 };
 
+/**
+ * Axis line from base to tip (shows image orientation)
+ */
 export type ImageAxisLine = {
   start: { x: number; y: number };
   end: { x: number; y: number };
@@ -152,6 +127,9 @@ export type ImageAxisLine = {
   label?: string;
 };
 
+/**
+ * Rotation indicator arc (shows rotation angle)
+ */
 export type ImageRotationIndicator = {
   center: { x: number; y: number };
   radius: number;
@@ -161,6 +139,9 @@ export type ImageRotationIndicator = {
   opacity: number;
 };
 
+/**
+ * Image ray (shows calculation ray from center to edge)
+ */
 export type ImageRay = {
   start: { x: number; y: number };
   end: { x: number; y: number };
@@ -171,6 +152,9 @@ export type ImageRay = {
   label?: string;
 };
 
+/**
+ * Complete image mapping debug visuals
+ */
 export type ImageMappingDebugVisuals = {
   centerMarker?: ImageCenterMarker;
   tipMarker?: ImageTipMarker;
@@ -190,6 +174,9 @@ export type ImageMappingDebugVisuals = {
   };
 };
 
+/**
+ * Image mapping debug configuration
+ */
 export type ImageMappingDebugConfig = {
   showCenter?: boolean;
   showTip?: boolean;
@@ -217,6 +204,9 @@ export type ImageMappingDebugConfig = {
   };
 };
 
+/**
+ * Resolved debug configuration with all defaults applied
+ */
 type ResolvedImageMappingDebugConfig = {
   showCenter: boolean;
   showTip: boolean;
@@ -244,6 +234,9 @@ type ResolvedImageMappingDebugConfig = {
   };
 };
 
+/**
+ * Default debug configuration
+ */
 const DEFAULT_CONFIG: ResolvedImageMappingDebugConfig = {
   showCenter: true,
   showTip: true,
@@ -271,35 +264,108 @@ const DEFAULT_CONFIG: ResolvedImageMappingDebugConfig = {
   },
 };
 
-export type ImageMappingDebugProcessorConfig = ImageMappingDebugConfig;
+// ============================================================================
+// ORBITAL DEBUG TYPES
+// ============================================================================
+// These types define orbital motion debug visualization.
+// FOR FUTURE AI AGENTS: Use these to debug orbital animations.
+// ============================================================================
 
-export function createImageMappingDebugProcessor(
-  config: Partial<ImageMappingDebugProcessorConfig>,
-): LayerProcessor {
-  const hasAnyDebug =
-    config.showCenter ||
-    config.showTip ||
-    config.showBase ||
-    config.showStageCenter ||
-    config.showAxisLine ||
-    config.showRotation ||
-    config.showTipRay ||
-    config.showBaseRay ||
-    config.showBoundingBox;
+/**
+ * Orbit center marker (shows orbit center point)
+ */
+export type OrbitCenterMarker = {
+  type: "dot" | "crosshair";
+  center: { x: number; y: number };
+  size: number;
+  color: string;
+};
 
-  if (!hasAnyDebug) {
-    return (layer: UniversalLayerData): EnhancedLayerData => layer as EnhancedLayerData;
-  }
+/**
+ * Orbit line trace (shows full orbit path as circle)
+ */
+export type OrbitLineTrace = {
+  center: { x: number; y: number };
+  radius: number;
+  points: Array<{ x: number; y: number }>;
+  thickness: number;
+  color: string;
+  opacity: number;
+};
 
-  return (layer: UniversalLayerData): EnhancedLayerData => {
-    const debugVisuals = generateImageMappingDebugVisuals(layer, config);
-    return {
-      ...layer,
-      imageMappingDebugVisuals: debugVisuals,
-      imageMappingDebugConfig: config,
-    } as EnhancedLayerData;
+/**
+ * Orbit radius line (shows line from center to current position)
+ */
+export type OrbitRadiusLine = {
+  start: { x: number; y: number };
+  end: { x: number; y: number };
+  thickness: number;
+  color: string;
+  opacity: number;
+};
+
+/**
+ * Orbit point marker (shows current position on orbit)
+ */
+export type OrbitPointMarker = {
+  type: "circle";
+  position: { x: number; y: number };
+  size: number;
+  color: string;
+};
+
+/**
+ * Complete orbital debug visuals
+ */
+export type OrbitalDebugVisuals = {
+  centerMarker?: OrbitCenterMarker;
+  lineTrace?: OrbitLineTrace;
+  radiusLine?: OrbitRadiusLine;
+  pointMarker?: OrbitPointMarker;
+};
+
+/**
+ * Orbital debug configuration
+ */
+export type OrbitalDebugConfig = {
+  showCenter?: boolean;
+  showOrbitLine?: boolean;
+  showRadiusLine?: boolean;
+  showOrbitPoint?: boolean;
+  centerStyle?: "dot" | "crosshair";
+  colors?: {
+    center?: string;
+    orbitLine?: string;
+    radiusLine?: string;
+    orbitPoint?: string;
   };
-}
+};
+
+/**
+ * Default orbital debug configuration
+ */
+const DEFAULT_ORBITAL_DEBUG_CONFIG: Required<OrbitalDebugConfig> & {
+  colors: { center: string; orbitLine: string; radiusLine: string; orbitPoint: string };
+} = {
+  showCenter: true,
+  showOrbitLine: true,
+  showRadiusLine: true,
+  showOrbitPoint: true,
+  centerStyle: "crosshair",
+  colors: {
+    center: "#FF0000",
+    orbitLine: "#00FF00",
+    radiusLine: "#FFFF00",
+    orbitPoint: "#0000FF",
+  },
+};
+
+// ============================================================================
+// IMAGE MAPPING DEBUG GENERATOR FUNCTIONS
+// ============================================================================
+// These functions generate debug visual data from layer data.
+// FOR FUTURE AI AGENTS: Call these to create debug markers/lines.
+// ============================================================================
 
 /**
  * Generate image center marker visualization data
@@ -608,8 +674,171 @@ export function generateImageMappingDebugVisuals(
   return visuals;
 }
 
+// ============================================================================
+// ORBITAL DEBUG GENERATOR FUNCTIONS
+// ============================================================================
+
 /**
- * Canvas 2D rendering functions
+ * Generate orbit center marker
+ */
+export function generateOrbitCenterMarker(
+  orbitCenter: [number, number],
+  config?: Partial<OrbitalDebugConfig>,
+): OrbitCenterMarker {
+  const merged = { ...DEFAULT_ORBITAL_DEBUG_CONFIG, ...config };
+  const colors = { ...DEFAULT_ORBITAL_DEBUG_CONFIG.colors, ...config?.colors };
+  return {
+    type: merged.centerStyle,
+    center: { x: orbitCenter[0], y: orbitCenter[1] },
+    size: merged.centerStyle === "dot" ? 6 : 15,
+    color: colors.center,
+  };
+}
+
+/**
+ * Generate orbit line trace (full circle)
+ */
+export function generateOrbitLineTrace(
+  orbitCenter: [number, number],
+  orbitRadius: number,
+  config?: Partial<OrbitalDebugConfig>,
+): OrbitLineTrace {
+  const colors = { ...DEFAULT_ORBITAL_DEBUG_CONFIG.colors, ...config?.colors };
+  const segments = 64;
+  const points: Array<{ x: number; y: number }> = [];
+  for (let i = 0; i <= segments; i++) {
+    const angle = (i / segments) * Math.PI * 2;
+    const x = orbitCenter[0] + orbitRadius * Math.cos(angle);
+    const y = orbitCenter[1] + orbitRadius * Math.sin(angle);
+    points.push({ x, y });
+  }
+  return {
+    center: { x: orbitCenter[0], y: orbitCenter[1] },
+    radius: orbitRadius,
+    points,
+    thickness: 1,
+    color: colors.orbitLine,
+    opacity: 0.25,
+  };
+}
+
+/**
+ * Generate orbit radius line (from center to current position)
+ */
+export function generateOrbitRadiusLine(
+  orbitCenter: [number, number],
+  orbitPoint: { x: number; y: number },
+  config?: Partial<OrbitalDebugConfig>,
+): OrbitRadiusLine {
+  const colors = { ...DEFAULT_ORBITAL_DEBUG_CONFIG.colors, ...config?.colors };
+  return {
+    start: { x: orbitCenter[0], y: orbitCenter[1] },
+    end: orbitPoint,
+    thickness: 1,
+    color: colors.radiusLine,
+    opacity: 0.35,
+  };
+}
+
+/**
+ * Generate orbit point marker (current position on orbit)
+ */
+export function generateOrbitPointMarker(
+  orbitPoint: { x: number; y: number },
+  config?: Partial<OrbitalDebugConfig>,
+): OrbitPointMarker {
+  const colors = { ...DEFAULT_ORBITAL_DEBUG_CONFIG.colors, ...config?.colors };
+  return {
+    type: "circle",
+    position: orbitPoint,
+    size: 8,
+    color: colors.orbitPoint,
+  };
+}
+
+/**
+ * Generate complete orbital debug visuals
+ */
+export function generateOrbitalDebugVisuals(
+  orbitCenter: [number, number],
+  orbitRadius: number,
+  currentOrbitPoint: { x: number; y: number },
+  config?: Partial<OrbitalDebugConfig>,
+): OrbitalDebugVisuals {
+  const merged = { ...DEFAULT_ORBITAL_DEBUG_CONFIG, ...config };
+  const visuals: OrbitalDebugVisuals = {};
+
+  if (merged.showCenter) {
+    visuals.centerMarker = generateOrbitCenterMarker(orbitCenter, config);
+  }
+  if (merged.showOrbitLine) {
+    visuals.lineTrace = generateOrbitLineTrace(orbitCenter, orbitRadius, config);
+  }
+  if (merged.showRadiusLine) {
+    visuals.radiusLine = generateOrbitRadiusLine(orbitCenter, currentOrbitPoint, config);
+  }
+  if (merged.showOrbitPoint) {
+    visuals.pointMarker = generateOrbitPointMarker(currentOrbitPoint, config);
+  }
+
+  return visuals;
+}
+
+// ============================================================================
+// DEBUG PROCESSOR
+// ============================================================================
+// Creates a processor that attaches debug visuals to layers.
+// FOR FUTURE AI AGENTS: This is registered in layer.ts.
+// ============================================================================
+
+export type ImageMappingDebugProcessorConfig = ImageMappingDebugConfig;
+
+/**
+ * Create image mapping debug processor
+ *
+ * This processor generates debug visuals and attaches them to layer data.
+ * Renderers can then use these visuals to draw debug overlays.
+ *
+ * @param config - Debug configuration (which visuals to show)
+ * @returns LayerProcessor that adds debug visuals to layer
+ */
+export function createImageMappingDebugProcessor(
+  config: Partial<ImageMappingDebugProcessorConfig>,
+): LayerProcessor {
+  const hasAnyDebug =
+    config.showCenter ||
+    config.showTip ||
+    config.showBase ||
+    config.showStageCenter ||
+    config.showAxisLine ||
+    config.showRotation ||
+    config.showTipRay ||
+    config.showBaseRay ||
+    config.showBoundingBox;
+
+  if (!hasAnyDebug) {
+    return (layer: UniversalLayerData): EnhancedLayerData => layer as EnhancedLayerData;
+  }
+
+  return (layer: UniversalLayerData): EnhancedLayerData => {
+    const debugVisuals = generateImageMappingDebugVisuals(layer, config);
+    return {
+      ...layer,
+      imageMappingDebugVisuals: debugVisuals,
+      imageMappingDebugConfig: config,
+    } as EnhancedLayerData;
+  };
+}
+
+// ============================================================================
+// CANVAS DEBUG RENDERER
+// ============================================================================
+// Canvas 2D rendering functions for debug visuals.
+// FOR FUTURE AI AGENTS: Use these in StageCanvas.tsx.
+// ============================================================================
+
+/**
+ * Canvas 2D rendering functions for debug visuals
  */
 export const CanvasDebugRenderer = {
   drawImageCenter(ctx: CanvasRenderingContext2D, marker: ImageCenterMarker): void {
@@ -924,6 +1153,9 @@ export const CanvasDebugRenderer = {
     );
   },
 
+  /**
+   * Draw all debug visuals
+   */
   drawAll(
     ctx: CanvasRenderingContext2D,
     visuals: ImageMappingDebugVisuals,
@@ -978,6 +1210,14 @@ export const CanvasDebugRenderer = {
     }
   },
 };
+
+// ============================================================================
+// THREE.JS DEBUG RENDERER
+// ============================================================================
+// Three.js rendering functions for debug visuals.
+// FOR FUTURE AI AGENTS: Use these in StageThree.tsx.
+// NOTE: Import THREE from "three" in the file that uses these functions.
+// ============================================================================
 
 /**
  * Three.js rendering functions
@@ -1414,12 +1654,14 @@ export const ThreeDebugRenderer = {
       const material = new THREE.LineBasicMaterial({
         color: marker.color,
         linewidth: 2,
+        transparent: true,
+        opacity: 1,
         depthTest: false,
       });
-      const lineMesh = new THREE.LineLoop(geometry, material);
-      meshes.push(lineMesh);
+      const line = new THREE.Line(geometry, material);
+      meshes.push(line);
 
-      // Fill the star
+      // Create filled star mesh
       const shape = new THREE.Shape();
       for (let i = 0; i < spikes * 2; i++) {
         const radius = i % 2 === 0 ? outerRadius : innerRadius;
@@ -1434,21 +1676,31 @@ export const ThreeDebugRenderer = {
       }
       shape.closePath();
 
-      const fillGeometry = new THREE.ShapeGeometry(shape);
-      const fillMaterial = new THREE.MeshBasicMaterial({
+      const shapeGeometry = new THREE.ShapeGeometry(shape);
+      const shapeMaterial = new THREE.MeshBasicMaterial({
         color: marker.color,
         transparent: true,
         opacity: 1,
         depthTest: false,
       });
-      const fillMesh = new THREE.Mesh(fillGeometry, fillMaterial);
-      fillMesh.position.set(x, y, 100);
-      meshes.push(fillMesh);
+      const shapeMesh = new THREE.Mesh(shapeGeometry, shapeMaterial);
+      shapeMesh.position.set(x, y, 101);
+      meshes.push(shapeMesh);
     }
 
     return meshes;
   },
 
+  /**
+   * Add all debug visuals to a Three.js scene
+   * Convenience method that creates and adds all enabled debug meshes
+   *
+   * @param visuals - Debug visuals to render
+   * @param scene - Three.js scene to add meshes to
+   * @param STAGE_SIZE - Stage size (usually 2048)
+   * @param THREE - Three.js library object
+   * @returns Array of all created meshes
+   */
   addAllToScene(
     visuals: ImageMappingDebugVisuals,
     scene: any,
@@ -1457,83 +1709,76 @@ export const ThreeDebugRenderer = {
   ): any[] {
     const allMeshes: any[] = [];
 
+    // Add bounding box
     if (visuals.boundingBox) {
-      const meshes = this.createBoundingBoxMesh(visuals.boundingBox, scene, STAGE_SIZE, THREE);
-      meshes.forEach((mesh) => {
+      const boxMeshes = this.createBoundingBoxMesh(visuals.boundingBox, scene, STAGE_SIZE, THREE);
+      boxMeshes.forEach((mesh) => {
         scene.add(mesh);
         allMeshes.push(mesh);
       });
     }
 
+    // Add rays (background elements)
     if (visuals.tipRay) {
-      const mesh = this.createImageRayMesh(visuals.tipRay, scene, STAGE_SIZE, THREE);
-      scene.add(mesh);
-      allMeshes.push(mesh);
+      const rayMesh = this.createImageRayMesh(visuals.tipRay, scene, STAGE_SIZE, THREE);
+      scene.add(rayMesh);
+      allMeshes.push(rayMesh);
     }
-
     if (visuals.baseRay) {
-      const mesh = this.createImageRayMesh(visuals.baseRay, scene, STAGE_SIZE, THREE);
-      scene.add(mesh);
-      allMeshes.push(mesh);
+      const rayMesh = this.createImageRayMesh(visuals.baseRay, scene, STAGE_SIZE, THREE);
+      scene.add(rayMesh);
+      allMeshes.push(rayMesh);
     }
 
+    // Add axis line
     if (visuals.axisLine) {
-      const mesh = this.createAxisLineMesh(visuals.axisLine, scene, STAGE_SIZE, THREE);
-      scene.add(mesh);
-      allMeshes.push(mesh);
+      const lineMesh = this.createAxisLineMesh(visuals.axisLine, scene, STAGE_SIZE, THREE);
+      scene.add(lineMesh);
+      allMeshes.push(lineMesh);
     }
 
+    // Add markers (foreground elements)
     if (visuals.baseMarker) {
-      const meshes = this.createImageBaseMesh(visuals.baseMarker, scene, STAGE_SIZE, THREE);
-      meshes.forEach((mesh) => {
+      const baseMeshes = this.createImageBaseMesh(visuals.baseMarker, scene, STAGE_SIZE, THREE);
+      baseMeshes.forEach((mesh) => {
         scene.add(mesh);
         allMeshes.push(mesh);
       });
     }
-
     if (visuals.tipMarker) {
-      const meshes = this.createImageTipMesh(visuals.tipMarker, scene, STAGE_SIZE, THREE);
-      meshes.forEach((mesh) => {
+      const tipMeshes = this.createImageTipMesh(visuals.tipMarker, scene, STAGE_SIZE, THREE);
+      tipMeshes.forEach((mesh) => {
         scene.add(mesh);
         allMeshes.push(mesh);
       });
     }
-
     if (visuals.centerMarker) {
-      const meshes = this.createImageCenterMesh(visuals.centerMarker, scene, STAGE_SIZE, THREE);
-      meshes.forEach((mesh) => {
+      const centerMeshes = this.createImageCenterMesh(
+        visuals.centerMarker,
+        scene,
+        STAGE_SIZE,
+        THREE,
+      );
+      centerMeshes.forEach((mesh) => {
         scene.add(mesh);
         allMeshes.push(mesh);
       });
     }
 
+    // Add stage center (always visible if present)
     if (visuals.stageCenterMarker) {
-      const meshes = this.createStageCenterMesh(
+      const stageCenterMeshes = this.createStageCenterMesh(
         visuals.stageCenterMarker,
         scene,
         STAGE_SIZE,
         THREE,
       );
-      meshes.forEach((mesh) => {
+      stageCenterMeshes.forEach((mesh) => {
         scene.add(mesh);
         allMeshes.push(mesh);
       });
     }
 
     return allMeshes;
-  },
-
-  removeFromScene(meshes: any[], scene: any): void {
-    meshes.forEach((mesh) => {
-      scene.remove(mesh);
-      if (mesh.geometry) mesh.geometry.dispose();
-      if (mesh.material) {
-        if (Array.isArray(mesh.material)) {
-          mesh.material.forEach((mat: any) => mat.dispose());
-        } else {
-          mesh.material.dispose();
-        }
-      }
-    });
   },
 };

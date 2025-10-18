@@ -77,15 +77,12 @@
  * @module layer
  */
 
-import type { UniversalLayerData } from "./LayerCore";
-import type {
-  ImageMappingDebugVisuals,
-  ImageMappingDebugConfig,
-} from "./LayerCorePipelineImageMappingUtils";
+import type { UniversalLayerData } from "./layerCore";
+import type { ImageMappingDebugVisuals, ImageMappingDebugConfig } from "./layerDebug";
 import type { LayerConfigEntry } from "../config/Config";
-import { createImageMappingDebugProcessor } from "./LayerCorePipelineImageMappingUtils";
-import { createSpinProcessor } from "./LayerCorePipelineSpin";
-import { createOrbitalProcessor } from "./LayerCorePipelineOrbital";
+import { createImageMappingDebugProcessor } from "./layerDebug";
+import { createSpinProcessor } from "./layerSpin";
+import { createOrbitalProcessor } from "./layerOrbit";
 
 // ============================================================================
 // SECTION 1: TYPES & CORE PIPELINE

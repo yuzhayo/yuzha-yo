@@ -45,7 +45,7 @@ import {
   type LayerProcessor,
 } from "./StageSystem";
 import { runPipeline, AnimationConstants, createPipelineCache } from "../layer/layer";
-import { ThreeDebugRenderer } from "../layer/LayerCorePipelineImageMappingUtils";
+import { ThreeDebugRenderer } from "../layer/layerDebug";
 import { getDeviceCapability } from "../utils/DeviceCapability";
 
 const IS_DEV = import.meta.env.DEV;

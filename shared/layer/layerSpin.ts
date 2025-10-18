@@ -1,10 +1,64 @@
+/**
+ * ============================================================================
+ * LAYER SPIN - Spin Animation System
+ * ============================================================================
+ *
+ * This module provides spin animation functionality for layers. It allows
+ * layers to rotate around a pivot point at constant angular velocity.
+ *
+ * PURPOSE FOR FUTURE AI AGENTS:
+ * ------------------------------
+ * This handles SPIN ANIMATION - rotating layers around a fixed pivot point.
+ * Use this when you need layers to rotate continuously (like spinning gears,
+ * rotating clocks, or any rotating UI element).
+ *
+ * RESPONSIBILITIES:
+ * -----------------
+ * 1. Spin Configuration
+ *    - spinCenter: Override pivot point (0-100% in image space)
+ *    - spinSpeed: Rotation speed in degrees per second
+ *    - spinDirection: "cw" (clockwise) or "ccw" (counter-clockwise)
+ *
+ * 2. Spin Processor
+ *    - createSpinProcessor: Creates processor that adds spin animation
+ *    - Calculates rotation based on elapsed time
+ *    - Maintains pivot point position during rotation
+ *
+ * 3. Pivot-Based Rotation
+ *    - Ensures image rotates around correct pivot point
+ *    - Recalculates position to keep pivot anchored at spinStagePoint
+ *    - Uses rotation matrices for precise transformation
+ *
+ * HOW IT WORKS:
+ * -------------
+ * 1. Configuration specifies spin parameters (speed, direction, center)
+ * 2. Base spin point calculated in layerCore from spinStagePoint/spinImagePoint
+ * 3. Processor calculates rotation angle from elapsed time
+ * 4. Position adjusted to maintain pivot at spinStagePoint during rotation
+ * 5. Renderer applies rotation around pivot point
+ *
+ * COORDINATE SYSTEMS:
+ * -------------------
+ * - spinImagePoint: Point on image to use as pivot (0-100%)
+ * - spinStagePoint: Where pivot should be anchored on stage (pixels)
+ * - During rotation, spinImagePoint must stay at spinStagePoint
+ *
+ * USED BY:
+ * --------
+ * - layer.ts (registers spin processor)
+ * - StageCanvas/StageThree (renders rotated layers)
+ *
+ * @module layer/layerSpin
+ */
+
 import {
   imagePercentToImagePoint,
   imagePointToStagePoint,
+  validatePoint,
   type PercentPoint,
   type Point2D,
-  type UniversalLayerData,
-} from "./LayerCore";
+} from "./layerBasic";
+import type { UniversalLayerData } from "./layerCore";
 import {
   applyRotationDirection,
   normalizeAngle,
@@ -12,6 +66,9 @@ import {
   type LayerProcessor,
 } from "./layer";
 
+/**
+ * Spin configuration
+ */
 export type SpinConfig = {
   spinCenter?: [number, number] | PercentPoint; // Runtime override: 0-100% relative to image dimensions
   spinSpeed?: number; // degrees per second (0 = no spin)
@@ -177,10 +234,4 @@ function calculatePositionForSpinPivot(
   };
 
   return validatePoint(position);
-}
-
-function validatePoint(point: Point2D): Point2D {
-  const x = Number.isFinite(point.x) ? point.x : 0;
-  const y = Number.isFinite(point.y) ? point.y : 0;
-  return { x, y };
 }

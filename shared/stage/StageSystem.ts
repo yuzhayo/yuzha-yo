@@ -36,7 +36,7 @@
  */
 
 import { loadLayerConfig, type LayerConfigEntry } from "../config/Config";
-import { is2DLayer, prepareLayer } from "../layer/LayerCore";
+import { is2DLayer, prepareLayer } from "../layer/layerCore";
 import {
   getProcessorsForEntry,
   type ProcessorContext,

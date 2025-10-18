@@ -1,4 +1,66 @@
-import { imagePercentToImagePoint, type PercentPoint, type Point2D } from "./LayerCore";
+/**
+ * ============================================================================
+ * LAYER ORBIT - Orbital Animation System
+ * ============================================================================
+ *
+ * This module provides orbital motion functionality for layers. It allows
+ * layers to move in circular paths around a center point with optional
+ * orientation toward the center.
+ *
+ * PURPOSE FOR FUTURE AI AGENTS:
+ * ------------------------------
+ * This handles ORBITAL MOTION - layers moving in circles around a center point.
+ * Use this for clock hands, orbiting elements, or any circular motion.
+ *
+ * RESPONSIBILITIES:
+ * -----------------
+ * 1. Orbital Configuration
+ *    - orbitStagePoint: Center of orbit (stage pixels)
+ *    - orbitLinePoint: Initial position on orbit (stage pixels)
+ *    - orbitImagePoint: Which image point orbits (0-100%)
+ *    - orbitLine: Show orbit path visualization
+ *    - orbitOrient: Rotate to face orbit center
+ *    - orbitSpeed: Rotation speed (degrees per second)
+ *    - orbitDirection: "cw" or "ccw"
+ *
+ * 2. Orbital Processor
+ *    - createOrbitalProcessor: Creates processor for orbital animation
+ *    - Calculates position on orbit based on elapsed time
+ *    - Handles orientation toward center (orbitOrient)
+ *    - Manages visibility when orbiting off-stage
+ *
+ * 3. Coordinate Calculations
+ *    - Orbit radius from orbitStagePoint to orbitLinePoint
+ *    - Angle calculation from elapsed time
+ *    - Position calculation on circular path
+ *    - Visibility culling for off-stage positions
+ *
+ * HOW IT WORKS:
+ * -------------
+ * 1. Configuration specifies orbit center, initial position, speed
+ * 2. Processor calculates radius and initial angle
+ * 3. Each frame, angle updated based on elapsed time and speed
+ * 4. Position calculated on circle at current angle
+ * 5. Optional: rotation adjusted to face center (orbitOrient)
+ * 6. Visibility toggled when position moves off-stage
+ *
+ * COORDINATE SYSTEMS:
+ * -------------------
+ * - orbitStagePoint: Center of orbit in stage space (pixels)
+ * - orbitLinePoint: Position on orbit in stage space (pixels)
+ * - orbitImagePoint: Which image point orbits (0-100%)
+ * - Angle 0° = right, 90° = down (standard screen coordinates)
+ *
+ * USED BY:
+ * --------
+ * - layer.ts (registers orbital processor)
+ * - StageCanvas/StageThree (renders orbiting layers)
+ *
+ * @module layer/layerOrbit
+ */
+
+import { imagePercentToImagePoint, type PercentPoint, type Point2D } from "./layerBasic";
+import type { UniversalLayerData } from "./layerCore";
 import {
   applyRotationDirection,
   calculateOrbitPosition,
@@ -8,6 +70,9 @@ import {
   type LayerProcessor,
 } from "./layer";
 
+/**
+ * Orbital configuration
+ */
 export type OrbitalConfig = {
   orbitStagePoint?: [number, number];
   orbitLinePoint?: [number, number];
@@ -18,6 +83,15 @@ export type OrbitalConfig = {
   orbitDirection?: "cw" | "ccw";
 };
 
+/**
+ * Create orbital processor with the given configuration
+ *
+ * This processor handles circular motion around a center point with optional
+ * orientation toward the center (like clock hands).
+ *
+ * @param config - Orbital configuration
+ * @returns LayerProcessor that adds orbital animation
+ */
 export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
   const overrideStagePoint = normaliseStagePoint(config.orbitStagePoint);
   const overrideLinePoint = normaliseStagePoint(config.orbitLinePoint);
@@ -192,163 +266,4 @@ function clampPercent(value: number): number {
 function clampStage(value: number): number {
   if (!Number.isFinite(value)) return 0;
   return Math.max(0, Math.min(2048, value));
-}
-
-export type OrbitCenterMarker = {
-  type: "dot" | "crosshair";
-  center: { x: number; y: number };
-  size: number;
-  color: string;
-};
-
-export type OrbitLineTrace = {
-  center: { x: number; y: number };
-  radius: number;
-  points: Array<{ x: number; y: number }>;
-  thickness: number;
-  color: string;
-  opacity: number;
-};
-
-export type OrbitRadiusLine = {
-  start: { x: number; y: number };
-  end: { x: number; y: number };
-  thickness: number;
-  color: string;
-  opacity: number;
-};
-
-export type OrbitPointMarker = {
-  type: "circle";
-  position: { x: number; y: number };
-  size: number;
-  color: string;
-};
-
-export type OrbitalDebugVisuals = {
-  centerMarker?: OrbitCenterMarker;
-  lineTrace?: OrbitLineTrace;
-  radiusLine?: OrbitRadiusLine;
-  pointMarker?: OrbitPointMarker;
-};
-
-export type OrbitalDebugConfig = {
-  showCenter?: boolean;
-  showOrbitLine?: boolean;
-  showRadiusLine?: boolean;
-  showOrbitPoint?: boolean;
-  centerStyle?: "dot" | "crosshair";
-  colors?: {
-    center?: string;
-    orbitLine?: string;
-    radiusLine?: string;
-    orbitPoint?: string;
-  };
-};
-
-const DEFAULT_DEBUG_CONFIG: Required<OrbitalDebugConfig> & {
-  colors: { center: string; orbitLine: string; radiusLine: string; orbitPoint: string };
-} = {
-  showCenter: true,
-  showOrbitLine: true,
-  showRadiusLine: true,
-  showOrbitPoint: true,
-  centerStyle: "crosshair",
-  colors: {
-    center: "#FF0000",
-    orbitLine: "#00FF00",
-    radiusLine: "#FFFF00",
-    orbitPoint: "#0000FF",
-  },
-};
-
-export function generateOrbitCenterMarker(
-  orbitCenter: [number, number],
-  config?: Partial<OrbitalDebugConfig>,
-): OrbitCenterMarker {
-  const merged = { ...DEFAULT_DEBUG_CONFIG, ...config };
-  const colors = { ...DEFAULT_DEBUG_CONFIG.colors, ...config?.colors };
-  return {
-    type: merged.centerStyle,
-    center: { x: orbitCenter[0], y: orbitCenter[1] },
-    size: merged.centerStyle === "dot" ? 6 : 15,
-    color: colors.center,
-  };
-}
-
-export function generateOrbitLineTrace(
-  orbitCenter: [number, number],
-  orbitRadius: number,
-  config?: Partial<OrbitalDebugConfig>,
-): OrbitLineTrace {
-  const colors = { ...DEFAULT_DEBUG_CONFIG.colors, ...config?.colors };
-  const segments = 64;
-  const points: Array<{ x: number; y: number }> = [];
-  for (let i = 0; i <= segments; i++) {
-    const angle = (i / segments) * Math.PI * 2;
-    const x = orbitCenter[0] + orbitRadius * Math.cos(angle);
-    const y = orbitCenter[1] + orbitRadius * Math.sin(angle);
-    points.push({ x, y });
-  }
-  return {
-    center: { x: orbitCenter[0], y: orbitCenter[1] },
-    radius: orbitRadius,
-    points,
-    thickness: 1,
-    color: colors.orbitLine,
-    opacity: 0.25,
-  };
-}
-
-export function generateOrbitRadiusLine(
-  orbitCenter: [number, number],
-  orbitPoint: { x: number; y: number },
-  config?: Partial<OrbitalDebugConfig>,
-): OrbitRadiusLine {
-  const colors = { ...DEFAULT_DEBUG_CONFIG.colors, ...config?.colors };
-  return {
-    start: { x: orbitCenter[0], y: orbitCenter[1] },
-    end: orbitPoint,
-    thickness: 1,
-    color: colors.radiusLine,
-    opacity: 0.35,
-  };
-}
-
-export function generateOrbitPointMarker(
-  orbitPoint: { x: number; y: number },
-  config?: Partial<OrbitalDebugConfig>,
-): OrbitPointMarker {
-  const colors = { ...DEFAULT_DEBUG_CONFIG.colors, ...config?.colors };
-  return {
-    type: "circle",
-    position: orbitPoint,
-    size: 8,
-    color: colors.orbitPoint,
-  };
-}
-
-export function generateOrbitalDebugVisuals(
-  orbitCenter: [number, number],
-  orbitRadius: number,
-  currentOrbitPoint: { x: number; y: number },
-  config?: Partial<OrbitalDebugConfig>,
-): OrbitalDebugVisuals {
-  const merged = { ...DEFAULT_DEBUG_CONFIG, ...config };
-  const visuals: OrbitalDebugVisuals = {};
-
-  if (merged.showCenter) {
-    visuals.centerMarker = generateOrbitCenterMarker(orbitCenter, config);
-  }
-  if (merged.showOrbitLine) {
-    visuals.lineTrace = generateOrbitLineTrace(orbitCenter, orbitRadius, config);
-  }
-  if (merged.showRadiusLine) {
-    visuals.radiusLine = generateOrbitRadiusLine(orbitCenter, currentOrbitPoint, config);
-  }
-  if (merged.showOrbitPoint) {
-    visuals.pointMarker = generateOrbitPointMarker(currentOrbitPoint, config);
-  }
-
-  return visuals;
 }

@@ -14,8 +14,9 @@
  * @module layer/index
  */
 
-export * from "./LayerCore";
+export * from "./layerCore";
+export * from "./layerBasic";
+export * from "./layerSpin";
+export * from "./layerOrbit";
+export * from "./layerDebug";
 export * from "./layer";
-export * from "./LayerCorePipelineSpin";
-export * from "./LayerCorePipelineOrbital";
-export * from "./LayerCorePipelineImageMappingUtils";

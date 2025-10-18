@@ -42,7 +42,7 @@ import {
   type EnhancedLayerData,
   type LayerProcessor,
 } from "./StageSystem";
-import { loadImage } from "../layer/LayerCore";
+import { loadImage } from "../layer/layerCore";
 import { runPipeline, createPipelineCache } from "../layer/layer";
 
 const IS_DEV = import.meta.env.DEV;
