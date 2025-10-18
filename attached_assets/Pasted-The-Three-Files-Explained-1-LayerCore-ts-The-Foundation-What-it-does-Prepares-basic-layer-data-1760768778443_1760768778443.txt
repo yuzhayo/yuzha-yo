@@ -1,0 +1,46 @@
+The Three Files Explained
+1. LayerCore.ts - The Foundation
+What it does: Prepares basic layer data from your configuration.
+
+Think of this as the preparation kitchen for your layers. It takes a recipe (config) and prepares all the basic ingredients:
+
+Loads the image and gets its size
+Calculates where to position the image on screen
+Figures out how big to scale it
+Identifies key points on the image (center, tip, base)
+Converts between different coordinate systems (image pixels, stage pixels, percentages)
+Key function: prepareLayer() - Takes a layer config entry and returns UniversalLayerData with all the basic information needed to display an image.
+
+2. LayerCorePipeline.ts - The Assembly Line
+What it does: Runs layer data through a series of enhancement processors.
+
+Think of this as an assembly line where each station adds something to the product:
+
+Defines what a "processor" is (a function that takes layer data and adds/modifies it)
+Has runPipeline() which passes data through all processors sequentially
+Contains utility functions for animations (angle calculations, easing, caching)
+Includes performance optimizations like PipelineCache and StaticLayerBuffer
+Key concept: Processors transform UniversalLayerData → EnhancedLayerData by adding properties like spin rotation, orbital position, debug visuals, etc.
+
+3. ProcessorRegistry.ts - The Plugin Manager
+What it does: Manages which processors should be attached to which layers.
+
+Think of this as a smart plugin system that decides what enhancements each layer needs:
+
+Stores a collection of processor "plugins" (spin, orbital, debug visualization)
+Each plugin has rules: "When should I attach?" (e.g., only if spinSpeed > 0)
+getProcessorsForEntry() examines a layer's config and returns the relevant processors
+Automatically registers default processors (image-mapping-debug, spin, orbital)
+How They Work Together
+Config → LayerCore → ProcessorRegistry → Pipeline → Enhanced Layer
+         (prepare)   (which processors?) (run them)  (final result)
+LayerCore prepares the basic layer data from config
+ProcessorRegistry looks at the config and decides which processors to use
+LayerCorePipeline runs those processors to enhance the data
+Final EnhancedLayerData goes to the renderer (Canvas, DOM, Three.js)
+Real example: A spinning gear layer
+
+LayerCore loads the gear image, sets position/scale
+ProcessorRegistry sees spinSpeed: 10 and attaches the spin processor
+Pipeline runs the spin processor, adding currentRotation property
+Renderer displays the gear at the calculated rotation angle
