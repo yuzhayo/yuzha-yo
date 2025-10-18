@@ -32,12 +32,31 @@ The core animation logic revolves around a Layer System where JSON configuration
 
 ## Recent Changes
 
-### Code Consolidation (Latest)
-- **Merged Renderer Adapters**: Combined renderer adapter files with their corresponding stage components for cleaner architecture:
+### Stage System Architecture Refactoring (Latest - Oct 18, 2025)
+Major architectural consolidation completed and verified:
+
+- **Created StageSystem.ts**: Unified `stage2048.ts` and `StagePipeline.ts` into a single `shared/stage/StageSystem.ts` file
+  - Section 1: Coordinate system (computeCoverTransform, createStageTransformer, viewport/stage conversions)
+  - Section 2: Data pipeline (createStagePipeline, toRendererInput, processor registry)
+  - Comprehensive inline documentation for future developers
+
+- **Self-Contained Renderers**: Embedded rendering engines directly into each renderer component:
+  - `StageDOM.tsx`: Contains mountDomLayers logic with DOM-specific rendering, animation loop, and resource management
+  - `StageCanvas.tsx`: Contains mountCanvasLayers logic with Canvas 2D rendering and static layer buffering
+  - `StageThree.tsx`: Contains mountThreeLayers logic with WebGL/Three.js rendering and scene management
+  
+- **Deleted Legacy Files**: Removed `stage2048.ts`, `StagePipeline.ts`, and `LayerEngines.ts` after successful migration
+
+- **Architecture Flow**: ConfigYuzha.json → Config.ts → StageSystem (coordinate + pipeline) → Renderers → MainScreen
+
+- **Verified**: No regressions, typecheck passed, application renders correctly with all animations working
+
+### Previous Code Consolidation
+- **Merged Renderer Adapters**: Combined renderer adapter files with their corresponding stage components:
   - `DomRendererAdapter.ts` → merged into `StageDOM.tsx`
   - `CanvasRendererAdapter.ts` → merged into `StageCanvas.tsx`
   - `ThreeRendererAdapter.ts` → merged into `StageThree.tsx`
-- **Removed**: `shared/layer/pipeline/renderers/` folder (now empty after consolidation)
+- **Removed**: `shared/layer/pipeline/renderers/` folder
 
 ### Planned Simplified System
 A new simplified layer system is planned in `shared/logic/` to replace the complex grouped configuration:
