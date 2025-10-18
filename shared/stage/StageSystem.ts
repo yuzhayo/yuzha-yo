@@ -404,7 +404,7 @@ export async function createStagePipeline(
           const layer = await prepareLayer(entry, stageSize);
           if (!layer) {
             console.warn(
-              `[StageSystem] Skipping layer "${entry.layerId}" - prepareLayer returned null`,
+              `[StageSystem] Skipping layer "${entry.LayerID}" - prepareLayer returned null`,
             );
             return null;
           }
@@ -418,7 +418,7 @@ export async function createStagePipeline(
           } satisfies PreparedLayer;
         } catch (error) {
           console.error(
-            `[StageSystem] Failed to prepare layer "${entry.layerId}" (renderer=${entry.renderer})`,
+            `[StageSystem] Failed to prepare layer "${entry.LayerID}" (renderer=${entry.renderer})`,
             error,
           );
           return null;

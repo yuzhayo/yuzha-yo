@@ -97,7 +97,7 @@ type AssetRegistryEntry = { id: string; path: string };
 const registry = registryData as Array<AssetRegistryEntry>;
 
 // Validate registry entries at initialization (development only)
-if (import.meta.env.DEV) {
+if (import.meta.env?.DEV) {
   registry.forEach((entry, index) => {
     if (!entry.id || typeof entry.id !== "string") {
       console.error(`[LayerCore] Invalid asset registry entry #${index}: missing or invalid id`);
@@ -170,8 +170,8 @@ export type LayerCalculationPoints = {
  * - Image mapping provides geometry information
  */
 export type UniversalLayerData = {
-  layerId: string;
-  imageId: string;
+  LayerID: string;
+  ImageID: string;
   imageUrl: string;
   imagePath: string;
   position: Point2D;
@@ -391,7 +391,7 @@ export function compute2DTransform(
   stageSize: number,
   imageDimensions: { width: number; height: number },
 ): Layer2DTransform {
-  const [sxPercent, syPercent] = normalizePair(entry.scale, 100, 100);
+  const [sxPercent, syPercent] = normalizePair(entry.ImageScale, 100, 100);
   const sx = clampedPercentToScale(sxPercent);
   const sy = clampedPercentToScale(syPercent);
 
@@ -542,12 +542,12 @@ export async function prepareLayer(
   stageSize: number,
 ): Promise<UniversalLayerData | null> {
   // Performance tracking (development only)
-  const IS_DEV = import.meta.env.DEV;
+  const IS_DEV = import.meta.env?.DEV ?? false;
   const perfStart = IS_DEV ? performance.now() : 0;
 
-  const assetPath = resolveAssetPath(entry.imageId);
+  const assetPath = resolveAssetPath(entry.ImageID);
   if (!assetPath) {
-    console.warn(`[LayerCore] Missing asset for imageId "${entry.imageId}"`);
+    console.warn(`[LayerCore] Missing asset for ImageID "${entry.ImageID}"`);
     return null;
   }
 
@@ -688,9 +688,9 @@ export async function prepareLayer(
     orbitImageStagePercent = zeroPercent;
   }
 
-  // Calculate rotation from BasicAngleImage (degrees)
-  const basicAngleImage = typeof entry.BasicAngleImage === "number" ? entry.BasicAngleImage : 0;
-  const rotation = basicAngleImage;
+  // Calculate rotation from BasicImageAngle (degrees)
+  const basicImageAngle = typeof entry.BasicImageAngle === "number" ? entry.BasicImageAngle : 0;
+  const rotation = basicImageAngle;
 
   const calculation: LayerCalculationPoints = {
     stageCenter: createCoordinateBundle(stageCenterPoint, stageCenterPercent),
@@ -731,8 +731,8 @@ export async function prepareLayer(
   };
 
   const result = {
-    layerId: entry.layerId,
-    imageId: entry.imageId,
+    LayerID: entry.LayerID,
+    ImageID: entry.ImageID,
     imageUrl,
     imagePath: assetPath,
     position,
@@ -757,7 +757,7 @@ export async function prepareLayer(
     const duration = perfEnd - perfStart;
     if (duration > 10) {
       console.log(
-        `[LayerCore] prepareLayer "${entry.layerId}" took ${duration.toFixed(2)}ms (lazy: ${!needsFullCalculation})`,
+        `[LayerCore] prepareLayer "${entry.LayerID}" took ${duration.toFixed(2)}ms (lazy: ${!needsFullCalculation})`,
       );
     }
   }

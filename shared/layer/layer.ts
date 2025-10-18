@@ -379,7 +379,7 @@ export function getProcessorsForEntry(
       }
     } catch (error) {
       console.warn(
-        `[ProcessorRegistry] Failed to attach processor "${plugin.name}" for layer "${entry.layerId}":`,
+        `[ProcessorRegistry] Failed to attach processor "${plugin.name}" for layer "${entry.LayerID}":`,
         error,
       );
     }
@@ -784,7 +784,7 @@ export function easeOutBounce(t: number): number {
  *   cache.nextFrame(); // Invalidate previous frame's cache
  *
  *   for (const layer of layers) {
- *     const enhanced = cache.get(layer.layerId, () =>
+ *     const enhanced = cache.get(layer.LayerID, () =>
  *       runPipeline(layer.data, layer.processors, timestamp)
  *     );
  *     renderLayer(enhanced);

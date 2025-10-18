@@ -4,7 +4,7 @@ import type {
   AccordionSubParentItem,
   AccordionChildItem,
 } from "./ConfigYuzhaAccordionUtils";
-import configYuzhaData from "./ConfigYuzha.json";
+import configYuzhaData from "../config/ConfigYuzha.json";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -50,7 +50,7 @@ export interface Size {
  * Transform ConfigYuzha.json to accordion structure
  */
 export function transformConfigToAccordion(): AccordionParentItem[] {
-  return configYuzhaData.map((layerConfig) => {
+  return (configYuzhaData as any[]).map((layerConfig: any) => {
     const children: AccordionSubParentItem[] = [];
 
     // Process each group in the layer config
@@ -64,9 +64,9 @@ export function transformConfigToAccordion(): AccordionParentItem[] {
 
           if (key === "renderer") {
             type = "dropdown";
-          } else if (key === "imageId") {
+          } else if (key === "ImageID") {
             type = "dropdown";
-          } else if (key === "order") {
+          } else if (key === "LayerOrder") {
             type = "number";
           } else if (key === "angle") {
             type = "number";
@@ -75,7 +75,7 @@ export function transformConfigToAccordion(): AccordionParentItem[] {
           }
 
           groupChildren.push({
-            id: `${layerConfig.layerId}-${groupName}-${key}`,
+            id: `${layerConfig.LayerID}-${groupName}-${key}`,
             label: key.charAt(0).toUpperCase() + key.slice(1),
             value: value as string | number | number[] | null,
             type,
@@ -85,7 +85,7 @@ export function transformConfigToAccordion(): AccordionParentItem[] {
         });
 
         children.push({
-          id: `${layerConfig.layerId}-${groupName}`,
+          id: `${layerConfig.LayerID}-${groupName}`,
           label: groupName,
           level: 2,
           children: groupChildren,
@@ -94,8 +94,8 @@ export function transformConfigToAccordion(): AccordionParentItem[] {
     }
 
     return {
-      id: layerConfig.layerId,
-      label: layerConfig.layerId,
+      id: layerConfig.LayerID,
+      label: layerConfig.LayerID,
       level: 1,
       children,
     };
@@ -140,7 +140,7 @@ export function transformAccordionToConfig(accordionData: AccordionParentItem[])
     });
 
     return {
-      layerId: parent.id,
+      LayerID: parent.id,
       groups,
     };
   });
@@ -169,7 +169,7 @@ export function loadConfigFromLocalStorage(): AccordionParentItem[] {
       // Transform stored data to accordion format
       return configData.map(
         (layerConfig: {
-          layerId: string;
+          LayerID: string;
           groups: Record<string, Record<string, string | number | number[] | null>>;
         }) => {
           const children: AccordionSubParentItem[] = [];
@@ -183,9 +183,9 @@ export function loadConfigFromLocalStorage(): AccordionParentItem[] {
 
                 if (key === "renderer") {
                   type = "dropdown";
-                } else if (key === "imageId") {
+                } else if (key === "ImageID") {
                   type = "dropdown";
-                } else if (key === "order") {
+                } else if (key === "LayerOrder") {
                   type = "number";
                 } else if (key === "angle") {
                   type = "number";
@@ -194,7 +194,7 @@ export function loadConfigFromLocalStorage(): AccordionParentItem[] {
                 }
 
                 groupChildren.push({
-                  id: `${layerConfig.layerId}-${groupName}-${key}`,
+                  id: `${layerConfig.LayerID}-${groupName}-${key}`,
                   label: key.charAt(0).toUpperCase() + key.slice(1),
                   value: value as string | number | number[] | null,
                   type,
@@ -204,7 +204,7 @@ export function loadConfigFromLocalStorage(): AccordionParentItem[] {
               });
 
               children.push({
-                id: `${layerConfig.layerId}-${groupName}`,
+                id: `${layerConfig.LayerID}-${groupName}`,
                 label: groupName,
                 level: 2,
                 children: groupChildren,
@@ -213,8 +213,8 @@ export function loadConfigFromLocalStorage(): AccordionParentItem[] {
           }
 
           return {
-            id: layerConfig.layerId,
-            label: layerConfig.layerId,
+            id: layerConfig.LayerID,
+            label: layerConfig.LayerID,
             level: 1,
             children,
           };

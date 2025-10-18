@@ -47,7 +47,7 @@ import { loadImage } from "../layer/layerCore";
 import { runPipeline, AnimationConstants, createPipelineCache } from "../layer/layer";
 import { CanvasDebugRenderer } from "../layer/layerDebug";
 
-const IS_DEV = import.meta.env.DEV;
+const IS_DEV = import.meta.env?.DEV ?? false;
 
 // ============================================================================
 // CANVAS LAYER RENDERING ENGINE
@@ -174,7 +174,7 @@ async function mountCanvasLayers(
       });
     } catch (error) {
       if (IS_DEV) {
-        console.error(`[StageCanvas] Failed to load image for "${item.data.imageId}"`, error);
+        console.error(`[StageCanvas] Failed to load image for "${item.data.ImageID}"`, error);
       }
     }
   }
@@ -230,18 +230,18 @@ async function mountCanvasLayers(
     for (const layer of layers) {
       const enhancedData =
         layer.hasAnimation && layer.processors.length > 0
-          ? pipelineCache.get(layer.baseData.layerId, () =>
+          ? pipelineCache.get(layer.baseData.LayerID, () =>
               runPipeline(layer.baseData, layer.processors, timestamp),
             )
           : layer.baseData;
 
-      frameData.set(layer.baseData.layerId, enhancedData);
+      frameData.set(layer.baseData.LayerID, enhancedData);
       renderLayer(layer, enhancedData);
     }
 
     // Render debug visualizations (if enabled in config)
     for (const layer of layers) {
-      const enhancedData = frameData.get(layer.baseData.layerId) ?? layer.baseData;
+      const enhancedData = frameData.get(layer.baseData.LayerID) ?? layer.baseData;
       if (enhancedData.imageMappingDebugVisuals) {
         CanvasDebugRenderer.drawAll(ctx, enhancedData.imageMappingDebugVisuals, STAGE_SIZE);
       }
@@ -269,12 +269,12 @@ async function mountCanvasLayers(
   };
 
   for (const layer of layers) {
-    frameData.set(layer.baseData.layerId, renderStaticLayer(layer));
+    frameData.set(layer.baseData.LayerID, renderStaticLayer(layer));
   }
 
   // Render debug visualizations for static scene
   for (const layer of layers) {
-    const enhancedData = frameData.get(layer.baseData.layerId) ?? layer.baseData;
+    const enhancedData = frameData.get(layer.baseData.LayerID) ?? layer.baseData;
     if (enhancedData.imageMappingDebugVisuals) {
       CanvasDebugRenderer.drawAll(ctx, enhancedData.imageMappingDebugVisuals, STAGE_SIZE);
     }

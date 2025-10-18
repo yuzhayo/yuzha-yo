@@ -45,7 +45,7 @@ import {
 import { loadImage } from "../layer/layerCore";
 import { runPipeline, createPipelineCache } from "../layer/layer";
 
-const IS_DEV = import.meta.env.DEV;
+const IS_DEV = import.meta.env?.DEV ?? false;
 
 // ============================================================================
 // DOM LAYER RENDERING ENGINE
@@ -190,7 +190,7 @@ async function mountDomLayers(
       });
     } catch (error) {
       if (IS_DEV) {
-        console.error(`[StageDOM] Failed to load image for "${item.data.imageId}"`, error);
+        console.error(`[StageDOM] Failed to load image for "${item.data.ImageID}"`, error);
       }
     }
   }
@@ -213,7 +213,7 @@ async function mountDomLayers(
       if (!layer.hasAnimation || layer.processors.length === 0) continue;
 
       // Run processors to get updated layer data
-      const enhancedData = pipelineCache.get(layer.baseData.layerId, () =>
+      const enhancedData = pipelineCache.get(layer.baseData.LayerID, () =>
         runPipeline(layer.baseData, layer.processors, timestamp),
       );
 

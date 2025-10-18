@@ -48,7 +48,7 @@ import { runPipeline, AnimationConstants, createPipelineCache } from "../layer/l
 import { ThreeDebugRenderer } from "../layer/layerDebug";
 import { getDeviceCapability } from "../utils/DeviceCapability";
 
-const IS_DEV = import.meta.env.DEV;
+const IS_DEV = import.meta.env?.DEV ?? false;
 
 // ============================================================================
 // THREE.JS LAYER RENDERING ENGINE
@@ -151,7 +151,7 @@ async function mountThreeLayers(
       return { item, texture };
     } catch (error) {
       if (IS_DEV) {
-        console.error(`[StageThree] Failed to load texture for "${item.data.imageId}"`, error);
+        console.error(`[StageThree] Failed to load texture for "${item.data.ImageID}"`, error);
       }
       return null;
     }
@@ -250,7 +250,7 @@ async function mountThreeLayers(
       // Run processors to get updated layer data
       const enhanced =
         entry.hasAnimation && entry.processors.length > 0
-          ? pipelineCache.get(entry.baseData.layerId, () =>
+          ? pipelineCache.get(entry.baseData.LayerID, () =>
               runPipeline(entry.baseData, entry.processors, timestamp),
             )
           : entry.baseData;
