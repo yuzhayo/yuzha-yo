@@ -32,7 +32,31 @@ The core animation logic revolves around a Layer System where JSON configuration
 
 ## Recent Changes
 
-### Stage System Architecture Refactoring (Latest - Oct 18, 2025)
+### Layer Pipeline System Consolidation (Latest - Oct 18, 2025)
+
+Major refactoring to simplify the layer processing architecture for future AI agents:
+
+- **Created layer.ts**: Merged `LayerCorePipeline.ts` and `ProcessorRegistry.ts` into a single unified `shared/layer/layer.ts` file
+  - Section 1: Types & Core Pipeline (EnhancedLayerData, LayerProcessor, runPipeline)
+  - Section 2: Processor Registry (plugin system for spin, orbital, debug processors)
+  - Section 3: Animation Utilities (angle calculations, easing functions, orbit helpers)
+  - Section 4: Performance Utilities (PipelineCache, StaticLayerBuffer, layer batching)
+  - Comprehensive inline documentation for future AI agents with usage examples
+
+- **Updated All Imports**: Refactored 9 files across the codebase to use the new unified module:
+  - `StageSystem.ts`, `StageCanvas.tsx`, `StageDOM.tsx`, `StageThree.tsx`
+  - `LayerCorePipelineSpin.ts`, `LayerCorePipelineOrbital.ts`, `LayerCorePipelineImageMappingUtils.ts`
+  - `shared/layer/index.ts` (updated re-exports)
+
+- **Deleted Legacy Files**: Removed `LayerCorePipeline.ts` and `pipeline/ProcessorRegistry.ts` after successful merger
+
+- **Why This Refactor**: Reduces file jumping for AI agents - all layer pipeline functionality now in one well-documented file instead of scattered across two files
+
+- **Architecture Flow**: ConfigYuzha.json → Config.ts → LayerCore → layer.ts (pipeline + processors) → Renderers → MainScreen
+
+- **Verified**: No regressions, typecheck passed (no new errors), eslint passed, prettier passed, workflow runs successfully, display functionality preserved via screenshot
+
+### Stage System Architecture Refactoring (Oct 18, 2025)
 
 Major architectural consolidation completed and verified:
 
