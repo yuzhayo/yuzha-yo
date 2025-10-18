@@ -19,21 +19,21 @@ Yuzha ships three interchangeable renderers. Each mounts the same prepared layer
    - `createOrbitalProcessor` when orbital settings are present.
 5. Pass `{ data, processors }` to the renderer-specific mounting function.
 
-## DOM Renderer (`shared/stages/StageDOM.tsx` + `LayerEngines.ts`)
+## DOM Renderer (`shared/stage/StageDOM.tsx` + `LayerEngines.ts`)
 - Creates absolutely positioned `<div>` elements per layer.
 - Uses CSS transforms for translation, rotation, and scaling.
 - Maintains GPU-friendly `transform` chains.
 - Injects debug visuals as child DOM elements (SVG-like overlays).
 - Suitable for rapid inspection and accessible DOM snapshots; heaviest CPU cost when many layers animate simultaneously.
 
-## Canvas Renderer (`StageCanvas.tsx` + `LayerEngines.ts`)
+## Canvas Renderer (`shared/stage/StageCanvas.tsx` + `LayerEngines.ts`)
 - Draws rasterised layers into a `<canvas>` context.
 - Keeps a transform cache (`scaledWidth`, `pivot`, etc.) to avoid recomputation.
 - Uses `createPipelineCache()` to memoise processor output per frame.
 - Only maintains an animation loop when at least one layer has animation or debug output.
 - Ideal for headless rendering, AI regression testing, or environments without WebGL.
 
-## Three.js Renderer (`StageThree.tsx` + `LayerEngines.ts`)
+## Three.js Renderer (`shared/stage/StageThree.tsx` + `LayerEngines.ts`)
 - Creates a WebGL renderer with device capability hints (`getDeviceCapability()`).
 - Builds an orthographic camera covering the 2048 stage.
 - For each layer:

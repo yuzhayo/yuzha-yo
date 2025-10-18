@@ -238,9 +238,9 @@ function renderThreeLayer(layer: LayerData, scene: THREE.Scene) {
 - [ ] `shared/logic/log.md` - This documentation (✓)
 
 ### Files to Modify
-- [ ] `shared/stages/StageDOM.tsx` - Update to use new core.ts
-- [ ] `shared/stages/StageCanvas.tsx` - Update to use new core.ts
-- [ ] `shared/stages/StageThree.tsx` - Update to use new core.ts
+- [ ] `shared/stage/StageDOM.tsx` - Update to use new core.ts
+- [ ] `shared/stage/StageCanvas.tsx` - Update to use new core.ts
+- [ ] `shared/stage/StageThree.tsx` - Update to use new core.ts
 
 ### Files to Keep (Optional)
 The old `shared/layer/` folder can be kept for reference but won't be used by the new system.

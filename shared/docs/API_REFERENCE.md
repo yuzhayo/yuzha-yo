@@ -125,7 +125,7 @@ Each mount function resolves images, initialises renderer-specific resources, an
 
 ---
 
-## Stage Components (`shared/stages`)
+## Stage Components (`shared/stage`)
 
 | Component | Description |
 | --------- | ----------- |

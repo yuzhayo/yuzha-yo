@@ -21,9 +21,9 @@
 5. **Processor pipeline** (`shared/layer/LayerCorePipeline.ts`)
    - Renderers call `runPipeline()` to merge processor output into `EnhancedLayerData` on each frame.
 6. **Renderer execution**
-   - **DOM** (`shared/stages/StageDOM.tsx` + `LayerEngines.ts`): positions absolute DOM nodes, applies CSS transforms, and injects debug overlays.
-   - **Canvas** (`StageCanvas.tsx` + `LayerEngines.ts`): draws layers to a 2D context, re-running processors in a requestAnimationFrame loop only when animation is required.
-   - **Three.js** (`StageThree.tsx` + `LayerEngines.ts`): builds textured quads in WebGL, reuses the same processors, and delegates orbit lines to Three helpers.
+   - **DOM** (`shared/stage/StageDOM.tsx` + `LayerEngines.ts`): positions absolute DOM nodes, applies CSS transforms, and injects debug overlays.
+   - **Canvas** (`shared/stage/StageCanvas.tsx` + `LayerEngines.ts`): draws layers to a 2D context, re-running processors in a requestAnimationFrame loop only when animation is required.
+   - **Three.js** (`shared/stage/StageThree.tsx` + `LayerEngines.ts`): builds textured quads in WebGL, reuses the same processors, and delegates orbit lines to Three helpers.
 7. **Viewport transform** (`shared/utils/stage2048.ts`)
    - `createStageTransformer()` keeps the 2048x2048 stage centered within any viewport, ensuring consistent coordinates across renderers and overlays.
 
