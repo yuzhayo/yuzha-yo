@@ -34,7 +34,7 @@ function TestStagePreview() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [createTestStagePipeline]);
 
   return (
     <div className="aspect-square w-full max-w-3xl">

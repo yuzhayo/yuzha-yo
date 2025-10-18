@@ -86,6 +86,7 @@ export type MainScreenUpdaterProps = {
   visible: boolean;
   rendererMode?: "auto" | "dom" | "canvas" | "three";
   onRendererModeChange?: (mode: "auto" | "dom" | "canvas" | "three") => void;
+  onOpenTestScreen?: () => void;
 };
 
 export type MainScreenBtnGestureAreaProps = {
@@ -371,6 +372,15 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
           >
             Update
           </button>
+          {props.onOpenTestScreen && (
+            <button
+              type="button"
+              onClick={props.onOpenTestScreen}
+              className="text-[10px] px-2 py-0.5 rounded bg-sky-600/80 hover:bg-sky-500/80 active:bg-sky-600 text-white shadow-sm border border-white/10"
+            >
+              Test Screen
+            </button>
+          )}
         </div>
       )}
     </>
