@@ -37,7 +37,7 @@ export function createSpinProcessor(config: SpinConfig): LayerProcessor {
     }
 
     const currentTime = timestamp ?? performance.now();
-    
+
     // Use elapsed time from start like orbit processor does
     if (startTime === undefined) {
       startTime = currentTime;
@@ -73,7 +73,7 @@ export function createSpinProcessor(config: SpinConfig): LayerProcessor {
       resolvedPercent,
       imageDimensions,
       layer.scale,
-      rotation
+      rotation,
     );
 
     return {
@@ -115,7 +115,7 @@ function clampPercent(value: number): number {
 /**
  * Calculate layer position such that spinImagePoint stays anchored at spinStagePoint during rotation.
  * This ensures the image rotates around the correct pivot point in stage space.
- * 
+ *
  * @param spinStagePoint - The fixed point on stage where spinImagePoint should be anchored
  * @param spinImagePercent - The point on image (0-100%) that should be at spinStagePoint
  * @param imageDimensions - Image width and height
@@ -158,7 +158,7 @@ function calculatePositionForSpinPivot(
   const rotationRad = rotation * (Math.PI / 180);
   const cosR = Math.cos(rotationRad);
   const sinR = Math.sin(rotationRad);
-  
+
   const rotatedOffset: Point2D = {
     x: scaledOffset.x * cosR - scaledOffset.y * sinR,
     y: scaledOffset.x * sinR + scaledOffset.y * cosR,

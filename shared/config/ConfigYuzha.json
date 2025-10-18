@@ -79,19 +79,7 @@
       }
     }
   },
-  
-  
 
-
-
-
-
-
-
-
-
-
-  
   {
     "layerId": "CLOCKBG",
     "imageId": "CLOCKBG",
@@ -320,8 +308,8 @@
       "Basic Config": {
         "scale": [140, 140],
         "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],       
-        "BasicAngleImage":0
+        "BasicImagePoint": [50, 50],
+        "BasicAngleImage": 0
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
@@ -331,7 +319,7 @@
       },
       "Orbital Config": {
         "orbitStagePoint": [1024, 1024],
-        "orbitLinePoint": [1024,900],
+        "orbitLinePoint": [1024, 900],
         "orbitImagePoint": [50, 50],
         "orbitLine": true,
         "orbitOrient": true,
@@ -372,5 +360,4 @@
       }
     }
   }
-  
 ]

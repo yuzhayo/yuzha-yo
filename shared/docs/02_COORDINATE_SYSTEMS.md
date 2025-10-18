@@ -4,11 +4,11 @@ Understanding the coordinate system is essential because every renderer, process
 
 ## Spaces at a Glance
 
-| Space | Range | Primary Users | Notes |
-| ----- | ----- | ------------- | ----- |
-| **Stage** | 0-2048 on both axes (`STAGE_SIZE`) | Renderers, processors, debug visuals | Absolute space for layout. Origin is top-left. |
-| **Image pixels** | 0-image width/height | `prepareLayer()`, pipeline processors | Derived from the decoded image dimensions. |
-| **Image percent** | 0-100 per axis | Config input, pivot calculations | Used for user-friendly anchor points (`BasicImagePoint`, `spinImagePoint`, `orbitImagePoint`). |
+| Space             | Range                              | Primary Users                         | Notes                                                                                          |
+| ----------------- | ---------------------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| **Stage**         | 0-2048 on both axes (`STAGE_SIZE`) | Renderers, processors, debug visuals  | Absolute space for layout. Origin is top-left.                                                 |
+| **Image pixels**  | 0-image width/height               | `prepareLayer()`, pipeline processors | Derived from the decoded image dimensions.                                                     |
+| **Image percent** | 0-100 per axis                     | Config input, pivot calculations      | Used for user-friendly anchor points (`BasicImagePoint`, `spinImagePoint`, `orbitImagePoint`). |
 
 ## Key Helpers and Where They Live
 
@@ -26,6 +26,7 @@ Understanding the coordinate system is essential because every renderer, process
   - `stagePointToPercent(point, stageSize)` and `stagePercentToStagePoint(percent, stageSize)`: convert between stage pixels and percentages.
 
 ## Anchor Calculation Flow
+
 1. `prepareLayer()` normalises config values using `normalizePair`, `normalizeStagePointInput`, and `normalizePercentInput`.
 2. If `BasicStagePoint` is present, it uses `calculatePositionForPivot()` to find the stage position that places `BasicImagePoint` (in percent) at the desired stage location. This method ensures any point on the image can be anchored to any stage coordinate.
 3. The function always computes:
@@ -35,6 +36,7 @@ Understanding the coordinate system is essential because every renderer, process
 4. These results are stored in `layer.calculation`, so processors can read them without re-running geometry math.
 
 ## Stage Transform Contract
+
 - Stage elements (`StageCanvas`, `StageDOM`, `StageThree`) always mount inside a container that the transformer controls.
 - The transformer scales the container, not the canvas/DOM nodes individually. Rendering engines therefore continue to operate in 2048-space even when the viewport is much smaller or larger.
 - Overlay elements (config popup hit area, debug markers, etc.) should use stage coordinates when possible, or call `stageToViewportCoords` for alignment with pointer events.
@@ -42,6 +44,7 @@ Understanding the coordinate system is essential because every renderer, process
 ## Practical Examples
 
 ### Convert a stage click to image percent
+
 ```ts
 const transform = computeCoverTransform(window.innerWidth, window.innerHeight);
 const stagePoint = viewportToStageCoords(pointerX, pointerY, transform);
@@ -50,22 +53,21 @@ const imagePoint = stagePointToImagePoint(
   stagePoint,
   layer.imageMapping.imageDimensions,
   layer.scale,
-  layer.position
+  layer.position,
 );
 
-const imagePercent = imagePointToPercent(
-  imagePoint,
-  layer.imageMapping.imageDimensions
-);
+const imagePercent = imagePointToPercent(imagePoint, layer.imageMapping.imageDimensions);
 ```
 
 ### Place a UI marker at the layer tip
+
 ```ts
 const tipStageCoords = layer.calculation.imageTip.stage.point;
 markerEl.style.transform = `translate(${tipStageCoords.x}px, ${tipStageCoords.y}px)`;
 ```
 
 ## Invariants for Contributors
+
 - `STAGE_SIZE` is a shared constant between renderers and helpers; do not hard-code 2048 elsewhere.
 - Always clamp percents to [0, 100] and stage values to [0, STAGE_SIZE] using the utilities in `LayerCore.ts`.
 - When introducing new processors, prefer reading from `layer.calculation` instead of recomputing geometry.

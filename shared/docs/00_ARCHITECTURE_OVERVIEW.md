@@ -1,11 +1,13 @@
 # Architecture Overview
 
 ## Purpose
+
 - Deliver a single source of truth for how the Yuzha runtime boots, loads configuration, resolves assets, and renders animated layers.
 - Provide AI agents with a deterministic workflow so they can trace execution without guessing about side effects.
 - Highlight which modules own which responsibilities and which functions form the public hand-off points between layers of the system.
 
 ## Runtime Pipeline
+
 1. **App shell** (`yuzha/src/App.tsx`, `yuzha/src/MainScreen.tsx`)
    - Bootstraps React, injects the `MainScreen` wrapper, and exposes renderer controls from `MainScreenUtils.tsx`.
    - Calls `getRendererType()` to decide between DOM, Canvas, or Three.js renderers (or respect manual override).
@@ -42,22 +44,23 @@ React App
 
 ## Module Responsibilities
 
-| File | Responsibility | Key Exports |
-| ---- | -------------- | ----------- |
-| `shared/config/Config.ts` | Load, flatten, validate grouped configuration. | `loadLayerConfig`, `validateLayerConfig` |
-| `shared/layer/LayerCore.ts` | Resolve assets, compute transforms, prepare `UniversalLayerData`. | `prepareLayer`, `compute2DTransform`, coordinate helpers |
-| `shared/layer/LayerCorePipeline.ts` | Compose processors that mutate layer data per frame. | `runPipeline`, `processBatch`, `LayerProcessor` |
-| `shared/layer/pipeline/StagePipeline.ts` | Single entry point that prepares layers and assembles processors. | `createStagePipeline`, `toRendererInput` |
-| `shared/layer/pipeline/ProcessorRegistry.ts` | Pluggable registry that decides which processors attach to each layer. | `registerProcessor`, `getProcessorsForEntry` |
-| `shared/layer/LayerCorePipelineSpin.ts` | Add spin animation state. | `createSpinProcessor` |
-| `shared/layer/LayerCorePipelineOrbital.ts` | Add orbital motion, auto-orientation, path visibility. | `createOrbitalProcessor` |
-| `shared/layer/LayerCorePipelineImageMappingUtils.ts` | Image mapping math + debug utilities. | `computeImageMapping`, `createImageMappingDebugProcessor` |
-| `shared/layer/LayerEngines.ts` | DOM/Canvas/Three mounting logic in one module. | `mountDomLayers`, `mountCanvasLayers`, `mountThreeLayers` |
-| `shared/layer/pipeline/renderers/*` | Adapters that wire the pipeline to each rendering backend. | `mountDomRenderer`, `mountCanvasRenderer`, `mountThreeRenderer` |
-| `shared/utils/stage2048.ts` | Maintain the fixed 2048 stage geometry and conversions. | `STAGE_SIZE`, `createStageTransformer`, `viewportToStageCoords` |
-| `yuzha/src/MainScreenUtils.tsx` | UI overlay, renderer badge, config launcher, gesture handling. | `MainScreenBtnPanel`, `MainScreenUpdater`, `useMainScreenBtnGesture` |
+| File                                                 | Responsibility                                                         | Key Exports                                                          |
+| ---------------------------------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `shared/config/Config.ts`                            | Load, flatten, validate grouped configuration.                         | `loadLayerConfig`, `validateLayerConfig`                             |
+| `shared/layer/LayerCore.ts`                          | Resolve assets, compute transforms, prepare `UniversalLayerData`.      | `prepareLayer`, `compute2DTransform`, coordinate helpers             |
+| `shared/layer/LayerCorePipeline.ts`                  | Compose processors that mutate layer data per frame.                   | `runPipeline`, `processBatch`, `LayerProcessor`                      |
+| `shared/layer/pipeline/StagePipeline.ts`             | Single entry point that prepares layers and assembles processors.      | `createStagePipeline`, `toRendererInput`                             |
+| `shared/layer/pipeline/ProcessorRegistry.ts`         | Pluggable registry that decides which processors attach to each layer. | `registerProcessor`, `getProcessorsForEntry`                         |
+| `shared/layer/LayerCorePipelineSpin.ts`              | Add spin animation state.                                              | `createSpinProcessor`                                                |
+| `shared/layer/LayerCorePipelineOrbital.ts`           | Add orbital motion, auto-orientation, path visibility.                 | `createOrbitalProcessor`                                             |
+| `shared/layer/LayerCorePipelineImageMappingUtils.ts` | Image mapping math + debug utilities.                                  | `computeImageMapping`, `createImageMappingDebugProcessor`            |
+| `shared/layer/LayerEngines.ts`                       | DOM/Canvas/Three mounting logic in one module.                         | `mountDomLayers`, `mountCanvasLayers`, `mountThreeLayers`            |
+| `shared/layer/pipeline/renderers/*`                  | Adapters that wire the pipeline to each rendering backend.             | `mountDomRenderer`, `mountCanvasRenderer`, `mountThreeRenderer`      |
+| `shared/utils/stage2048.ts`                          | Maintain the fixed 2048 stage geometry and conversions.                | `STAGE_SIZE`, `createStageTransformer`, `viewportToStageCoords`      |
+| `yuzha/src/MainScreenUtils.tsx`                      | UI overlay, renderer badge, config launcher, gesture handling.         | `MainScreenBtnPanel`, `MainScreenUpdater`, `useMainScreenBtnGesture` |
 
 ## Cross-Cutting Concerns
+
 - **Configuration groups**: `ConfigYuzha.json` separates "Basic Config", "Spin Config", "Orbital Config", and "Image Mapping Debug". `transformConfig()` merges them with clear precedence (spin overrides anchor points, orbital overrides position during animation, debug never overrides).
 - **2048 Coordinate Contract**: All renderers, processors, and UI overlays read and write in stage coordinates. Conversion helpers in `LayerCore.ts` and `stage2048.ts` keep calculations consistent.
 - **Processor determinism**: Processors are pure relative to `(layer, timestamp)` and never mutate global state. This makes them safe for AI agents to call directly, test, or recombine.
@@ -65,6 +68,7 @@ React App
 - **Device capability detection**: `shared/utils/DeviceCapability.ts` and `RendererDetector.ts` select sensible defaults for browser vs. headless vs. low-end hardware.
 
 ## AI Agent Orientation
+
 - Always start from `loadLayerConfig()`; do not manually import JSON. The loader applies validation, order sorting, and caching.
 - When preparing new layers, use `prepareLayer(entry, STAGE_SIZE)` so you get coordinate bundles that processors expect.
 - Adding a new animation requires **(a)** registering a processor via `registerProcessor()`, and **(b)** ensuring the relevant renderer adapter knows how to consume the resulting data if it introduces new draw steps.
@@ -72,6 +76,7 @@ React App
 - The stage transformer must be active before any pointer math. Use the cleanup function returned by `createStageTransformer()` when unmounting stages to avoid stale resize listeners.
 
 ## Operational Checklist
+
 - `npm install` at repo root (`package.json`) to install shared workspaces.
 - `npm run dev --workspace yuzha` to launch the Vite dev server.
 - `npm test --workspace shared` runs layer unit tests located in `shared/layer/__tests__`.

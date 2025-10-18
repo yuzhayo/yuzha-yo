@@ -153,15 +153,15 @@ function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
       ...basic
     } = entry.groups["Basic Config"] || {};
     const spin = entry.groups["Spin Config"] || {};
-  const {
-    orbitStagePoint,
-    orbitLinePoint,
-    orbitImagePoint,
-    orbitLine,
-    orbitOrient,
-    orbitSpeed,
-    orbitDirection,
-  } = entry.groups["Orbital Config"] || {};
+    const {
+      orbitStagePoint,
+      orbitLinePoint,
+      orbitImagePoint,
+      orbitLine,
+      orbitOrient,
+      orbitSpeed,
+      orbitDirection,
+    } = entry.groups["Orbital Config"] || {};
     const debug = entry.groups["Image Mapping Debug"] || {};
 
     // Start with Basic Config (static positioning and rotation)
