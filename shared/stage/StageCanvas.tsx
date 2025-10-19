@@ -193,10 +193,11 @@ async function mountCanvasLayers(
       enhancedData.currentRotation ?? enhancedData.rotation ?? layer.baseData.rotation ?? 0;
 
     ctx.save();
-    // Preserve sub-pixel precision for orbital animation to prevent jitter at low speeds
-    const position = enhancedData.hasOrbitalAnimation
-      ? enhancedData.position
-      : roundStagePoint(enhancedData.position);
+    // Preserve spin/orbit sub-pixel precision to avoid wobble when pivot isn't centered
+    const position =
+      enhancedData.hasOrbitalAnimation || enhancedData.hasSpinAnimation
+        ? enhancedData.position
+        : roundStagePoint(enhancedData.position);
     ctx.translate(position.x, position.y);
 
     // Apply rotation around pivot point

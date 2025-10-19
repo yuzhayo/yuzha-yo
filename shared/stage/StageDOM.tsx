@@ -230,9 +230,10 @@ async function mountDomLayers(
       const naturalWidth = layer.img.naturalWidth;
       const naturalHeight = layer.img.naturalHeight;
       // Preserve sub-pixel precision for orbital animation to prevent jitter at low speeds
-      const position = enhancedData.hasOrbitalAnimation
-        ? enhancedData.position
-        : roundStagePoint(enhancedData.position);
+      const position =
+        enhancedData.hasOrbitalAnimation || enhancedData.hasSpinAnimation
+          ? enhancedData.position
+          : roundStagePoint(enhancedData.position);
       const left = position.x - naturalWidth / 2;
       const top = position.y - naturalHeight / 2;
       layer.img.style.left = `${left}px`;

@@ -524,7 +524,7 @@
   },
   {
     "LayerID": "test-sun-ray-1",
-    "ImageID": "UI_Clock_MinuteHand",
+    "ImageID": "V3_LockIcon",
     "renderer": "2D",
     "LayerOrder": 850,
     "ImageScale": [

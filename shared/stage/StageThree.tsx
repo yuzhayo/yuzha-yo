@@ -259,9 +259,10 @@ async function mountThreeLayers(
 
       // Update position (convert stage coords to Three.js world space)
       // Preserve sub-pixel precision for orbital animation to prevent jitter at low speeds
-      const position = enhanced.hasOrbitalAnimation
-        ? enhanced.position
-        : roundStagePoint(enhanced.position);
+      const position =
+        enhanced.hasOrbitalAnimation || enhanced.hasSpinAnimation
+          ? enhanced.position
+          : roundStagePoint(enhanced.position);
       entry.group.position.set(position.x - STAGE_SIZE / 2, STAGE_SIZE / 2 - position.y, 0);
 
       // Update rotation (negative because Three.js Y-axis is flipped)
