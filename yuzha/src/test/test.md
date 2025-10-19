@@ -225,9 +225,13 @@ finalX = basicX + orbitOffsetX
 // Rotation: Sum all rotations
 finalRotation = basicAngle + spinAngle + orbitAngle + clockAngle
 
-// Scale: Multiply all scales
-finalScaleX = imageScaleX * effectScaleX
-finalScaleY = imageScaleY * effectScaleY
+// Scale: Convert ImageScale from percentage to decimal, then multiply with effects
+// ImageScale is stored as percentage (100 = original size)
+// Must convert to decimal (1.0 = original size) before combining
+imageScaleXDecimal = ImageScale[0] / 100
+imageScaleYDecimal = ImageScale[1] / 100
+finalScaleX = imageScaleXDecimal * effectScaleX
+finalScaleY = imageScaleYDecimal * effectScaleY
 
 // Opacity: From effects
 finalOpacity = effectOpacity
@@ -244,6 +248,13 @@ finalOpacity = effectOpacity
 ### 4.2 basic.ts (Static Positioning)
 
 **Responsibility**: Calculate base position and initial rotation (no animation)
+
+**Default Values**:
+| Field | Default Value | Description |
+|-------|--------------|-------------|
+| BasicStagePoint | [1024, 1024] | Center of stage |
+| BasicImagePoint | [50, 50] | Center of image |
+| BasicImageAngle | 0 | No initial rotation |
 
 **Key Function**:
 ```typescript
@@ -292,6 +303,14 @@ rotation = BasicImageAngle
 ### 4.3 spin.ts (Self-Rotation)
 
 **Responsibility**: Calculate rotation around image's own axis (animated)
+
+**Default Values**:
+| Field | Default Value | Description |
+|-------|--------------|-------------|
+| spinStagePoint | [1024, 1024] | Center of stage |
+| spinImagePoint | [50, 50] | Center of image |
+| spinSpeed | 0 | No rotation (static) |
+| spinDirection | "cw" | Clockwise |
 
 **Key Function**:
 ```typescript
@@ -347,6 +366,17 @@ return {
 ### 4.4 orbit.ts (Circular Motion)
 
 **Responsibility**: Calculate position moving in circle around center point (animated)
+
+**Default Values**:
+| Field | Default Value | Description |
+|-------|--------------|-------------|
+| orbitStagePoint | [1024, 1024] | Center of stage |
+| orbitLinePoint | [1024, 1024] | Same as center (radius = 0) |
+| orbitImagePoint | [50, 50] | Center of image |
+| orbitLine | false | Don't show orbit path |
+| orbitOrient | false | No radial orientation |
+| orbitSpeed | 0 | No orbital motion (static) |
+| orbitDirection | "cw" | Clockwise |
 
 **Key Function**:
 ```typescript
@@ -404,8 +434,8 @@ anchorY = imageHeight * (orbitImagePoint[1] / 100)
 x = orbitX - anchorX
 y = orbitY - anchorY
 
-// 6. Calculate orient-to-path rotation
-orientRotation = orbitOrient ? (orbitAngle + 90) : 0
+// 6. Calculate orient-to-path rotation (radial/clock-hand behavior)
+orientRotation = orbitOrient ? orbitAngle : 0
 
 // 7. Return transform
 return {
@@ -422,7 +452,8 @@ return {
 **Important Notes**:
 - **Coordinate System**: In standard math, 0° is right, 90° is up
 - **Canvas/Screen**: 0° is right, 90° is DOWN (Y-axis inverted)
-- **Orient rotation**: Add 90° so image "points forward" along path
+- **Orient rotation**: When enabled, image rotates radially like a clock hand pointing outward from center
+- **Separation of concerns**: Orbit module only handles position and optional radial orientation. Other rotation behaviors (spinning, clock hands) are handled by separate modules
 - If `orbitSpeed = 0`, image doesn't orbit (static on circle)
 - If radius = 0, image stays at center
 
@@ -431,6 +462,12 @@ return {
 ### 4.5 clock.ts (Time-Based Animations)
 
 **Responsibility**: Calculate transformations based on real-world time (hour/minute hands)
+
+**Default Values**:
+| Field | Default Value | Description |
+|-------|--------------|-------------|
+| clockMode | "hour" | Hour hand mode |
+| clockScale | 1 | Real-time speed |
 
 **Key Function**:
 ```typescript
@@ -481,6 +518,13 @@ return { rotation }
 ### 4.6 effect.ts (Visual Effects)
 
 **Responsibility**: Calculate visual properties like opacity, scale pulsing, glow
+
+**Default Values**:
+| Field | Default Value | Description |
+|-------|--------------|-------------|
+| fadeIn | undefined | No fade-in effect |
+| pulse | undefined | No pulse effect |
+| opacity | 1.0 | Fully opaque |
 
 **Key Function**:
 ```typescript
@@ -728,9 +772,15 @@ function renderLayer(
   // Move to position
   ctx.translate(transform.x, transform.y);
   
-  // Apply rotation (around anchor point)
-  const anchorX = image.width * 0.5; // Assuming center anchor
-  const anchorY = image.height * 0.5;
+  // Calculate anchor point from BasicImagePoint config
+  // BasicImagePoint is stored as percentage (0-100)
+  const basicConfig = layer.config.groups["Basic Config"];
+  const anchorXPercent = basicConfig?.BasicImagePoint?.[0] ?? 50; // Default to center
+  const anchorYPercent = basicConfig?.BasicImagePoint?.[1] ?? 50;
+  const anchorX = image.width * (anchorXPercent / 100);
+  const anchorY = image.height * (anchorYPercent / 100);
+  
+  // Apply rotation around anchor point
   ctx.translate(anchorX, anchorY);
   ctx.rotate(transform.rotation * Math.PI / 180);
   ctx.translate(-anchorX, -anchorY);
@@ -992,6 +1042,12 @@ ctx.strokeRect(0, 0, STAGE_SIZE, STAGE_SIZE);
 5. **Don't ignore LayerOrder** - Sort before rendering
 6. **Don't hardcode stage size** - Use `STAGE_SIZE` constant
 7. **Don't forget cleanup** - Remove event listeners on unmount
+8. **Don't forget ImageScale conversion** - ImageScale is percentage (100 = 1.0), divide by 100 before using
+9. **Don't hardcode anchor points** - Always use BasicImagePoint from config, not center assumption
+10. **Don't apply transform in wrong order** - Canvas transforms are ORDER-DEPENDENT: translate → rotate → scale
+11. **Don't use orbitAngle + 90** - Orbital orientation is radial (clock-hand), not tangent. Use `orbitAngle` directly
+12. **Don't combine spin position** - Only spin rotation matters, ignore spin's x/y offset in final transform
+13. **Don't assume image orientation** - When using orbitOrient, images should be designed pointing right (0°) by convention
 
 ---
 
@@ -1037,7 +1093,7 @@ ctx.strokeRect(0, 0, STAGE_SIZE, STAGE_SIZE);
 }
 ```
 
-### Orbiting Moon with Orient
+### Orbiting Moon with Orient (Clock-Hand Behavior)
 ```json
 {
   "LayerID": "moon",
@@ -1062,6 +1118,8 @@ ctx.strokeRect(0, 0, STAGE_SIZE, STAGE_SIZE);
   }
 }
 ```
+
+**Behavior**: The moon orbits in a circle with radius 400 pixels (distance from [1024, 1024] to [1024, 624]). With `orbitOrient: true`, the moon rotates radially like a clock hand, always pointing outward from the center. At 0° it points right, at 90° it points down, at 180° it points left, at 270° it points up.
 
 ### Clock Hour Hand
 ```json
