@@ -180,6 +180,64 @@ export type UniversalLayerData = {
   orbitOrient?: boolean;
 };
 
+/**
+ * Modular preparation states
+ *
+ * These break the legacy monolithic prepareLayer() into composable pieces.
+ * Future AI agents can evolve each module independently without hidden coupling.
+ */
+export type BaseLayerState = {
+  baseData: {
+    LayerID: string;
+    ImageID: string;
+    imageUrl: string;
+    imagePath: string;
+    position: Point2D;
+    scale: Point2D;
+    imageMapping: ImageMapping;
+    rotation: number;
+    orbitOrient: boolean;
+  };
+  stageSize: number;
+  stageCenter: CoordinateBundle;
+  imageCenter: DualSpaceCoordinate;
+};
+
+export type SpinPreparationState = {
+  hasSpin: boolean;
+  calculation: {
+    spinPoint: DualSpaceCoordinate;
+  };
+  spinStagePoint: Point2D;
+  spinStagePercent: PercentPoint;
+  spinImagePercent: PercentPoint;
+  spinImagePoint: Point2D;
+};
+
+export type OrbitPreparationState = {
+  hasOrbit: boolean;
+  calculation: {
+    orbitPoint: OrbitCoordinate;
+    orbitLine: CoordinateBundle;
+  };
+  orbitStagePoint: Point2D;
+  orbitLinePoint: Point2D;
+  orbitLineVisible: boolean;
+  orbitRadius: number;
+  orbitImagePercent: PercentPoint;
+  orbitImagePoint: Point2D;
+};
+
+const ZERO_POINT: Point2D = { x: 0, y: 0 };
+const ZERO_PERCENT: PercentPoint = { x: 0, y: 0 };
+const ZERO_COORDINATE_BUNDLE = createCoordinateBundle(ZERO_POINT, ZERO_PERCENT);
+const ZERO_DUAL_COORDINATE = createDualSpaceCoordinate(
+  ZERO_POINT,
+  ZERO_PERCENT,
+  ZERO_POINT,
+  ZERO_PERCENT,
+);
+
 // ============================================================================
 // IMAGE MAPPING
 // ============================================================================
@@ -197,13 +255,220 @@ export type UniversalLayerData = {
  * @param imageDimensions - Image width and height
  * @returns Image mapping with center and dimensions
  */
-export function computeImageMapping(
-  imageDimensions: { width: number; height: number },
-): ImageMapping {
+export function computeImageMapping(imageDimensions: {
+  width: number;
+  height: number;
+}): ImageMapping {
   const { width, height } = imageDimensions;
   return {
     imageCenter: { x: width / 2, y: height / 2 },
     imageDimensions: { width, height },
+  };
+}
+
+/**
+ * Prepare the basic, renderer-agnostic layer state.
+ * This module resolves assets, calculates base transforms, and supplies
+ * the dual-space image center the other modules rely on.
+ */
+export async function prepareBasicState(
+  entry: LayerConfigEntry,
+  stageSize: number,
+): Promise<BaseLayerState | null> {
+  const assetPath = resolveAssetPath(entry.ImageID);
+  if (!assetPath) {
+    console.warn(`[LayerCore] Missing asset for ImageID "${entry.ImageID}"`);
+    return null;
+  }
+
+  const imageUrl = resolveAssetUrl(assetPath);
+  const imageDimensions = await getImageDimensions(imageUrl);
+
+  const { position, scale } = compute2DTransform(entry, stageSize, imageDimensions);
+  const imageMapping = computeImageMapping(imageDimensions);
+
+  const stageCenterValue = stageSize / 2;
+  const stageCenterPoint: Point2D = { x: stageCenterValue, y: stageCenterValue };
+  const stageCenterPercent = stagePointToPercent(stageCenterPoint, stageSize);
+
+  const imageCenterStage = imagePointToStagePoint(
+    imageMapping.imageCenter,
+    imageMapping.imageDimensions,
+    scale,
+    position,
+  );
+  const imageCenterPercent = imagePointToPercent(
+    imageMapping.imageCenter,
+    imageMapping.imageDimensions,
+  );
+  const imageCenterStagePercent = stagePointToPercent(imageCenterStage, stageSize);
+
+  const rotation = typeof entry.BasicImageAngle === "number" ? entry.BasicImageAngle : 0;
+
+  return {
+    baseData: {
+      LayerID: entry.LayerID,
+      ImageID: entry.ImageID,
+      imageUrl,
+      imagePath: assetPath,
+      position,
+      scale,
+      imageMapping,
+      rotation,
+      orbitOrient: Boolean(entry.orbitOrient),
+    },
+    stageSize,
+    stageCenter: createCoordinateBundle(stageCenterPoint, stageCenterPercent),
+    imageCenter: createDualSpaceCoordinate(
+      imageMapping.imageCenter,
+      imageCenterPercent,
+      imageCenterStage,
+      imageCenterStagePercent,
+    ),
+  };
+}
+
+/**
+ * Prepare spin-specific coordinates and metadata.
+ * Accepts only BaseLayerState so it has no hidden dependency on orbit math.
+ */
+export function prepareSpinState(
+  baseState: BaseLayerState,
+  entry: LayerConfigEntry,
+): SpinPreparationState {
+  const { baseData, stageSize } = baseState;
+  const hasSpinConfig =
+    entry.spinStagePoint !== undefined ||
+    entry.spinImagePoint !== undefined ||
+    (typeof entry.spinSpeed === "number" && entry.spinSpeed !== 0);
+
+  if (!hasSpinConfig) {
+    return {
+      hasSpin: false,
+      calculation: { spinPoint: ZERO_DUAL_COORDINATE },
+      spinStagePoint: ZERO_POINT,
+      spinStagePercent: ZERO_PERCENT,
+      spinImagePercent: ZERO_PERCENT,
+      spinImagePoint: ZERO_POINT,
+    };
+  }
+
+  const spinStagePoint = normalizeStagePointInput(
+    entry.spinStagePoint,
+    baseData.position,
+    stageSize,
+  );
+  const spinStagePercent = stagePointToPercent(spinStagePoint, stageSize);
+  const spinImagePercent = normalizePercentInput(entry.spinImagePoint, 50, 50);
+  const spinImagePoint = imagePercentToImagePoint(
+    spinImagePercent,
+    baseData.imageMapping.imageDimensions,
+  );
+
+  const spinPoint = createDualSpaceCoordinate(
+    spinImagePoint,
+    spinImagePercent,
+    spinStagePoint,
+    spinStagePercent,
+  );
+
+  return {
+    hasSpin: true,
+    calculation: { spinPoint },
+    spinStagePoint,
+    spinStagePercent,
+    spinImagePercent,
+    spinImagePoint,
+  };
+}
+
+/**
+ * Prepare orbit-specific coordinates and metadata.
+ * Consumes only BaseLayerState to stay independent from spin logic.
+ */
+export function prepareOrbitState(
+  baseState: BaseLayerState,
+  entry: LayerConfigEntry,
+): OrbitPreparationState {
+  const { baseData, stageCenter, stageSize } = baseState;
+
+  const orbitConfigured =
+    entry.orbitStagePoint !== undefined ||
+    entry.orbitLinePoint !== undefined ||
+    entry.orbitImagePoint !== undefined ||
+    entry.orbitLine === true ||
+    entry.orbitOrient === true ||
+    (typeof entry.orbitSpeed === "number" && entry.orbitSpeed !== 0);
+
+  if (!orbitConfigured) {
+    return {
+      hasOrbit: false,
+      calculation: {
+        orbitPoint: {
+          ...ZERO_DUAL_COORDINATE,
+          stageAnchor: ZERO_COORDINATE_BUNDLE,
+        },
+        orbitLine: ZERO_COORDINATE_BUNDLE,
+      },
+      orbitStagePoint: ZERO_POINT,
+      orbitLinePoint: ZERO_POINT,
+      orbitLineVisible: false,
+      orbitRadius: 0,
+      orbitImagePercent: ZERO_PERCENT,
+      orbitImagePoint: ZERO_POINT,
+    };
+  }
+
+  const orbitStagePoint = normalizeStagePointInput(
+    entry.orbitStagePoint,
+    stageCenter.point,
+    stageSize,
+  );
+  const orbitStagePercent = stagePointToPercent(orbitStagePoint, stageSize);
+
+  const orbitLinePoint = normalizeStagePointInput(entry.orbitLinePoint, orbitStagePoint, stageSize);
+  const orbitLinePercent = stagePointToPercent(orbitLinePoint, stageSize);
+  const orbitLineVisible = Boolean(entry.orbitLine);
+
+  const radiusDx = orbitLinePoint.x - orbitStagePoint.x;
+  const radiusDy = orbitLinePoint.y - orbitStagePoint.y;
+  const orbitRadius = Math.sqrt(radiusDx * radiusDx + radiusDy * radiusDy);
+
+  const orbitImagePercent = normalizePercentInput(entry.orbitImagePoint, 50, 50);
+  const orbitImagePoint = imagePercentToImagePoint(
+    orbitImagePercent,
+    baseData.imageMapping.imageDimensions,
+  );
+  const orbitImageStagePoint = imagePointToStagePoint(
+    orbitImagePoint,
+    baseData.imageMapping.imageDimensions,
+    baseData.scale,
+    baseData.position,
+  );
+  const orbitImageStagePercent = stagePointToPercent(orbitImageStagePoint, stageSize);
+
+  const orbitPoint = {
+    ...createDualSpaceCoordinate(
+      orbitImagePoint,
+      orbitImagePercent,
+      orbitStagePoint,
+      orbitStagePercent,
+    ),
+    stageAnchor: createCoordinateBundle(orbitImageStagePoint, orbitImageStagePercent),
+  };
+
+  return {
+    hasOrbit: true,
+    calculation: {
+      orbitPoint,
+      orbitLine: createCoordinateBundle(orbitLinePoint, orbitLinePercent),
+    },
+    orbitStagePoint,
+    orbitLinePoint,
+    orbitLineVisible,
+    orbitRadius,
+    orbitImagePercent,
+    orbitImagePoint,
   };
 }
 // ============================================================================
@@ -406,16 +671,10 @@ export async function loadImage(src: string): Promise<HTMLImageElement> {
  * layer to convert configuration into base layer data.
  *
  * ALGORITHM:
- * 1. Resolve asset path and URL from imageId
- * 2. Load image dimensions
- * 3. Calculate 2D transform (position + scale)
- * 4. Compute image mapping (tip, base, axis)
- * 5. Lazy evaluation: only calculate full coordinates if needed
- * 6. Return UniversalLayerData
- *
- * LAZY EVALUATION:
- * If a layer has no animations or debug flags, we skip calculating
- * tip/base/spin/orbit coordinates to improve performance.
+ * 1. `prepareBasicState` resolves assets and calculates base transforms.
+ * 2. `prepareSpinState` derives pivot coordinates when spin config exists.
+ * 3. `prepareOrbitState` derives orbit geometry when orbit config exists.
+ * 4. Merge the modular results into `UniversalLayerData`.
  *
  * USAGE:
  * ```typescript
@@ -434,134 +693,37 @@ export async function prepareLayer(
   const IS_DEV = import.meta.env?.DEV ?? false;
   const perfStart = IS_DEV ? performance.now() : 0;
 
-  const assetPath = resolveAssetPath(entry.ImageID);
-  if (!assetPath) {
-    console.warn(`[LayerCore] Missing asset for ImageID "${entry.ImageID}"`);
-    return null;
-  }
+  const baseState = await prepareBasicState(entry, stageSize);
+  if (!baseState) return null;
 
-  const imageUrl = resolveAssetUrl(assetPath);
-
-  // Get image dimensions FIRST - needed for pivot-based positioning
-  const dimensions = await getImageDimensions(imageUrl);
-
-  // Calculate transform with dimensions
-  const { position, scale } = compute2DTransform(entry, stageSize, dimensions);
-
-  // Calculate image mapping for core geometry
-  const imageMapping = computeImageMapping(dimensions);
-
-  // Track dynamic features for performance logging
-  const hasDynamicFeatures =
-    entry.spinSpeed !== 0 ||
-    entry.orbitSpeed !== 0 ||
-    entry.orbitStagePoint !== undefined ||
-    entry.orbitLinePoint !== undefined ||
-    entry.orbitLine === true ||
-    entry.orbitOrient === true ||
-    entry.orbitImagePoint !== undefined;
-
-  const stageCenterValue = stageSize / 2;
-  const stageCenterPoint: Point2D = { x: stageCenterValue, y: stageCenterValue };
-  const stageCenterPercent = stagePointToPercent(stageCenterPoint, stageSize);
-
-  // Compute image center (needed for rendering and pivot math)
-  const imageCenterStage = imagePointToStagePoint(
-    imageMapping.imageCenter,
-    imageMapping.imageDimensions,
-    scale,
-    position,
-  );
-  const imageCenterPercent = imagePointToPercent(
-    imageMapping.imageCenter,
-    imageMapping.imageDimensions,
-  );
-  const imageCenterStagePercent = stagePointToPercent(imageCenterStage, stageSize);
-
-  // Spin pivot calculations (defaults anchor to configured point or image center)
-  const spinStagePoint = normalizeStagePointInput(entry.spinStagePoint, position, stageSize);
-  const spinStagePercent = stagePointToPercent(spinStagePoint, stageSize);
-  const spinImagePercent = normalizePercentInput(entry.spinImagePoint, 50, 50);
-  const spinImagePoint = imagePercentToImagePoint(spinImagePercent, imageMapping.imageDimensions);
-
-  // Orbit coordinate preparation (safe defaults keep values consistent)
-  const orbitStagePoint = normalizeStagePointInput(
-    entry.orbitStagePoint,
-    stageCenterPoint,
-    stageSize,
-  );
-  const orbitStagePercent = stagePointToPercent(orbitStagePoint, stageSize);
-  const orbitLinePoint = normalizeStagePointInput(entry.orbitLinePoint, orbitStagePoint, stageSize);
-  const orbitLinePercent = stagePointToPercent(orbitLinePoint, stageSize);
-  const orbitLineVisible = Boolean(entry.orbitLine);
-  const radiusDx = orbitLinePoint.x - orbitStagePoint.x;
-  const radiusDy = orbitLinePoint.y - orbitStagePoint.y;
-  const orbitRadius = Math.sqrt(radiusDx * radiusDx + radiusDy * radiusDy);
-  const orbitImagePercent = normalizePercentInput(entry.orbitImagePoint, 50, 50);
-  const orbitImagePoint = imagePercentToImagePoint(orbitImagePercent, imageMapping.imageDimensions);
-  const orbitImageStagePoint = imagePointToStagePoint(
-    orbitImagePoint,
-    imageMapping.imageDimensions,
-    scale,
-    position,
-  );
-  const orbitImageStagePercent = stagePointToPercent(orbitImageStagePoint, stageSize);
-
-  // Calculate rotation from BasicImageAngle (degrees)
-  const basicImageAngle = typeof entry.BasicImageAngle === 'number' ? entry.BasicImageAngle : 0;
-  const rotation = basicImageAngle;
+  const spinState = prepareSpinState(baseState, entry);
+  const orbitState = prepareOrbitState(baseState, entry);
 
   const calculation: LayerCalculationPoints = {
-    stageCenter: createCoordinateBundle(stageCenterPoint, stageCenterPercent),
-    imageCenter: createDualSpaceCoordinate(
-      imageMapping.imageCenter,
-      imageCenterPercent,
-      imageCenterStage,
-      imageCenterStagePercent,
-    ),
-    spinPoint: createDualSpaceCoordinate(
-      spinImagePoint,
-      spinImagePercent,
-      spinStagePoint,
-      spinStagePercent,
-    ),
-    orbitPoint: {
-      ...createDualSpaceCoordinate(
-        orbitImagePoint,
-        orbitImagePercent,
-        orbitStagePoint,
-        orbitStagePercent,
-      ),
-      stageAnchor: createCoordinateBundle(orbitImageStagePoint, orbitImageStagePercent),
-    },
-    orbitLine: createCoordinateBundle(orbitLinePoint, orbitLinePercent),
+    stageCenter: baseState.stageCenter,
+    imageCenter: baseState.imageCenter,
+    spinPoint: spinState.calculation.spinPoint,
+    orbitPoint: orbitState.calculation.orbitPoint,
+    orbitLine: orbitState.calculation.orbitLine,
   };
 
-  const result = {
-    LayerID: entry.LayerID,
-    ImageID: entry.ImageID,
-    imageUrl,
-    imagePath: assetPath,
-    position,
-    scale,
-    imageMapping,
+  const result: UniversalLayerData = {
+    ...baseState.baseData,
     calculation,
-    rotation,
-    orbitStagePoint,
-    orbitLinePoint,
-    orbitLineVisible,
-    orbitRadius,
-    orbitImagePercent,
-    orbitImagePoint,
-    orbitOrient: Boolean(entry.orbitOrient),
+    orbitStagePoint: orbitState.orbitStagePoint,
+    orbitLinePoint: orbitState.orbitLinePoint,
+    orbitLineVisible: orbitState.orbitLineVisible,
+    orbitRadius: orbitState.orbitRadius,
+    orbitImagePercent: orbitState.orbitImagePercent,
+    orbitImagePoint: orbitState.orbitImagePoint,
   };
-// Log performance metrics in development
+
   if (IS_DEV) {
     const perfEnd = performance.now();
     const duration = perfEnd - perfStart;
     if (duration > 10) {
       console.log(
-        `[LayerCore] prepareLayer "${entry.LayerID}" took ${duration.toFixed(2)}ms (lazy: ${!hasDynamicFeatures})`,
+        `[LayerCore] prepareLayer "${entry.LayerID}" took ${duration.toFixed(2)}ms (modules: spin=${spinState.hasSpin}, orbit=${orbitState.hasOrbit})`,
       );
     }
   }

@@ -103,7 +103,6 @@ export type LayerConfigEntry = {
   orbitSpeed?: number;
   /** Orbital direction: "cw" (clockwise) or "ccw" (counter-clockwise) */
   orbitDirection?: "cw" | "ccw";
-
 };
 
 export type LayerConfig = LayerConfigEntry[];
@@ -178,7 +177,6 @@ type ConfigYuzhaEntry = {
       orbitOrient?: boolean;
       orbitSpeed?: number;
       orbitDirection?: "cw" | "ccw";
-
     };
   };
 };
@@ -256,7 +254,6 @@ function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
     if (orbital.orbitOrient !== undefined) merged.orbitOrient = orbital.orbitOrient;
     if (orbital.orbitSpeed !== undefined) merged.orbitSpeed = orbital.orbitSpeed;
     if (orbital.orbitDirection) merged.orbitDirection = orbital.orbitDirection;
-
 
     return merged as LayerConfigEntry;
   });

@@ -41,11 +41,12 @@ Complete modular refactoring of the layer system for improved maintainability an
   - **layerCore.ts** - Core layer preparation, asset resolution, image mapping
   - **layerSpin.ts** - Spin animation system
   - **layerOrbit.ts** - Orbital motion system
-  - *(Debug visualization module temporarily removed while the pipeline is simplified)*
+  - _(Debug visualization module temporarily removed while the pipeline is simplified)_
   - **layer.ts** - Processor pipeline orchestrator and registry
   - **index.ts** - Unified module exports
 
 - **Clean Architecture**: Layered dependency structure with no circular dependencies:
+
   ```
   layerBasic (foundation, no deps)
     ↑
@@ -66,7 +67,7 @@ Complete modular refactoring of the layer system for improved maintainability an
 
 - **Architecture Flow**: ConfigYuzha.json → Config.ts → layerCore.prepareLayer() → layer.ts processors → Renderers → MainScreen
 
-- **Verified**: 
+- **Verified**:
   - ✅ Architect reviewed and approved with Pass rating
   - ✅ No regressions, all functionality preserved
   - ✅ Application tested and rendering correctly

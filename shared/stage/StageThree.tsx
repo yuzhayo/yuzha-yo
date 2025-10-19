@@ -237,7 +237,6 @@ async function mountThreeLayers(
     });
   }
 
-
   /**
    * Main animation loop.
    * Runs processors, updates meshes, and renders the scene.
@@ -295,7 +294,6 @@ async function mountThreeLayers(
           entry.orbitLine.visible = false;
         }
       }
-
     }
 
     // Render the scene

@@ -38,10 +38,12 @@ React screens
 ## Module Summaries
 
 ### `layerBasic.ts` – Foundation Utilities
+
 - Pure math/coordinate helpers (`imagePercentToImagePoint`, `imagePointToStagePoint`, `validatePoint`, `normalizeAngle`, etc.)
 - No dependencies; imported by every other layer module.
 
 ### `layerCore.ts` – Core Preparation
+
 - Resolves assets via `ImageRegistry.json`.
 - Computes image center + scaled transforms (tip/base math removed for lean pipeline).
 - Exposes `prepareLayer(entry, stageSize)` returning `UniversalLayerData` with:
@@ -49,14 +51,17 @@ React screens
   - Asset URLs, scaling, rotation, and orbit configuration snapshots.
 
 ### `layerSpin.ts` – Spin Processor
+
 - Runtime animation: rotates layers around the configured pivot while keeping the pivot anchored in stage space.
 - Supports optional runtime overrides via `SpinConfig` (percent-based pivot).
 
 ### `layerOrbit.ts` – Orbital Processor
+
 - Handles circular motion, optional auto-orientation, and orbit-line metadata.
 - Computes visibility hints to let renderers skip off-stage orbital layers.
 
 ### `layer.ts` – Processor Registry & Utilities
+
 - Registers the default processors (`spin`, `orbital`).
 - Provides `runPipeline`, `processBatch`, and `createPipelineCache` for renderers.
 - Maintains `EnhancedLayerData` type definitions reflecting the trimmed data model.
@@ -75,4 +80,3 @@ React screens
 4. Add config schema entries back into `shared/config/Config.ts` and JSON resources.
 
 Keep this list updated if additional steps become necessary.
-
