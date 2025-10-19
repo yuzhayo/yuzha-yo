@@ -7,7 +7,7 @@
  * essential functionalities:
  *
  * 1. TYPES & PIPELINE - Layer data types and pipeline execution
- * 2. PROCESSOR REGISTRY - Plugin system for layer behaviors (spin, orbit, debug)
+ * 2. PROCESSOR REGISTRY - Plugin system for layer behaviors (spin and orbit)
  * 3. ANIMATION UTILITIES - Helper functions for animations and performance
  *
  * ARCHITECTURE FLOW (for future AI agents):
@@ -78,9 +78,7 @@
  */
 
 import type { UniversalLayerData } from "./layerCore";
-import type { ImageMappingDebugVisuals, ImageMappingDebugConfig } from "./layerDebug";
 import type { LayerConfigEntry } from "../config/Config";
-import { createImageMappingDebugProcessor } from "./layerDebug";
 import { createSpinProcessor } from "./layerSpin";
 import { createOrbitalProcessor } from "./layerOrbit";
 
@@ -105,7 +103,7 @@ import { createOrbitalProcessor } from "./layerOrbit";
  * Layer processor function type - transforms UniversalLayerData into EnhancedLayerData
  *
  * Processors can:
- * - Add new properties (spin rotation, orbital position, debug visuals)
+ * - Add new properties (spin rotation, orbital position, or other custom state)
  * - Modify existing properties (position, rotation, visibility)
  * - Use timestamp for time-based animations
  *
@@ -125,7 +123,7 @@ export type LayerProcessor = (layer: UniversalLayerData, timestamp?: number) => 
  * Enhanced universal layer data that can include additional properties from processors
  *
  * Base properties (from UniversalLayerData - prepared by LayerCore.prepareLayer()):
- * - imageMapping: Image geometry (center, tip, base, dimensions, axis angle, rotation)
+ * - imageMapping: Image geometry (center point and native dimensions)
  * - calculation: Precomputed coordinate aliases (stage/image/percent) for points
  * - position: Layer position on stage
  * - scale: Layer scale factor
@@ -133,9 +131,8 @@ export type LayerProcessor = (layer: UniversalLayerData, timestamp?: number) => 
  * - layerId: Unique layer identifier
  *
  * Processor-added properties (added by various processors):
- * - Spin properties: spinCenter, spinSpeed, currentRotation, etc.
+ * - Spin properties: spinSpeed, currentRotation, pivot metadata, etc.
  * - Orbital properties: orbitStagePoint, orbitRadius, currentOrbitAngle, etc.
- * - Debug properties: imageMappingDebugVisuals, etc.
  * - Future processors can add more properties here
  *
  * FOR FUTURE AI AGENTS:
@@ -144,7 +141,6 @@ export type LayerProcessor = (layer: UniversalLayerData, timestamp?: number) => 
  */
 export type EnhancedLayerData = UniversalLayerData & {
   // Spin properties (added by LayerCorePipelineSpin)
-  spinCenter?: { x: number; y: number };
   spinSpeed?: number;
   spinDirection?: "cw" | "ccw";
   currentRotation?: number;
@@ -169,10 +165,6 @@ export type EnhancedLayerData = UniversalLayerData & {
     radius: number;
     visible: boolean;
   };
-
-  // Image Mapping Debug properties (added by LayerCorePipelineImageMappingDebug)
-  imageMappingDebugVisuals?: ImageMappingDebugVisuals;
-  imageMappingDebugConfig?: Partial<ImageMappingDebugConfig>;
 
   // Future properties will be added here by other processors
   // For example, if you add a blur processor, add: blurAmount?: number;
@@ -199,7 +191,7 @@ export type EnhancedLayerData = UniversalLayerData & {
  * @example
  * const enhanced = runPipeline(
  *   baseLayer,
- *   [spinProcessor, orbitalProcessor, debugProcessor],
+ *   [spinProcessor, orbitalProcessor],
  *   performance.now()
  * );
  */
@@ -365,7 +357,7 @@ export function registerProcessor(plugin: ProcessorPlugin): void {
  *
  * @example
  * const processors = getProcessorsForEntry(layerConfig);
- * // processors might contain: [spinProcessor, orbitalProcessor, debugProcessor]
+ * // processors might contain: [spinProcessor, orbitalProcessor]
  */
 export function getProcessorsForEntry(
   entry: LayerConfigEntry,
@@ -391,7 +383,7 @@ export function getProcessorsForEntry(
 // DEFAULT PROCESSOR REGISTRATIONS
 // ============================================================================
 // These processors are registered by default when this module loads.
-// They handle the core layer behaviors: debug visualization, spin, and orbital.
+// They handle the core layer behaviors: spin and orbital motion.
 //
 // FOR FUTURE AI AGENTS:
 // - These are examples of how to register processors
@@ -399,47 +391,6 @@ export function getProcessorsForEntry(
 // - The actual processor logic is in separate files (LayerCorePipelineSpin, etc.)
 // - shouldAttach() checks config properties to decide if processor is needed
 // ============================================================================
-
-/**
- * Image Mapping Debug Processor
- *
- * Attaches debug visualization for layer mapping points (center, tip, base, etc.)
- * Only attaches if at least one debug visualization flag is enabled in config.
- */
-registerProcessor({
-  name: "image-mapping-debug",
-  shouldAttach(entry) {
-    return Boolean(
-      entry.showCenter ||
-        entry.showTip ||
-        entry.showBase ||
-        entry.showStageCenter ||
-        entry.showAxisLine ||
-        entry.showRotation ||
-        entry.showTipRay ||
-        entry.showBaseRay ||
-        entry.showBoundingBox,
-    );
-  },
-  create(entry) {
-    return createImageMappingDebugProcessor({
-      showCenter: entry.showCenter,
-      showTip: entry.showTip,
-      showBase: entry.showBase,
-      showStageCenter: entry.showStageCenter,
-      showAxisLine: entry.showAxisLine,
-      showRotation: entry.showRotation,
-      showTipRay: entry.showTipRay,
-      showBaseRay: entry.showBaseRay,
-      showBoundingBox: entry.showBoundingBox,
-      centerStyle: entry.centerStyle,
-      tipStyle: entry.tipStyle,
-      baseStyle: entry.baseStyle,
-      stageCenterStyle: entry.stageCenterStyle,
-      colors: entry.debugColors,
-    });
-  },
-});
 
 /**
  * Spin Processor
@@ -754,13 +705,11 @@ export function easeOutBounce(t: number): number {
 // UTILITIES:
 // - PipelineCache: Frame-based caching to avoid redundant calculations
 // - StaticLayerBuffer: Offscreen canvas for static (non-animated) layers
-// - ThrottledDebugRenderer: Reduces debug visualization overhead
 // - Layer batching: Groups layers by animation type for optimized rendering
 //
 // FOR FUTURE AI AGENTS:
 // - Use PipelineCache in renderers to cache layer processing results per frame
 // - Use StaticLayerBuffer for layers that don't animate (saves CPU/GPU)
-// - Use ThrottledDebugRenderer to render debug visuals every N frames
 // - Use batchLayersByAnimation to optimize rendering order
 // ============================================================================
 
@@ -918,54 +867,6 @@ export class StaticLayerBuffer {
    */
   static isSupported(): boolean {
     return typeof OffscreenCanvas !== "undefined";
-  }
-}
-
-/**
- * Throttled debug renderer
- *
- * Reduces overhead of debug visualization by only rendering debug elements
- * every N frames instead of every frame.
- *
- * USAGE:
- * const throttle = new ThrottledDebugRenderer(2); // Render every 2nd frame
- * if (throttle.shouldRender()) {
- *   renderDebugVisualization();
- * }
- */
-export class ThrottledDebugRenderer {
-  private frameCounter = 0;
-  private throttleFactor: number;
-
-  /**
-   * @param throttleFactor - Render every Nth frame (1 = every frame, 2 = every 2nd frame)
-   */
-  constructor(throttleFactor: number = 2) {
-    this.throttleFactor = Math.max(1, Math.floor(throttleFactor));
-  }
-
-  /**
-   * Check if debug should render this frame
-   * @returns true if should render, false if should skip
-   */
-  shouldRender(): boolean {
-    this.frameCounter++;
-    return this.frameCounter % this.throttleFactor === 0;
-  }
-
-  /**
-   * Reset frame counter
-   */
-  reset(): void {
-    this.frameCounter = 0;
-  }
-
-  /**
-   * Update throttle factor
-   * @param factor - New throttle factor
-   */
-  setThrottleFactor(factor: number): void {
-    this.throttleFactor = Math.max(1, Math.floor(factor));
   }
 }
 

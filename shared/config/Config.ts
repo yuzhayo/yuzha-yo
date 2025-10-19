@@ -35,7 +35,7 @@ export type LayerRenderer = "2D" | "3D";
  * - orbitStagePoint: Orbit center [x, y] stage pixels
  * - orbitLinePoint: Point defining orbit radius [x, y]
  * - orbitImagePoint: Which image point follows the orbit [x%, y%]
- * - orbitLine: Whether to draw debug orbit circle
+ * - orbitLine: Whether to draw the orbit path circle
  * - orbitOrient: Auto-rotate image to face orbit direction
  * - orbitSpeed: Orbital rotation speed degrees/second
  * - orbitDirection: "cw" or "ccw"
@@ -78,19 +78,6 @@ export type LayerConfigEntry = {
    */
   BasicImageAngle?: number;
 
-  // ===== IMAGE MAPPING CONFIG =====
-  /**
-   * Angle in degrees defining the "tip" direction of the image (default 90° = top).
-   * Screen-space convention: 0° = right, 90° = top, 180° = left, 270° = bottom.
-   * Used by orbital orient and debug visualization.
-   */
-  imageTip?: number;
-  /**
-   * Angle in degrees defining the "base" direction of the image (default 270° = bottom).
-   * Can be set independently from imageTip for asymmetric images.
-   */
-  imageBase?: number;
-
   // ===== SPIN CONFIG (Rotation Animation) =====
   /** Pivot point on stage [x, y] in absolute pixels (0-2048). Image rotates around this point. */
   spinStagePoint?: number[];
@@ -108,7 +95,7 @@ export type LayerConfigEntry = {
   orbitLinePoint?: number[];
   /** Image point [x%, y%] (0-100) that follows the orbital path */
   orbitImagePoint?: number[];
-  /** Whether to render the orbit path circle (debug visualization) */
+  /** Whether to render the orbit path circle (visual orbit indicator) */
   orbitLine?: boolean;
   /** Auto-orient image to face along the orbit radius direction */
   orbitOrient?: boolean;
@@ -117,45 +104,6 @@ export type LayerConfigEntry = {
   /** Orbital direction: "cw" (clockwise) or "ccw" (counter-clockwise) */
   orbitDirection?: "cw" | "ccw";
 
-  // ===== IMAGE MAPPING DEBUG CONFIG =====
-  /** Show image center point marker */
-  showCenter?: boolean;
-  /** Show image tip point marker (direction indicator) */
-  showTip?: boolean;
-  /** Show image base point marker */
-  showBase?: boolean;
-  /** Show stage center reference point */
-  showStageCenter?: boolean;
-  /** Show axis line from base to tip */
-  showAxisLine?: boolean;
-  /** Show rotation angle indicator */
-  showRotation?: boolean;
-  /** Show ray from center to tip */
-  showTipRay?: boolean;
-  /** Show ray from center to base */
-  showBaseRay?: boolean;
-  /** Show bounding box of the image */
-  showBoundingBox?: boolean;
-  /** Center marker style */
-  centerStyle?: "dot" | "crosshair";
-  /** Tip marker style */
-  tipStyle?: "circle" | "arrow";
-  /** Base marker style */
-  baseStyle?: "circle" | "square";
-  /** Stage center marker style */
-  stageCenterStyle?: "dot" | "crosshair" | "star";
-  /** Custom debug colors for markers */
-  debugColors?: {
-    center?: string;
-    tip?: string;
-    base?: string;
-    stageCenter?: string;
-    axisLine?: string;
-    rotation?: string;
-    tipRay?: string;
-    baseRay?: string;
-    boundingBox?: string;
-  };
 };
 
 export type LayerConfig = LayerConfigEntry[];
@@ -215,8 +163,6 @@ type ConfigYuzhaEntry = {
       BasicStagePoint?: number[];
       BasicImagePoint?: number[];
       BasicImageAngle?: number; // Renamed from BasicAngleImage
-      imageTip?: number;
-      imageBase?: number;
 
       // Spin Config properties
       spinStagePoint?: number[];
@@ -233,31 +179,6 @@ type ConfigYuzhaEntry = {
       orbitSpeed?: number;
       orbitDirection?: "cw" | "ccw";
 
-      // Image Mapping Debug properties
-      showCenter?: boolean;
-      showTip?: boolean;
-      showBase?: boolean;
-      showStageCenter?: boolean;
-      showAxisLine?: boolean;
-      showRotation?: boolean;
-      showTipRay?: boolean;
-      showBaseRay?: boolean;
-      showBoundingBox?: boolean;
-      centerStyle?: "dot" | "crosshair";
-      tipStyle?: "circle" | "arrow";
-      baseStyle?: "circle" | "square";
-      stageCenterStyle?: "dot" | "crosshair" | "star";
-      debugColors?: {
-        center?: string;
-        tip?: string;
-        base?: string;
-        stageCenter?: string;
-        axisLine?: string;
-        rotation?: string;
-        tipRay?: string;
-        baseRay?: string;
-        boundingBox?: string;
-      };
     };
   };
 };
@@ -267,7 +188,7 @@ type ConfigYuzhaEntry = {
  *
  * This function:
  * 1. Extracts core properties from top level (LayerID, ImageID, LayerOrder, ImageScale, renderer)
- * 2. Merges group properties in priority order: Basic → Spin → Orbital → Debug
+ * 2. Merges group properties in priority order: Basic ? Spin ? Orbital
  * 3. Applies special merge rules (e.g., Spin overrides Basic positioning when active)
  *
  * Merge Priority (later groups override earlier ones):
@@ -275,7 +196,6 @@ type ConfigYuzhaEntry = {
  * 2. Basic Config - static positioning and rotation
  * 3. Spin Config - overrides BasicStagePoint/BasicImagePoint when spinSpeed > 0
  * 4. Orbital Config - orbital motion settings
- * 5. Debug Config - visualization flags (additive, never overrides)
  *
  * Special Rules:
  * - When spinSpeed > 0: Spin positioning replaces Basic positioning, BasicImageAngle resets to 0
@@ -306,7 +226,6 @@ function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
     const basic = groups["Basic Config"] || {};
     const spin = groups["Spin Config"] || {};
     const orbital = groups["Orbital Config"] || {};
-    const debug = groups["Image Mapping Debug"] || {};
 
     // Step 3: Merge Basic Config (static positioning and rotation)
     // These provide default positioning when no animation is active
@@ -338,8 +257,6 @@ function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
     if (orbital.orbitSpeed !== undefined) merged.orbitSpeed = orbital.orbitSpeed;
     if (orbital.orbitDirection) merged.orbitDirection = orbital.orbitDirection;
 
-    // Step 6: Merge Debug Config (lowest priority, purely additive)
-    Object.assign(merged, debug);
 
     return merged as LayerConfigEntry;
   });

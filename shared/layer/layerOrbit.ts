@@ -60,7 +60,6 @@
  */
 
 import { imagePercentToImagePoint, type PercentPoint, type Point2D } from "./layerBasic";
-import type { UniversalLayerData } from "./layerCore";
 import {
   applyRotationDirection,
   calculateOrbitPosition,

@@ -18,5 +18,4 @@ export * from "./layerCore";
 export * from "./layerBasic";
 export * from "./layerSpin";
 export * from "./layerOrbit";
-export * from "./layerDebug";
 export * from "./layer";

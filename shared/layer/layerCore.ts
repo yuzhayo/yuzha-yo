@@ -18,8 +18,8 @@
  *    - Convert paths to URLs for loading
  *
  * 2. Image Mapping
- *    - Calculate imageTip and imageBase points based on angles
- *    - Determine image orientation and axis
+ *    - Provide image center and native dimension metadata for positioning
+ *    - Supply normalized coordinates used by spin and orbital processors
  *
  * 3. Layer Preparation (MAIN ENTRY POINT)
  *    - prepareLayer() - converts LayerConfigEntry → UniversalLayerData
@@ -57,7 +57,7 @@
  * - StageSystem.ts (calls prepareLayer for each layer)
  * - layerSpin.ts (imports types)
  * - layerOrbit.ts (imports types)
- * - layerDebug.ts (imports types)
+ * - Debug tooling archived (restore layerDebug.ts if overlays return)
  *
  * @module layer/layerCore
  */
@@ -83,7 +83,6 @@ import {
   stagePointToPercent,
   createCoordinateBundle,
   createDualSpaceCoordinate,
-  validatePoint,
 } from "./layerBasic";
 
 // ============================================================================
@@ -121,16 +120,11 @@ const pathMap = new Map(registry.map((entry) => [entry.id, entry.path]));
 
 /**
  * Image mapping information
- * Defines the geometry and orientation of an image
+ * Defines the core geometry of an image needed for positioning
  */
 export type ImageMapping = {
   imageCenter: { x: number; y: number };
-  imageTip: { x: number; y: number };
-  imageBase: { x: number; y: number };
   imageDimensions: { width: number; height: number };
-  displayAxisAngle: number;
-  displayRotation: number;
-  axisCenterOffset: { x: number; y: number };
 };
 
 /**
@@ -144,14 +138,12 @@ export type { Point2D, PercentPoint, CoordinateBundle, DualSpaceCoordinate, Orbi
  * This structure caches commonly used coordinate transformations to avoid
  * recalculating them in processors and renderers.
  *
- * FOR FUTURE AI AGENTS: All these coordinates are calculated during prepareLayer()
- * and stored here for efficient access. Use these instead of recalculating.
+ * FOR FUTURE AI AGENTS: These bundles are calculated during prepareLayer()
+ * and stored here for efficient access. Use them instead of recalculating.
  */
 export type LayerCalculationPoints = {
   stageCenter: CoordinateBundle;
   imageCenter: DualSpaceCoordinate;
-  imageTip: DualSpaceCoordinate;
-  imageBase: DualSpaceCoordinate;
   spinPoint: DualSpaceCoordinate;
   orbitPoint: OrbitCoordinate;
   orbitLine?: CoordinateBundle;
@@ -177,8 +169,6 @@ export type UniversalLayerData = {
   position: Point2D;
   scale: Point2D;
   imageMapping: ImageMapping;
-  imageTip: number;
-  imageBase: number;
   calculation: LayerCalculationPoints;
   rotation?: number;
   orbitStagePoint?: Point2D;
@@ -193,130 +183,29 @@ export type UniversalLayerData = {
 // ============================================================================
 // IMAGE MAPPING
 // ============================================================================
-// Calculate image orientation and geometry.
-// FOR FUTURE AI AGENTS: This determines imageTip and imageBase points.
+// With debug visuals removed, the mapping only needs image center and size.
+// FOR FUTURE AI AGENTS: Extend this if you reintroduce directional metadata.
 // ============================================================================
 
-const STANDARD_MAPPING_CACHE = new Map<string, ImageMapping>();
-
 /**
- * Compute image mapping (orientation and geometry)
+ * Compute basic image mapping
  *
- * ALGORITHM:
- * 1. Calculate tip point: ray from center at tipAngle to image edge
- * 2. Calculate base point: ray from center at baseAngle to image edge
- * 3. Calculate axis angle and rotation based on tip-base line
- *
- * USAGE: Called by prepareLayer() to determine image orientation
- *
- * CACHING: Standard mappings (90°/270°) are cached for performance
+ * Provides the image center and dimensions for downstream coordinate math.
+ * This keeps the pipeline lightweight while still supporting pivot-based
+ * positioning and spin/orbit calculations.
  *
  * @param imageDimensions - Image width and height
- * @param tipAngle - Angle defining image "tip" direction (default 90° = top)
- * @param baseAngle - Angle defining image "base" direction (default 270° = bottom)
- * @returns Image mapping with center, tip, base, and axis information
+ * @returns Image mapping with center and dimensions
  */
 export function computeImageMapping(
   imageDimensions: { width: number; height: number },
-  tipAngle: number = 90,
-  baseAngle: number = 270,
-): ImageMapping {
-  // Use cache for standard mapping (performance optimization)
-  if (tipAngle === 90 && baseAngle === 270) {
-    const key = `${imageDimensions.width}x${imageDimensions.height}`;
-    const cached = STANDARD_MAPPING_CACHE.get(key);
-    if (cached) return cached;
-    const result = computeImageMappingInternal(imageDimensions, tipAngle, baseAngle);
-    STANDARD_MAPPING_CACHE.set(key, result);
-    return result;
-  }
-
-  return computeImageMappingInternal(imageDimensions, tipAngle, baseAngle);
-}
-
-/**
- * Internal image mapping calculation
- * Separated from computeImageMapping for caching logic
- */
-function computeImageMappingInternal(
-  imageDimensions: { width: number; height: number },
-  tipAngle: number,
-  baseAngle: number,
 ): ImageMapping {
   const { width, height } = imageDimensions;
-
-  const imageCenter = {
-    x: width / 2,
-    y: height / 2,
-  };
-
-  // Convert angles to radians (negate for screen coordinates)
-  const tipAngleRad = (-tipAngle * Math.PI) / 180;
-  const baseAngleRad = (-baseAngle * Math.PI) / 180;
-
-  // Calculate tip point: ray from center to edge at tipAngle
-  const tipDx = Math.cos(tipAngleRad);
-  const tipDy = Math.sin(tipAngleRad);
-
-  const halfWidth = width / 2;
-  const halfHeight = height / 2;
-
-  const tipScaleX = tipDx !== 0 ? halfWidth / Math.abs(tipDx) : Infinity;
-  const tipScaleY = tipDy !== 0 ? halfHeight / Math.abs(tipDy) : Infinity;
-  const tipScale = Math.min(tipScaleX, tipScaleY);
-
-  const tipOffsetX = Number.isFinite(tipScale) ? tipScale * tipDx : 0;
-  const tipOffsetY = Number.isFinite(tipScale) ? tipScale * tipDy : 0;
-
-  const imageTip = {
-    x: imageCenter.x + tipOffsetX,
-    y: imageCenter.y + tipOffsetY,
-  };
-
-  // Calculate base point: ray from center to edge at baseAngle
-  const baseDx = Math.cos(baseAngleRad);
-  const baseDy = Math.sin(baseAngleRad);
-
-  const baseScaleX = baseDx !== 0 ? halfWidth / Math.abs(baseDx) : Infinity;
-  const baseScaleY = baseDy !== 0 ? halfHeight / Math.abs(baseDy) : Infinity;
-  const baseScale = Math.min(baseScaleX, baseScaleY);
-
-  const baseOffsetX = Number.isFinite(baseScale) ? baseScale * baseDx : 0;
-  const baseOffsetY = Number.isFinite(baseScale) ? baseScale * baseDy : 0;
-
-  const imageBase = {
-    x: imageCenter.x + baseOffsetX,
-    y: imageCenter.y + baseOffsetY,
-  };
-
-  // Calculate axis angle from tip-base line
-  const axisDx = imageTip.x - imageBase.x;
-  const axisDy = imageTip.y - imageBase.y;
-
-  const displayAxisAngle = (Math.atan2(-axisDy, axisDx) * 180) / Math.PI;
-  const displayRotation = Number.isFinite(displayAxisAngle) ? 90 - displayAxisAngle : 0;
-
-  const axisMidpoint = {
-    x: (imageBase.x + imageTip.x) / 2,
-    y: (imageBase.y + imageTip.y) / 2,
-  };
-
-  const axisCenterOffset = {
-    x: imageCenter.x - axisMidpoint.x,
-    y: imageCenter.y - axisMidpoint.y,
-  };
-
   return {
-    imageCenter,
-    imageTip,
-    imageBase,
-    imageDimensions,
-    displayAxisAngle,
-    displayRotation,
-    axisCenterOffset,
+    imageCenter: { x: width / 2, y: height / 2 },
+    imageDimensions: { width, height },
   };
 }
-
 // ============================================================================
 // ASSET RESOLUTION
 // ============================================================================
@@ -559,34 +448,24 @@ export async function prepareLayer(
   // Calculate transform with dimensions
   const { position, scale } = compute2DTransform(entry, stageSize, dimensions);
 
-  // Calculate image mapping with imageTip and imageBase from config
-  const tipAngle = typeof entry.imageTip === "number" ? entry.imageTip : 90;
-  const baseAngle = typeof entry.imageBase === "number" ? entry.imageBase : 270;
-  const imageMapping = computeImageMapping(dimensions, tipAngle, baseAngle);
+  // Calculate image mapping for core geometry
+  const imageMapping = computeImageMapping(dimensions);
 
-  // Determine if we need full calculations (lazy evaluation for performance)
-  const needsFullCalculation =
+  // Track dynamic features for performance logging
+  const hasDynamicFeatures =
     entry.spinSpeed !== 0 ||
     entry.orbitSpeed !== 0 ||
     entry.orbitStagePoint !== undefined ||
     entry.orbitLinePoint !== undefined ||
     entry.orbitLine === true ||
     entry.orbitOrient === true ||
-    entry.orbitImagePoint !== undefined ||
-    entry.showCenter ||
-    entry.showTip ||
-    entry.showBase ||
-    entry.showAxisLine ||
-    entry.showRotation ||
-    entry.showTipRay ||
-    entry.showBaseRay ||
-    entry.showBoundingBox;
+    entry.orbitImagePoint !== undefined;
 
   const stageCenterValue = stageSize / 2;
   const stageCenterPoint: Point2D = { x: stageCenterValue, y: stageCenterValue };
   const stageCenterPercent = stagePointToPercent(stageCenterPoint, stageSize);
 
-  // Always compute image center (needed for basic rendering)
+  // Compute image center (needed for rendering and pivot math)
   const imageCenterStage = imagePointToStagePoint(
     imageMapping.imageCenter,
     imageMapping.imageDimensions,
@@ -599,97 +478,37 @@ export async function prepareLayer(
   );
   const imageCenterStagePercent = stagePointToPercent(imageCenterStage, stageSize);
 
-  // Lazy calculation: only compute tip/base/spin/orbit if actually needed
-  let imageTipStage: Point2D;
-  let imageBaseStage: Point2D;
-  let imageTipPercent: PercentPoint;
-  let imageBasePercent: PercentPoint;
-  let imageTipStagePercent: PercentPoint;
-  let imageBaseStagePercent: PercentPoint;
-  let spinStagePoint: Point2D;
-  let spinStagePercent: PercentPoint;
-  let spinImagePercent: PercentPoint;
-  let spinImagePoint: Point2D;
-  let orbitStagePoint: Point2D;
-  let orbitStagePercent: PercentPoint;
-  let orbitLinePoint: Point2D;
-  let orbitLinePercent: PercentPoint;
-  let orbitLineVisible: boolean;
-  let orbitRadius: number;
-  let orbitImagePercent: PercentPoint;
-  let orbitImagePoint: Point2D;
-  let orbitImageStagePoint: Point2D;
-  let orbitImageStagePercent: PercentPoint;
+  // Spin pivot calculations (defaults anchor to configured point or image center)
+  const spinStagePoint = normalizeStagePointInput(entry.spinStagePoint, position, stageSize);
+  const spinStagePercent = stagePointToPercent(spinStagePoint, stageSize);
+  const spinImagePercent = normalizePercentInput(entry.spinImagePoint, 50, 50);
+  const spinImagePoint = imagePercentToImagePoint(spinImagePercent, imageMapping.imageDimensions);
 
-  if (needsFullCalculation) {
-    // Full calculation for animated or debug layers
-    imageTipStage = imagePointToStagePoint(
-      imageMapping.imageTip,
-      imageMapping.imageDimensions,
-      scale,
-      position,
-    );
-    imageBaseStage = imagePointToStagePoint(
-      imageMapping.imageBase,
-      imageMapping.imageDimensions,
-      scale,
-      position,
-    );
-    imageTipPercent = imagePointToPercent(imageMapping.imageTip, imageMapping.imageDimensions);
-    imageBasePercent = imagePointToPercent(imageMapping.imageBase, imageMapping.imageDimensions);
-    imageTipStagePercent = stagePointToPercent(imageTipStage, stageSize);
-    imageBaseStagePercent = stagePointToPercent(imageBaseStage, stageSize);
-
-    spinStagePoint = normalizeStagePointInput(entry.spinStagePoint, position, stageSize);
-    spinStagePercent = stagePointToPercent(spinStagePoint, stageSize);
-    spinImagePercent = normalizePercentInput(entry.spinImagePoint, 50, 50);
-    spinImagePoint = imagePercentToImagePoint(spinImagePercent, imageMapping.imageDimensions);
-
-    orbitStagePoint = normalizeStagePointInput(entry.orbitStagePoint, stageCenterPoint, stageSize);
-    orbitStagePercent = stagePointToPercent(orbitStagePoint, stageSize);
-    orbitLinePoint = normalizeStagePointInput(entry.orbitLinePoint, orbitStagePoint, stageSize);
-    orbitLinePercent = stagePointToPercent(orbitLinePoint, stageSize);
-    orbitLineVisible = Boolean(entry.orbitLine);
-    const radiusDx = orbitLinePoint.x - orbitStagePoint.x;
-    const radiusDy = orbitLinePoint.y - orbitStagePoint.y;
-    orbitRadius = Math.sqrt(radiusDx * radiusDx + radiusDy * radiusDy);
-    orbitImagePercent = normalizePercentInput(entry.orbitImagePoint, 50, 50);
-    orbitImagePoint = imagePercentToImagePoint(orbitImagePercent, imageMapping.imageDimensions);
-    orbitImageStagePoint = imagePointToStagePoint(
-      orbitImagePoint,
-      imageMapping.imageDimensions,
-      scale,
-      position,
-    );
-    orbitImageStagePercent = stagePointToPercent(orbitImageStagePoint, stageSize);
-  } else {
-    // Minimal calculation for static layers (use defaults/zero values)
-    const zeroPoint: Point2D = { x: 0, y: 0 };
-    const zeroPercent: PercentPoint = { x: 0, y: 0 };
-    imageTipStage = zeroPoint;
-    imageBaseStage = zeroPoint;
-    imageTipPercent = zeroPercent;
-    imageBasePercent = zeroPercent;
-    imageTipStagePercent = zeroPercent;
-    imageBaseStagePercent = zeroPercent;
-    spinStagePoint = zeroPoint;
-    spinStagePercent = zeroPercent;
-    spinImagePercent = zeroPercent;
-    spinImagePoint = zeroPoint;
-    orbitStagePoint = zeroPoint;
-    orbitStagePercent = zeroPercent;
-    orbitLinePoint = zeroPoint;
-    orbitLinePercent = zeroPercent;
-    orbitLineVisible = false;
-    orbitRadius = 0;
-    orbitImagePercent = zeroPercent;
-    orbitImagePoint = zeroPoint;
-    orbitImageStagePoint = zeroPoint;
-    orbitImageStagePercent = zeroPercent;
-  }
+  // Orbit coordinate preparation (safe defaults keep values consistent)
+  const orbitStagePoint = normalizeStagePointInput(
+    entry.orbitStagePoint,
+    stageCenterPoint,
+    stageSize,
+  );
+  const orbitStagePercent = stagePointToPercent(orbitStagePoint, stageSize);
+  const orbitLinePoint = normalizeStagePointInput(entry.orbitLinePoint, orbitStagePoint, stageSize);
+  const orbitLinePercent = stagePointToPercent(orbitLinePoint, stageSize);
+  const orbitLineVisible = Boolean(entry.orbitLine);
+  const radiusDx = orbitLinePoint.x - orbitStagePoint.x;
+  const radiusDy = orbitLinePoint.y - orbitStagePoint.y;
+  const orbitRadius = Math.sqrt(radiusDx * radiusDx + radiusDy * radiusDy);
+  const orbitImagePercent = normalizePercentInput(entry.orbitImagePoint, 50, 50);
+  const orbitImagePoint = imagePercentToImagePoint(orbitImagePercent, imageMapping.imageDimensions);
+  const orbitImageStagePoint = imagePointToStagePoint(
+    orbitImagePoint,
+    imageMapping.imageDimensions,
+    scale,
+    position,
+  );
+  const orbitImageStagePercent = stagePointToPercent(orbitImageStagePoint, stageSize);
 
   // Calculate rotation from BasicImageAngle (degrees)
-  const basicImageAngle = typeof entry.BasicImageAngle === "number" ? entry.BasicImageAngle : 0;
+  const basicImageAngle = typeof entry.BasicImageAngle === 'number' ? entry.BasicImageAngle : 0;
   const rotation = basicImageAngle;
 
   const calculation: LayerCalculationPoints = {
@@ -699,18 +518,6 @@ export async function prepareLayer(
       imageCenterPercent,
       imageCenterStage,
       imageCenterStagePercent,
-    ),
-    imageTip: createDualSpaceCoordinate(
-      imageMapping.imageTip,
-      imageTipPercent,
-      imageTipStage,
-      imageTipStagePercent,
-    ),
-    imageBase: createDualSpaceCoordinate(
-      imageMapping.imageBase,
-      imageBasePercent,
-      imageBaseStage,
-      imageBaseStagePercent,
     ),
     spinPoint: createDualSpaceCoordinate(
       spinImagePoint,
@@ -738,8 +545,6 @@ export async function prepareLayer(
     position,
     scale,
     imageMapping,
-    imageTip: tipAngle,
-    imageBase: baseAngle,
     calculation,
     rotation,
     orbitStagePoint,
@@ -750,14 +555,13 @@ export async function prepareLayer(
     orbitImagePoint,
     orbitOrient: Boolean(entry.orbitOrient),
   };
-
-  // Log performance metrics in development
+// Log performance metrics in development
   if (IS_DEV) {
     const perfEnd = performance.now();
     const duration = perfEnd - perfStart;
     if (duration > 10) {
       console.log(
-        `[LayerCore] prepareLayer "${entry.LayerID}" took ${duration.toFixed(2)}ms (lazy: ${!needsFullCalculation})`,
+        `[LayerCore] prepareLayer "${entry.LayerID}" took ${duration.toFixed(2)}ms (lazy: ${!hasDynamicFeatures})`,
       );
     }
   }

@@ -2,220 +2,77 @@
 
 ## Overview
 
-The Layer System is the core rendering pipeline for the Yuzha application. It handles layer preparation, animation processing (spin and orbital motion), and debug visualization for a sophisticated 2D composition system using React and Three.js.
+The layer system prepares configuration data for rendering and drives runtime animation. It now focuses on spin and orbital behaviors only—the legacy debug visualization tooling has been archived while the pipeline is simplified. Future agents can restore the debug module from git history if live overlays are required again.
 
 ## Module Architecture
 
-### Current Structure (Post-Refactoring, October 2025)
-
-The layer system has been refactored into specialized modules with clear separation of concerns:
-
 ```
 shared/layer/
-├── layerBasic.ts       # Pure utilities (coordinate transforms, math, validation)
-├── layerCore.ts        # Core layer preparation and asset resolution
-├── layerDebug.ts       # Debug visualization (Canvas/Three.js renderers)
-├── layerSpin.ts        # Spin animation processor
-├── layerOrbit.ts       # Orbital motion processor
-├── layer.ts            # Pipeline orchestrator and processor registry
-├── index.ts            # Module exports
-└── README.md           # This file
+├── layerBasic.ts   # Coordinate math & validation helpers (no deps)
+├── layerCore.ts    # Loads assets, computes positions, builds base layer data
+├── layerSpin.ts    # Spin animation processor (pivot-correct rotation)
+├── layerOrbit.ts   # Orbital motion processor (position + auto-orient)
+├── layer.ts        # Processor registry, pipeline execution utilities
+├── index.ts        # Barrel exports
+└── README.md       # This guide
 ```
 
-### Module Responsibilities
-
-#### **layerBasic.ts** - Foundation Utilities
-- **Purpose**: Pure math functions with no external dependencies
-- **Key Functions**:
-  - `imagePercentToImagePoint()` - Convert percent coordinates to image space
-  - `imagePointToStagePoint()` - Transform image coordinates to stage coordinates
-  - `validatePoint()` - Coordinate validation
-  - `lerp()`, `clamp()`, `normalizeAngle()` - Math utilities
-- **Dependencies**: None
-- **Used By**: layerCore, layerSpin, layerOrbit, layerDebug
-
-#### **layerCore.ts** - Core Layer System
-- **Purpose**: Layer preparation, asset resolution, and image mapping
-- **Key Functions**:
-  - `prepareLayer()` - Main entry point for layer preparation
-  - `computeImageMapping()` - Calculate image positioning and dimensions
-  - `getAssetPath()` - Resolve asset paths from registry
-- **Key Types**:
-  - `UniversalLayerData` - Base layer data structure
-  - `ImageMapping` - Image positioning data
-  - `LayerCalculation` - Pre-calculated coordinate transformations
-- **Dependencies**: layerBasic, Config (external)
-- **Used By**: layer.ts, stage renderers
-
-#### **layerDebug.ts** - Debug Visualization
-- **Purpose**: Visual debugging tools for layer system development
-- **Key Exports**:
-  - `createImageMappingDebugProcessor()` - Debug processor factory
-  - `CanvasDebugRenderer` - Canvas 2D debug rendering functions
-  - `ThreeDebugRenderer` - Three.js debug rendering functions
-  - Debug marker types (ImageCenterMarker, ImageTipMarker, etc.)
-- **Features**:
-  - Image center/tip/base markers
-  - Axis lines and rotation indicators
-  - Orbital motion visualization
-  - Bounding boxes and ray tracing
-- **Dependencies**: layerCore, layerBasic
-- **Used By**: layer.ts (optional debug processor)
-
-#### **layerSpin.ts** - Spin Animation
-- **Purpose**: Continuous rotation animation around pivot points
-- **Key Exports**:
-  - `createSpinProcessor()` - Spin animation processor factory
-  - `calculateSpinRotation()` - Calculate rotation at timestamp
-  - Spin-related types (SpinData, SpinConfig, etc.)
-- **Features**:
-  - RPM-based rotation speed
-  - Custom pivot point support
-  - Rotation offset handling
-- **Dependencies**: layerCore, layerBasic
-- **Used By**: layer.ts (registered processor)
-
-#### **layerOrbit.ts** - Orbital Motion
-- **Purpose**: Orbital movement around parent layers
-- **Key Exports**:
-  - `createOrbitalProcessor()` - Orbital motion processor factory
-  - `calculateOrbitPosition()` - Calculate position at timestamp
-  - Orbital types (OrbitalData, OrbitalConfig, etc.)
-- **Features**:
-  - Parent-child orbital relationships
-  - Elliptical orbits
-  - Phase offset support
-  - Base/tip point orbital motion
-- **Dependencies**: layerCore, layerBasic
-- **Used By**: layer.ts (registered processor)
-
-#### **layer.ts** - Pipeline Orchestrator
-- **Purpose**: Processor registry and pipeline execution
-- **Key Exports**:
-  - `registerProcessor()` - Register new layer processors
-  - `getProcessorsForEntry()` - Get applicable processors
-  - `runPipeline()` - Execute processors on layer data
-  - `EnhancedLayerData` - Layer data after processor enhancement
-- **Features**:
-  - Pluggable processor architecture
-  - Conditional processor attachment
-  - Pipeline caching for performance
-  - Animation utilities
-- **Dependencies**: All layer modules
-- **Used By**: Stage renderers, MainScreen
-
-#### **index.ts** - Module Exports
-- **Purpose**: Single entry point for layer system
-- **Exports**: All public APIs from layer modules
-- **Usage**: `import { prepareLayer } from "@shared/layer"`
-
-## Historical Context
-
-### Original Structure (Pre-October 2025)
-
-The layer system was previously organized as:
-
-```
-shared/layer/
-├── LayerCore.ts                          → Refactored to layerCore.ts + layerBasic.ts
-├── LayerCorePipelineSpin.ts              → Renamed to layerSpin.ts
-├── LayerCorePipelineOrbital.ts           → Renamed to layerOrbit.ts
-├── LayerCorePipelineImageMappingUtils.ts → Refactored to layerDebug.ts
-└── layer.ts                              → Kept (enhanced with better docs)
-```
-
-### Refactoring Goals (Achieved)
-
-1. **Separation of Concerns**: Pure utilities separated from business logic
-2. **Clear Dependencies**: No circular dependencies, layered architecture
-3. **Maintainability**: Each module has single, well-defined responsibility
-4. **Extensibility**: Easy to add new processors or utilities
-5. **Documentation**: Comprehensive inline docs for future AI agents
-
-### Migration Notes
-
-- **API Compatibility**: All public APIs preserved, no breaking changes
-- **Import Paths**: Updated to use new file names (lowercase convention)
-- **Type Safety**: All types maintained and properly re-exported
-- **Performance**: No regression, image dimension caching preserved
-- **Testing**: All functionality verified working post-refactoring
+> Debug visualization utilities (`layerDebug.ts`) are currently removed; reintroduce them if diagnostic overlays are needed.
 
 ## Data Flow
 
 ```
 ConfigYuzha.json (layer definitions)
   ↓
-Config.ts (loads, transforms, validates)
+shared/config/Config.ts (loads, flattens groups, validates)
   ↓
-layerCore.prepareLayer() (prepares base layer data)
+shared/layer/layerCore.ts (prepareLayer → UniversalLayerData)
   ↓
-layer.ts processors (spin, orbit, debug)
+shared/layer/layer.ts processors (spin + orbit)
   ↓
-Stage Renderers (DOM/Canvas/Three)
+Stage renderers (DOM / Canvas / Three.js)
   ↓
-MainScreen.tsx (displays final result)
+React screens
 ```
 
-## Adding New Processors
+## Module Summaries
 
-To add a new layer processor (e.g., a blur effect):
+### `layerBasic.ts` – Foundation Utilities
+- Pure math/coordinate helpers (`imagePercentToImagePoint`, `imagePointToStagePoint`, `validatePoint`, `normalizeAngle`, etc.)
+- No dependencies; imported by every other layer module.
 
-```typescript
-// 1. Import processor registry
-import { registerProcessor, type LayerProcessor } from "@shared/layer/layer";
+### `layerCore.ts` – Core Preparation
+- Resolves assets via `ImageRegistry.json`.
+- Computes image center + scaled transforms (tip/base math removed for lean pipeline).
+- Exposes `prepareLayer(entry, stageSize)` returning `UniversalLayerData` with:
+  - Stage/image coordinate bundles (center, spin pivot, orbit anchors).
+  - Asset URLs, scaling, rotation, and orbit configuration snapshots.
 
-// 2. Create processor function
-function createBlurProcessor(blurAmount: number): LayerProcessor {
-  return (layer, timestamp) => ({
-    ...layer,
-    blurAmount,
-    hasBlur: true,
-  });
-}
+### `layerSpin.ts` – Spin Processor
+- Runtime animation: rotates layers around the configured pivot while keeping the pivot anchored in stage space.
+- Supports optional runtime overrides via `SpinConfig` (percent-based pivot).
 
-// 3. Register processor
-registerProcessor({
-  name: "blur",
-  shouldAttach(entry) {
-    return entry.blurAmount !== undefined && entry.blurAmount > 0;
-  },
-  create(entry) {
-    return createBlurProcessor(entry.blurAmount);
-  },
-});
-```
+### `layerOrbit.ts` – Orbital Processor
+- Handles circular motion, optional auto-orientation, and orbit-line metadata.
+- Computes visibility hints to let renderers skip off-stage orbital layers.
 
-## Performance Considerations
+### `layer.ts` – Processor Registry & Utilities
+- Registers the default processors (`spin`, `orbital`).
+- Provides `runPipeline`, `processBatch`, and `createPipelineCache` for renderers.
+- Maintains `EnhancedLayerData` type definitions reflecting the trimmed data model.
 
-- **Image Dimension Caching**: Asset dimensions cached to avoid repeated Image loading
-- **Pipeline Caching**: Processor pipelines cached per layer entry
-- **Lazy Loading**: Images loaded on-demand when layers are prepared
-- **Pre-calculated Transforms**: Coordinate transformations pre-computed in layerCore
+## Migration Notes
 
-## Debug Visualization
+- Config debug flags (`showTip`, `showBase`, etc.) and tip/base angles were removed. JSON configs should only include core, spin, and orbital groups.
+- Renderers no longer import debug helpers. Hooks remain in comments for future re-enabling.
+- `LayerCorePipelineImageMappingUtils.ts` (legacy debug math) is retired; keep calculations inside `layerCore.ts`.
 
-Enable debug visualization in `ConfigYuzha.json`:
+## Re-enabling Debug Tooling Later (TODO)
 
-```json
-{
-  "layerEntry": "example-layer",
-  "debug": {
-    "showCenter": true,
-    "showTip": true,
-    "showBase": true,
-    "showAxisLine": true,
-    "showRotation": false,
-    "showBoundingBox": false
-  }
-}
-```
+1. Restore `shared/layer/layerDebug.ts` and re-export it from `shared/layer/index.ts`.
+2. Re-register the debug processor inside `layer.ts`.
+3. Reintroduce debug draws in `StageCanvas.tsx` and `StageThree.tsx`.
+4. Add config schema entries back into `shared/config/Config.ts` and JSON resources.
 
-See `layerDebug.ts` for complete debug configuration options.
+Keep this list updated if additional steps become necessary.
 
-## Related Documentation
-
-- **Architecture**: `shared/docs/00_ARCHITECTURE_OVERVIEW.md`
-- **Coordinate Systems**: `shared/docs/02_COORDINATE_SYSTEMS.md`
-- **Spin Animation**: `shared/docs/03_SPIN_ANIMATION_DEEP_DIVE.md`
-- **Debug Visualization**: `shared/docs/07_DEBUG_VISUALIZATION.md`
-- **API Reference**: `shared/docs/API_REFERENCE.md`

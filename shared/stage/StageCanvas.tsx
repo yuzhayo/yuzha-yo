@@ -45,7 +45,6 @@ import {
 } from "./StageSystem";
 import { loadImage } from "../layer/layerCore";
 import { runPipeline, AnimationConstants, createPipelineCache } from "../layer/layer";
-import { CanvasDebugRenderer } from "../layer/layerDebug";
 
 const IS_DEV = import.meta.env?.DEV ?? false;
 
@@ -220,7 +219,7 @@ async function mountCanvasLayers(
 
   /**
    * Main render loop for animated layers.
-   * Clears canvas, updates all layers, renders debug visuals.
+   * Clears canvas, updates all layers, renders composited pixels.
    */
   const renderFrame = (timestamp: number) => {
     ctx.clearRect(0, 0, STAGE_SIZE, STAGE_SIZE);
@@ -237,14 +236,6 @@ async function mountCanvasLayers(
 
       frameData.set(layer.baseData.LayerID, enhancedData);
       renderLayer(layer, enhancedData);
-    }
-
-    // Render debug visualizations (if enabled in config)
-    for (const layer of layers) {
-      const enhancedData = frameData.get(layer.baseData.LayerID) ?? layer.baseData;
-      if (enhancedData.imageMappingDebugVisuals) {
-        CanvasDebugRenderer.drawAll(ctx, enhancedData.imageMappingDebugVisuals, STAGE_SIZE);
-      }
     }
 
     pipelineCache.nextFrame();
@@ -270,14 +261,6 @@ async function mountCanvasLayers(
 
   for (const layer of layers) {
     frameData.set(layer.baseData.LayerID, renderStaticLayer(layer));
-  }
-
-  // Render debug visualizations for static scene
-  for (const layer of layers) {
-    const enhancedData = frameData.get(layer.baseData.LayerID) ?? layer.baseData;
-    if (enhancedData.imageMappingDebugVisuals) {
-      CanvasDebugRenderer.drawAll(ctx, enhancedData.imageMappingDebugVisuals, STAGE_SIZE);
-    }
   }
 
   return () => {};

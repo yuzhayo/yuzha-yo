@@ -39,9 +39,9 @@ Complete modular refactoring of the layer system for improved maintainability an
 - **New Modular Structure**: Split monolithic `LayerCore.ts` into specialized modules:
   - **layerBasic.ts** - Pure math utilities and coordinate transformations (no dependencies)
   - **layerCore.ts** - Core layer preparation, asset resolution, image mapping
-  - **layerDebug.ts** - Debug visualization code (Canvas/Three.js renderers, markers, processors)
   - **layerSpin.ts** - Spin animation system
   - **layerOrbit.ts** - Orbital motion system
+  - *(Debug visualization module temporarily removed while the pipeline is simplified)*
   - **layer.ts** - Processor pipeline orchestrator and registry
   - **index.ts** - Unified module exports
 
@@ -51,16 +51,16 @@ Complete modular refactoring of the layer system for improved maintainability an
     ↑
   layerCore (imports layerBasic)
     ↑
-  layerDebug, layerSpin, layerOrbit (import layerCore + layerBasic)
+  layerSpin, layerOrbit (import layerCore + layerBasic)
     ↑
   layer.ts (orchestrator, imports all)
   ```
 
 - **Deleted Legacy Files**: Removed after successful migration:
   - `LayerCore.ts` → refactored to `layerCore.ts` + `layerBasic.ts`
-  - `LayerCorePipelineSpin.ts` → renamed to `layerSpin.ts`
-  - `LayerCorePipelineOrbital.ts` → renamed to `layerOrbit.ts`
-  - `LayerCorePipelineImageMappingUtils.ts` → refactored to `layerDebug.ts`
+- `LayerCorePipelineSpin.ts` → renamed to `layerSpin.ts`
+- `LayerCorePipelineOrbital.ts` → renamed to `layerOrbit.ts`
+- `LayerCorePipelineImageMappingUtils.ts` → removed (legacy debug tooling; can be restored from git history if needed)
 
 - **Documentation**: Comprehensive inline documentation added to all modules with usage examples for future AI agents. Created `shared/layer/README.md` with architecture overview and historical context.
 

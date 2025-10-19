@@ -140,7 +140,6 @@ export function createSpinProcessor(config: SpinConfig): LayerProcessor {
     return {
       ...layer,
       position: newPosition, // Update position to maintain pivot anchor
-      spinCenter: spinImagePoint,
       spinSpeed,
       spinDirection,
       currentRotation: rotation,

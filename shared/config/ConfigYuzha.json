@@ -4,38 +4,51 @@
     "ImageID": "STARBG",
     "renderer": "2D",
     "LayerOrder": 50,
-    "ImageScale": [100, 100],
+    "ImageScale": [
+      100,
+      100
+    ],
     "groups": {
       "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
+        "BasicStagePoint": [
+          1024,
+          1024
+        ],
+        "BasicImagePoint": [
+          50,
+          50
+        ],
         "BasicImageAngle": 0
       },
       "Spin Config": {
-        "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 50],
+        "spinStagePoint": [
+          1024,
+          1024
+        ],
+        "spinImagePoint": [
+          50,
+          50
+        ],
         "spinSpeed": 1,
         "spinDirection": "cw"
       },
       "Orbital Config": {
-        "orbitStagePoint": [1024, 1024],
-        "orbitLinePoint": [1024, 1024],
-        "orbitImagePoint": [50, 50],
+        "orbitStagePoint": [
+          1024,
+          1024
+        ],
+        "orbitLinePoint": [
+          1024,
+          1024
+        ],
+        "orbitImagePoint": [
+          50,
+          50
+        ],
         "orbitLine": false,
         "orbitOrient": true,
         "orbitSpeed": 0,
         "orbitDirection": "cw"
-      },
-      "Image Mapping Debug": {
-        "showCenter": false,
-        "showTip": false,
-        "showBase": false,
-        "showStageCenter": false,
-        "showAxisLine": false,
-        "showRotation": false,
-        "showTipRay": false,
-        "showBaseRay": false,
-        "showBoundingBox": false
       }
     }
   },
@@ -44,16 +57,31 @@
     "ImageID": "STARBG9H",
     "renderer": "2D",
     "LayerOrder": 700,
-    "ImageScale": [100, 100],
+    "ImageScale": [
+      100,
+      100
+    ],
     "groups": {
       "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
+        "BasicStagePoint": [
+          1024,
+          1024
+        ],
+        "BasicImagePoint": [
+          50,
+          50
+        ],
         "BasicImageAngle": 0
       },
       "Spin Config": {
-        "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 50],
+        "spinStagePoint": [
+          1024,
+          1024
+        ],
+        "spinImagePoint": [
+          50,
+          50
+        ],
         "spinSpeed": 0.5,
         "spinDirection": "cw"
       }
@@ -64,16 +92,31 @@
     "ImageID": "Enviro_Stars_Big",
     "renderer": "2D",
     "LayerOrder": 702,
-    "ImageScale": [100, 100],
+    "ImageScale": [
+      100,
+      100
+    ],
     "groups": {
       "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
+        "BasicStagePoint": [
+          1024,
+          1024
+        ],
+        "BasicImagePoint": [
+          50,
+          50
+        ],
         "BasicImageAngle": 0
       },
       "Spin Config": {
-        "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 50],
+        "spinStagePoint": [
+          1024,
+          1024
+        ],
+        "spinImagePoint": [
+          50,
+          50
+        ],
         "spinSpeed": 1.5,
         "spinDirection": "cw"
       }
@@ -84,16 +127,31 @@
     "ImageID": "Enviro_Stars",
     "renderer": "2D",
     "LayerOrder": 702,
-    "ImageScale": [100, 100],
+    "ImageScale": [
+      100,
+      100
+    ],
     "groups": {
       "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
+        "BasicStagePoint": [
+          1024,
+          1024
+        ],
+        "BasicImagePoint": [
+          50,
+          50
+        ],
         "BasicImageAngle": 0
       },
       "Spin Config": {
-        "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 50],
+        "spinStagePoint": [
+          1024,
+          1024
+        ],
+        "spinImagePoint": [
+          50,
+          50
+        ],
         "spinSpeed": 1,
         "spinDirection": "cw"
       }
@@ -104,11 +162,20 @@
     "ImageID": "CLOCKBG",
     "renderer": "2D",
     "LayerOrder": 751,
-    "ImageScale": [100, 100],
+    "ImageScale": [
+      100,
+      100
+    ],
     "groups": {
       "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
+        "BasicStagePoint": [
+          1024,
+          1024
+        ],
+        "BasicImagePoint": [
+          50,
+          50
+        ],
         "BasicImageAngle": 0
       }
     }
@@ -118,16 +185,31 @@
     "ImageID": "GEARMOON",
     "renderer": "2D",
     "LayerOrder": 750,
-    "ImageScale": [105, 105],
+    "ImageScale": [
+      105,
+      105
+    ],
     "groups": {
       "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
+        "BasicStagePoint": [
+          1024,
+          1024
+        ],
+        "BasicImagePoint": [
+          50,
+          50
+        ],
         "BasicImageAngle": 0
       },
       "Spin Config": {
-        "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 50],
+        "spinStagePoint": [
+          1024,
+          1024
+        ],
+        "spinImagePoint": [
+          50,
+          50
+        ],
         "spinSpeed": 10,
         "spinDirection": "cw"
       }
@@ -138,16 +220,31 @@
     "ImageID": "GEAR3",
     "renderer": "2D",
     "LayerOrder": 400,
-    "ImageScale": [130, 130],
+    "ImageScale": [
+      130,
+      130
+    ],
     "groups": {
       "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
+        "BasicStagePoint": [
+          1024,
+          1024
+        ],
+        "BasicImagePoint": [
+          50,
+          50
+        ],
         "BasicImageAngle": 0
       },
       "Spin Config": {
-        "spinStagePoint": [910, 1024],
-        "spinImagePoint": [50, 50],
+        "spinStagePoint": [
+          910,
+          1024
+        ],
+        "spinImagePoint": [
+          50,
+          50
+        ],
         "spinSpeed": 10,
         "spinDirection": "ccw"
       }
@@ -158,16 +255,31 @@
     "ImageID": "GEAR3",
     "renderer": "2D",
     "LayerOrder": 481,
-    "ImageScale": [105, 105],
+    "ImageScale": [
+      105,
+      105
+    ],
     "groups": {
       "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
+        "BasicStagePoint": [
+          1024,
+          1024
+        ],
+        "BasicImagePoint": [
+          50,
+          50
+        ],
         "BasicImageAngle": 0
       },
       "Spin Config": {
-        "spinStagePoint": [910, 1024],
-        "spinImagePoint": [50, 50],
+        "spinStagePoint": [
+          910,
+          1024
+        ],
+        "spinImagePoint": [
+          50,
+          50
+        ],
         "spinSpeed": 15,
         "spinDirection": "cw"
       }
@@ -178,16 +290,31 @@
     "ImageID": "GEAR1",
     "renderer": "2D",
     "LayerOrder": 485,
-    "ImageScale": [80, 80],
+    "ImageScale": [
+      80,
+      80
+    ],
     "groups": {
       "Basic Config": {
-        "BasicStagePoint": [1300, 1024],
-        "BasicImagePoint": [50, 50],
+        "BasicStagePoint": [
+          1300,
+          1024
+        ],
+        "BasicImagePoint": [
+          50,
+          50
+        ],
         "BasicImageAngle": 0
       },
       "Spin Config": {
-        "spinStagePoint": [1190, 1024],
-        "spinImagePoint": [50, 50],
+        "spinStagePoint": [
+          1190,
+          1024
+        ],
+        "spinImagePoint": [
+          50,
+          50
+        ],
         "spinSpeed": 10,
         "spinDirection": "cw"
       }
@@ -198,16 +325,31 @@
     "ImageID": "GEAR2",
     "renderer": "2D",
     "LayerOrder": 486,
-    "ImageScale": [70, 70],
+    "ImageScale": [
+      70,
+      70
+    ],
     "groups": {
       "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
+        "BasicStagePoint": [
+          1024,
+          1024
+        ],
+        "BasicImagePoint": [
+          50,
+          50
+        ],
         "BasicImageAngle": 0
       },
       "Spin Config": {
-        "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 50],
+        "spinStagePoint": [
+          1024,
+          1024
+        ],
+        "spinImagePoint": [
+          50,
+          50
+        ],
         "spinSpeed": 10,
         "spinDirection": "cw"
       }
@@ -218,11 +360,20 @@
     "ImageID": "CLOCKGLOW",
     "renderer": "2D",
     "LayerOrder": 800,
-    "ImageScale": [95, 95],
+    "ImageScale": [
+      95,
+      95
+    ],
     "groups": {
       "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
+        "BasicStagePoint": [
+          1024,
+          1024
+        ],
+        "BasicImagePoint": [
+          50,
+          50
+        ],
         "BasicImageAngle": 0
       }
     }
@@ -232,11 +383,20 @@
     "ImageID": "CLOCKGLOW2",
     "renderer": "2D",
     "LayerOrder": 800,
-    "ImageScale": [130, 130],
+    "ImageScale": [
+      130,
+      130
+    ],
     "groups": {
       "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
+        "BasicStagePoint": [
+          1024,
+          1024
+        ],
+        "BasicImagePoint": [
+          50,
+          50
+        ],
         "BasicImageAngle": 0
       }
     }
@@ -246,11 +406,20 @@
     "ImageID": "CLOCKGLOW1",
     "renderer": "2D",
     "LayerOrder": 800,
-    "ImageScale": [100, 100],
+    "ImageScale": [
+      100,
+      100
+    ],
     "groups": {
       "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
+        "BasicStagePoint": [
+          1024,
+          1024
+        ],
+        "BasicImagePoint": [
+          50,
+          50
+        ],
         "BasicImageAngle": 30
       }
     }
@@ -260,11 +429,20 @@
     "ImageID": "CLOCKGLOW1",
     "renderer": "2D",
     "LayerOrder": 800,
-    "ImageScale": [100, 100],
+    "ImageScale": [
+      100,
+      100
+    ],
     "groups": {
       "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
+        "BasicStagePoint": [
+          1024,
+          1024
+        ],
+        "BasicImagePoint": [
+          50,
+          50
+        ],
         "BasicImageAngle": 60
       }
     }
@@ -274,11 +452,20 @@
     "ImageID": "CLOCKGLOW1",
     "renderer": "2D",
     "LayerOrder": 800,
-    "ImageScale": [100, 100],
+    "ImageScale": [
+      100,
+      100
+    ],
     "groups": {
       "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
+        "BasicStagePoint": [
+          1024,
+          1024
+        ],
+        "BasicImagePoint": [
+          50,
+          50
+        ],
         "BasicImageAngle": 0
       }
     }
@@ -288,32 +475,50 @@
     "ImageID": "GEAR1",
     "renderer": "2D",
     "LayerOrder": 200,
-    "ImageScale": [30, 30],
+    "ImageScale": [
+      30,
+      30
+    ],
     "groups": {
       "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
+        "BasicStagePoint": [
+          1024,
+          1024
+        ],
+        "BasicImagePoint": [
+          50,
+          50
+        ],
         "BasicImageAngle": 0
       },
       "Spin Config": {
-        "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 50],
+        "spinStagePoint": [
+          1024,
+          1024
+        ],
+        "spinImagePoint": [
+          50,
+          50
+        ],
         "spinSpeed": 0,
         "spinDirection": "cw"
       },
       "Orbital Config": {
-        "orbitStagePoint": [1024, 1024],
-        "orbitLinePoint": [1324, 1024],
-        "orbitImagePoint": [50, 50],
+        "orbitStagePoint": [
+          1024,
+          1024
+        ],
+        "orbitLinePoint": [
+          1324,
+          1024
+        ],
+        "orbitImagePoint": [
+          50,
+          50
+        ],
         "orbitLine": false,
         "orbitSpeed": 30,
         "orbitDirection": "cw"
-      },
-      "Image Mapping Debug": {
-        "showCenter": false,
-        "showTip": false,
-        "showBase": false,
-        "showStageCenter": false
       }
     }
   },
@@ -322,33 +527,51 @@
     "ImageID": "UI_Clock_MinuteHand",
     "renderer": "2D",
     "LayerOrder": 850,
-    "ImageScale": [140, 140],
+    "ImageScale": [
+      140,
+      140
+    ],
     "groups": {
       "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
+        "BasicStagePoint": [
+          1024,
+          1024
+        ],
+        "BasicImagePoint": [
+          50,
+          50
+        ],
         "BasicImageAngle": 0
       },
       "Spin Config": {
-        "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 0],
+        "spinStagePoint": [
+          1024,
+          1024
+        ],
+        "spinImagePoint": [
+          50,
+          0
+        ],
         "spinSpeed": 5,
         "spinDirection": "cw"
       },
       "Orbital Config": {
-        "orbitStagePoint": [1024, 1024],
-        "orbitLinePoint": [1024, 900],
-        "orbitImagePoint": [50, 50],
+        "orbitStagePoint": [
+          1024,
+          1024
+        ],
+        "orbitLinePoint": [
+          1024,
+          900
+        ],
+        "orbitImagePoint": [
+          50,
+          50
+        ],
         "orbitLine": true,
         "orbitOrient": true,
         "orbitSpeed": 0,
         "orbitDirection": "cw"
-      },
-      "Image Mapping Debug": {
-        "showCenter": false,
-        "showTip": false,
-        "showBase": false,
-        "showStageCenter": false
       }
     }
   },
@@ -357,24 +580,33 @@
     "ImageID": "GEAR2",
     "renderer": "2D",
     "LayerOrder": 840,
-    "ImageScale": [160, 160],
+    "ImageScale": [
+      160,
+      160
+    ],
     "groups": {
       "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
+        "BasicStagePoint": [
+          1024,
+          1024
+        ],
+        "BasicImagePoint": [
+          50,
+          50
+        ],
         "BasicImageAngle": 0
       },
       "Spin Config": {
-        "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 50],
+        "spinStagePoint": [
+          1024,
+          1024
+        ],
+        "spinImagePoint": [
+          50,
+          50
+        ],
         "spinSpeed": 30,
         "spinDirection": "ccw"
-      },
-      "Image Mapping Debug": {
-        "showCenter": false,
-        "showTip": false,
-        "showBase": false,
-        "showStageCenter": false
       }
     }
   }

@@ -45,7 +45,6 @@ import {
   type LayerProcessor,
 } from "./StageSystem";
 import { runPipeline, AnimationConstants, createPipelineCache } from "../layer/layer";
-import { ThreeDebugRenderer } from "../layer/layerDebug";
 import { getDeviceCapability } from "../utils/DeviceCapability";
 
 const IS_DEV = import.meta.env?.DEV ?? false;
@@ -108,7 +107,7 @@ type ThreeMeshEntry = {
  *    - Run processors for each layer
  *    - Update group position/rotation
  *    - Update orbit line if present
- *    - Render debug visualizations if enabled
+ *    - Hook in optional diagnostics if reintroduced
  *    - Render scene to canvas
  *
  * COORDINATE SYSTEM CONVERSION:
@@ -238,7 +237,6 @@ async function mountThreeLayers(
     });
   }
 
-  const debugMeshes: THREE.Object3D[] = [];
 
   /**
    * Main animation loop.
@@ -297,16 +295,6 @@ async function mountThreeLayers(
         }
       }
 
-      // Add debug visualizations if enabled
-      if (enhanced.imageMappingDebugVisuals) {
-        const meshes = ThreeDebugRenderer.addAllToScene(
-          enhanced.imageMappingDebugVisuals,
-          scene,
-          STAGE_SIZE,
-          THREE,
-        );
-        debugMeshes.push(...meshes);
-      }
     }
 
     // Render the scene
@@ -320,22 +308,6 @@ async function mountThreeLayers(
   // Cleanup function - disposes all Three.js resources
   return () => {
     if (animationFrameId !== null) cancelAnimationFrame(animationFrameId);
-
-    // Dispose debug meshes
-    debugMeshes.forEach((mesh) => {
-      scene.remove(mesh);
-      if ((mesh as THREE.Mesh).geometry) {
-        (mesh as THREE.Mesh).geometry.dispose();
-      }
-      if ((mesh as THREE.Mesh).material) {
-        const material = (mesh as THREE.Mesh).material;
-        if (Array.isArray(material)) {
-          material.forEach((mat) => mat.dispose());
-        } else {
-          material.dispose();
-        }
-      }
-    });
 
     // Dispose layer meshes
     meshData.forEach((entry) => {
