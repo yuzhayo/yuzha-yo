@@ -302,7 +302,7 @@
   },
   {
     "LayerID": "test-sun-ray-1",
-    "ImageID": "V3_LockIcon",
+    "ImageID": "CLOCKGLOW1",
     "renderer": "2D",
     "LayerOrder": 850,
     "ImageScale": [140, 140],
