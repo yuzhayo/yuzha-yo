@@ -54,13 +54,33 @@
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
         "spinImagePoint": [50, 50],
-        "spinSpeed": 1,
+        "spinSpeed": 0.5,
         "spinDirection": "cw"
       }
     }
   },
   {
-    "LayerID": "ENVIROSTAR",
+    "LayerID": "nviro_Stars_Big",
+    "ImageID": "Enviro_Stars_Big",
+    "renderer": "2D",
+    "LayerOrder": 702,
+    "ImageScale": [100, 100],
+    "groups": {
+      "Basic Config": {
+        "BasicStagePoint": [1024, 1024],
+        "BasicImagePoint": [50, 50],
+        "BasicImageAngle": 0
+      },
+      "Spin Config": {
+        "spinStagePoint": [1024, 1024],
+        "spinImagePoint": [50, 50],
+        "spinSpeed": 1.5,
+        "spinDirection": "cw"
+      }
+    }
+  },
+  {
+    "LayerID": "Enviro_Stars",
     "ImageID": "Enviro_Stars",
     "renderer": "2D",
     "LayerOrder": 702,
@@ -74,7 +94,7 @@
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
         "spinImagePoint": [50, 50],
-        "spinSpeed": 2,
+        "spinSpeed": 1,
         "spinDirection": "cw"
       }
     }
