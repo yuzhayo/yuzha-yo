@@ -187,7 +187,7 @@
     "ImageID": "GEAR2",
     "renderer": "2D",
     "LayerOrder": 486,
-    "ImageScale": [70, 70],
+    "ImageScale": [120, 120],
     "groups": {
       "Basic Config": {
         "BasicStagePoint": [1024, 1024],
@@ -197,8 +197,8 @@
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
         "spinImagePoint": [50, 50],
-        "spinSpeed": 10,
-        "spinDirection": "cw"
+        "spinSpeed": 38,
+        "spinDirection": "Ccw"
       }
     }
   },
@@ -275,26 +275,26 @@
     }
   },
   {
-    "LayerID": "test-sun-ray-1",
-    "ImageID": "CLOCKGLOW1",
+    "LayerID": "test-1",
+    "ImageID": "UI_Clock_HourHand",
     "renderer": "2D",
     "LayerOrder": 850,
-    "ImageScale": [140, 140],
+    "ImageScale": [87, 87],
     "groups": {
       "Basic Config": {
         "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
+        "BasicImagePoint": [50, 81],
         "BasicImageAngle": 0
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
         "spinImagePoint": [50, 0],
-        "spinSpeed": 5,
+        "spinSpeed": 0,
         "spinDirection": "cw"
       },
       "Orbital Config": {
         "orbitStagePoint": [1024, 1024],
-        "orbitLinePoint": [1024, 900],
+        "orbitLinePoint": [1024, 800],
         "orbitImagePoint": [50, 50],
         "orbitLine": true,
         "orbitOrient": true,
@@ -304,22 +304,31 @@
     }
   },
   {
-    "LayerID": "test-spin-pivot-fix",
-    "ImageID": "GEAR2",
+    "LayerID": "test-2",
+    "ImageID": "UI_Clock_MinuteHand",
     "renderer": "2D",
-    "LayerOrder": 840,
-    "ImageScale": [160, 160],
+    "LayerOrder": 849,
+    "ImageScale": [100, 160],
     "groups": {
       "Basic Config": {
         "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
+        "BasicImagePoint": [50, 100],
         "BasicImageAngle": 0
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 50],
-        "spinSpeed": 30,
-        "spinDirection": "ccw"
+        "spinImagePoint": [50, 0],
+        "spinSpeed": 10,
+        "spinDirection": "cw"
+      },
+      "Orbital Config": {
+        "orbitStagePoint": [1024, 1024],
+        "orbitLinePoint": [1024, 800],
+        "orbitImagePoint": [50, 50],
+        "orbitLine": true,
+        "orbitOrient": true,
+        "orbitSpeed": 0,
+        "orbitDirection": "cw"
       }
     }
   }
