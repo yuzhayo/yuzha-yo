@@ -130,10 +130,13 @@ async function mountDomLayers(
       img.style.position = "absolute";
       img.style.transformOrigin = "center center";
 
-      // Position image (centered on position point)
-      const roundedPosition = roundStagePoint(position);
-      const left = roundedPosition.x - naturalWidth / 2;
-      const top = roundedPosition.y - naturalHeight / 2;
+      // Position image (centered on position point) - keep sub-pixel precision for spin/orbit layers
+      const basePosition =
+        item.data.hasOrbitalAnimation || item.data.spinSpeed !== undefined
+          ? item.data.position
+          : roundStagePoint(position);
+      const left = basePosition.x - naturalWidth / 2;
+      const top = basePosition.y - naturalHeight / 2;
       img.style.left = `${left}px`;
       img.style.top = `${top}px`;
 
