@@ -48,6 +48,14 @@
     "path": "shared/asset/GEARMOON.png"
   },
   {
+    "id": "H12",
+    "path": "shared/asset/H12.png"
+  },
+  {
+    "id": "H24",
+    "path": "shared/asset/H24.png"
+  },
+  {
     "id": "Img_List_Defalt",
     "path": "shared/asset/Img_List_Defalt.png"
   },

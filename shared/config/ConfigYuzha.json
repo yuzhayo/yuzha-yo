@@ -217,6 +217,20 @@
     }
   },
   {
+    "LayerID": "CLOCKGLOW12",
+    "ImageID": "H24",
+    "renderer": "2D",
+    "LayerOrder": 800,
+    "ImageScale": [100, 100],
+    "groups": {
+      "Basic Config": {
+        "BasicStagePoint": [1024, 1024],
+        "BasicImagePoint": [50, 50],
+        "BasicImageAngle": 0
+      }
+    }
+  },
+  {
     "LayerID": "CLOCKGLOW2",
     "ImageID": "CLOCKGLOW2",
     "renderer": "2D",
@@ -230,48 +244,8 @@
       }
     }
   },
-  {
-    "LayerID": "CLOCKGLOW1-A",
-    "ImageID": "CLOCKGLOW1",
-    "renderer": "2D",
-    "LayerOrder": 800,
-    "ImageScale": [100, 100],
-    "groups": {
-      "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
-        "BasicImageAngle": 30
-      }
-    }
-  },
-  {
-    "LayerID": "CLOCKGLOW1-B",
-    "ImageID": "CLOCKGLOW1",
-    "renderer": "2D",
-    "LayerOrder": 800,
-    "ImageScale": [100, 100],
-    "groups": {
-      "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
-        "BasicImageAngle": 60
-      }
-    }
-  },
-  {
-    "LayerID": "CLOCKGLOW1-C",
-    "ImageID": "CLOCKGLOW1",
-    "renderer": "2D",
-    "LayerOrder": 800,
-    "ImageScale": [100, 100],
-    "groups": {
-      "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
-        "BasicImageAngle": 0
-      }
-    }
-  },
+
+  
   {
     "LayerID": "test-clock-hand",
     "ImageID": "GEAR1",
