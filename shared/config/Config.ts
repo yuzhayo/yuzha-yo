@@ -231,12 +231,8 @@ function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
 
     // Step 4: Merge Spin Config with special rules
     if (spin.spinSpeed && spin.spinSpeed > 0) {
-      // Active spin: override positioning and reset static rotation
+      // Active spin: merge only dynamic spin data (basic anchors stay untouched)
       Object.assign(merged, spin);
-
-      // Spin positioning replaces Basic positioning
-      if (spin.spinStagePoint) merged.BasicStagePoint = spin.spinStagePoint;
-      if (spin.spinImagePoint) merged.BasicImagePoint = spin.spinImagePoint;
 
       // Reset static rotation: spin controls rotation dynamically
       merged.BasicImageAngle = 0;
