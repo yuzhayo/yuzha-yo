@@ -7,8 +7,9 @@ export type TestScreenProps = {
 };
 
 export default function TestScreen(props: TestScreenProps) {
-  const orbitDurationSeconds = 3600;
-  const spinDurationSeconds = 72;
+  const gearSizePx = 140;
+  const orbitRadiusPx = 200;
+  const gearOrbitDurationSeconds = 20;
 
   return (
     <div className="relative min-h-screen bg-slate-950 text-white">
@@ -19,17 +20,40 @@ export default function TestScreen(props: TestScreenProps) {
           className="h-full w-full animate-[spin_72s_linear_infinite] object-contain"
         />
       </div>
-      <div className="pointer-events-none absolute left-1/2 top-1/2 z-20 h-[60vmin] w-[60vmin] -translate-x-1/2 -translate-y-1/2">
+      <div
+        className="pointer-events-none absolute left-1/2 top-1/2 z-20"
+        style={{
+          width: orbitRadiusPx * 2,
+          height: orbitRadiusPx * 2,
+          marginLeft: -orbitRadiusPx,
+          marginTop: -orbitRadiusPx,
+        }}
+      >
         <div
-          className="absolute left-1/2 top-1/2 h-full w-full -translate-x-1/2 -translate-y-1/2 animate-spin"
-          style={{ animationDuration: `${orbitDurationSeconds}s` }}
+          className="relative h-full w-full"
+          style={{
+            animation: `orbit ${gearOrbitDurationSeconds}s linear infinite`,
+            transformOrigin: "50% 50%",
+          }}
         >
-          <div className="absolute left-1/2 top-0 -translate-x-1/2">
+          <div
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "50%",
+              transform: `translate(-50%, -50%) translateY(-${orbitRadiusPx}px)`,
+            }}
+          >
             <img
               src={gearMoon}
               alt="Orbiting gear moon"
-              className="h-20 w-20 object-contain animate-spin"
-              style={{ animationDuration: `${spinDurationSeconds}s` }}
+              style={{
+                width: gearSizePx,
+                height: gearSizePx,
+                display: "block",
+                animation: `orbit-counter ${gearOrbitDurationSeconds}s linear infinite`,
+                transformOrigin: "50% 50%",
+              }}
             />
           </div>
         </div>
