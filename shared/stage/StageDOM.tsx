@@ -121,22 +121,42 @@ async function mountDomLayers(
       const naturalWidth = img.naturalWidth;
       const naturalHeight = img.naturalHeight;
 
-      // Setup image element
-      img.style.width = `${naturalWidth}px`;
-      img.style.height = `${naturalHeight}px`;
+      // Calculate scaled dimensions (matches Canvas/Three.js)
+      const scaledWidth = naturalWidth * scale.x;
+      const scaledHeight = naturalHeight * scale.y;
+      
+      // Calculate center and pivot in scaled space (matches Canvas)
+      const centerX = scaledWidth / 2;
+      const centerY = scaledHeight / 2;
+      const pivot = item.data.imageMapping.imageCenter;
+      const pivotX = pivot.x * scale.x;
+      const pivotY = pivot.y * scale.y;
+      
+      // Calculate offset from center to pivot (matches Canvas dx/dy)
+      const dx = centerX - pivotX;
+      const dy = centerY - pivotY;
+
+      // Setup image element with scaled dimensions
+      img.style.width = `${scaledWidth}px`;
+      img.style.height = `${scaledHeight}px`;
       img.style.maxWidth = "none";
       img.style.maxHeight = "none";
       img.style.display = "block";
       img.style.position = "absolute";
-      img.style.transformOrigin = "center center";
+      
+      // Transform origin should be at the pivot point (as percentage of scaled image)
+      const pivotPercentX = (pivotX / scaledWidth) * 100;
+      const pivotPercentY = (pivotY / scaledHeight) * 100;
+      img.style.transformOrigin = `${pivotPercentX}% ${pivotPercentY}%`;
 
-      // Position image (centered on position point) - keep sub-pixel precision for spin/orbit layers
+      // Position: layer position is where the image CENTER should be (matches Canvas/Three.js)
+      // Then offset by dx/dy to make the PIVOT align with layer position
       const basePosition =
         item.data.hasOrbitalAnimation || item.data.spinSpeed !== undefined
           ? item.data.position
           : roundStagePoint(position);
-      const left = basePosition.x - naturalWidth / 2;
-      const top = basePosition.y - naturalHeight / 2;
+      const left = basePosition.x - centerX + dx;
+      const top = basePosition.y - centerY + dy;
       img.style.left = `${left}px`;
       img.style.top = `${top}px`;
 
@@ -153,9 +173,8 @@ async function mountDomLayers(
         layerDiv.appendChild(orbitLineEl);
       }
 
-      // Apply initial transforms (scale + rotation)
+      // Apply transforms (rotation only - scale already applied to dimensions)
       const transforms: string[] = [];
-      if (scale.x !== 1 || scale.y !== 1) transforms.push(`scale(${scale.x}, ${scale.y})`);
       if (displayRotation !== 0) transforms.push(`rotate(${displayRotation}deg)`);
       if (transforms.length > 0) img.style.transform = transforms.join(" ");
 
@@ -220,25 +239,45 @@ async function mountDomLayers(
         runPipeline(layer.baseData, layer.processors, timestamp),
       );
 
-      // Update CSS transforms (scale + rotation)
+      // Get scaled dimensions (scale from enhanced data)
+      const naturalWidth = layer.img.naturalWidth;
+      const naturalHeight = layer.img.naturalHeight;
+      const scale = enhancedData.scale;
+      const scaledWidth = naturalWidth * scale.x;
+      const scaledHeight = naturalHeight * scale.y;
+      
+      // Calculate center and pivot in scaled space
+      const centerX = scaledWidth / 2;
+      const centerY = scaledHeight / 2;
+      const pivot = layer.baseData.imageMapping.imageCenter;
+      const pivotX = pivot.x * scale.x;
+      const pivotY = pivot.y * scale.y;
+      const dx = centerX - pivotX;
+      const dy = centerY - pivotY;
+
+      // Update image dimensions if scale changed
+      layer.img.style.width = `${scaledWidth}px`;
+      layer.img.style.height = `${scaledHeight}px`;
+      
+      // Update transform origin
+      const pivotPercentX = (pivotX / scaledWidth) * 100;
+      const pivotPercentY = (pivotY / scaledHeight) * 100;
+      layer.img.style.transformOrigin = `${pivotPercentX}% ${pivotPercentY}%`;
+
+      // Update rotation (only rotation, scale applied to dimensions)
       const transforms: string[] = [];
-      if (enhancedData.scale.x !== 1 || enhancedData.scale.y !== 1) {
-        transforms.push(`scale(${enhancedData.scale.x}, ${enhancedData.scale.y})`);
-      }
       const rotation = enhancedData.currentRotation ?? enhancedData.rotation ?? 0;
       if (rotation !== 0) transforms.push(`rotate(${rotation}deg)`);
       if (transforms.length > 0) layer.img.style.transform = transforms.join(" ");
 
-      // Update position
-      const naturalWidth = layer.img.naturalWidth;
-      const naturalHeight = layer.img.naturalHeight;
+      // Update position: layer position is where center should be, offset by dx/dy for pivot
       // Preserve sub-pixel precision for orbital animation to prevent jitter at low speeds
       const position =
         enhancedData.hasOrbitalAnimation || enhancedData.hasSpinAnimation
           ? enhancedData.position
           : roundStagePoint(enhancedData.position);
-      const left = position.x - naturalWidth / 2;
-      const top = position.y - naturalHeight / 2;
+      const left = position.x - centerX + dx;
+      const top = position.y - centerY + dy;
       layer.img.style.left = `${left}px`;
       layer.img.style.top = `${top}px`;
 
