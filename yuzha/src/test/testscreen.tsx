@@ -1,15 +1,17 @@
 import React from "react";
 import bgArtifactCraftCenter from "@shared/asset/BG_ArtifactCraft_Center.png";
 import gearMoon from "@shared/asset/GEARMOON.png";
+import lockIcon from "@shared/asset/V3_LockIcon.png";
 
 export type TestScreenProps = {
   onBack?: () => void;
 };
 
 export default function TestScreen(props: TestScreenProps) {
-  const gearSizePx = 140;
   const orbitRadiusPx = 200;
   const gearOrbitDurationSeconds = 20;
+  const lockOrbitRadiusPx = 120;
+  const lockOrbitDurationSeconds = 32;
 
   return (
     <div className="relative min-h-screen bg-slate-950 text-white">
@@ -48,10 +50,44 @@ export default function TestScreen(props: TestScreenProps) {
               src={gearMoon}
               alt="Orbiting gear moon"
               style={{
-                width: gearSizePx,
-                height: gearSizePx,
                 display: "block",
                 animation: `orbit-counter ${gearOrbitDurationSeconds}s linear infinite`,
+                transformOrigin: "50% 50%",
+              }}
+            />
+          </div>
+        </div>
+      </div>
+      <div
+        className="pointer-events-none absolute left-1/2 top-1/2 z-10"
+        style={{
+          width: lockOrbitRadiusPx * 2,
+          height: lockOrbitRadiusPx * 2,
+          marginLeft: -lockOrbitRadiusPx,
+          marginTop: -lockOrbitRadiusPx,
+        }}
+      >
+        <div
+          className="relative h-full w-full"
+          style={{
+            animation: `orbit ${lockOrbitDurationSeconds}s linear infinite`,
+            transformOrigin: "50% 50%",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "50%",
+              transform: `translate(-50%, -50%) translateY(-${lockOrbitRadiusPx}px)`,
+            }}
+          >
+            <img
+              src={lockIcon}
+              alt="Orbiting lock icon"
+              style={{
+                display: "block",
+                animation: `orbit-counter ${lockOrbitDurationSeconds}s linear infinite`,
                 transformOrigin: "50% 50%",
               }}
             />
