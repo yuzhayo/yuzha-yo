@@ -10,7 +10,7 @@ export type TestScreenProps = {
 export default function TestScreen(props: TestScreenProps) {
   const orbitRadiusPx = 200;
   const gearOrbitDurationSeconds = 20;
-  const lockOrbitRadiusPx = 120;
+  const lockOrbitRadiusPx = 300;
   const lockOrbitDurationSeconds = 32;
 
   return (
@@ -51,7 +51,6 @@ export default function TestScreen(props: TestScreenProps) {
               alt="Orbiting gear moon"
               style={{
                 display: "block",
-                animation: `orbit-counter ${gearOrbitDurationSeconds}s linear infinite`,
                 transformOrigin: "50% 50%",
               }}
             />
@@ -87,7 +86,6 @@ export default function TestScreen(props: TestScreenProps) {
               alt="Orbiting lock icon"
               style={{
                 display: "block",
-                animation: `orbit-counter ${lockOrbitDurationSeconds}s linear infinite`,
                 transformOrigin: "50% 50%",
               }}
             />
