@@ -288,14 +288,14 @@
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 0],
-        "spinSpeed": 0,
+        "spinImagePoint": [50, 81],
+        "spinSpeed": 5,
         "spinDirection": "cw"
       },
       "Orbital Config": {
         "orbitStagePoint": [1024, 1024],
         "orbitLinePoint": [1024, 800],
-        "orbitImagePoint": [50, 50],
+        "orbitImagePoint": [50, 90],
         "orbitLine": true,
         "orbitOrient": true,
         "orbitSpeed": 0,
