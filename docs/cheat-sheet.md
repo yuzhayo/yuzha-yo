@@ -37,6 +37,7 @@ tail -f /var/log/supervisor/yuzha.*.log
 ## 🎨 Add Animation (Spin or Orbit)
 
 ### Spin (Rotation)
+
 ```json
 \"Spin Config\": {
   \"spinStagePoint\": [1024, 1024],   // Pivot center on stage
@@ -47,6 +48,7 @@ tail -f /var/log/supervisor/yuzha.*.log
 ```
 
 ### Orbit (Circular Motion)
+
 ```json
 \"Orbital Config\": {
   \"orbitStagePoint\": [1024, 1024],  // Circle center
@@ -61,21 +63,22 @@ tail -f /var/log/supervisor/yuzha.*.log
 
 ## 🗂️ File Quick Finder
 
-| Need to...                        | File                                    |
-|-----------------------------------|-----------------------------------------|
-| Add/edit layers                   | `/app/shared/config/ConfigYuzha.json`   |
-| Change config types               | `/app/shared/config/Config.ts`          |
-| See spin processor example        | `/app/shared/layer/layerSpin.ts`        |
-| See orbit processor example       | `/app/shared/layer/layerOrbit.ts`       |
-| Add new processor                 | Create `/app/shared/layer/layerX.ts`    |
-| Register processor                | `/app/shared/layer/layer.ts`            |
-| Understand pipeline               | `/app/shared/stage/StageSystem.ts`      |
-| See coordinate math               | `/app/shared/layer/layerBasic.ts`       |
-| View main entry point             | `/app/yuzha/src/MainScreen.tsx`         |
+| Need to...                  | File                                  |
+| --------------------------- | ------------------------------------- |
+| Add/edit layers             | `/app/shared/config/ConfigYuzha.json` |
+| Change config types         | `/app/shared/config/Config.ts`        |
+| See spin processor example  | `/app/shared/layer/layerSpin.ts`      |
+| See orbit processor example | `/app/shared/layer/layerOrbit.ts`     |
+| Add new processor           | Create `/app/shared/layer/layerX.ts`  |
+| Register processor          | `/app/shared/layer/layer.ts`          |
+| Understand pipeline         | `/app/shared/stage/StageSystem.ts`    |
+| See coordinate math         | `/app/shared/layer/layerBasic.ts`     |
+| View main entry point       | `/app/yuzha/src/MainScreen.tsx`       |
 
 ## 🔧 Common Config Properties
 
 ### Core (Required)
+
 ```typescript
 LayerID: string           // Unique identifier
 ImageID: string          // Asset from ImageRegistry.json
@@ -85,6 +88,7 @@ ImageScale?: [x, y]     // Scale percentage (10-500)
 ```
 
 ### Basic Config (Optional)
+
 ```typescript
 BasicStagePoint?: [x, y]     // Position on stage (0-2048 pixels)
 BasicImagePoint?: [x%, y%]   // Anchor point on image (0-100%)
@@ -92,6 +96,7 @@ BasicImageAngle?: degrees    // Static rotation (0-360)
 ```
 
 ### Spin Config (Optional)
+
 ```typescript
 spinStagePoint?: [x, y]      // Pivot center (0-2048 pixels)
 spinImagePoint?: [x%, y%]    // Pivot on image (0-100%)
@@ -100,6 +105,7 @@ spinDirection?: \"cw\"|\"ccw\"   // Clockwise or counter-clockwise
 ```
 
 ### Orbital Config (Optional)
+
 ```typescript
 orbitStagePoint?: [x, y]     // Circle center (0-2048 pixels)
 orbitLinePoint?: [x, y]      // Point defining radius
@@ -112,13 +118,14 @@ orbitLine?: boolean          // Show orbit path?
 
 ## 🎯 Coordinate Systems Cheat
 
-| System        | Range        | Use For                           |
-|---------------|--------------|-----------------------------------|
-| Stage Space   | 0-2048 px    | Layer positions, centers, pivots  |
-| Image Space   | 0-W, 0-H px  | Raw image coordinates             |
-| Percent Space | 0-100%       | Relative positioning on images    |
+| System        | Range       | Use For                          |
+| ------------- | ----------- | -------------------------------- |
+| Stage Space   | 0-2048 px   | Layer positions, centers, pivots |
+| Image Space   | 0-W, 0-H px | Raw image coordinates            |
+| Percent Space | 0-100%      | Relative positioning on images   |
 
 **Key Points:**
+
 - Stage is always 2048x2048
 - Center of stage: `[1024, 1024]`
 - Center of image: `[50, 50]` in percent
@@ -168,6 +175,7 @@ When adding new config properties:
 ## 🐛 Debug Checklist
 
 Layer not showing?
+
 - [ ] Check LayerOrder (covered by higher layer?)
 - [ ] Check BasicStagePoint (in 0-2048 range?)
 - [ ] Check ImageID (exists in ImageRegistry.json?)
@@ -175,6 +183,7 @@ Layer not showing?
 - [ ] Check logs: `tail -f /var/log/supervisor/yuzha.*.log`
 
 Animation not working?
+
 - [ ] Check config property values (speed > 0?)
 - [ ] Check processor registration (shouldAttach correct?)
 - [ ] Check EnhancedLayerData has new properties
@@ -184,21 +193,25 @@ Animation not working?
 ## 🎓 Mental Models
 
 ### Config Flow
+
 ```
 JSON → Transform → Validate → Sort → Prepare → Render
 ```
 
 ### Layer Flow (Single Layer)
+
 ```
 Config Entry → prepareLayer() → Attach Processors → Run Pipeline → Display
 ```
 
 ### Processor Pipeline (Each Frame)
+
 ```
 Base Data → [Processor 1] → [Processor 2] → [Processor N] → Enhanced Data
 ```
 
 ### Processor Registration
+
 ```
 Define → Register → Condition Check → Auto-Attach → Execute
 ```
@@ -237,14 +250,14 @@ curl http://localhost:3000
 
 ## 🔑 Key Functions
 
-| Function                  | File              | Purpose                          |
-|---------------------------|-------------------|----------------------------------|
-| `loadLayerConfig()`       | Config.ts         | Load & transform config          |
-| `prepareLayer()`          | layerCore.ts      | Config → base layer data         |
-| `registerProcessor()`     | layer.ts          | Add processor to registry        |
-| `getProcessorsForEntry()` | layer.ts          | Get processors for a layer       |
-| `runPipeline()`           | layer.ts          | Execute processor pipeline       |
-| `createStagePipeline()`   | StageSystem.ts    | Create complete stage pipeline   |
+| Function                  | File           | Purpose                        |
+| ------------------------- | -------------- | ------------------------------ |
+| `loadLayerConfig()`       | Config.ts      | Load & transform config        |
+| `prepareLayer()`          | layerCore.ts   | Config → base layer data       |
+| `registerProcessor()`     | layer.ts       | Add processor to registry      |
+| `getProcessorsForEntry()` | layer.ts       | Get processors for a layer     |
+| `runPipeline()`           | layer.ts       | Execute processor pipeline     |
+| `createStagePipeline()`   | StageSystem.ts | Create complete stage pipeline |
 
 ## 🎨 Example: Full Layer with All Features
 
@@ -281,6 +294,7 @@ curl http://localhost:3000
 ```
 
 This creates a layer that:
+
 - Uses GEAR1 image at 80% scale
 - Positioned at stage center via BasicStagePoint
 - Spins clockwise at 10°/sec around its center

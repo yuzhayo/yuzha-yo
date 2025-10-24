@@ -35,7 +35,6 @@ function makeBaseState(overrides?: {
       position,
       scale,
       imageMapping: {
-        imageCenter: { x: 50, y: 50 },
         imageDimensions: { width: 100, height: 100 },
       },
       rotation: 0,

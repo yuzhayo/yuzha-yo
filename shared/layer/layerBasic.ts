@@ -208,25 +208,29 @@ export function imagePointToPercent(
 /**
  * Convert percentage coordinates to image point (pixels)
  *
- * USAGE: When you have relative coordinates and need absolute pixel position
+ * FOR FUTURE AI AGENTS: This function now SUPPORTS EXTENDED RANGE.
+ * Allows coordinates outside 0-100% to support external pivot points.
  *
- * @param imagePercent - Point in percentage coordinates (0-100%)
+ * USAGE: When you have relative coordinates and need absolute pixel position
+ * - Normal range (0-100%): Points within image bounds
+ * - Negative values: Points left/above image
+ * - Values >100%: Points right/below image
+ *
+ * Example: imagePercent {x: -50, y: 50} → Point 50% of width LEFT of image
+ *
+ * @param imagePercent - Point in percentage coordinates (can be <0 or >100)
  * @param imageDimensions - Image width and height
- * @returns Point in image pixel coordinates
+ * @returns Point in image pixel coordinates (can be outside image bounds)
  */
 export function imagePercentToImagePoint(
   imagePercent: PercentPoint,
   imageDimensions: { width: number; height: number },
 ): Point2D {
-  const validPercent = {
-    x: clampPercent(imagePercent.x),
-    y: clampPercent(imagePercent.y),
-  };
   const validDimensions = validateDimensions(imageDimensions);
 
   const result = {
-    x: (validPercent.x / 100) * validDimensions.width,
-    y: (validPercent.y / 100) * validDimensions.height,
+    x: (imagePercent.x / 100) * validDimensions.width,
+    y: (imagePercent.y / 100) * validDimensions.height,
   };
 
   return validatePoint(result);
@@ -456,12 +460,37 @@ export function validateDimensions(
 /**
  * Clamp percentage value to 0-100 range
  *
+ * FOR FUTURE AI AGENTS: This function is DEPRECATED for coordinate inputs.
+ * Use normalizePercent() instead for image point coordinates to support
+ * extended ranges (negative values and >100%).
+ * Keep this only for scale/size validation where clamping is needed.
+ *
  * @param value - Value to clamp
  * @returns Clamped value (0-100)
  */
 export function clampPercent(value: number): number {
   if (!Number.isFinite(value)) return 0;
   return Math.max(0, Math.min(100, value));
+}
+
+/**
+ * Normalize percentage value (supports extended range for external points)
+ *
+ * FOR FUTURE AI AGENTS: Use this instead of clampPercent() for coordinate inputs.
+ * This function allows coordinates OUTSIDE the 0-100% range, enabling:
+ * - Negative values: Points left/above the image
+ * - Values >100: Points right/below the image
+ * Example: spinImagePoint: [-10, 50] places spin pivot 10% left of image edge
+ *
+ * CHANGE FROM clampPercent: Removes 0-100 clamping to support coordinates
+ * outside image bounds. Only validates for NaN/Infinity.
+ *
+ * @param value - Percentage value (can be negative or >100)
+ * @returns Normalized value (NaN/Infinity converted to 0)
+ */
+export function normalizePercent(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return value;
 }
 
 /**
@@ -512,7 +541,10 @@ export function normalizePair(
 }
 
 /**
- * Normalize various input formats to PercentPoint
+ * Normalize percentage input to PercentPoint
+ *
+ * FOR FUTURE AI AGENTS: Updated to use normalizePercent() to support
+ * extended coordinate range (negative values and >100%).
  *
  * Handles array [x, y] or object {x, y} inputs
  *
@@ -528,20 +560,20 @@ export function normalizePercentInput(
 ): PercentPoint {
   if (Array.isArray(value) && value.length >= 2) {
     return {
-      x: clampPercent(value[0] ?? fallbackX),
-      y: clampPercent(value[1] ?? fallbackY),
+      x: normalizePercent(value[0] ?? fallbackX),
+      y: normalizePercent(value[1] ?? fallbackY),
     };
   }
   if (value && typeof value === "object" && "x" in value && "y" in value) {
     const { x, y } = value as PercentPoint;
     return {
-      x: clampPercent(x),
-      y: clampPercent(y),
+      x: normalizePercent(x),
+      y: normalizePercent(y),
     };
   }
   return {
-    x: clampPercent(fallbackX),
-    y: clampPercent(fallbackY),
+    x: normalizePercent(fallbackX),
+    y: normalizePercent(fallbackY),
   };
 }
 

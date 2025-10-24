@@ -59,7 +59,12 @@
  * @module layer/layerOrbit
  */
 
-import { imagePercentToImagePoint, type PercentPoint, type Point2D } from "./layerBasic";
+import {
+  imagePercentToImagePoint,
+  normalizePercent,
+  type PercentPoint,
+  type Point2D,
+} from "./layerBasic";
 import {
   applyRotationDirection,
   calculateOrbitPosition,
@@ -241,11 +246,21 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
   };
 }
 
+/**
+ * Normalize percent value for orbital configuration
+ *
+ * FOR FUTURE AI AGENTS: Updated to use normalizePercent() from layerBasic
+ * to support extended coordinate range (negative values and >100%).
+ * This allows orbit pivots to be placed outside image bounds.
+ *
+ * @param value - Percent value as array
+ * @returns Normalized PercentPoint or undefined
+ */
 function normalisePercent(value?: [number, number]): PercentPoint | undefined {
   if (!value || value.length < 2) return undefined;
   return {
-    x: clampPercent(value[0]),
-    y: clampPercent(value[1]),
+    x: normalizePercent(value[0]),
+    y: normalizePercent(value[1]),
   };
 }
 
@@ -255,11 +270,6 @@ function normaliseStagePoint(value?: [number, number]): Point2D | undefined {
     x: clampStage(value[0]),
     y: clampStage(value[1]),
   };
-}
-
-function clampPercent(value: number): number {
-  if (!Number.isFinite(value)) return 0;
-  return Math.max(0, Math.min(100, value));
 }
 
 function clampStage(value: number): number {

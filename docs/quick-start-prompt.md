@@ -43,6 +43,7 @@ Each frame: run processors → update → render
 ## 3️⃣ Key Concepts:
 
 **Config Structure:**
+
 ```json
 {
   \"LayerID\": \"my-layer\",
@@ -59,6 +60,7 @@ Each frame: run processors → update → render
 ```
 
 **Processor Pattern:**
+
 ```typescript
 // 1. Create processor function
 export function createMyProcessor(config): LayerProcessor {
@@ -87,17 +89,20 @@ registerProcessor({
 ## 5️⃣ Common Tasks:
 
 **Add a new layer:**
+
 1. Edit `/app/shared/config/ConfigYuzha.json`
 2. Add entry with required Core properties
 3. Save and see live reload
 
 **Add a new processor:**
+
 1. Create `/app/shared/layer/layerMyFeature.ts`
 2. Implement processor matching existing patterns
 3. Register in `/app/shared/layer/layer.ts`
 4. Add types to `Config.ts` if needed
 
 **Debug a layer:**
+
 1. Check console for validation warnings
 2. Verify LayerOrder (drawing order)
 3. Check coordinates are in 0-2048 range

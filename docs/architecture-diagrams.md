@@ -235,7 +235,7 @@ Input Format:
   \"renderer\": \"2D\",
   \"LayerOrder\": 100,
   \"ImageScale\": [100, 100],
-  
+
   \"groups\": {                          ← Groups are OPTIONAL
     \"Basic Config\": {
       \"BasicStagePoint\": [1024, 1024],
@@ -268,16 +268,16 @@ Output Format:
   \"renderer\": \"2D\",
   \"LayerOrder\": 100,
   \"ImageScale\": [100, 100],
-  
+
   // Basic Config (if present)
   \"BasicStagePoint\": [1024, 1024],
   \"BasicImagePoint\": [50, 50],
   \"BasicImageAngle\": 0,
-  
+
   // Spin Config (if present)
   \"spinSpeed\": 10,
   \"spinDirection\": \"cw\",
-  
+
   // Orbital Config (if present)
   \"orbitSpeed\": 5,
   \"orbitStagePoint\": [1024, 1024]
@@ -568,9 +568,10 @@ Step 6: Verify in Browser
 ---
 
 **Use these diagrams to understand:**
+
 - How data flows through the system
 - Where to make changes
 - How components interact
 - Visual mental models for architecture
-"
-Observation: Create successful: /app/docs/architecture-diagrams.md
+  "
+  Observation: Create successful: /app/docs/architecture-diagrams.md

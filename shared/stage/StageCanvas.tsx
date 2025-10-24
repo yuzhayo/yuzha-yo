@@ -43,7 +43,7 @@ import {
   type EnhancedLayerData,
   type LayerProcessor,
 } from "./StageSystem";
-import { loadImage } from "../layer/layerCore";
+import { loadImage, getImageCenter } from "../layer/layerCore";
 import { runPipeline, AnimationConstants, createPipelineCache } from "../layer/layer";
 
 const IS_DEV = import.meta.env?.DEV ?? false;
@@ -145,7 +145,7 @@ async function mountCanvasLayers(
       const scaledHeight = image.height * item.data.scale.y;
       const centerX = (image.width / 2) * item.data.scale.x;
       const centerY = (image.height / 2) * item.data.scale.y;
-      const pivot = item.data.imageMapping.imageCenter;
+      const pivot = getImageCenter(item.data.imageMapping);
       const pivotX = pivot.x * item.data.scale.x;
       const pivotY = pivot.y * item.data.scale.y;
       const dx = centerX - pivotX;

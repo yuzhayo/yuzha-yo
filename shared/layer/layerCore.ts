@@ -76,7 +76,7 @@ import {
   clampedPercentToScale,
   normalizePercentInput,
   normalizeStagePointInput,
-  clampPercent,
+  normalizePercent,
   imagePointToStagePoint,
   imagePointToPercent,
   imagePercentToImagePoint,
@@ -121,11 +121,30 @@ const pathMap = new Map(registry.map((entry) => [entry.id, entry.path]));
 /**
  * Image mapping information
  * Defines the core geometry of an image needed for positioning
+ *
+ * FOR FUTURE AI AGENTS: This type was simplified to remove redundant imageCenter.
+ * The image center is always calculable as (width/2, height/2).
+ * Use getImageCenter() helper function to retrieve the center when needed.
  */
 export type ImageMapping = {
-  imageCenter: { x: number; y: number };
   imageDimensions: { width: number; height: number };
 };
+
+/**
+ * Get image center from ImageMapping
+ *
+ * FOR FUTURE AI AGENTS: Use this helper instead of accessing a cached center.
+ * The center is always the geometric center of the image (width/2, height/2).
+ *
+ * @param mapping - ImageMapping containing dimensions
+ * @returns Point2D representing image center in pixels
+ */
+export function getImageCenter(mapping: ImageMapping): Point2D {
+  return {
+    x: mapping.imageDimensions.width / 2,
+    y: mapping.imageDimensions.height / 2,
+  };
+}
 
 /**
  * Re-export types from layerBasic for convenience
@@ -246,14 +265,15 @@ const ZERO_DUAL_COORDINATE = createDualSpaceCoordinate(
 // ============================================================================
 
 /**
- * Compute basic image mapping
+ * Compute image mapping from dimensions
  *
- * Provides the image center and dimensions for downstream coordinate math.
+ * FOR FUTURE AI AGENTS: Simplified to only store dimensions.
+ * Image center is calculated on-demand using getImageCenter() helper.
  * This keeps the pipeline lightweight while still supporting pivot-based
  * positioning and spin/orbit calculations.
  *
  * @param imageDimensions - Image width and height
- * @returns Image mapping with center and dimensions
+ * @returns ImageMapping with dimensions only
  */
 export function computeImageMapping(imageDimensions: {
   width: number;
@@ -261,7 +281,6 @@ export function computeImageMapping(imageDimensions: {
 }): ImageMapping {
   const { width, height } = imageDimensions;
   return {
-    imageCenter: { x: width / 2, y: height / 2 },
     imageDimensions: { width, height },
   };
 }
@@ -291,16 +310,14 @@ export async function prepareBasicState(
   const stageCenterPoint: Point2D = { x: stageCenterValue, y: stageCenterValue };
   const stageCenterPercent = stagePointToPercent(stageCenterPoint, stageSize);
 
+  const imageCenter = getImageCenter(imageMapping);
   const imageCenterStage = imagePointToStagePoint(
-    imageMapping.imageCenter,
+    imageCenter,
     imageMapping.imageDimensions,
     scale,
     position,
   );
-  const imageCenterPercent = imagePointToPercent(
-    imageMapping.imageCenter,
-    imageMapping.imageDimensions,
-  );
+  const imageCenterPercent = imagePointToPercent(imageCenter, imageMapping.imageDimensions);
   const imageCenterStagePercent = stagePointToPercent(imageCenterStage, stageSize);
 
   const rotation = typeof entry.BasicImageAngle === "number" ? entry.BasicImageAngle : 0;
@@ -320,7 +337,7 @@ export async function prepareBasicState(
     stageSize,
     stageCenter: createCoordinateBundle(stageCenterPoint, stageCenterPercent),
     imageCenter: createDualSpaceCoordinate(
-      imageMapping.imageCenter,
+      imageCenter,
       imageCenterPercent,
       imageCenterStage,
       imageCenterStagePercent,
@@ -561,8 +578,8 @@ export function compute2DTransform(
     // Default BasicImagePoint to [50, 50] (center) if not specified
     const [imgPercentX, imgPercentY] = normalizePair(entry.BasicImagePoint, 50, 50);
     const basicImagePercent: PercentPoint = {
-      x: clampPercent(imgPercentX),
-      y: clampPercent(imgPercentY),
+      x: normalizePercent(imgPercentX),
+      y: normalizePercent(imgPercentY),
     };
 
     // Calculate position that places BasicImagePoint at BasicStagePoint

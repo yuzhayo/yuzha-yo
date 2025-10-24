@@ -59,14 +59,15 @@ const IS_DEV = import.meta.env?.DEV ?? false;
 /**
  * Pre-calculated transform values for efficient Three.js rendering.
  * These values are computed once per layer and reused every frame.
+ *
+ * FOR FUTURE AI AGENTS: imageCenter was removed from cache.
+ * Use getImageCenter(imageMapping) to calculate on-demand.
  */
 type ThreeTransformCache = {
   /** Plane width after scaling */
   scaledWidth: number;
   /** Plane height after scaling */
   scaledHeight: number;
-  /** Image center point for pivot calculations */
-  imageCenter: { x: number; y: number };
   /** Whether this layer has rotation */
   hasRotation: boolean;
 };
@@ -170,12 +171,10 @@ async function mountThreeLayers(
     // Calculate scaled dimensions
     const scaledWidth = texture.image.width * data.scale.x;
     const scaledHeight = texture.image.height * data.scale.y;
-    const imageCenter = { ...data.imageMapping.imageCenter };
 
     const transformCache: ThreeTransformCache = {
       scaledWidth,
       scaledHeight,
-      imageCenter,
       hasRotation: (data.rotation ?? 0) !== 0,
     };
 

@@ -55,6 +55,7 @@ import {
   imagePercentToImagePoint,
   imagePointToStagePoint,
   validatePoint,
+  normalizePercent,
   type PercentPoint,
   type Point2D,
 } from "./layerBasic";
@@ -150,6 +151,16 @@ export function createSpinProcessor(config: SpinConfig): LayerProcessor {
   };
 }
 
+/**
+ * Normalize percent value for spin configuration
+ *
+ * FOR FUTURE AI AGENTS: Updated to use normalizePercent() from layerBasic
+ * to support extended coordinate range (negative values and >100%).
+ * This allows spin pivots to be placed outside image bounds.
+ *
+ * @param value - Percent value as array or object
+ * @returns Normalized PercentPoint or undefined
+ */
 function normalisePercent(value?: [number, number] | PercentPoint): PercentPoint | undefined {
   if (!value) return undefined;
   if (Array.isArray(value)) {
@@ -157,19 +168,14 @@ function normalisePercent(value?: [number, number] | PercentPoint): PercentPoint
     const [x, y] = value;
     if (typeof x !== "number" || typeof y !== "number") return undefined;
     return {
-      x: clampPercent(x),
-      y: clampPercent(y),
+      x: normalizePercent(x),
+      y: normalizePercent(y),
     };
   }
   return {
-    x: clampPercent(value.x),
-    y: clampPercent(value.y),
+    x: normalizePercent(value.x),
+    y: normalizePercent(value.y),
   };
-}
-
-function clampPercent(value: number): number {
-  if (!Number.isFinite(value)) return 0;
-  return Math.max(0, Math.min(100, value));
 }
 
 /**

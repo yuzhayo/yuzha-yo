@@ -42,7 +42,7 @@ import {
   type LayerProcessor,
   type PreparedLayer,
 } from "./StageSystem";
-import { loadImage } from "../layer/layerCore";
+import { loadImage, getImageCenter } from "../layer/layerCore";
 import { runPipeline, createPipelineCache } from "../layer/layer";
 
 const IS_DEV = import.meta.env?.DEV ?? false;
@@ -209,9 +209,7 @@ function trySetupCssAnimation({
   orbitWrapper.style.animationTimingFunction = "linear";
   orbitWrapper.style.animationIterationCount = "infinite";
   orbitWrapper.style.animationDirection =
-    (initialData.orbitDirection ?? entry.orbitDirection ?? "cw") === "ccw"
-      ? "reverse"
-      : "normal";
+    (initialData.orbitDirection ?? entry.orbitDirection ?? "cw") === "ccw" ? "reverse" : "normal";
   const initialAngle = calculateInitialOrbitAngle(orbitCenter, orbitLinePoint);
   if (initialAngle !== 0) {
     const normalized = ((initialAngle % 360) + 360) % 360;
@@ -328,7 +326,7 @@ function computeLayerPlacement(
   const basePosition = data.position ?? { x: 0, y: 0 };
   const centerX = scaledWidth / 2;
   const centerY = scaledHeight / 2;
-  const pivot = data.imageMapping.imageCenter;
+  const pivot = getImageCenter(data.imageMapping);
   const pivotX = pivot.x * data.scale.x;
   const pivotY = pivot.y * data.scale.y;
   const dx = centerX - pivotX;
@@ -351,7 +349,7 @@ function extractPivotPercent(
       y: data.calculation.spinPoint.image.percent.y,
     };
   }
-  const imageCenter = data.imageMapping.imageCenter;
+  const imageCenter = getImageCenter(data.imageMapping);
   return {
     x: (imageCenter.x / naturalWidth) * 100,
     y: (imageCenter.y / naturalHeight) * 100,
@@ -465,7 +463,7 @@ async function mountDomLayers(
       // Calculate center and pivot in scaled space (matches Canvas)
       const centerX = scaledWidth / 2;
       const centerY = scaledHeight / 2;
-      const pivot = item.data.imageMapping.imageCenter;
+      const pivot = getImageCenter(item.data.imageMapping);
       const pivotX = pivot.x * scale.x;
       const pivotY = pivot.y * scale.y;
 
@@ -582,11 +580,11 @@ async function mountDomLayers(
       const scale = enhancedData.scale;
       const scaledWidth = naturalWidth * scale.x;
       const scaledHeight = naturalHeight * scale.y;
-      
+
       // Calculate center and pivot in scaled space
       const centerX = scaledWidth / 2;
       const centerY = scaledHeight / 2;
-      const pivot = layer.baseData.imageMapping.imageCenter;
+      const pivot = getImageCenter(layer.baseData.imageMapping);
       const pivotX = pivot.x * scale.x;
       const pivotY = pivot.y * scale.y;
       const dx = centerX - pivotX;
@@ -595,7 +593,7 @@ async function mountDomLayers(
       // Update image dimensions if scale changed
       layer.img.style.width = `${scaledWidth}px`;
       layer.img.style.height = `${scaledHeight}px`;
-      
+
       // Update transform origin
       const pivotPercentX = (pivotX / scaledWidth) * 100;
       const pivotPercentY = (pivotY / scaledHeight) * 100;

@@ -2,11 +2,13 @@ I'll create a comprehensive onboarding prompt for new AI agents. Let me save thi
 Action: file_editor create /app/docs/ai-agent-onboarding.md --file-text "# AI Agent Onboarding Guide - Yuzha Config-Driven Layer System
 
 ## 🎯 Your Mission
+
 You're working on a **config-driven 2D/3D layer rendering system** called Yuzha. Everything is driven by JSON configuration, with a modular processor pipeline for animations.
 
 ## 📚 Essential Reading Order (Follow This Sequence)
 
 ### Phase 1: Understand the Config System (15 minutes)
+
 Read these files IN ORDER to understand how layers are defined:
 
 1. **`/app/shared/config/ConfigYuzha.json`** (5 min)
@@ -21,6 +23,7 @@ Read these files IN ORDER to understand how layers are defined:
    - **Key insight**: Config is loaded, flattened, validated, then sorted by LayerOrder
 
 ### Phase 2: Understand the Data Flow (20 minutes)
+
 Follow the data pipeline from config to screen:
 
 3. **`/app/shared/layer/layerCore.ts`** (10 min)
@@ -80,21 +83,25 @@ Each frame: run processors → update positions/rotations → render
 ## 🔑 Key Concepts
 
 ### 1. Config-Driven Everything
+
 - **Layers are defined in JSON**, not code
 - To add a layer: edit ConfigYuzha.json
 - To change behavior: modify config properties
 
 ### 2. Processor Pipeline Pattern
+
 - **Processors are modular behaviors** that attach based on config
 - Pattern: Check config → decide if processor applies → attach it
 - Example: If `spinSpeed > 0`, attach spin processor
 
 ### 3. Dual-Space Coordinates
+
 - **Stage space**: Fixed 2048x2048 coordinate system (pixels)
 - **Image space**: Relative to individual image dimensions (pixels or %)
 - **Percent space**: 0-100% for relative positioning
 
 ### 4. Three Config Groups
+
 - **Core**: Always required (LayerID, ImageID, LayerOrder, renderer, ImageScale)
 - **Basic Config**: Static positioning (BasicStagePoint, BasicImagePoint, BasicImageAngle)
 - **Spin Config**: Rotation animation (spinSpeed, spinDirection, spinStagePoint, spinImagePoint)
@@ -103,11 +110,13 @@ Each frame: run processors → update positions/rotations → render
 ## 🛠️ Common Tasks
 
 ### Adding a New Layer
+
 1. Edit `/app/shared/config/ConfigYuzha.json`
 2. Add entry with Core properties + optional groups
 3. Server hot-reloads automatically
 
 ### Adding a New Processor
+
 1. Create processor file in `/app/shared/layer/` (e.g., `layerPulse.ts`)
 2. Implement `createXProcessor()` function matching `LayerProcessor` type
 3. Register in `/app/shared/layer/layer.ts` using `registerProcessor()`
@@ -115,6 +124,7 @@ Each frame: run processors → update positions/rotations → render
 5. Update `EnhancedLayerData` type if adding new properties
 
 ### Adding a New Config Property
+
 1. Add to `ConfigYuzhaEntry` type in `Config.ts`
 2. Add to `LayerConfigEntry` type in `Config.ts`
 3. Update `transformConfig()` if special merge logic needed
@@ -165,6 +175,7 @@ Each frame: run processors → update positions/rotations → render
 ## 💡 Quick Start Scenarios
 
 ### Scenario 1: \"Add a pulsing animation to a layer\"
+
 1. Read layerSpin.ts to see processor pattern
 2. Create layerPulse.ts with similar structure
 3. Register processor checking for `pulseSpeed` config
@@ -172,12 +183,14 @@ Each frame: run processors → update positions/rotations → render
 5. Test and verify
 
 ### Scenario 2: \"Make a layer fade in over time\"
+
 1. Add `fadeInDuration` to config types
 2. Create processor that modifies layer opacity based on elapsed time
 3. Add opacity to EnhancedLayerData type
 4. Renderer will use opacity property automatically
 
 ### Scenario 3: \"Debug why a layer isn't showing\"
+
 1. Check LayerOrder - is it being covered by higher layers?
 2. Check BasicStagePoint - is it within 0-2048 bounds?
 3. Check ImageID - does it exist in ImageRegistry.json?
@@ -186,6 +199,7 @@ Each frame: run processors → update positions/rotations → render
 ## ✅ Verification Checklist
 
 After reading this guide, you should be able to answer:
+
 - [ ] Where are layers defined? (ConfigYuzha.json)
 - [ ] What are the three config groups? (Basic, Spin, Orbital)
 - [ ] What is the main entry point for layer preparation? (prepareLayer)
@@ -196,6 +210,7 @@ After reading this guide, you should be able to answer:
 ## 🎓 Advanced Topics (Optional)
 
 After mastering the basics, explore:
+
 - `/app/shared/layer/layerBasic.ts` - Deep coordinate math
 - `/app/shared/stage/StageCanvas.tsx` - Canvas rendering techniques
 - `/app/shared/utils/RendererDetector.ts` - Auto renderer selection

@@ -1,0 +1,591 @@
+Perfect! Now let me create a comprehensive explanation and implementation guide:
+ Summary: ## Extending Image Coordinates Beyond 0-100% (Supporting External Points)
+
+**Excellent architectural insight!** You're absolutely right - the current system **artificially limits** coordinates to 0-100%, preventing pivot points from being placed **outside image boundaries**.
+
+---
+
+## **Current Limitation**
+
+### **The Problem:**
+```typescript
+// Current: clampPercent restricts to [0, 100]
+export function clampPercent(value: number): number {
+  return Math.max(0, Math.min(100, value));  // ❌ Forces 0-100 range
+}
+
+// Example: You want x=150, y=-20 (outside image)
+const config = { spinImagePoint: [150, -20] };  
+// After clamping: [100, 0]  ❌ Limited to boundary
+```
+
+### **Where Clamping Happens:**
+1. **`layerBasic.ts` line 462**: Core `clampPercent()` function
+2. **`layerBasic.ts` line 222-223**: `imagePercentToImagePoint()` clamps input
+3. **`layerCore.ts` line 564-565**: `BasicImagePoint` clamped
+4. **`layerSpin.ts` line 160-161, 165-166**: Spin points clamped
+5. **`layerOrbit.ts` line 247-248**: Orbit points clamped
+
+---
+
+## **Why Support Extended Coordinates?**
+
+### **Use Cases:**
+1. **Spin around external pivot**: Rotate image around a point outside itself (like a door hinge)
+2. **Off-center orbits**: Orbit around a distant center point
+3. **Asymmetric animations**: Create complex motion paths
+4. **Linked objects**: Multiple images rotating around a shared external point
+
+### **Example Scenarios:**
+
+```typescript
+// Spin around point outside image (like a door on hinges)
+{
+  "spinImagePoint": [-10, 50],  // 10% left of image edge
+  "spinStagePoint": [512, 1024]
+}
+
+// Orbit around distant center
+{
+  "orbitImagePoint": [50, 150],  // 50% above image top
+  "orbitStagePoint": [1024, 1024]
+}
+```
+
+---
+
+## **Implementation: Remove Clamping**
+
+### **Step 1: Update Core `clampPercent` → `normalizePercent`**
+
+**File:** `/app/shared/layer/layerBasic.ts`
+
+```typescript
+/**
+ * Normalize percentage value (allow extended range for external points)
+ * 
+ * CHANGE: Removes 0-100 clamping to support coordinates outside image bounds
+ * - Values <0: Point is left/above image
+ * - Values >100: Point is right/below image
+ * - Still validates for NaN/Infinity
+ * 
+ * @param value - Percentage value (can be negative or >100)
+ * @returns Normalized value (NaN/Infinity converted to 0)
+ */
+export function normalizePercent(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return value;  // ✅ No clamping - allow any finite value
+}
+
+// Keep old function for backward compatibility (scale only)
+export function clampPercent(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(100, value));
+}
+```
+
+### **Step 2: Update `imagePercentToImagePoint`**
+
+```typescript
+/**
+ * Convert percentage coordinates to image point (pixels)
+ * SUPPORTS EXTENDED RANGE: Allows coordinates outside 0-100%
+ */
+export function imagePercentToImagePoint(
+  imagePercent: PercentPoint,
+  imageDimensions: { width: number; height: number },
+): Point2D {
+  // ✅ REMOVED: const validPercent = { x: clampPercent(...), y: clampPercent(...) };
+  
+  const validDimensions = validateDimensions(imageDimensions);
+
+  const result = {
+    x: (imagePercent.x / 100) * validDimensions.width,   // ✅ Allow any percent
+    y: (imagePercent.y / 100) * validDimensions.height,
+  };
+
+  return validatePoint(result);  // Only validates NaN/Infinity
+}
+```
+
+### **Step 3: Update Normalization Functions**
+
+**File:** `/app/shared/layer/layerBasic.ts`
+
+```typescript
+export function normalizePercentInput(
+  value: PercentInput | undefined,
+  fallbackX: number,
+  fallbackY: number,
+): PercentPoint {
+  if (!value) {
+    return { x: fallbackX, y: fallbackY };
+  }
+
+  if (Array.isArray(value)) {
+    if (value.length < 2) {
+      return { x: fallbackX, y: fallbackY };
+    }
+    return {
+      x: normalizePercent(value[0] ?? fallbackX),  // ✅ Use normalizePercent
+      y: normalizePercent(value[1] ?? fallbackY),
+    };
+  }
+
+  if (typeof value === "object" && value !== null) {
+    const x = typeof value.x === "number" ? value.x : fallbackX;
+    const y = typeof value.y === "number" ? value.y : fallbackY;
+    return {
+      x: normalizePercent(x),  // ✅ Use normalizePercent
+      y: normalizePercent(y),
+    };
+  }
+
+  return {
+    x: normalizePercent(fallbackX),
+    y: normalizePercent(fallbackY),
+  };
+}
+```
+
+### **Step 4: Update Layer Processors**
+
+**File:** `/app/shared/layer/layerSpin.ts`
+
+```typescript
+function normalisePercent(value?: [number, number] | PercentPoint): PercentPoint | undefined {
+  if (!value) return undefined;
+  if (Array.isArray(value)) {
+    if (value.length < 2) return undefined;
+    const [x, y] = value;
+    if (typeof x !== "number" || typeof y !== "number") return undefined;
+    return {
+      x: normalizePercent(x),  // ✅ Changed from clampPercent
+      y: normalizePercent(y),
+    };
+  }
+  return {
+    x: normalizePercent(value.x),  // ✅ Changed from clampPercent
+    y: normalizePercent(value.y),
+  };
+}
+
+// Import from layerBasic
+import { normalizePercent } from "./layerBasic";
+```
+
+**File:** `/app/shared/layer/layerOrbit.ts` - Same changes
+
+```typescript
+import { normalizePercent } from "./layerBasic";
+
+function normalisePercent(value?: [number, number]): PercentPoint | undefined {
+  if (!value || value.length < 2) return undefined;
+  return {
+    x: normalizePercent(value[0]),  // ✅ Changed from clampPercent
+    y: normalizePercent(value[1]),
+  };
+}
+```
+
+### **Step 5: Update `layerCore.ts`**
+
+```typescript
+// Line 564-565
+const basicImagePercent: PercentPoint = {
+  x: normalizePercent(imgPercentX),  // ✅ Changed from clampPercent
+  y: normalizePercent(imgPercentY),
+};
+```
+
+---
+
+## **Configuration Examples**
+
+### **Example 1: Door Hinge (Spin around edge)**
+
+```json
+{
+  "LayerID": "door",
+  "ImageID": "door_image",
+  "BasicImagePoint": [0, 50],       // Left edge, vertical center
+  "spinImagePoint": [0, 50],         // Spin around left edge
+  "spinSpeed": 30,
+  "BasicStagePoint": [800, 1024]
+}
+```
+
+### **Example 2: Satellite Orbit (External center)**
+
+```json
+{
+  "LayerID": "satellite",
+  "ImageID": "satellite_image", 
+  "orbitImagePoint": [50, 200],      // ✅ 200% = 2x image height above
+  "orbitStagePoint": [1024, 1024],
+  "orbitSpeed": 20
+}
+```
+
+### **Example 3: Gear System (Multiple images, shared pivot)**
+
+```json
+[
+  {
+    "LayerID": "gear1",
+    "spinImagePoint": [150, 50],     // ✅ 150% = 1.5x width to the right
+    "spinStagePoint": [1024, 1024],  // Shared center
+    "spinSpeed": 30
+  },
+  {
+    "LayerID": "gear2",
+    "spinImagePoint": [-50, 50],     // ✅ -50% = 0.5x width to the left
+    "spinStagePoint": [1024, 1024],  // Shared center
+    "spinSpeed": -30
+  }
+]
+```
+
+---
+
+## **Coordinate System Reference**
+
+```
+Extended Percent Coordinate System:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          
+   -50%      0%       50%      100%     150%
+    |        |         |         |        |
+    ·········┌─────────┴─────────┐········
+             │                   │        
+    ←────────┼────── Image ──────┼──────→ 
+             │    (0-100%)       │        
+    ·········└───────────────────┘········
+    |        |         |         |        |
+ Outside   Left    Center    Right   Outside
+```
+
+**Interpretation:**
+- `x = -50`: Point is 50% of image width to the LEFT of left edge
+- `x = 150`: Point is 50% of image width to the RIGHT of right edge
+- `y = -30`: Point is 30% of image height ABOVE top edge
+- `y = 120`: Point is 20% of image height BELOW bottom edge
+
+---
+
+## **Benefits of Extended Range**
+
+✅ **More flexible animations** - Complex motion not limited to image bounds  
+✅ **Linked objects** - Multiple images can share external pivot points  
+✅ **Realistic physics** - Doors, pendulums, orbits behave naturally  
+✅ **Creative freedom** - Artists can design complex animation systems  
+✅ **Backward compatible** - Existing 0-100% configs still work perfectly  
+
+---
+
+## **Conclusion**
+
+**YES, it's absolutely possible and recommended!** 
+
+The changes are minimal:
+1. Replace `clampPercent()` with `normalizePercent()` (remove min/max)
+2. Update 5-6 call sites
+3. No breaking changes to existing configs
+
+This unlocks powerful animation capabilities while maintaining full backward compatibility with existing 0-100% coordinates.
+Action: finish
+Observation: Perfect! Now let me create a comprehensive explanation and implementation guide:
+ Summary: ## Extending Image Coordinates Beyond 0-100% (Supporting External Points)
+
+**Excellent architectural insight!** You're absolutely right - the current system **artificially limits** coordinates to 0-100%, preventing pivot points from being placed **outside image boundaries**.
+
+---
+
+## **Current Limitation**
+
+### **The Problem:**
+```typescript
+// Current: clampPercent restricts to [0, 100]
+export function clampPercent(value: number): number {
+  return Math.max(0, Math.min(100, value));  // ❌ Forces 0-100 range
+}
+
+// Example: You want x=150, y=-20 (outside image)
+const config = { spinImagePoint: [150, -20] };  
+// After clamping: [100, 0]  ❌ Limited to boundary
+```
+
+### **Where Clamping Happens:**
+1. **`layerBasic.ts` line 462**: Core `clampPercent()` function
+2. **`layerBasic.ts` line 222-223**: `imagePercentToImagePoint()` clamps input
+3. **`layerCore.ts` line 564-565**: `BasicImagePoint` clamped
+4. **`layerSpin.ts` line 160-161, 165-166**: Spin points clamped
+5. **`layerOrbit.ts` line 247-248**: Orbit points clamped
+
+---
+
+## **Why Support Extended Coordinates?**
+
+### **Use Cases:**
+1. **Spin around external pivot**: Rotate image around a point outside itself (like a door hinge)
+2. **Off-center orbits**: Orbit around a distant center point
+3. **Asymmetric animations**: Create complex motion paths
+4. **Linked objects**: Multiple images rotating around a shared external point
+
+### **Example Scenarios:**
+
+```typescript
+// Spin around point outside image (like a door on hinges)
+{
+  "spinImagePoint": [-10, 50],  // 10% left of image edge
+  "spinStagePoint": [512, 1024]
+}
+
+// Orbit around distant center
+{
+  "orbitImagePoint": [50, 150],  // 50% above image top
+  "orbitStagePoint": [1024, 1024]
+}
+```
+
+---
+
+## **Implementation: Remove Clamping**
+
+### **Step 1: Update Core `clampPercent` → `normalizePercent`**
+
+**File:** `/app/shared/layer/layerBasic.ts`
+
+```typescript
+/**
+ * Normalize percentage value (allow extended range for external points)
+ * 
+ * CHANGE: Removes 0-100 clamping to support coordinates outside image bounds
+ * - Values <0: Point is left/above image
+ * - Values >100: Point is right/below image
+ * - Still validates for NaN/Infinity
+ * 
+ * @param value - Percentage value (can be negative or >100)
+ * @returns Normalized value (NaN/Infinity converted to 0)
+ */
+export function normalizePercent(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return value;  // ✅ No clamping - allow any finite value
+}
+
+// Keep old function for backward compatibility (scale only)
+export function clampPercent(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(100, value));
+}
+```
+
+### **Step 2: Update `imagePercentToImagePoint`**
+
+```typescript
+/**
+ * Convert percentage coordinates to image point (pixels)
+ * SUPPORTS EXTENDED RANGE: Allows coordinates outside 0-100%
+ */
+export function imagePercentToImagePoint(
+  imagePercent: PercentPoint,
+  imageDimensions: { width: number; height: number },
+): Point2D {
+  // ✅ REMOVED: const validPercent = { x: clampPercent(...), y: clampPercent(...) };
+  
+  const validDimensions = validateDimensions(imageDimensions);
+
+  const result = {
+    x: (imagePercent.x / 100) * validDimensions.width,   // ✅ Allow any percent
+    y: (imagePercent.y / 100) * validDimensions.height,
+  };
+
+  return validatePoint(result);  // Only validates NaN/Infinity
+}
+```
+
+### **Step 3: Update Normalization Functions**
+
+**File:** `/app/shared/layer/layerBasic.ts`
+
+```typescript
+export function normalizePercentInput(
+  value: PercentInput | undefined,
+  fallbackX: number,
+  fallbackY: number,
+): PercentPoint {
+  if (!value) {
+    return { x: fallbackX, y: fallbackY };
+  }
+
+  if (Array.isArray(value)) {
+    if (value.length < 2) {
+      return { x: fallbackX, y: fallbackY };
+    }
+    return {
+      x: normalizePercent(value[0] ?? fallbackX),  // ✅ Use normalizePercent
+      y: normalizePercent(value[1] ?? fallbackY),
+    };
+  }
+
+  if (typeof value === "object" && value !== null) {
+    const x = typeof value.x === "number" ? value.x : fallbackX;
+    const y = typeof value.y === "number" ? value.y : fallbackY;
+    return {
+      x: normalizePercent(x),  // ✅ Use normalizePercent
+      y: normalizePercent(y),
+    };
+  }
+
+  return {
+    x: normalizePercent(fallbackX),
+    y: normalizePercent(fallbackY),
+  };
+}
+```
+
+### **Step 4: Update Layer Processors**
+
+**File:** `/app/shared/layer/layerSpin.ts`
+
+```typescript
+function normalisePercent(value?: [number, number] | PercentPoint): PercentPoint | undefined {
+  if (!value) return undefined;
+  if (Array.isArray(value)) {
+    if (value.length < 2) return undefined;
+    const [x, y] = value;
+    if (typeof x !== "number" || typeof y !== "number") return undefined;
+    return {
+      x: normalizePercent(x),  // ✅ Changed from clampPercent
+      y: normalizePercent(y),
+    };
+  }
+  return {
+    x: normalizePercent(value.x),  // ✅ Changed from clampPercent
+    y: normalizePercent(value.y),
+  };
+}
+
+// Import from layerBasic
+import { normalizePercent } from "./layerBasic";
+```
+
+**File:** `/app/shared/layer/layerOrbit.ts` - Same changes
+
+```typescript
+import { normalizePercent } from "./layerBasic";
+
+function normalisePercent(value?: [number, number]): PercentPoint | undefined {
+  if (!value || value.length < 2) return undefined;
+  return {
+    x: normalizePercent(value[0]),  // ✅ Changed from clampPercent
+    y: normalizePercent(value[1]),
+  };
+}
+```
+
+### **Step 5: Update `layerCore.ts`**
+
+```typescript
+// Line 564-565
+const basicImagePercent: PercentPoint = {
+  x: normalizePercent(imgPercentX),  // ✅ Changed from clampPercent
+  y: normalizePercent(imgPercentY),
+};
+```
+
+---
+
+## **Configuration Examples**
+
+### **Example 1: Door Hinge (Spin around edge)**
+
+```json
+{
+  "LayerID": "door",
+  "ImageID": "door_image",
+  "BasicImagePoint": [0, 50],       // Left edge, vertical center
+  "spinImagePoint": [0, 50],         // Spin around left edge
+  "spinSpeed": 30,
+  "BasicStagePoint": [800, 1024]
+}
+```
+
+### **Example 2: Satellite Orbit (External center)**
+
+```json
+{
+  "LayerID": "satellite",
+  "ImageID": "satellite_image", 
+  "orbitImagePoint": [50, 200],      // ✅ 200% = 2x image height above
+  "orbitStagePoint": [1024, 1024],
+  "orbitSpeed": 20
+}
+```
+
+### **Example 3: Gear System (Multiple images, shared pivot)**
+
+```json
+[
+  {
+    "LayerID": "gear1",
+    "spinImagePoint": [150, 50],     // ✅ 150% = 1.5x width to the right
+    "spinStagePoint": [1024, 1024],  // Shared center
+    "spinSpeed": 30
+  },
+  {
+    "LayerID": "gear2",
+    "spinImagePoint": [-50, 50],     // ✅ -50% = 0.5x width to the left
+    "spinStagePoint": [1024, 1024],  // Shared center
+    "spinSpeed": -30
+  }
+]
+```
+
+---
+
+## **Coordinate System Reference**
+
+```
+Extended Percent Coordinate System:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          
+   -50%      0%       50%      100%     150%
+    |        |         |         |        |
+    ·········┌─────────┴─────────┐········
+             │                   │        
+    ←────────┼────── Image ──────┼──────→ 
+             │    (0-100%)       │        
+    ·········└───────────────────┘········
+    |        |         |         |        |
+ Outside   Left    Center    Right   Outside
+```
+
+**Interpretation:**
+- `x = -50`: Point is 50% of image width to the LEFT of left edge
+- `x = 150`: Point is 50% of image width to the RIGHT of right edge
+- `y = -30`: Point is 30% of image height ABOVE top edge
+- `y = 120`: Point is 20% of image height BELOW bottom edge
+
+---
+
+## **Benefits of Extended Range**
+
+✅ **More flexible animations** - Complex motion not limited to image bounds  
+✅ **Linked objects** - Multiple images can share external pivot points  
+✅ **Realistic physics** - Doors, pendulums, orbits behave naturally  
+✅ **Creative freedom** - Artists can design complex animation systems  
+✅ **Backward compatible** - Existing 0-100% configs still work perfectly  
+
+---
+
+## **Conclusion**
+
+**YES, it's absolutely possible and recommended!** 
+
+The changes are minimal:
+1. Replace `clampPercent()` with `normalizePercent()` (remove min/max)
+2. Update 5-6 call sites
+3. No breaking changes to existing configs
+
+This unlocks powerful animation capabilities while maintaining full backward compatibility with existing 0-100% coordinates.
