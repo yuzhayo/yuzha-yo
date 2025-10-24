@@ -73,3 +73,22 @@ body,
     transform: rotate(360deg);
   }
 }
+
+/* Stage DOM renderer keyframes (GPU-driven orbit/spin) */
+@keyframes stage-orbit {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes stage-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

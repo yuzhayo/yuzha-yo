@@ -34,13 +34,13 @@
 import React, { useEffect, useRef } from "react";
 import {
   createStagePipeline,
-  toRendererInput,
   createStageTransformer,
   roundStagePoint,
   STAGE_SIZE,
   type StagePipeline,
   type EnhancedLayerData,
   type LayerProcessor,
+  type PreparedLayer,
 } from "./StageSystem";
 import { loadImage } from "../layer/layerCore";
 import { runPipeline, createPipelineCache } from "../layer/layer";
@@ -75,6 +75,318 @@ type DomLayerEntry = {
   hasAnimation: boolean;
 };
 
+const CSS_SPIN_ANIMATION = "stage-spin";
+const CSS_ORBIT_ANIMATION = "stage-orbit";
+
+type CssAnimationParams = {
+  containerEl: HTMLDivElement;
+  layerDiv: HTMLDivElement;
+  img: HTMLImageElement;
+  naturalWidth: number;
+  naturalHeight: number;
+  preparedLayer: PreparedLayer;
+  initialData: EnhancedLayerData;
+};
+
+/**
+ * Attempt to render a layer using pure CSS animations (GPU accelerated).
+ *
+ * Returns true when the layer was fully handled through CSS (no JS updates needed).
+ * Falls back to imperative updates when the layer uses behaviours that require
+ * per-frame calculations (e.g. orbit orient, custom processors).
+ */
+function trySetupCssAnimation({
+  layerDiv,
+  img,
+  naturalWidth,
+  naturalHeight,
+  preparedLayer,
+  initialData,
+}: CssAnimationParams): boolean {
+  const { entry } = preparedLayer;
+  const spinSpeed = Math.abs(initialData.spinSpeed ?? entry.spinSpeed ?? 0);
+  const orbitSpeed = Math.abs(initialData.orbitSpeed ?? entry.orbitSpeed ?? 0);
+  const orbitRadius = initialData.orbitLineStyle?.radius ?? initialData.orbitRadius ?? 0;
+  const hasSpin = spinSpeed > 0;
+  const hasOrbit = orbitSpeed > 0 && orbitRadius > 0;
+
+  // Only target the simple constant-speed orbit/spin cases
+  if (!hasSpin && !hasOrbit) {
+    return false;
+  }
+
+  // Behaviours we cannot currently express with pure CSS fall back to JS
+  if (initialData.orbitOrient || entry.orbitOrient) {
+    return false;
+  }
+
+  const allowedProcessors = (hasSpin ? 1 : 0) + (hasOrbit ? 1 : 0);
+  if (preparedLayer.processors.length > allowedProcessors) {
+    return false;
+  }
+
+  const scale = initialData.scale;
+  const scaledWidth = naturalWidth * scale.x;
+  const scaledHeight = naturalHeight * scale.y;
+  if (!Number.isFinite(scaledWidth) || !Number.isFinite(scaledHeight)) {
+    return false;
+  }
+
+  // Ensure consistent stacking regardless of render order
+  layerDiv.style.width = "0";
+  layerDiv.style.height = "0";
+  const visibility = initialData.visible;
+  if (visibility === false) {
+    layerDiv.style.display = "none";
+  }
+  if (initialData.opacity !== undefined) {
+    layerDiv.style.opacity = `${initialData.opacity}`;
+  }
+  if (initialData.filters && initialData.filters.length > 0) {
+    layerDiv.style.filter = initialData.filters.join(" ");
+  }
+
+  img.style.display = "block";
+  img.style.width = "100%";
+  img.style.height = "100%";
+  img.style.maxWidth = "none";
+  img.style.maxHeight = "none";
+  img.style.pointerEvents = "none";
+  img.decoding = "async";
+
+  const baseRotation = initialData.rotation ?? 0;
+  const spinDirection = initialData.spinDirection ?? entry.spinDirection ?? "cw";
+  const spinDuration = hasSpin && spinSpeed > 0 ? 360 / spinSpeed : undefined;
+  const pivotPercent = extractPivotPercent(initialData, naturalWidth, naturalHeight);
+
+  if (!hasOrbit) {
+    const placement = computeLayerPlacement(initialData, scaledWidth, scaledHeight);
+
+    layerDiv.style.left = `${placement.left}px`;
+    layerDiv.style.top = `${placement.top}px`;
+    layerDiv.style.width = `${scaledWidth}px`;
+    layerDiv.style.height = `${scaledHeight}px`;
+
+    const spinHierarchy = createSpinHierarchy({
+      scaledWidth,
+      scaledHeight,
+      pivotPercent,
+      baseRotation,
+      spinDuration,
+      spinDirection,
+      img,
+    });
+    layerDiv.appendChild(spinHierarchy);
+    return true;
+  }
+
+  const orbitCenter =
+    initialData.orbitStagePoint ??
+    toStagePoint(entry.orbitStagePoint) ??
+    initialData.calculation.stageCenter.point;
+  const orbitLinePoint =
+    initialData.orbitLinePoint ?? toStagePoint(entry.orbitLinePoint) ?? orbitCenter;
+  const orbitImagePercent = extractOrbitPercent(initialData, entry);
+
+  if (!orbitCenter) {
+    return false;
+  }
+
+  const orbitDuration = orbitSpeed > 0 ? 360 / orbitSpeed : undefined;
+  if (!orbitDuration || !Number.isFinite(orbitDuration)) {
+    return false;
+  }
+
+  const orbitWrapper = document.createElement("div");
+  orbitWrapper.style.position = "absolute";
+  orbitWrapper.style.left = `${orbitCenter.x - orbitRadius}px`;
+  orbitWrapper.style.top = `${orbitCenter.y - orbitRadius}px`;
+  orbitWrapper.style.width = `${orbitRadius * 2}px`;
+  orbitWrapper.style.height = `${orbitRadius * 2}px`;
+  orbitWrapper.style.transformOrigin = "50% 50%";
+  orbitWrapper.style.animationName = CSS_ORBIT_ANIMATION;
+  orbitWrapper.style.animationDuration = `${orbitDuration}s`;
+  orbitWrapper.style.animationTimingFunction = "linear";
+  orbitWrapper.style.animationIterationCount = "infinite";
+  orbitWrapper.style.animationDirection =
+    (initialData.orbitDirection ?? entry.orbitDirection ?? "cw") === "ccw"
+      ? "reverse"
+      : "normal";
+  const initialAngle = calculateInitialOrbitAngle(orbitCenter, orbitLinePoint);
+  if (initialAngle !== 0) {
+    const normalized = ((initialAngle % 360) + 360) % 360;
+    const progress = normalized / 360;
+    orbitWrapper.style.animationDelay = `${-orbitDuration * progress}s`;
+  }
+  orbitWrapper.style.willChange = "transform";
+
+  const orbitPositioner = document.createElement("div");
+  orbitPositioner.style.position = "absolute";
+  orbitPositioner.style.left = "50%";
+  orbitPositioner.style.top = "50%";
+  orbitPositioner.style.width = "0";
+  orbitPositioner.style.height = "0";
+  orbitPositioner.style.transform = `translate(-50%, -50%) translateY(-${orbitRadius}px)`;
+  orbitWrapper.appendChild(orbitPositioner);
+
+  const orbitAnchor = document.createElement("div");
+  orbitAnchor.style.position = "absolute";
+  orbitAnchor.style.left = "0";
+  orbitAnchor.style.top = "0";
+  orbitAnchor.style.width = `${scaledWidth}px`;
+  orbitAnchor.style.height = `${scaledHeight}px`;
+  const anchorX = (orbitImagePercent.x / 100) * scaledWidth;
+  const anchorY = (orbitImagePercent.y / 100) * scaledHeight;
+  orbitAnchor.style.transform = `translate(${-anchorX}px, ${-anchorY}px)`;
+  orbitPositioner.appendChild(orbitAnchor);
+
+  const spinHierarchy = createSpinHierarchy({
+    scaledWidth,
+    scaledHeight,
+    pivotPercent,
+    baseRotation,
+    spinDuration,
+    spinDirection,
+    img,
+  });
+  orbitAnchor.appendChild(spinHierarchy);
+
+  if (initialData.orbitLineStyle?.visible && orbitRadius > 0) {
+    const orbitLineEl = document.createElement("div");
+    orbitLineEl.style.position = "absolute";
+    orbitLineEl.style.pointerEvents = "none";
+    orbitLineEl.style.border = "1px dashed rgba(255,255,255,0.25)";
+    orbitLineEl.style.borderRadius = "50%";
+    orbitLineEl.style.width = `${orbitRadius * 2}px`;
+    orbitLineEl.style.height = `${orbitRadius * 2}px`;
+    orbitLineEl.style.left = `${orbitCenter.x - orbitRadius}px`;
+    orbitLineEl.style.top = `${orbitCenter.y - orbitRadius}px`;
+    orbitLineEl.classList.add("stage-orbit-line");
+    layerDiv.appendChild(orbitLineEl);
+  }
+
+  layerDiv.appendChild(orbitWrapper);
+  return true;
+}
+
+type SpinHierarchyOptions = {
+  scaledWidth: number;
+  scaledHeight: number;
+  pivotPercent: { x: number; y: number };
+  baseRotation: number;
+  spinDuration?: number;
+  spinDirection: "cw" | "ccw";
+  img: HTMLImageElement;
+};
+
+function createSpinHierarchy({
+  scaledWidth,
+  scaledHeight,
+  pivotPercent,
+  baseRotation,
+  spinDuration,
+  spinDirection,
+  img,
+}: SpinHierarchyOptions): HTMLDivElement {
+  const baseWrapper = document.createElement("div");
+  baseWrapper.style.position = "absolute";
+  baseWrapper.style.left = "0";
+  baseWrapper.style.top = "0";
+  baseWrapper.style.width = `${scaledWidth}px`;
+  baseWrapper.style.height = `${scaledHeight}px`;
+  const pivotOrigin = `${pivotPercent.x}% ${pivotPercent.y}%`;
+  baseWrapper.style.transformOrigin = pivotOrigin;
+  if (baseRotation !== 0) {
+    baseWrapper.style.transform = `rotate(${baseRotation}deg)`;
+  }
+
+  const spinWrapper = document.createElement("div");
+  spinWrapper.style.width = "100%";
+  spinWrapper.style.height = "100%";
+  spinWrapper.style.transformOrigin = pivotOrigin;
+  if (spinDuration && Number.isFinite(spinDuration) && spinDuration > 0) {
+    spinWrapper.style.animationName = CSS_SPIN_ANIMATION;
+    spinWrapper.style.animationDuration = `${spinDuration}s`;
+    spinWrapper.style.animationTimingFunction = "linear";
+    spinWrapper.style.animationIterationCount = "infinite";
+    if (spinDirection === "ccw") {
+      spinWrapper.style.animationDirection = "reverse";
+    }
+    spinWrapper.style.willChange = "transform";
+  }
+
+  spinWrapper.appendChild(img);
+  baseWrapper.appendChild(spinWrapper);
+  return baseWrapper;
+}
+
+function computeLayerPlacement(
+  data: EnhancedLayerData,
+  scaledWidth: number,
+  scaledHeight: number,
+): { left: number; top: number } {
+  const basePosition = data.position ?? { x: 0, y: 0 };
+  const centerX = scaledWidth / 2;
+  const centerY = scaledHeight / 2;
+  const pivot = data.imageMapping.imageCenter;
+  const pivotX = pivot.x * data.scale.x;
+  const pivotY = pivot.y * data.scale.y;
+  const dx = centerX - pivotX;
+  const dy = centerY - pivotY;
+  const position = roundStagePoint(basePosition);
+  return {
+    left: position.x - centerX + dx,
+    top: position.y - centerY + dy,
+  };
+}
+
+function extractPivotPercent(
+  data: EnhancedLayerData,
+  naturalWidth: number,
+  naturalHeight: number,
+): { x: number; y: number } {
+  if (data.calculation?.spinPoint?.image?.percent) {
+    return {
+      x: data.calculation.spinPoint.image.percent.x,
+      y: data.calculation.spinPoint.image.percent.y,
+    };
+  }
+  const imageCenter = data.imageMapping.imageCenter;
+  return {
+    x: (imageCenter.x / naturalWidth) * 100,
+    y: (imageCenter.y / naturalHeight) * 100,
+  };
+}
+
+function extractOrbitPercent(
+  data: EnhancedLayerData,
+  entry: PreparedLayer["entry"],
+): { x: number; y: number } {
+  if (data.orbitImagePercent) {
+    return data.orbitImagePercent;
+  }
+  if (Array.isArray(entry.orbitImagePoint) && entry.orbitImagePoint.length >= 2) {
+    return { x: entry.orbitImagePoint[0] ?? 50, y: entry.orbitImagePoint[1] ?? 50 };
+  }
+  return { x: 50, y: 50 };
+}
+
+function toStagePoint(value?: number[]): { x: number; y: number } | undefined {
+  if (!Array.isArray(value) || value.length < 2) return undefined;
+  const [x, y] = value;
+  if (typeof x !== "number" || typeof y !== "number") return undefined;
+  return { x, y };
+}
+
+function calculateInitialOrbitAngle(
+  center: { x: number; y: number },
+  point: { x: number; y: number },
+): number {
+  const dx = point.x - center.x;
+  const angle = (Math.atan2(-(point.y - center.y), dx) * 180) / Math.PI;
+  return Number.isFinite(angle) ? angle : 0;
+}
+
 /**
  * Mounts DOM layers into the container and sets up animation loop.
  *
@@ -97,7 +409,7 @@ type DomLayerEntry = {
  */
 async function mountDomLayers(
   containerEl: HTMLDivElement,
-  layersWithProcessors: Array<{ data: EnhancedLayerData; processors: LayerProcessor[] }>,
+  layersWithProcessors: PreparedLayer[],
 ): Promise<() => void> {
   const layers: DomLayerEntry[] = [];
 
@@ -111,27 +423,52 @@ async function mountDomLayers(
   for (const item of layersWithProcessors) {
     try {
       const img = await loadImage(item.data.imageUrl);
+      const naturalWidth = img.naturalWidth;
+      const naturalHeight = img.naturalHeight;
+      const initialData =
+        item.processors.length > 0
+          ? runPipeline(item.data, item.processors, performance.now())
+          : (item.data as EnhancedLayerData);
 
       const layerDiv = document.createElement("div");
       layerDiv.style.position = "absolute";
       layerDiv.style.pointerEvents = "none";
+      layerDiv.style.left = "0";
+      layerDiv.style.top = "0";
+      layerDiv.dataset.layerId = item.entry.LayerID;
+      if (typeof item.entry.LayerOrder === "number") {
+        layerDiv.style.zIndex = `${item.entry.LayerOrder}`;
+      }
+
+      const cssHandled = trySetupCssAnimation({
+        containerEl,
+        layerDiv,
+        img,
+        naturalWidth,
+        naturalHeight,
+        preparedLayer: item,
+        initialData,
+      });
+
+      if (cssHandled) {
+        containerEl.appendChild(layerDiv);
+        continue;
+      }
 
       const { position, scale, rotation } = item.data;
       const displayRotation = rotation ?? 0;
-      const naturalWidth = img.naturalWidth;
-      const naturalHeight = img.naturalHeight;
 
       // Calculate scaled dimensions (matches Canvas/Three.js)
       const scaledWidth = naturalWidth * scale.x;
       const scaledHeight = naturalHeight * scale.y;
-      
+
       // Calculate center and pivot in scaled space (matches Canvas)
       const centerX = scaledWidth / 2;
       const centerY = scaledHeight / 2;
       const pivot = item.data.imageMapping.imageCenter;
       const pivotX = pivot.x * scale.x;
       const pivotY = pivot.y * scale.y;
-      
+
       // Calculate offset from center to pivot (matches Canvas dx/dy)
       const dx = centerX - pivotX;
       const dy = centerY - pivotY;
@@ -143,7 +480,7 @@ async function mountDomLayers(
       img.style.maxHeight = "none";
       img.style.display = "block";
       img.style.position = "absolute";
-      
+
       // Transform origin should be at the pivot point (as percentage of scaled image)
       const pivotPercentX = (pivotX / scaledWidth) * 100;
       const pivotPercentY = (pivotY / scaledHeight) * 100;
@@ -355,7 +692,7 @@ async function mountDomRenderer(
   });
 
   // Mount layers and start animation
-  const cleanupLayers = await mountDomLayers(stage, toRendererInput(pipeline));
+  const cleanupLayers = await mountDomLayers(stage, pipeline.layers);
 
   return () => {
     cleanupTransform?.();
