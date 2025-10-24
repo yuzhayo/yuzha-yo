@@ -32,7 +32,40 @@ The core animation logic revolves around a Layer System where JSON configuration
 
 ## Recent Changes
 
-### Layer System Modular Refactoring (Latest - Oct 18, 2025)
+### Extended Coordinate System & Image Center Refactoring (Latest - Oct 24, 2025)
+
+Architectural improvements to unlock creative animation capabilities while simplifying the codebase:
+
+- **Extended Coordinate System**: Replaced `clampPercent()` with `normalizePercent()` throughout the layer system
+  - Now supports negative and >100% percent values for external pivot points
+  - Enables animations like door hinges, satellite orbits, and linked gears
+  - Fully backward compatible with existing 0-100% configurations
+  - Applied across layerBasic, layerCore, layerSpin, and layerOrbit modules
+
+- **Image Center Refactoring**: Removed redundant caching for improved code clarity
+  - Removed `imageCenter` field from `ImageMapping` type definition
+  - Added `getImageCenter()` helper function for on-demand calculation
+  - Updated all renderers (StageDOM, StageCanvas, StageThree) to use helper
+  - No performance impact - calculations happen during layer mount, not per-frame
+
+- **Updated Files**: 8 files systematically updated across the codebase
+  - Core: `layerBasic.ts`, `layerCore.ts`, `layerSpin.ts`, `layerOrbit.ts`
+  - Renderers: `StageDOM.tsx`, `StageCanvas.tsx`, `StageThree.tsx`
+  - Tests: `layerCore.test.ts`
+
+- **Verified**:
+  - ✅ Architect reviewed and approved with Pass rating
+  - ✅ All quality checks passing (typecheck, eslint, prettier)
+  - ✅ No console errors, display functionality preserved
+  - ✅ Backward compatible with existing configurations
+  - ✅ Type definitions internally consistent
+
+- **Recommended Next Steps** (from architect review):
+  - Add unit tests for normalizePercent with out-of-range values
+  - Profile heavy scenes to confirm performance under load
+  - Update config authoring docs to highlight extended-percent capability
+
+### Layer System Modular Refactoring (Oct 18, 2025)
 
 Complete modular refactoring of the layer system for improved maintainability and separation of concerns:
 
