@@ -1,8 +1,8 @@
 import React from "react";
-import bgArtifactCraftCenter from "@shared/asset/BG_ArtifactCraft_Center.png";
-import gearMoon from "@shared/asset/GEARMOON.png";
-import lockIcon from "@shared/asset/V3_LockIcon.png";
-import hourHand from "@shared/asset/H12.png";
+import bgArtifactCraftCenter from "@shared/Asset/BG_ArtifactCraft_Center.png";
+import gearMoon from "@shared/Asset/GEARMOON.png";
+import lockIcon from "@shared/Asset/V3_LockIcon.png";
+import hourHand from "@shared/Asset/H12.png";
 
 export type TestScreenProps = {
   onBack?: () => void;
