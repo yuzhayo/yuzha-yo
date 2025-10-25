@@ -1,0 +1,62 @@
+{
+  "canvas": {
+    "size": 2048,
+    "background": "#040714",
+    "grid": {
+      "step": 256,
+      "color": "rgba(148, 163, 184, 0.08)"
+    }
+  },
+  "blocks": [
+    {
+      "id": "hero",
+      "label": "Hero Placeholder",
+      "hint": "Swap for headline row",
+      "x": 128,
+      "y": 128,
+      "width": 1792,
+      "height": 480,
+      "color": "#38bdf8"
+    },
+    {
+      "id": "kpi",
+      "label": "KPIs Stack",
+      "hint": "cards / metrics",
+      "x": 128,
+      "y": 656,
+      "width": 832,
+      "height": 520,
+      "color": "#f97316"
+    },
+    {
+      "id": "timeline",
+      "label": "Timeline Rail",
+      "hint": "events feed",
+      "x": 1104,
+      "y": 656,
+      "width": 816,
+      "height": 960,
+      "color": "#8b5cf6"
+    },
+    {
+      "id": "callout",
+      "label": "CTA / Callout",
+      "hint": "two-up CTA",
+      "x": 128,
+      "y": 1232,
+      "width": 832,
+      "height": 384,
+      "color": "#0ea5e9"
+    },
+    {
+      "id": "footer",
+      "label": "Footer Notes",
+      "hint": "links, status",
+      "x": 128,
+      "y": 1680,
+      "width": 1792,
+      "height": 240,
+      "color": "#22d3ee"
+    }
+  ]
+}

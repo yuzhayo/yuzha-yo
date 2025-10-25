@@ -3,12 +3,7 @@ import StageCanvas from "@shared/stage/StageCanvas";
 import StageDOM from "@shared/stage/StageDOM";
 import StageThree from "@shared/stage/StageThree";
 import { getRendererType } from "@shared/utils/RendererDetector";
-import {
-  MainScreenBtnPanel,
-  useMainScreenBtnGesture,
-  MainScreenRendererBadge,
-  MainScreenUpdater,
-} from "./MainScreenUtils";
+import { MainScreenBtnPanel, useMainScreenBtnGesture, MainScreenUpdater } from "./MainScreenUtils";
 
 export type RendererMode = "auto" | "dom" | "canvas" | "three";
 export type RendererType = "dom" | "canvas" | "three";
@@ -16,6 +11,7 @@ export type RendererType = "dom" | "canvas" | "three";
 export type MainScreenProps = {
   children?: React.ReactNode;
   onOpenTestScreen?: () => void;
+  onOpenStruckScreen?: () => void;
 };
 
 function MainScreenOverlay({
@@ -23,11 +19,13 @@ function MainScreenOverlay({
   rendererMode,
   onRendererModeChange,
   onOpenTestScreen,
+  onOpenStruckScreen,
 }: {
   rendererLabel: string;
   rendererMode: RendererMode;
   onRendererModeChange: (mode: RendererMode) => void;
   onOpenTestScreen?: () => void;
+  onOpenStruckScreen?: () => void;
 }) {
   const gesture = useMainScreenBtnGesture();
 
@@ -40,12 +38,13 @@ function MainScreenOverlay({
         effect={{ kind: "fade" }}
         title="Launcher"
       />
-      <MainScreenRendererBadge visible={gesture.open} label={rendererLabel} />
       <MainScreenUpdater
         visible={gesture.open}
+        rendererLabel={rendererLabel}
         rendererMode={rendererMode}
         onRendererModeChange={onRendererModeChange}
         onOpenTestScreen={onOpenTestScreen}
+        onOpenStruckScreen={onOpenStruckScreen}
       />
     </>
   );
@@ -55,7 +54,11 @@ function MainScreenOverlay({
  * MainScreen with MainScreenUtils attached
  * Testing if overlay components break stage centering
  */
-export default function MainScreen({ children, onOpenTestScreen }: MainScreenProps) {
+export default function MainScreen({
+  children,
+  onOpenTestScreen,
+  onOpenStruckScreen,
+}: MainScreenProps) {
   const autoDetectedRenderer = useMemo(() => getRendererType(), []);
   const [rendererMode, setRendererMode] = useState<RendererMode>("dom");
 
@@ -88,6 +91,7 @@ export default function MainScreen({ children, onOpenTestScreen }: MainScreenPro
           rendererMode={rendererMode}
           onRendererModeChange={setRendererMode}
           onOpenTestScreen={onOpenTestScreen}
+          onOpenStruckScreen={onOpenStruckScreen}
         />
       )}
     </div>
