@@ -4,6 +4,48 @@
 
 The layer system prepares configuration data for rendering and drives runtime animation. It now focuses on spin and orbital behaviors only—the legacy debug visualization tooling has been archived while the pipeline is simplified. Future agents can restore the debug module from git history if live overlays are required again.
 
+## Speed System (Updated)
+
+**IMPORTANT FOR FUTURE AI AGENTS:**
+
+The speed system for both `spinSpeed` and `orbitSpeed` uses **ROTATIONS PER HOUR** as the unit of measurement.
+
+### Speed Unit Details
+
+- **Unit**: Rotations per hour (not degrees per second)
+- **Formula**: `angle = elapsedSeconds × speed × 0.1`
+  - Where `0.1 = 360° / 3600 seconds`
+- **Relationship**: Low value = slow speed, High value = fast speed
+
+### Examples
+
+| Speed Value | Behavior                       | Description                |
+| ----------- | ------------------------------ | -------------------------- |
+| `1.0`       | 1 full rotation in 1 hour      | Standard speed             |
+| `2.0`       | 2 full rotations in 1 hour     | 2x faster                  |
+| `0.5`       | Half rotation (180°) in 1 hour | 2x slower                  |
+| `12.0`      | 12 full rotations in 1 hour    | 1 rotation every 5 minutes |
+| `0.1`       | 1/10 rotation (36°) in 1 hour  | Very slow                  |
+
+### Conversion Reference
+
+To convert from the old system (degrees per second) to the new system (rotations per hour):
+
+```
+rotations_per_hour = (degrees_per_second × 3600) / 360
+rotations_per_hour = degrees_per_second × 10
+
+Example:
+  Old: spinSpeed = 36 (deg/sec) → New: spinSpeed = 360 (rot/hour)
+  Old: spinSpeed = 0.1 (deg/sec) → New: spinSpeed = 1 (rot/hour)
+```
+
+To think about speed intuitively:
+
+- Want 1 rotation per minute? Use `speed = 60`
+- Want 1 rotation per 10 minutes? Use `speed = 6`
+- Want 1 rotation per day (24 hours)? Use `speed = 1/24 ≈ 0.042`
+
 ## Module Architecture
 
 ```

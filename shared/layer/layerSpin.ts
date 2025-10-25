@@ -16,7 +16,7 @@
  * -----------------
  * 1. Spin Configuration
  *    - spinCenter: Override pivot point (0-100% in image space)
- *    - spinSpeed: Rotation speed in degrees per second
+ *    - spinSpeed: Rotation speed in ROTATIONS PER HOUR
  *    - spinDirection: "cw" (clockwise) or "ccw" (counter-clockwise)
  *
  * 2. Spin Processor
@@ -33,9 +33,22 @@
  * -------------
  * 1. Configuration specifies spin parameters (speed, direction, center)
  * 2. Base spin point calculated in layerCore from spinStagePoint/spinImagePoint
- * 3. Processor calculates rotation angle from elapsed time
+ * 3. Processor calculates rotation angle from elapsed time using the formula:
+ *    angle = elapsedSeconds × spinSpeed × 0.1
+ *    where spinSpeed is in rotations per hour (1 = 1 full rotation in 1 hour)
  * 4. Position adjusted to maintain pivot at spinStagePoint during rotation
  * 5. Renderer applies rotation around pivot point
+ *
+ * SPEED SYSTEM (UPDATED):
+ * -----------------------
+ * - spinSpeed is measured in ROTATIONS PER HOUR (not degrees/second)
+ * - spinSpeed = 1.0 → 1 complete rotation (360°) in 1 hour (3600 seconds)
+ * - spinSpeed = 2.0 → 2 complete rotations in 1 hour (faster)
+ * - spinSpeed = 0.5 → 0.5 rotations (180°) in 1 hour (slower)
+ * - LOW VALUE = SLOW SPEED, HIGH VALUE = FAST SPEED
+ * - Formula: angle = (elapsedSeconds / 3600) × spinSpeed × 360
+ *            Simplified: angle = elapsedSeconds × spinSpeed × 0.1
+ * - Conversion factor: 0.1 = 360° / 3600 seconds
  *
  * COORDINATE SYSTEMS:
  * -------------------
@@ -69,18 +82,43 @@ import {
 
 /**
  * Spin configuration
+ *
+ * FOR FUTURE AI AGENTS: Speed Unit System
+ * ----------------------------------------
+ * spinSpeed is measured in ROTATIONS PER HOUR:
+ * - spinSpeed = 1.0 → 1 full rotation (360°) in 1 hour
+ * - spinSpeed = 2.0 → 2 rotations in 1 hour (faster)
+ * - spinSpeed = 0.5 → half rotation in 1 hour (slower)
+ * - Low value = slow speed, High value = fast speed
  */
 export type SpinConfig = {
   spinCenter?: [number, number] | PercentPoint; // Runtime override: 0-100% relative to image dimensions
-  spinSpeed?: number; // degrees per second (0 = no spin)
+  spinSpeed?: number; // rotations per hour (0 = no spin, 1 = 1 full rotation in 1 hour)
   spinDirection?: "cw" | "ccw";
 };
 
 /**
  * Create a spin processor with the given configuration
- * spinCenter: [x, y] array or {x, y} object in 0-100% coordinates relative to image dimensions (runtime override only)
- * spinSpeed: degrees per second (0 = no spin, default = 0)
- * spinDirection: "cw" (clockwise) or "ccw" (counter-clockwise), default = "cw"
+ *
+ * FOR FUTURE AI AGENTS: Speed Calculation Formula
+ * ------------------------------------------------
+ * The rotation angle is calculated using:
+ *   angle = elapsedSeconds × spinSpeed × 0.1
+ *
+ * Where:
+ *   - elapsedSeconds: Time elapsed since animation start
+ *   - spinSpeed: Rotations per hour (1 = 1 full rotation in 1 hour)
+ *   - 0.1: Conversion factor (360° / 3600 seconds = 0.1°/second per rotation/hour)
+ *
+ * Example:
+ *   - spinSpeed = 1, elapsed = 3600s (1 hour) → angle = 3600 × 1 × 0.1 = 360° (1 full rotation)
+ *   - spinSpeed = 2, elapsed = 1800s (30 min) → angle = 1800 × 2 × 0.1 = 360° (1 full rotation)
+ *   - spinSpeed = 0.5, elapsed = 3600s → angle = 3600 × 0.5 × 0.1 = 180° (half rotation)
+ *
+ * Configuration:
+ *   - spinCenter: [x, y] array or {x, y} object in 0-100% coordinates relative to image dimensions (runtime override only)
+ *   - spinSpeed: rotations per hour (0 = no spin, default = 0)
+ *   - spinDirection: "cw" (clockwise) or "ccw" (counter-clockwise), default = "cw"
  *
  * Note: spinCenter is a runtime override for image percent only.
  * Base spin point is calculated in LayerCore from spinStagePoint and spinImagePoint config fields.
@@ -106,8 +144,11 @@ export function createSpinProcessor(config: SpinConfig): LayerProcessor {
     }
     const elapsedSeconds = (currentTime - startTime) / 1000;
 
-    // Calculate rotation from elapsed time
-    let rotation = (elapsedSeconds * spinSpeed) % 360;
+    // Calculate rotation from elapsed time using rotations per hour formula
+    // Formula: angle = (elapsedSeconds / 3600) × spinSpeed × 360
+    // Simplified: angle = elapsedSeconds × spinSpeed × 0.1
+    // Where 0.1 = 360° / 3600 seconds (degrees per second per rotation per hour)
+    let rotation = (elapsedSeconds * spinSpeed * 0.1) % 360;
 
     // Use utility functions
     rotation = applyRotationDirection(rotation, spinDirection);

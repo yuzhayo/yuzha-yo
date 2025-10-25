@@ -131,8 +131,8 @@ export type LayerProcessor = (layer: UniversalLayerData, timestamp?: number) => 
  * - layerId: Unique layer identifier
  *
  * Processor-added properties (added by various processors):
- * - Spin properties: spinSpeed, currentRotation, pivot metadata, etc.
- * - Orbital properties: orbitStagePoint, orbitRadius, currentOrbitAngle, etc.
+ * - Spin properties: spinSpeed (rotations/hour), currentRotation, pivot metadata, etc.
+ * - Orbital properties: orbitSpeed (rotations/hour), orbitRadius, currentOrbitAngle, etc.
  * - Future processors can add more properties here
  *
  * FOR FUTURE AI AGENTS:
@@ -141,7 +141,7 @@ export type LayerProcessor = (layer: UniversalLayerData, timestamp?: number) => 
  */
 export type EnhancedLayerData = UniversalLayerData & {
   // Spin properties (added by LayerCorePipelineSpin)
-  spinSpeed?: number;
+  spinSpeed?: number; // rotations per hour (1 = 1 full rotation in 1 hour)
   spinDirection?: "cw" | "ccw";
   currentRotation?: number;
   hasSpinAnimation?: boolean;
@@ -155,7 +155,7 @@ export type EnhancedLayerData = UniversalLayerData & {
   orbitImagePoint?: { x: number; y: number };
   orbitRadius?: number;
   orbitOrient?: boolean;
-  orbitSpeed?: number;
+  orbitSpeed?: number; // rotations per hour (1 = 1 full orbit in 1 hour)
   orbitDirection?: "cw" | "ccw";
   currentOrbitAngle?: number;
   hasOrbitalAnimation?: boolean;

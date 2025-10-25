@@ -20,7 +20,7 @@
  *    - orbitImagePoint: Which image point orbits (0-100%)
  *    - orbitLine: Show orbit path visualization
  *    - orbitOrient: Rotate to face orbit center
- *    - orbitSpeed: Rotation speed (degrees per second)
+ *    - orbitSpeed: Rotation speed in ROTATIONS PER HOUR
  *    - orbitDirection: "cw" or "ccw"
  *
  * 2. Orbital Processor
@@ -31,7 +31,7 @@
  *
  * 3. Coordinate Calculations
  *    - Orbit radius from orbitStagePoint to orbitLinePoint
- *    - Angle calculation from elapsed time
+ *    - Angle calculation from elapsed time using rotations per hour formula
  *    - Position calculation on circular path
  *    - Visibility culling for off-stage positions
  *
@@ -39,10 +39,23 @@
  * -------------
  * 1. Configuration specifies orbit center, initial position, speed
  * 2. Processor calculates radius and initial angle
- * 3. Each frame, angle updated based on elapsed time and speed
+ * 3. Each frame, angle updated based on elapsed time and speed using:
+ *    angle = elapsedSeconds × orbitSpeed × 0.1
+ *    where orbitSpeed is in rotations per hour (1 = 1 full orbit in 1 hour)
  * 4. Position calculated on circle at current angle
  * 5. Optional: rotation adjusted to face center (orbitOrient)
  * 6. Visibility toggled when position moves off-stage
+ *
+ * SPEED SYSTEM (UPDATED):
+ * -----------------------
+ * - orbitSpeed is measured in ROTATIONS PER HOUR (not degrees/second)
+ * - orbitSpeed = 1.0 → 1 complete orbit (360°) in 1 hour (3600 seconds)
+ * - orbitSpeed = 2.0 → 2 complete orbits in 1 hour (faster)
+ * - orbitSpeed = 0.5 → 0.5 orbits (180°) in 1 hour (slower)
+ * - LOW VALUE = SLOW SPEED, HIGH VALUE = FAST SPEED
+ * - Formula: angle = (elapsedSeconds / 3600) × orbitSpeed × 360
+ *            Simplified: angle = elapsedSeconds × orbitSpeed × 0.1
+ * - Conversion factor: 0.1 = 360° / 3600 seconds
  *
  * COORDINATE SYSTEMS:
  * -------------------
@@ -76,6 +89,14 @@ import {
 
 /**
  * Orbital configuration
+ *
+ * FOR FUTURE AI AGENTS: Speed Unit System
+ * ----------------------------------------
+ * orbitSpeed is measured in ROTATIONS PER HOUR:
+ * - orbitSpeed = 1.0 → 1 full orbit (360°) in 1 hour
+ * - orbitSpeed = 2.0 → 2 orbits in 1 hour (faster)
+ * - orbitSpeed = 0.5 → half orbit in 1 hour (slower)
+ * - Low value = slow speed, High value = fast speed
  */
 export type OrbitalConfig = {
   orbitStagePoint?: [number, number];
@@ -83,7 +104,7 @@ export type OrbitalConfig = {
   orbitImagePoint?: [number, number];
   orbitLine?: boolean;
   orbitOrient?: boolean;
-  orbitSpeed?: number;
+  orbitSpeed?: number; // rotations per hour (0 = no motion, 1 = 1 full orbit in 1 hour)
   orbitDirection?: "cw" | "ccw";
 };
 
@@ -92,6 +113,21 @@ export type OrbitalConfig = {
  *
  * This processor handles circular motion around a center point with optional
  * orientation toward the center (like clock hands).
+ *
+ * FOR FUTURE AI AGENTS: Speed Calculation Formula
+ * ------------------------------------------------
+ * The orbital angle is calculated using:
+ *   angle = elapsedSeconds × orbitSpeed × 0.1
+ *
+ * Where:
+ *   - elapsedSeconds: Time elapsed since animation start
+ *   - orbitSpeed: Rotations per hour (1 = 1 full orbit in 1 hour)
+ *   - 0.1: Conversion factor (360° / 3600 seconds = 0.1°/second per rotation/hour)
+ *
+ * Example:
+ *   - orbitSpeed = 1, elapsed = 3600s (1 hour) → angle = 3600 × 1 × 0.1 = 360° (1 full orbit)
+ *   - orbitSpeed = 2, elapsed = 1800s (30 min) → angle = 1800 × 2 × 0.1 = 360° (1 full orbit)
+ *   - orbitSpeed = 0.5, elapsed = 3600s → angle = 3600 × 0.5 × 0.1 = 180° (half orbit)
  *
  * @param config - Orbital configuration
  * @returns LayerProcessor that adds orbital animation
@@ -174,8 +210,11 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
             Math.PI,
         );
 
-        // Add initial angle to time-based rotation
-        timeBasedAngle = (elapsedSeconds * orbitSpeed) % 360;
+        // Calculate time-based rotation using rotations per hour formula
+        // Formula: angle = (elapsedSeconds / 3600) × orbitSpeed × 360
+        // Simplified: angle = elapsedSeconds × orbitSpeed × 0.1
+        // Where 0.1 = 360° / 3600 seconds (degrees per second per rotation per hour)
+        timeBasedAngle = (elapsedSeconds * orbitSpeed * 0.1) % 360;
         orbitAngle = normalizeAngle(
           initialAngle + applyRotationDirection(timeBasedAngle, orbitDirection),
         );

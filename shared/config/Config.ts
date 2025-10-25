@@ -28,7 +28,7 @@ export type LayerRenderer = "2D" | "3D";
  * SPIN CONFIG (optional, for rotation animation):
  * - spinStagePoint: Pivot point on stage [x, y] pixels
  * - spinImagePoint: Pivot point on image [x%, y%] percentage
- * - spinSpeed: Rotation speed in degrees/second (0 = no spin)
+ * - spinSpeed: Rotation speed in rotations per hour (1 = 1 full rotation in 1 hour)
  * - spinDirection: "cw" (clockwise) or "ccw" (counter-clockwise)
  *
  * ORBITAL CONFIG (optional, for orbital motion):
@@ -37,7 +37,7 @@ export type LayerRenderer = "2D" | "3D";
  * - orbitImagePoint: Which image point follows the orbit [x%, y%]
  * - orbitLine: Whether to draw the orbit path circle
  * - orbitOrient: Auto-rotate image to face orbit direction
- * - orbitSpeed: Orbital rotation speed degrees/second
+ * - orbitSpeed: Orbital rotation speed in rotations per hour (1 = 1 full orbit in 1 hour)
  * - orbitDirection: "cw" or "ccw"
  *
  * For future AI agents:
@@ -83,7 +83,13 @@ export type LayerConfigEntry = {
   spinStagePoint?: number[];
   /** Pivot point on image [x%, y%] in percentage (0-100). This point aligns with spinStagePoint. */
   spinImagePoint?: number[];
-  /** Rotation speed in degrees per second. 0 or undefined = no rotation. */
+  /**
+   * Rotation speed in rotations per hour. 0 or undefined = no rotation.
+   * - 1.0 = 1 full rotation (360°) in 1 hour
+   * - 2.0 = 2 full rotations in 1 hour (faster)
+   * - 0.5 = half rotation (180°) in 1 hour (slower)
+   * Low value = slow speed, High value = fast speed
+   */
   spinSpeed?: number;
   /** Rotation direction: "cw" (clockwise) or "ccw" (counter-clockwise) */
   spinDirection?: "cw" | "ccw";
@@ -99,7 +105,13 @@ export type LayerConfigEntry = {
   orbitLine?: boolean;
   /** Auto-orient image to face along the orbit radius direction */
   orbitOrient?: boolean;
-  /** Orbital rotation speed in degrees per second (0 = static position) */
+  /**
+   * Orbital rotation speed in rotations per hour (0 = static position).
+   * - 1.0 = 1 full orbit (360°) in 1 hour
+   * - 2.0 = 2 full orbits in 1 hour (faster)
+   * - 0.5 = half orbit (180°) in 1 hour (slower)
+   * Low value = slow speed, High value = fast speed
+   */
   orbitSpeed?: number;
   /** Orbital direction: "cw" (clockwise) or "ccw" (counter-clockwise) */
   orbitDirection?: "cw" | "ccw";
