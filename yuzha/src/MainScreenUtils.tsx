@@ -87,6 +87,8 @@ export type MainScreenUpdaterProps = {
   rendererMode?: "auto" | "dom" | "canvas" | "three";
   onRendererModeChange?: (mode: "auto" | "dom" | "canvas" | "three") => void;
   onOpenTestScreen?: () => void;
+  onOpenStruckScreen?: () => void;
+  rendererLabel?: string;
 };
 
 export type MainScreenBtnGestureAreaProps = {
@@ -304,7 +306,7 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
   const currentMode = props.rendererMode ?? "auto";
 
   const getRendererButtonClass = (mode: "auto" | "dom" | "canvas" | "three") => {
-    const baseClass = "text-[10px] px-2 py-0.5 rounded text-white shadow-sm border";
+    const baseClass = "text-[11px] px-3 py-1.5 rounded text-white shadow-sm border";
     const isSelected = currentMode === mode;
 
     if (!isSelected) {
@@ -325,65 +327,79 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
   if (!props.visible) return null;
 
   return (
-    <>
-      {props.visible && (
-        <div className="fixed top-9 right-3 z-[9998] flex flex-col gap-1">
-          {props.onRendererModeChange && (
-            <div className="flex flex-row gap-1">
-              <button
-                type="button"
-                onClick={() => props.onRendererModeChange?.("auto")}
-                className={getRendererButtonClass("auto")}
-                aria-label="Auto renderer mode"
-              >
-                Auto
-              </button>
-              <button
-                type="button"
-                onClick={() => props.onRendererModeChange?.("dom")}
-                className={getRendererButtonClass("dom")}
-                aria-label="DOM renderer mode"
-              >
-                DOM
-              </button>
-              <button
-                type="button"
-                onClick={() => props.onRendererModeChange?.("canvas")}
-                className={getRendererButtonClass("canvas")}
-                aria-label="Canvas renderer mode"
-              >
-                Canvas
-              </button>
-              <button
-                type="button"
-                onClick={() => props.onRendererModeChange?.("three")}
-                className={getRendererButtonClass("three")}
-                aria-label="Three renderer mode"
-              >
-                Three
-              </button>
-            </div>
-          )}
-          <button
-            type="button"
-            onClick={clearCachesAndReload}
-            className="text-[10px] px-2 py-0.5 rounded bg-pink-600/80 hover:bg-pink-500/80 active:bg-pink-600 text-white shadow-sm border border-white/10"
-            aria-label="Force update and reload"
-          >
-            Update
-          </button>
-          {props.onOpenTestScreen && (
+    <div className="fixed top-3 right-3 z-[9998] flex flex-col items-end gap-2">
+      <div className="flex flex-row items-center gap-2">
+        {props.rendererLabel && (
+          <div className="pointer-events-none select-none rounded bg-black/60 px-3 py-1 text-xs text-white/80 shadow-inner border border-white/10">
+            {props.rendererLabel}
+          </div>
+        )}
+        {props.onRendererModeChange && (
+          <div className="flex flex-row gap-1">
             <button
               type="button"
-              onClick={props.onOpenTestScreen}
-              className="text-[10px] px-2 py-0.5 rounded bg-sky-600/80 hover:bg-sky-500/80 active:bg-sky-600 text-white shadow-sm border border-white/10"
+              onClick={() => props.onRendererModeChange?.("auto")}
+              className={getRendererButtonClass("auto")}
+              aria-label="Auto renderer mode"
             >
-              Test Screen
+              Auto
             </button>
-          )}
-        </div>
-      )}
-    </>
+            <button
+              type="button"
+              onClick={() => props.onRendererModeChange?.("dom")}
+              className={getRendererButtonClass("dom")}
+              aria-label="DOM renderer mode"
+            >
+              DOM
+            </button>
+            <button
+              type="button"
+              onClick={() => props.onRendererModeChange?.("canvas")}
+              className={getRendererButtonClass("canvas")}
+              aria-label="Canvas renderer mode"
+            >
+              Canvas
+            </button>
+            <button
+              type="button"
+              onClick={() => props.onRendererModeChange?.("three")}
+              className={getRendererButtonClass("three")}
+              aria-label="Three renderer mode"
+            >
+              Three
+            </button>
+          </div>
+        )}
+      </div>
+      <div className="flex w-48 flex-col gap-1">
+        <button
+          type="button"
+          onClick={clearCachesAndReload}
+          className="w-full text-xs px-3 py-1.5 rounded bg-pink-600/80 hover:bg-pink-500/80 active:bg-pink-600 text-white shadow-sm border border-white/10"
+          aria-label="Force update and reload"
+        >
+          Update
+        </button>
+        {props.onOpenTestScreen && (
+          <button
+            type="button"
+            onClick={props.onOpenTestScreen}
+            className="w-full text-xs px-3 py-1.5 rounded bg-sky-600/80 hover:bg-sky-500/80 active:bg-sky-600 text-white shadow-sm border border-white/10"
+          >
+            Test Screen
+          </button>
+        )}
+        {props.onOpenStruckScreen && (
+          <button
+            type="button"
+            onClick={props.onOpenStruckScreen}
+            className="w-full text-xs px-3 py-1.5 rounded bg-emerald-600/80 hover:bg-emerald-500/80 active:bg-emerald-600 text-white shadow-sm border border-white/10"
+          >
+            Struck Screen
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 
