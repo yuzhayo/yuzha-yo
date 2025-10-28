@@ -4,8 +4,7 @@
  * ============================================================================
  *
  * This is a COMPLETE SELF-CONTAINED RENDERER that uses Three.js WebGL
- * to render the stage. It's one of three rendering engines:
- * - StageDOM.tsx - Uses HTML divs + CSS transforms
+ * to render the stage. It's one of two rendering engines:
  * - StageCanvas.tsx - Uses Canvas 2D API
  * - StageThree.tsx (this file) - Uses Three.js WebGL
  *

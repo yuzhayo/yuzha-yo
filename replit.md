@@ -10,7 +10,7 @@ Communication: Simple, everyday language
 
 ## System Architecture
 
-The framework employs a dual-renderer system, defaulting to Three.js WebGL for production environments and falling back to Canvas 2D for AI agents or screenshot generation, with automatic headless browser detection. All rendering engines (Canvas, DOM, Three.js) share identical animation patterns and utilize a fixed 2048x2048 coordinate system that scales dynamically to fit various screen sizes.
+The framework employs a dual-renderer system, defaulting to Three.js WebGL for production environments and falling back to Canvas 2D for AI agents or screenshot generation, with automatic headless browser detection. Both renderers (Canvas and Three.js) share identical animation patterns and utilize a fixed 2048x2048 coordinate system that scales dynamically to fit various screen sizes.
 
 The core animation logic revolves around a Layer System where JSON configurations define layers that pass through a pipeline of processors (e.g., `Spin Processor`) before reaching the rendering engine. The configuration structure clearly separates layer identity from feature-specific groups (Basic, Spin, Orbital, Debug Config). Performance is optimized through techniques like pipeline caching, pre-calculated math constants, static layer buffering, and lazy calculations for static layers. Debugging is supported by a comprehensive Image Mapping Debug visualization system with configurable visual helpers integrated as a pipeline processor.
 
@@ -45,12 +45,12 @@ Architectural improvements to unlock creative animation capabilities while simpl
 - **Image Center Refactoring**: Removed redundant caching for improved code clarity
   - Removed `imageCenter` field from `ImageMapping` type definition
   - Added `getImageCenter()` helper function for on-demand calculation
-  - Updated all renderers (StageDOM, StageCanvas, StageThree) to use helper
+  - Updated all renderers (StageCanvas, StageThree) to use helper
   - No performance impact - calculations happen during layer mount, not per-frame
 
 - **Updated Files**: 8 files systematically updated across the codebase
   - Core: `layerBasic.ts`, `layerCore.ts`, `layerSpin.ts`, `layerOrbit.ts`
-  - Renderers: `StageDOM.tsx`, `StageCanvas.tsx`, `StageThree.tsx`
+  - Renderers: `StageCanvas.tsx`, `StageThree.tsx`
   - Tests: `layerCore.test.ts`
 
 - **Verified**:
@@ -127,7 +127,6 @@ Major architectural consolidation completed and verified:
   - Comprehensive inline documentation for future developers
 
 - **Self-Contained Renderers**: Embedded rendering engines directly into each renderer component:
-  - `StageDOM.tsx`: Contains mountDomLayers logic with DOM-specific rendering, animation loop, and resource management
   - `StageCanvas.tsx`: Contains mountCanvasLayers logic with Canvas 2D rendering and static layer buffering
   - `StageThree.tsx`: Contains mountThreeLayers logic with WebGL/Three.js rendering and scene management
 - **Deleted Legacy Files**: Removed `stage2048.ts`, `StagePipeline.ts`, and `LayerEngines.ts` after successful migration
@@ -139,7 +138,6 @@ Major architectural consolidation completed and verified:
 ### Previous Code Consolidation
 
 - **Merged Renderer Adapters**: Combined renderer adapter files with their corresponding stage components:
-  - `DomRendererAdapter.ts` → merged into `StageDOM.tsx`
   - `CanvasRendererAdapter.ts` → merged into `StageCanvas.tsx`
   - `ThreeRendererAdapter.ts` → merged into `StageThree.tsx`
 - **Removed**: `shared/layer/pipeline/renderers/` folder

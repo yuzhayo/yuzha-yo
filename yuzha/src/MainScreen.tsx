@@ -1,12 +1,11 @@
 import React, { useMemo, useState } from "react";
 import StageCanvas from "@shared/stage/StageCanvas";
-import StageDOM from "@shared/stage/StageDOM";
 import StageThree from "@shared/stage/StageThree";
 import { getRendererType } from "@shared/utils/RendererDetector";
 import { MainScreenBtnPanel, useMainScreenBtnGesture, MainScreenUpdater } from "./MainScreenUtils";
 
-export type RendererMode = "auto" | "dom" | "canvas" | "three";
-export type RendererType = "dom" | "canvas" | "three";
+export type RendererMode = "auto" | "canvas" | "three";
+export type RendererType = "canvas" | "three";
 
 export type MainScreenProps = {
   children?: React.ReactNode;
@@ -60,31 +59,20 @@ export default function MainScreen({
   onOpenStruckScreen,
 }: MainScreenProps) {
   const autoDetectedRenderer = useMemo(() => getRendererType(), []);
-  const [rendererMode, setRendererMode] = useState<RendererMode>("dom");
+  const [rendererMode, setRendererMode] = useState<RendererMode>("auto");
 
   const activeRenderer: RendererType =
     rendererMode === "auto" ? autoDetectedRenderer : rendererMode;
 
   const rendererLabel = React.useMemo(() => {
-    let baseLabel = "Canvas 2D Renderer (AI Agent Fallback)";
-    if (activeRenderer === "three") {
-      baseLabel = "Three.js WebGL Renderer";
-    } else if (activeRenderer === "dom") {
-      baseLabel = "DOM CSS Renderer";
-    }
+    const baseLabel = activeRenderer === "three" ? "Three.js WebGL Renderer" : "Canvas 2D Renderer";
     const modeLabel = rendererMode === "auto" ? " (Auto)" : ` (Manual: ${rendererMode})`;
     return baseLabel + modeLabel;
   }, [activeRenderer, rendererMode]);
 
   return (
     <div className="relative w-screen h-screen overflow-hidden">
-      {activeRenderer === "three" ? (
-        <StageThree />
-      ) : activeRenderer === "dom" ? (
-        <StageDOM />
-      ) : (
-        <StageCanvas />
-      )}
+      {activeRenderer === "three" ? <StageThree /> : <StageCanvas />}
       {children ?? (
         <MainScreenOverlay
           rendererLabel={rendererLabel}

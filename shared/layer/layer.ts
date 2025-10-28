@@ -20,7 +20,7 @@
  *   ↓
  * layer.ts (THIS FILE - attaches processors and runs pipeline)
  *   ↓
- * Renderers (StageDOM/Canvas/Three - render to screen)
+ * Renderers (StageCanvas/StageThree - render to screen)
  *   ↓
  * MainScreen.tsx (displays final result)
  *

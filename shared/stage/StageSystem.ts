@@ -17,7 +17,7 @@
  *   ↓
  * StageSystem.ts (THIS FILE - prepares coordinate system + layer pipeline)
  *   ↓
- * Renderers (StageDOM/Canvas/Three - render to screen)
+ * Renderers (StageCanvas/StageThree - render to screen)
  *   ↓
  * MainScreen.tsx (displays final result)
  *
