@@ -1,5 +1,38 @@
 [
   {
+    "LayerID": "clock-background",
+    "ImageID": "CLOCKBG",
+    "renderer": "2D",
+    "LayerOrder": 0,
+    "ImageScale": [100, 100],
+    "groups": {
+      "Basic Config": {
+        "BasicStagePoint": [1024, 1024],
+        "BasicImagePoint": [50, 50],
+        "BasicImageAngle": 0
+      },
+      "Spin Config": {
+        "spinStagePoint": [1024, 1024],
+        "spinImagePoint": [50, 50],
+        "spinSpeed": 0,
+        "spinDirection": "cw",
+        "spinFormat": "24",
+        "spinTimezone": "UTC"
+      },
+      "Orbital Config": {
+        "orbitStagePoint": [1024, 1024],
+        "orbitLinePoint": [1024, 1024],
+        "orbitImagePoint": [50, 50],
+        "orbitLine": false,
+        "orbitOrient": false,
+        "orbitSpeed": 0,
+        "orbitDirection": "cw",
+        "orbitFormat": "24",
+        "orbitTimezone": "UTC"
+      }
+    }
+  },
+  {
     "LayerID": "stars-background-middle",
     "ImageID": "STARBG",
     "renderer": "2D",
@@ -25,100 +58,6 @@
         "orbitOrient": true,
         "orbitSpeed": 0,
         "orbitDirection": "cw"
-      }
-    }
-  },
-  {
-    "LayerID": "stars-background-hole1",
-    "ImageID": "STARBG9H",
-    "renderer": "2D",
-    "LayerOrder": 700,
-    "ImageScale": [100, 100],
-    "groups": {
-      "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
-        "BasicImageAngle": 0
-      },
-      "Spin Config": {
-        "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 50],
-        "spinSpeed": 10,
-        "spinDirection": "cw"
-      }
-    }
-  },
-  {
-    "LayerID": "nviro_Stars_Big",
-    "ImageID": "Enviro_Stars_Big",
-    "renderer": "2D",
-    "LayerOrder": 702,
-    "ImageScale": [100, 100],
-    "groups": {
-      "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
-        "BasicImageAngle": 0
-      },
-      "Spin Config": {
-        "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 50],
-        "spinSpeed": 40,
-        "spinDirection": "cw"
-      }
-    }
-  },
-  {
-    "LayerID": "Enviro_Stars",
-    "ImageID": "Enviro_Stars",
-    "renderer": "2D",
-    "LayerOrder": 702,
-    "ImageScale": [100, 100],
-    "groups": {
-      "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
-        "BasicImageAngle": 0
-      },
-      "Spin Config": {
-        "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 50],
-        "spinSpeed": 100,
-        "spinDirection": "cw"
-      }
-    }
-  },
-  {
-    "LayerID": "CLOCKBG",
-    "ImageID": "CLOCKBG",
-    "renderer": "2D",
-    "LayerOrder": 751,
-    "ImageScale": [100, 100],
-    "groups": {
-      "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
-        "BasicImageAngle": 0
-      }
-    }
-  },
-  {
-    "LayerID": "CLOCKMOON",
-    "ImageID": "GEARMOON",
-    "renderer": "2D",
-    "LayerOrder": 750,
-    "ImageScale": [105, 105],
-    "groups": {
-      "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
-        "BasicImageAngle": 0
-      },
-      "Spin Config": {
-        "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 50],
-        "spinSpeed": 10,
-        "spinDirection": "cw"
       }
     }
   },
@@ -203,6 +142,100 @@
     }
   },
   {
+    "LayerID": "stars-background-hole1",
+    "ImageID": "STARBG9H",
+    "renderer": "2D",
+    "LayerOrder": 700,
+    "ImageScale": [100, 100],
+    "groups": {
+      "Basic Config": {
+        "BasicStagePoint": [1024, 1024],
+        "BasicImagePoint": [50, 50],
+        "BasicImageAngle": 0
+      },
+      "Spin Config": {
+        "spinStagePoint": [1024, 1024],
+        "spinImagePoint": [50, 50],
+        "spinSpeed": 10,
+        "spinDirection": "cw"
+      }
+    }
+  },
+  {
+    "LayerID": "nviro_Stars_Big",
+    "ImageID": "Enviro_Stars_Big",
+    "renderer": "2D",
+    "LayerOrder": 702,
+    "ImageScale": [100, 100],
+    "groups": {
+      "Basic Config": {
+        "BasicStagePoint": [1024, 1024],
+        "BasicImagePoint": [50, 50],
+        "BasicImageAngle": 0
+      },
+      "Spin Config": {
+        "spinStagePoint": [1024, 1024],
+        "spinImagePoint": [50, 50],
+        "spinSpeed": 40,
+        "spinDirection": "cw"
+      }
+    }
+  },
+  {
+    "LayerID": "Enviro_Stars",
+    "ImageID": "Enviro_Stars",
+    "renderer": "2D",
+    "LayerOrder": 702,
+    "ImageScale": [100, 100],
+    "groups": {
+      "Basic Config": {
+        "BasicStagePoint": [1024, 1024],
+        "BasicImagePoint": [50, 50],
+        "BasicImageAngle": 0
+      },
+      "Spin Config": {
+        "spinStagePoint": [1024, 1024],
+        "spinImagePoint": [50, 50],
+        "spinSpeed": 100,
+        "spinDirection": "cw"
+      }
+    }
+  },
+  {
+    "LayerID": "CLOCKMOON",
+    "ImageID": "GEARMOON",
+    "renderer": "2D",
+    "LayerOrder": 750,
+    "ImageScale": [105, 105],
+    "groups": {
+      "Basic Config": {
+        "BasicStagePoint": [1024, 1024],
+        "BasicImagePoint": [50, 50],
+        "BasicImageAngle": 0
+      },
+      "Spin Config": {
+        "spinStagePoint": [1024, 1024],
+        "spinImagePoint": [50, 50],
+        "spinSpeed": 10,
+        "spinDirection": "cw"
+      }
+    }
+  },
+  {
+    "LayerID": "CLOCKBG",
+    "ImageID": "CLOCKBG",
+    "renderer": "2D",
+    "LayerOrder": 751,
+    "ImageScale": [100, 100],
+    "groups": {
+      "Basic Config": {
+        "BasicStagePoint": [1024, 1024],
+        "BasicImagePoint": [50, 50],
+        "BasicImageAngle": 0
+      }
+    }
+  },
+  {
     "LayerID": "CLOCKGLOW",
     "ImageID": "CLOCKGLOW",
     "renderer": "2D",
@@ -245,129 +278,30 @@
     }
   },
   {
-    "LayerID": "test-clock-hand",
-    "ImageID": "GEAR1",
-    "renderer": "2D",
-    "LayerOrder": 200,
-    "ImageScale": [30, 30],
-    "groups": {
-      "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
-        "BasicImageAngle": 0
-      },
-      "Spin Config": {
-        "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 50],
-        "spinSpeed": 0,
-        "spinDirection": "cw"
-      },
-      "Orbital Config": {
-        "orbitStagePoint": [1024, 1024],
-        "orbitLinePoint": [1324, 1024],
-        "orbitImagePoint": [50, 50],
-        "orbitLine": false,
-        "orbitSpeed": 30,
-        "orbitDirection": "cw"
-      }
-    }
-  },
-  {
-    "LayerID": "test-1",
-    "ImageID": "UI_Clock_HourHand",
-    "renderer": "2D",
-    "LayerOrder": 850,
-    "ImageScale": [87, 87],
-    "groups": {
-      "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 81],
-        "BasicImageAngle": 0
-      },
-      "Spin Config": {
-        "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 81],
-        "spinSpeed": 5,
-        "spinDirection": "cw"
-      },
-      "Orbital Config": {
-        "orbitStagePoint": [1024, 1024],
-        "orbitLinePoint": [1024, 800],
-        "orbitImagePoint": [50, 90],
-        "orbitLine": true,
-        "orbitOrient": true,
-        "orbitSpeed": 0,
-        "orbitDirection": "cw"
-      }
-    }
-  },
-  {
-    "LayerID": "test-2",
+    "LayerID": "clock-second-hand",
     "ImageID": "UI_Clock_MinuteHand",
     "renderer": "2D",
-    "LayerOrder": 849,
-    "ImageScale": [100, 150],
-    "groups": {
-      "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 100],
-        "BasicImageAngle": 0
-      },
-      "Spin Config": {
-        "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, -10],
-        "spinDirection": "cw",
-        "spinSpeedAlias": "second",
-        "spinFormat": "24",
-        "spinTimezone": "UTC"
-      },
-      "Orbital Config": {
-        "orbitStagePoint": [1024, 1024],
-        "orbitLinePoint": [1024, 800],
-        "orbitImagePoint": [50, 50],
-        "orbitLine": true,
-        "orbitOrient": true,
-        "orbitSpeed": 0,
-        "orbitDirection": "cw"
-      }
-    }
-  },
-  {
-    "LayerID": "clock-backgrond",
-    "ImageID": "CLOCKG",
-    "renderer": "2D",
-    "LayerOrder": 0,
+    "LayerOrder": 920,
     "ImageScale": [100, 100],
     "groups": {
       "Basic Config": {
         "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
+        "BasicImagePoint": [50, 80],
         "BasicImageAngle": 0
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 50],
-        "spinSpeed": 0,
+        "spinImagePoint": [50, 80],
+        "spinSpeedAlias": "second",
         "spinDirection": "cw",
         "spinFormat": "24",
         "spinTimezone": "UTC"
-      },
-      "Orbital Config": {
-        "orbitStagePoint": [1024, 1024],
-        "orbitLinePoint": [1024, 1024],
-        "orbitImagePoint": [50, 50],
-        "orbitLine": false,
-        "orbitOrient": false,
-        "orbitSpeed": 0,
-        "orbitDirection": "cw",
-        "orbitFormat": "24",
-        "orbitTimezone": "UTC"
       }
     }
   },
   {
-    "LayerID": "clock-hourhand",
-    "ImageID": "UI_Clock_Hound",
+    "LayerID": "clock-hour-hand",
+    "ImageID": "UI_Clock_HourHand",
     "renderer": "2D",
     "LayerOrder": 930,
     "ImageScale": [100, 100],
@@ -384,23 +318,14 @@
         "spinDirection": "cw",
         "spinFormat": "24",
         "spinTimezone": "UTC+7"
-      },
-      "Orbital Config": {
-        "orbitStagePoint": [1024, 1024],
-        "orbitLinePoint": [1024, 1024],
-        "orbitImagePoint": [50, 80],
-        "orbitLine": false,
-        "orbitOrient": false,
-        "orbitSpeed": 0,
-        "orbitDirection": "cw"
       }
     }
   },
   {
-    "LayerID": "clock-minutehand",
-    "ImageID": "UI_Clock_Hournd",
+    "LayerID": "clock-minute-hand",
+    "ImageID": "UI_Clock_MinuteHand",
     "renderer": "2D",
-    "LayerOrder": 40,
+    "LayerOrder": 940,
     "ImageScale": [100, 100],
     "groups": {
       "Basic Config": {
@@ -415,44 +340,6 @@
         "spinDirection": "cw",
         "spinFormat": "24",
         "spinTimezone": "UTC+7"
-      },
-      "Orbital Config": {
-        "orbitStagePoint": [1024, 1024],
-        "orbitLinePoint": [1024, 1024],
-        "orbitImagePoint": [50, 80],
-        "orbitLine": false,
-        "orbitOrient": false,
-        "orbitSpeed": 0,
-        "orbitDirection": "cw"
-      }
-    }
-  },
-  {
-    "LayerID": "clock-moon",
-    "ImageID": "GEARMON",
-    "renderer": "2D",
-    "LayerOrder": 1150,
-    "ImageScale": [100, 100],
-    "groups": {
-      "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 150],
-        "BasicImageAngle": 0
-      },
-      "Spin Config": {
-        "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 120],
-        "spinSpeed": 250,
-        "spinDirection": "cw"
-      },
-      "Orbital Config": {
-        "orbitStagePoint": [1024, 1024],
-        "orbitLinePoint": [1024, 800],
-        "orbitImagePoint": [50, 50],
-        "orbitLine": false,
-        "orbitOrient": false,
-        "orbitSpeed": 0,
-        "orbitDirection": "cw"
       }
     }
   }
