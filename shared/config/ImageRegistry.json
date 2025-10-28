@@ -24,12 +24,12 @@
     "path": "shared/asset/CLOCKGLOW2.png"
   },
   {
-    "id": "Enviro_Stars_Big",
-    "path": "shared/asset/Enviro_Stars_Big.png"
-  },
-  {
     "id": "Enviro_Stars",
     "path": "shared/asset/Enviro_Stars.png"
+  },
+  {
+    "id": "Enviro_Stars_Big",
+    "path": "shared/asset/Enviro_Stars_Big.png"
   },
   {
     "id": "GEAR1",
@@ -68,12 +68,16 @@
     "path": "shared/asset/MAINBG.png"
   },
   {
-    "id": "Prestige_SlotBase_Off",
-    "path": "shared/asset/Prestige_SlotBase_Off.png"
+    "id": "needle",
+    "path": "shared/asset/needle.png"
   },
   {
     "id": "Prestige_SlotBase",
     "path": "shared/asset/Prestige_SlotBase.png"
+  },
+  {
+    "id": "Prestige_SlotBase_Off",
+    "path": "shared/asset/Prestige_SlotBase_Off.png"
   },
   {
     "id": "SAMPLE",

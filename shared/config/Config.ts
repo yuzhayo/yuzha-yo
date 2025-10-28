@@ -135,6 +135,41 @@ export type LayerConfigEntry = {
 
 export type LayerConfig = LayerConfigEntry[];
 
+const CLOCK_ALIAS_DEFAULT_FORMAT = "24";
+const CLOCK_ALIAS_DEFAULT_TIMEZONE = "UTC";
+const CLOCK_ALIAS_VALUES = new Set(["second", "minute", "hour"]);
+
+function normalizeMotionGroup(
+  group: Record<string, unknown>,
+  speedKey: "spinSpeed" | "orbitSpeed",
+  aliasKey: "spinSpeedAlias" | "orbitSpeedAlias",
+  formatKey: "spinFormat" | "orbitFormat",
+  timezoneKey: "spinTimezone" | "orbitTimezone",
+): void {
+  const rawSpeed = group[speedKey];
+
+  if (typeof rawSpeed === "string") {
+    const numeric = Number(rawSpeed);
+    if (!Number.isNaN(numeric)) {
+      group[speedKey] = numeric;
+    } else if (CLOCK_ALIAS_VALUES.has(rawSpeed)) {
+      if (!group[aliasKey]) {
+        group[aliasKey] = rawSpeed;
+      }
+      delete group[speedKey];
+    }
+  }
+
+  if (group[aliasKey]) {
+    if (!group[formatKey]) {
+      group[formatKey] = CLOCK_ALIAS_DEFAULT_FORMAT;
+    }
+    if (!group[timezoneKey]) {
+      group[timezoneKey] = CLOCK_ALIAS_DEFAULT_TIMEZONE;
+    }
+  }
+}
+
 /**
  * ConfigYuzhaEntry - JSON structure from ConfigYuzha.json
  *
@@ -252,6 +287,9 @@ function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
     const basic = groups["Basic Config"] || {};
     const spin = groups["Spin Config"] || {};
     const orbital = groups["Orbital Config"] || {};
+
+    normalizeMotionGroup(spin, "spinSpeed", "spinSpeedAlias", "spinFormat", "spinTimezone");
+    normalizeMotionGroup(orbital, "orbitSpeed", "orbitSpeedAlias", "orbitFormat", "orbitTimezone");
 
     // Step 3: Merge Basic Config (static positioning and rotation)
     // These provide default positioning when no animation is active

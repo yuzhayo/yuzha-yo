@@ -59,7 +59,8 @@ export async function syncImageRegistry() {
         path: `shared/asset/${relativePath}`,
       };
     })
-    .sort((a, b) => a.path.localeCompare(b.path));
+    // Keep registry sorted by ID so git diffs stay stable when assets change.
+    .sort((a, b) => a.id.localeCompare(b.id));
 
   const json = `${JSON.stringify(entries, null, 2)}\n`;
   await fs.writeFile(registryPath, json, "utf8");

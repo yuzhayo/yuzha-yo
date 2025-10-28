@@ -14,7 +14,7 @@
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
         "spinImagePoint": [50, 50],
-        "spinSpeed": 1,
+        "spinSpeed": 10,
         "spinDirection": "cw"
       },
       "Orbital Config": {
@@ -43,7 +43,7 @@
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
         "spinImagePoint": [50, 50],
-        "spinSpeed": 0.5,
+        "spinSpeed": 10,
         "spinDirection": "cw"
       }
     }
@@ -63,7 +63,7 @@
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
         "spinImagePoint": [50, 50],
-        "spinSpeed": 1.5,
+        "spinSpeed": 40,
         "spinDirection": "cw"
       }
     }
@@ -83,7 +83,7 @@
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
         "spinImagePoint": [50, 50],
-        "spinSpeed": 1,
+        "spinSpeed": 100,
         "spinDirection": "cw"
       }
     }
@@ -157,7 +157,7 @@
       "Spin Config": {
         "spinStagePoint": [910, 1024],
         "spinImagePoint": [50, 50],
-        "spinSpeed": 15,
+        "spinSpeed": 150,
         "spinDirection": "cw"
       }
     }
@@ -177,7 +177,7 @@
       "Spin Config": {
         "spinStagePoint": [1190, 1024],
         "spinImagePoint": [50, 50],
-        "spinSpeed": 10,
+        "spinSpeed": 100,
         "spinDirection": "cw"
       }
     }
@@ -218,10 +218,10 @@
   },
   {
     "LayerID": "CLOCKGLOW12",
-    "ImageID": "H24",
+    "ImageID": "needle",
     "renderer": "2D",
     "LayerOrder": 800,
-    "ImageScale": [100, 100],
+    "ImageScale": [51, 51],
     "groups": {
       "Basic Config": {
         "BasicStagePoint": [1024, 1024],
@@ -306,7 +306,7 @@
     "ImageID": "UI_Clock_MinuteHand",
     "renderer": "2D",
     "LayerOrder": 849,
-    "ImageScale": [100, 160],
+    "ImageScale": [100, 150],
     "groups": {
       "Basic Config": {
         "BasicStagePoint": [1024, 1024],
@@ -315,9 +315,11 @@
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 0],
-        "spinSpeed": 10,
-        "spinDirection": "cw"
+        "spinImagePoint": [50, -10],
+        "spinDirection": "cw",
+        "spinSpeedAlias": "second",
+        "spinFormat": "24",
+        "spinTimezone": "UTC"
       },
       "Orbital Config": {
         "orbitStagePoint": [1024, 1024],
@@ -331,8 +333,8 @@
     }
   },
   {
-    "LayerID": "clock-background",
-    "ImageID": "CLOCKBG",
+    "LayerID": "clock-backgrond",
+    "ImageID": "CLOCKG",
     "renderer": "2D",
     "LayerOrder": 0,
     "ImageScale": [100, 100],
@@ -364,10 +366,10 @@
     }
   },
   {
-    "LayerID": "clock-hour-hand",
-    "ImageID": "UI_Clock_HourHand",
+    "LayerID": "clock-hourhand",
+    "ImageID": "UI_Clock_Hound",
     "renderer": "2D",
-    "LayerOrder": 30,
+    "LayerOrder": 930,
     "ImageScale": [100, 100],
     "groups": {
       "Basic Config": {
@@ -382,12 +384,21 @@
         "spinDirection": "cw",
         "spinFormat": "24",
         "spinTimezone": "UTC+7"
+      },
+      "Orbital Config": {
+        "orbitStagePoint": [1024, 1024],
+        "orbitLinePoint": [1024, 1024],
+        "orbitImagePoint": [50, 80],
+        "orbitLine": false,
+        "orbitOrient": false,
+        "orbitSpeed": 0,
+        "orbitDirection": "cw"
       }
     }
   },
   {
-    "LayerID": "clock-minute-hand",
-    "ImageID": "UI_Clock_HourHand",
+    "LayerID": "clock-minutehand",
+    "ImageID": "UI_Clock_Hournd",
     "renderer": "2D",
     "LayerOrder": 40,
     "ImageScale": [100, 100],
@@ -404,25 +415,34 @@
         "spinDirection": "cw",
         "spinFormat": "24",
         "spinTimezone": "UTC+7"
+      },
+      "Orbital Config": {
+        "orbitStagePoint": [1024, 1024],
+        "orbitLinePoint": [1024, 1024],
+        "orbitImagePoint": [50, 80],
+        "orbitLine": false,
+        "orbitOrient": false,
+        "orbitSpeed": 0,
+        "orbitDirection": "cw"
       }
     }
   },
   {
     "LayerID": "clock-moon",
-    "ImageID": "GEARMOON",
+    "ImageID": "GEARMON",
     "renderer": "2D",
-    "LayerOrder": 50,
+    "LayerOrder": 1150,
     "ImageScale": [100, 100],
     "groups": {
       "Basic Config": {
         "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
+        "BasicImagePoint": [50, 150],
         "BasicImageAngle": 0
       },
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 50],
-        "spinSpeed": 0,
+        "spinImagePoint": [50, 120],
+        "spinSpeed": 250,
         "spinDirection": "cw"
       },
       "Orbital Config": {
@@ -431,7 +451,7 @@
         "orbitImagePoint": [50, 50],
         "orbitLine": false,
         "orbitOrient": false,
-        "orbitSpeed": 70,
+        "orbitSpeed": 0,
         "orbitDirection": "cw"
       }
     }
