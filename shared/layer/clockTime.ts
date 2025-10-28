@@ -23,21 +23,55 @@
  * If you need new aliases (e.g., `"day"`) or support for region names
  * (`"Asia/Tokyo"`), extend this module and keep the rest of the code untouched.
  *
- * @module shared/clock/clockTime
+ * @module shared/layer/clockTime
  */
 
-import {
-  CLOCK_DEFAULTS,
-  CLOCK_SPEED_ALIASES,
-  type ClockMotionConfig,
-  type ClockSpeedAlias,
-  type ClockSpeedSetting,
-  type ClockSpeedValue,
-  type DirectionSign,
-  type ResolvedClockSpeed,
-  type RotationDirection,
-  type TimeFormat,
-} from "./clockTypes";
+export type RotationDirection = "cw" | "ccw";
+export type ClockSpeedAlias = "second" | "minute" | "hour";
+export type TimeFormat = "12" | "24";
+export type DirectionSign = 1 | -1;
+
+export type ClockSpeedValue = {
+  value: number;
+  direction?: RotationDirection;
+};
+
+export type ClockSpeedSetting = ClockSpeedAlias | ClockSpeedValue | number;
+
+export type ClockMotionConfig = {
+  speed?: ClockSpeedSetting;
+  direction?: RotationDirection;
+  format?: TimeFormat;
+  timezone?: string;
+};
+
+export type ResolvedClockSpeed =
+  | {
+      kind: "static";
+      timezoneOffsetMinutes: number;
+      format: TimeFormat;
+    }
+  | {
+      kind: "alias";
+      alias: ClockSpeedAlias;
+      timezoneOffsetMinutes: number;
+      format: TimeFormat;
+    }
+  | {
+      kind: "numeric";
+      rotationsPerHour: number;
+      directionSign: DirectionSign;
+      timezoneOffsetMinutes: number;
+      format: TimeFormat;
+    };
+
+export const CLOCK_DEFAULTS = {
+  timeFormat: "24" as TimeFormat,
+  direction: "cw" as RotationDirection,
+  numericSpeed: 1,
+};
+
+export const CLOCK_SPEED_ALIASES: ClockSpeedAlias[] = ["second", "minute", "hour"];
 
 const MILLIS_PER_MINUTE = 60_000;
 const MILLIS_PER_HOUR = 60 * MILLIS_PER_MINUTE;

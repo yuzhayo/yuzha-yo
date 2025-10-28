@@ -30,6 +30,8 @@ export type LayerRenderer = "2D" | "3D";
  * - spinImagePoint: Pivot point on image [x%, y%] percentage
  * - spinSpeed: Rotation speed in rotations per hour (1 = 1 full rotation in 1 hour)
  * - spinDirection: "cw" (clockwise) or "ccw" (counter-clockwise)
+ * - spinFormat (planned): Clock format ("12"/"24") when using alias speeds
+ * - spinTimezone (planned): Timezone string ("UTC±HH[:MM]") for alias speeds
  *
  * ORBITAL CONFIG (optional, for orbital motion):
  * - orbitStagePoint: Orbit center [x, y] stage pixels
@@ -39,6 +41,8 @@ export type LayerRenderer = "2D" | "3D";
  * - orbitOrient: Auto-rotate image to face orbit direction
  * - orbitSpeed: Orbital rotation speed in rotations per hour (1 = 1 full orbit in 1 hour)
  * - orbitDirection: "cw" or "ccw"
+ * - orbitFormat (planned): Clock format for alias orbit speeds
+ * - orbitTimezone (planned): Timezone string for alias orbit speeds
  *
  * For future AI agents:
  * - A layer needs CORE properties always
@@ -93,6 +97,12 @@ export type LayerConfigEntry = {
   spinSpeed?: number;
   /** Rotation direction: "cw" (clockwise) or "ccw" (counter-clockwise) */
   spinDirection?: "cw" | "ccw";
+  /** Clock alias speed (e.g., "second", "minute", "hour") */
+  spinSpeedAlias?: "second" | "minute" | "hour";
+  /** Clock rotation format when alias speed is active ("12" | "24") */
+  spinFormat?: "12" | "24";
+  /** Timezone identifier used for alias speeds (e.g., "UTC+7") */
+  spinTimezone?: string;
 
   // ===== ORBITAL CONFIG (Orbital Motion) =====
   /** Orbit center [x, y] in stage coordinates (0-2048), default [1024, 1024] */
@@ -115,6 +125,12 @@ export type LayerConfigEntry = {
   orbitSpeed?: number;
   /** Orbital direction: "cw" (clockwise) or "ccw" (counter-clockwise) */
   orbitDirection?: "cw" | "ccw";
+  /** Clock alias speed for orbital motion (e.g., "second", "minute", "hour") */
+  orbitSpeedAlias?: "second" | "minute" | "hour";
+  /** Clock rotation format for orbital alias speeds ("12" | "24") */
+  orbitFormat?: "12" | "24";
+  /** Timezone identifier used for orbital alias speeds (e.g., "UTC+7") */
+  orbitTimezone?: string;
 };
 
 export type LayerConfig = LayerConfigEntry[];

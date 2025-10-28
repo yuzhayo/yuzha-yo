@@ -73,12 +73,10 @@ import {
   type Point2D,
 } from "./layerBasic";
 import type { UniversalLayerData } from "./layerCore";
-import {
-  applyRotationDirection,
-  normalizeAngle,
-  type EnhancedLayerData,
-  type LayerProcessor,
-} from "./layer";
+import { normalizeAngle, type EnhancedLayerData, type LayerProcessor } from "./layer";
+import { calculateRotationDegrees, resolveClockSpeed, type ClockMotionConfig } from "./clockTime";
+
+import type { ClockSpeedAlias, TimeFormat } from "./clockTime";
 
 /**
  * Spin configuration
@@ -95,6 +93,9 @@ export type SpinConfig = {
   spinCenter?: [number, number] | PercentPoint; // Runtime override: 0-100% relative to image dimensions
   spinSpeed?: number; // rotations per hour (0 = no spin, 1 = 1 full rotation in 1 hour)
   spinDirection?: "cw" | "ccw";
+  spinSpeedAlias?: ClockSpeedAlias;
+  spinFormat?: TimeFormat;
+  spinTimezone?: string;
 };
 
 /**
@@ -124,35 +125,46 @@ export type SpinConfig = {
  * Base spin point is calculated in LayerCore from spinStagePoint and spinImagePoint config fields.
  */
 export function createSpinProcessor(config: SpinConfig): LayerProcessor {
-  const spinSpeed = config.spinSpeed ?? 0;
-  const spinDirection = config.spinDirection ?? "cw";
+  /**
+   * NOTE FOR FUTURE AI AGENTS:
+   * This processor now supports both numeric speeds and clock-based aliases.
+   * The resolver below converts any config (numeric or alias) into a unified
+   * runtime object so the animation loop can remain single-path.
+   */
+  const motion: ClockMotionConfig = {
+    speed: config.spinSpeedAlias ?? config.spinSpeed,
+    direction: config.spinDirection,
+    format: config.spinFormat,
+    timezone: config.spinTimezone,
+  };
+  const resolvedSpeed = resolveClockSpeed(motion, 0, config.spinSpeed ?? 0);
+  const hasAnimation = resolvedSpeed.kind !== "static";
 
   const overridePercent = normalisePercent(config.spinCenter);
-
-  let startTime: number | undefined;
+  const timezoneCache = new Map<number, Date>();
+  let startPerfTime: number | undefined;
+  let startWallClockMs: number | undefined;
 
   return (layer: UniversalLayerData, timestamp?: number): EnhancedLayerData => {
-    if (spinSpeed === 0) {
+    if (!hasAnimation) {
       return layer as EnhancedLayerData;
     }
 
-    const currentTime = timestamp ?? performance.now();
+    const perfNow = timestamp ?? performance.now();
 
-    // Use elapsed time from start like orbit processor does
-    if (startTime === undefined) {
-      startTime = currentTime;
+    if (startPerfTime === undefined) {
+      startPerfTime = perfNow;
+      startWallClockMs = Date.now();
     }
-    const elapsedSeconds = (currentTime - startTime) / 1000;
 
-    // Calculate rotation from elapsed time using rotations per hour formula
-    // Formula: angle = (elapsedSeconds / 3600) × spinSpeed × 360
-    // Simplified: angle = elapsedSeconds × spinSpeed × 0.1
-    // Where 0.1 = 360° / 3600 seconds (degrees per second per rotation per hour)
-    let rotation = (elapsedSeconds * spinSpeed * 0.1) % 360;
+    const baseNowMs =
+      startWallClockMs !== undefined && startPerfTime !== undefined
+        ? startWallClockMs + (perfNow - startPerfTime)
+        : Date.now();
 
-    // Use utility functions
-    rotation = applyRotationDirection(rotation, spinDirection);
-    rotation = normalizeAngle(rotation);
+    const rotation = normalizeAngle(
+      calculateRotationDegrees(resolvedSpeed, new Date(baseNowMs), timezoneCache, startWallClockMs),
+    );
 
     // Cache dimension lookups
     const { imageDimensions } = layer.imageMapping;
@@ -182,8 +194,13 @@ export function createSpinProcessor(config: SpinConfig): LayerProcessor {
     return {
       ...layer,
       position: newPosition, // Update position to maintain pivot anchor
-      spinSpeed,
-      spinDirection,
+      spinSpeed:
+        config.spinSpeed ?? (resolvedSpeed.kind === "numeric" ? resolvedSpeed.rotationsPerHour : 0),
+      spinSpeedAlias:
+        config.spinSpeedAlias ?? (resolvedSpeed.kind === "alias" ? resolvedSpeed.alias : undefined),
+      spinFormat: config.spinFormat,
+      spinTimezone: config.spinTimezone,
+      spinDirection: config.spinDirection ?? "cw",
       currentRotation: rotation,
       hasSpinAnimation: true,
       spinStagePoint,

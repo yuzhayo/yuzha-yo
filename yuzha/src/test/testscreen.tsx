@@ -1,32 +1,35 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { buildClockStageRuntime, computeClockFrame } from "@shared/clock/ClockProcessor";
-import type { ClockRenderFrame } from "@shared/clock/clockTypes";
-import { computeCoverTransform, type StageTransform } from "@shared/stage/StageSystem";
+import {
+  computeCoverTransform,
+  createStagePipeline,
+  roundStagePoint,
+  type PreparedLayer,
+  type StageTransform,
+} from "@shared/stage/StageSystem";
+import { runPipeline, type EnhancedLayerData } from "@shared/layer/layer";
+import { getImageCenter } from "@shared/layer/layerCore";
 
 export type TestScreenProps = {
   onBack?: () => void;
 };
 
-type ClockRuntime = Awaited<ReturnType<typeof buildClockStageRuntime>>;
+type RenderLayer = {
+  entry: PreparedLayer["entry"];
+  data: EnhancedLayerData;
+};
 
-/**
- * ClockStagePreview renders the clock configuration inside the test screen.
- *
- * FUTURE AI AGENTS:
- * -----------------
- * - buildClockStageRuntime() handles heavy lifting once (asset loading,
- *   geometry precomputation).
- * - Every animation frame we recompute the render state so the clock follows
- *   real-time second/minute/hour progress.
- * - Stage cover logic mirrors StageSystem's behaviour so the 2048x2048 virtual
- *   stage fits any viewport.
- */
+const CLOCK_LAYER_IDS = new Set([
+  "clock-background",
+  "clock-hour-hand",
+  "clock-minute-hand",
+  "clock-moon",
+]);
+
 function ClockStagePreview() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const runtimeRef = useRef<ClockRuntime | null>(null);
-  const [frame, setFrame] = useState<ClockRenderFrame | null>(null);
+  const [preparedLayers, setPreparedLayers] = useState<PreparedLayer[]>([]);
+  const [renderLayers, setRenderLayers] = useState<RenderLayer[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [runtimeReady, setRuntimeReady] = useState(false);
   const [stageTransform, setStageTransform] = useState<StageTransform>(() => ({
     scale: 1,
     offsetX: 0,
@@ -39,14 +42,15 @@ function ClockStagePreview() {
     let cancelled = false;
     (async () => {
       try {
-        const runtime = await buildClockStageRuntime();
+        const pipeline = await createStagePipeline();
         if (cancelled) return;
-        runtimeRef.current = runtime;
-        setRuntimeReady(true);
-        setFrame(computeClockFrame(runtime));
+        const filtered = pipeline.layers.filter((layer) =>
+          CLOCK_LAYER_IDS.has(layer.entry.LayerID),
+        );
+        setPreparedLayers(filtered);
       } catch (error) {
         if (cancelled) return;
-        console.error("[TestScreen] Failed to build clock runtime", error);
+        console.error("[TestScreen] Failed to prepare clock layers", error);
         setErrorMessage("Failed to load clock configuration.");
       }
     })();
@@ -56,23 +60,29 @@ function ClockStagePreview() {
   }, []);
 
   useEffect(() => {
-    if (!runtimeReady || !runtimeRef.current) return;
-    let frameId: number | null = null;
+    if (preparedLayers.length === 0) return;
+    let rafId: number | null = null;
 
-    const tick = () => {
-      if (!runtimeRef.current) return;
-      setFrame(computeClockFrame(runtimeRef.current));
-      frameId = requestAnimationFrame(tick);
+    const renderFrame = (time: number) => {
+      const frame = preparedLayers
+        .map((layer) => ({
+          entry: layer.entry,
+          data:
+            layer.processors.length > 0
+              ? (runPipeline(layer.data, layer.processors, time) as EnhancedLayerData)
+              : (layer.data as EnhancedLayerData),
+        }))
+        .sort((a, b) => (a.entry.LayerOrder ?? 0) - (b.entry.LayerOrder ?? 0));
+      setRenderLayers(frame);
+      rafId = requestAnimationFrame(renderFrame);
     };
 
-    frameId = requestAnimationFrame(tick);
+    rafId = requestAnimationFrame(renderFrame);
 
     return () => {
-      if (frameId !== null) {
-        cancelAnimationFrame(frameId);
-      }
+      if (rafId !== null) cancelAnimationFrame(rafId);
     };
-  }, [runtimeReady]);
+  }, [preparedLayers]);
 
   useEffect(() => {
     const updateTransform = () => {
@@ -99,7 +109,7 @@ function ClockStagePreview() {
     };
   }, []);
 
-  const stageSize = frame?.stageSize ?? runtimeRef.current?.stageSize ?? 2048;
+  const stageSize = 2048;
 
   const stageStyle = useMemo(() => {
     return {
@@ -111,10 +121,7 @@ function ClockStagePreview() {
   }, [stageSize, stageTransform]);
 
   return (
-    <div
-      ref={containerRef}
-      className="relative w-full min-h-screen overflow-hidden bg-slate-900"
-    >
+    <div ref={containerRef} className="relative w-full min-h-screen overflow-hidden bg-slate-900">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute top-0 left-0" style={stageStyle}>
           <div
@@ -124,28 +131,38 @@ function ClockStagePreview() {
               height: stageSize,
             }}
           >
-            {runtimeReady && frame ? (
-              frame.elements.map((element) => (
-                <div
-                  key={element.id}
-                  className="absolute"
-                  style={{
-                    left: element.transform.translateX,
-                    top: element.transform.translateY,
-                    width: element.width,
-                    height: element.height,
-                    transformOrigin: `${element.transform.pivotPercentX}% ${element.transform.pivotPercentY}%`,
-                    transform: `rotate(${element.transform.rotationDegrees}deg)`,
-                    zIndex: element.layer,
-                  }}
-                >
-                  <img
-                    src={element.imageSrc}
-                    alt={element.id}
-                    className="pointer-events-none block h-full w-full select-none"
-                  />
-                </div>
-              ))
+            {renderLayers.length > 0 ? (
+              renderLayers.map(({ entry, data }) => {
+                const naturalWidth = data.imageMapping.imageDimensions.width;
+                const naturalHeight = data.imageMapping.imageDimensions.height;
+                const scaledWidth = naturalWidth * data.scale.x;
+                const scaledHeight = naturalHeight * data.scale.y;
+                const placement = computeLayerPlacement(data, scaledWidth, scaledHeight);
+                const pivotPercent = extractPivotPercent(data, naturalWidth, naturalHeight);
+                const rotation = data.currentRotation ?? 0;
+
+                return (
+                  <div
+                    key={entry.LayerID}
+                    className="absolute"
+                    style={{
+                      left: placement.left,
+                      top: placement.top,
+                      width: scaledWidth,
+                      height: scaledHeight,
+                      transformOrigin: `${pivotPercent.x}% ${pivotPercent.y}%`,
+                      transform: `rotate(${rotation}deg)`,
+                      zIndex: entry.LayerOrder ?? 0,
+                    }}
+                  >
+                    <img
+                      src={data.imageUrl}
+                      alt={entry.LayerID}
+                      className="pointer-events-none block h-full w-full select-none"
+                    />
+                  </div>
+                );
+              })
             ) : (
               <div className="absolute inset-0 flex items-center justify-center text-sm font-semibold text-slate-300">
                 {errorMessage ?? "Loading clock stage..."}
@@ -173,4 +190,42 @@ export default function TestScreen(props: TestScreenProps) {
       )}
     </div>
   );
+}
+
+function computeLayerPlacement(
+  data: EnhancedLayerData,
+  scaledWidth: number,
+  scaledHeight: number,
+): { left: number; top: number } {
+  const basePosition = data.position ?? { x: 0, y: 0 };
+  const centerX = scaledWidth / 2;
+  const centerY = scaledHeight / 2;
+  const pivot = getImageCenter(data.imageMapping);
+  const pivotX = pivot.x * data.scale.x;
+  const pivotY = pivot.y * data.scale.y;
+  const dx = centerX - pivotX;
+  const dy = centerY - pivotY;
+  const position = roundStagePoint(basePosition);
+  return {
+    left: position.x - centerX + dx,
+    top: position.y - centerY + dy,
+  };
+}
+
+function extractPivotPercent(
+  data: EnhancedLayerData,
+  naturalWidth: number,
+  naturalHeight: number,
+): { x: number; y: number } {
+  if (data.calculation?.spinPoint?.image?.percent) {
+    return {
+      x: data.calculation.spinPoint.image.percent.x,
+      y: data.calculation.spinPoint.image.percent.y,
+    };
+  }
+  const imageCenter = getImageCenter(data.imageMapping);
+  return {
+    x: (imageCenter.x / naturalWidth) * 100,
+    y: (imageCenter.y / naturalHeight) * 100,
+  };
 }

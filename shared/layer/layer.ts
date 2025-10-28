@@ -79,6 +79,7 @@
 
 import type { UniversalLayerData } from "./layerCore";
 import type { LayerConfigEntry } from "../config/Config";
+import type { ClockSpeedAlias, TimeFormat } from "./clockTime";
 import { createSpinProcessor } from "./layerSpin";
 import { createOrbitalProcessor } from "./layerOrbit";
 
@@ -143,6 +144,9 @@ export type EnhancedLayerData = UniversalLayerData & {
   // Spin properties (added by LayerCorePipelineSpin)
   spinSpeed?: number; // rotations per hour (1 = 1 full rotation in 1 hour)
   spinDirection?: "cw" | "ccw";
+  spinSpeedAlias?: ClockSpeedAlias;
+  spinFormat?: TimeFormat;
+  spinTimezone?: string;
   currentRotation?: number;
   hasSpinAnimation?: boolean;
   spinStagePoint?: { x: number; y: number };
@@ -156,6 +160,9 @@ export type EnhancedLayerData = UniversalLayerData & {
   orbitRadius?: number;
   orbitOrient?: boolean;
   orbitSpeed?: number; // rotations per hour (1 = 1 full orbit in 1 hour)
+  orbitSpeedAlias?: ClockSpeedAlias;
+  orbitFormat?: TimeFormat;
+  orbitTimezone?: string;
   orbitDirection?: "cw" | "ccw";
   currentOrbitAngle?: number;
   hasOrbitalAnimation?: boolean;
@@ -401,12 +408,20 @@ export function getProcessorsForEntry(
 registerProcessor({
   name: "spin",
   shouldAttach(entry) {
-    return typeof entry.spinSpeed === "number" && entry.spinSpeed > 0;
+    return (
+      (typeof entry.spinSpeed === "number" && entry.spinSpeed > 0) ||
+      entry.spinSpeedAlias !== undefined ||
+      entry.spinFormat !== undefined ||
+      entry.spinTimezone !== undefined
+    );
   },
   create(entry) {
     return createSpinProcessor({
       spinSpeed: entry.spinSpeed,
       spinDirection: entry.spinDirection,
+      spinSpeedAlias: entry.spinSpeedAlias,
+      spinFormat: entry.spinFormat,
+      spinTimezone: entry.spinTimezone,
     });
   },
 });
@@ -425,6 +440,9 @@ registerProcessor({
       entry.orbitStagePoint !== undefined ||
         entry.orbitOrient === true ||
         (entry.orbitSpeed !== undefined && entry.orbitSpeed !== 0) ||
+        entry.orbitSpeedAlias !== undefined ||
+        entry.orbitFormat !== undefined ||
+        entry.orbitTimezone !== undefined ||
         entry.orbitLine === true ||
         entry.orbitLinePoint !== undefined ||
         entry.orbitImagePoint !== undefined,
@@ -438,6 +456,9 @@ registerProcessor({
       orbitLine: entry.orbitLine,
       orbitSpeed: entry.orbitSpeed,
       orbitDirection: entry.orbitDirection,
+      orbitSpeedAlias: entry.orbitSpeedAlias,
+      orbitFormat: entry.orbitFormat,
+      orbitTimezone: entry.orbitTimezone,
     });
   },
 });

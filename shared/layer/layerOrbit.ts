@@ -79,13 +79,14 @@ import {
   type Point2D,
 } from "./layerBasic";
 import {
-  applyRotationDirection,
   calculateOrbitPosition,
   calculateOrbitalVisibility,
   normalizeAngle,
   type EnhancedLayerData,
   type LayerProcessor,
 } from "./layer";
+import { calculateRotationDegrees, resolveClockSpeed, type ClockMotionConfig } from "./clockTime";
+import type { ClockSpeedAlias, TimeFormat } from "./clockTime";
 
 /**
  * Orbital configuration
@@ -106,6 +107,9 @@ export type OrbitalConfig = {
   orbitOrient?: boolean;
   orbitSpeed?: number; // rotations per hour (0 = no motion, 1 = 1 full orbit in 1 hour)
   orbitDirection?: "cw" | "ccw";
+  orbitSpeedAlias?: ClockSpeedAlias;
+  orbitFormat?: TimeFormat;
+  orbitTimezone?: string;
 };
 
 /**
@@ -133,26 +137,42 @@ export type OrbitalConfig = {
  * @returns LayerProcessor that adds orbital animation
  */
 export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
+  /**
+   * NOTE FOR FUTURE AI AGENTS:
+   * Like the spin processor, orbit now understands clock aliases plus timezone
+   * metadata. The resolved speed drives both numeric RPM motion and real-time
+   * alias behaviour without branching elsewhere.
+   */
   const overrideStagePoint = normaliseStagePoint(config.orbitStagePoint);
   const overrideLinePoint = normaliseStagePoint(config.orbitLinePoint);
   const overrideImagePercent = normalisePercent(config.orbitImagePoint);
   const overrideOrbitLine = config.orbitLine;
   const overrideOrient = config.orbitOrient;
-  const orbitSpeed = config.orbitSpeed ?? 0;
   const orbitDirection = config.orbitDirection ?? "cw";
 
-  if (orbitSpeed <= 0 && !overrideOrient && !overrideOrbitLine) {
+  const motion: ClockMotionConfig = {
+    speed: config.orbitSpeedAlias ?? config.orbitSpeed,
+    direction: orbitDirection,
+    format: config.orbitFormat,
+    timezone: config.orbitTimezone,
+  };
+
+  const resolvedSpeed = resolveClockSpeed(motion, 0, config.orbitSpeed ?? 0);
+  const hasMotion = resolvedSpeed.kind !== "static";
+
+  if (!hasMotion && !overrideOrient && !overrideOrbitLine) {
     return (layer: EnhancedLayerData): EnhancedLayerData => layer;
   }
 
-  let startTime: number | undefined;
+  let startPerfTime: number | undefined;
+  let startWallClockMs: number | undefined;
+  const timezoneCache = new Map<number, Date>();
 
   return (layer: EnhancedLayerData, timestamp?: number): EnhancedLayerData => {
     const orient = overrideOrient ?? layer.orbitOrient ?? false;
     const requestedLine = overrideOrbitLine ?? layer.orbitLineVisible ?? false;
     const hasSpin = Boolean((layer as EnhancedLayerData).hasSpinAnimation);
 
-    const hasMotion = orbitSpeed > 0;
     const shouldUpdatePath = hasMotion || orient;
     const shouldRenderLine = requestedLine || shouldUpdatePath;
 
@@ -197,11 +217,15 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
       let orbitAngle = 0;
       let timeBasedAngle = 0;
       if (hasMotion) {
-        const baseTime = timestamp ?? performance.now();
-        if (startTime === undefined) {
-          startTime = baseTime;
+        const perfNow = timestamp ?? performance.now();
+        if (startPerfTime === undefined) {
+          startPerfTime = perfNow;
+          startWallClockMs = Date.now();
         }
-        const elapsedSeconds = (baseTime - startTime) / 1000;
+        const baseNowMs =
+          startWallClockMs !== undefined && startPerfTime !== undefined
+            ? startWallClockMs + (perfNow - startPerfTime)
+            : Date.now();
 
         // Calculate initial angle offset from orbitLinePoint position
         const initialAngle = normalizeAngle(
@@ -210,14 +234,13 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
             Math.PI,
         );
 
-        // Calculate time-based rotation using rotations per hour formula
-        // Formula: angle = (elapsedSeconds / 3600) × orbitSpeed × 360
-        // Simplified: angle = elapsedSeconds × orbitSpeed × 0.1
-        // Where 0.1 = 360° / 3600 seconds (degrees per second per rotation per hour)
-        timeBasedAngle = (elapsedSeconds * orbitSpeed * 0.1) % 360;
-        orbitAngle = normalizeAngle(
-          initialAngle + applyRotationDirection(timeBasedAngle, orbitDirection),
+        timeBasedAngle = calculateRotationDegrees(
+          resolvedSpeed,
+          new Date(baseNowMs),
+          timezoneCache,
+          startWallClockMs,
         );
+        orbitAngle = normalizeAngle(initialAngle + timeBasedAngle);
         orbitPoint = calculateOrbitPosition(baseStagePoint, orbitRadius, orbitAngle);
       } else {
         orbitPoint = baseLinePoint;
@@ -240,9 +263,7 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
       });
 
       if (orient && !hasSpin && hasMotion && orbitRadius > 0) {
-        // Use timeBasedAngle (same for all pieces) instead of radiusAngle (different per piece)
-        // This ensures all pieces in a tiled background rotate together by the same amount
-        const rotationDelta = applyRotationDirection(timeBasedAngle, orbitDirection);
+        const rotationDelta = timeBasedAngle;
         const baseRotation = layer.rotation ?? 0;
         rotationOverride = normalizeAngle(baseRotation + rotationDelta);
       }
@@ -256,7 +277,14 @@ export function createOrbitalProcessor(config: OrbitalConfig): LayerProcessor {
       orbitLineVisible: requestedLine,
       orbitImagePoint: imagePercent,
       orbitRadius,
-      orbitSpeed,
+      orbitSpeed:
+        config.orbitSpeed ??
+        (resolvedSpeed.kind === "numeric" ? resolvedSpeed.rotationsPerHour : 0),
+      orbitSpeedAlias:
+        config.orbitSpeedAlias ??
+        (resolvedSpeed.kind === "alias" ? resolvedSpeed.alias : undefined),
+      orbitFormat: config.orbitFormat,
+      orbitTimezone: config.orbitTimezone,
       orbitDirection,
       orbitOrient: orient,
       hasOrbitalAnimation: hasMotion,
