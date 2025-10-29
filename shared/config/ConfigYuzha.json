@@ -1,7 +1,7 @@
 [
   {
     "LayerID": "clock-background",
-    "ImageID": "CLOCKBG",
+    "ImageID": "CLOCKBG0",
     "renderer": "2D",
     "LayerOrder": 0,
     "ImageScale": [100, 100],
@@ -34,7 +34,7 @@
   },
   {
     "LayerID": "stars-background-middle",
-    "ImageID": "STARBG",
+    "ImageID": "STARBG0",
     "renderer": "2D",
     "LayerOrder": 50,
     "ImageScale": [100, 100],
@@ -63,7 +63,7 @@
   },
   {
     "LayerID": "GEAR3",
-    "ImageID": "GEAR3",
+    "ImageID": "GEAR30",
     "renderer": "2D",
     "LayerOrder": 400,
     "ImageScale": [130, 130],
@@ -83,7 +83,7 @@
   },
   {
     "LayerID": "GEAR3A",
-    "ImageID": "GEAR3",
+    "ImageID": "GEAR30",
     "renderer": "2D",
     "LayerOrder": 481,
     "ImageScale": [105, 105],
@@ -103,7 +103,7 @@
   },
   {
     "LayerID": "GEAR1",
-    "ImageID": "GEAR1",
+    "ImageID": "GEAR10",
     "renderer": "2D",
     "LayerOrder": 485,
     "ImageScale": [80, 80],
@@ -123,7 +123,7 @@
   },
   {
     "LayerID": "GEAR2",
-    "ImageID": "GEAR2",
+    "ImageID": "GEAR20",
     "renderer": "2D",
     "LayerOrder": 486,
     "ImageScale": [120, 120],
@@ -143,7 +143,7 @@
   },
   {
     "LayerID": "stars-background-hole1",
-    "ImageID": "STARBG9H",
+    "ImageID": "STARBG9H0",
     "renderer": "2D",
     "LayerOrder": 700,
     "ImageScale": [100, 100],
@@ -163,7 +163,7 @@
   },
   {
     "LayerID": "nviro_Stars_Big",
-    "ImageID": "Enviro_Stars_Big",
+    "ImageID": "Enviro_Stars_Big0",
     "renderer": "2D",
     "LayerOrder": 702,
     "ImageScale": [100, 100],
@@ -183,7 +183,7 @@
   },
   {
     "LayerID": "Enviro_Stars",
-    "ImageID": "Enviro_Stars",
+    "ImageID": "Enviro_Stars0",
     "renderer": "2D",
     "LayerOrder": 702,
     "ImageScale": [100, 100],
@@ -203,7 +203,7 @@
   },
   {
     "LayerID": "CLOCKMOON",
-    "ImageID": "GEARMOON",
+    "ImageID": "GEARMOON0",
     "renderer": "2D",
     "LayerOrder": 750,
     "ImageScale": [105, 105],
@@ -223,7 +223,7 @@
   },
   {
     "LayerID": "CLOCKBG",
-    "ImageID": "CLOCKBG",
+    "ImageID": "CLOCKBG0",
     "renderer": "2D",
     "LayerOrder": 751,
     "ImageScale": [100, 100],
@@ -237,7 +237,7 @@
   },
   {
     "LayerID": "CLOCKGLOW",
-    "ImageID": "CLOCKGLOW",
+    "ImageID": "CLOCKGLOW0",
     "renderer": "2D",
     "LayerOrder": 800,
     "ImageScale": [95, 95],
@@ -251,7 +251,7 @@
   },
   {
     "LayerID": "CLOCKGLOW12",
-    "ImageID": "needle",
+    "ImageID": "needle0",
     "renderer": "2D",
     "LayerOrder": 800,
     "ImageScale": [51, 51],
@@ -265,7 +265,7 @@
   },
   {
     "LayerID": "CLOCKGLOW2",
-    "ImageID": "CLOCKGLOW2",
+    "ImageID": "CLOCKGLOW20",
     "renderer": "2D",
     "LayerOrder": 800,
     "ImageScale": [130, 130],
