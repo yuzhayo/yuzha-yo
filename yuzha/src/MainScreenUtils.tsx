@@ -306,7 +306,7 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
   const currentMode = props.rendererMode ?? "auto";
 
   const getRendererButtonClass = (mode: "auto" | "canvas" | "three") => {
-    const baseClass = "text-[11px] px-3 py-1.5 rounded text-white shadow-sm border";
+    const baseClass = "text-[11px] px-3 py-2 rounded text-white shadow-sm border";
     const isSelected = currentMode === mode;
 
     if (!isSelected) {
@@ -327,7 +327,7 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
   return (
     <div className="fixed top-3 right-3 z-[9998] flex flex-col items-end gap-2">
       {props.rendererLabel && (
-        <div className="pointer-events-none select-none rounded bg-black/60 px-3 py-1 text-xs text-white/80 shadow-inner border border-white/10">
+        <div className="pointer-events-none select-none rounded bg-black/60 px-3 py-1 text-xs text-white/80 shadow-inner border border-white/10 whitespace-normal break-words text-right leading-tight">
           {props.rendererLabel}
         </div>
       )}
@@ -359,11 +359,11 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
           </button>
         </div>
       )}
-      <div className="flex w-48 flex-col gap-1">
+      <div className="flex flex-col gap-1 self-end">
         <button
           type="button"
           onClick={clearCachesAndReload}
-          className="w-full text-xs px-3 py-1.5 rounded bg-pink-600/80 hover:bg-pink-500/80 active:bg-pink-600 text-white shadow-sm border border-white/10"
+          className="text-xs px-3 py-2 rounded bg-pink-600/80 hover:bg-pink-500/80 active:bg-pink-600 text-white shadow-sm border border-white/10 text-center whitespace-normal break-words leading-tight"
           aria-label="Force update and reload"
         >
           Update
@@ -372,7 +372,7 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
           <button
             type="button"
             onClick={props.onOpenTestScreen}
-            className="w-full text-xs px-3 py-1.5 rounded bg-sky-600/80 hover:bg-sky-500/80 active:bg-sky-600 text-white shadow-sm border border-white/10"
+            className="text-xs px-3 py-2 rounded bg-sky-600/80 hover:bg-sky-500/80 active:bg-sky-600 text-white shadow-sm border border-white/10 text-center whitespace-normal break-words leading-tight"
           >
             Test Screen
           </button>
@@ -381,7 +381,7 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
           <button
             type="button"
             onClick={props.onOpenStruckScreen}
-            className="w-full text-xs px-3 py-1.5 rounded bg-emerald-600/80 hover:bg-emerald-500/80 active:bg-emerald-600 text-white shadow-sm border border-white/10"
+            className="text-xs px-3 py-2 rounded bg-emerald-600/80 hover:bg-emerald-500/80 active:bg-emerald-600 text-white shadow-sm border border-white/10 text-center whitespace-normal break-words leading-tight"
           >
             Struck Screen
           </button>
