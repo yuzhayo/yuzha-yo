@@ -320,16 +320,16 @@
   },
 
   {
-    "LayerID": "Morning",
+    "LayerID": "zodiac",
     "ImageID": "zodiac",
     "renderer": "2D",
     "LayerOrder": 701,
-    "ImageScale": [180, 180],
+    "ImageScale": [111, 111],
     "groups": {
       "Spin Config": {
         "spinStagePoint": [1024, 1024],
         "spinImagePoint": [50, 50],
-        "spinSpeedAlias": 10,
+        "spinSpeedAlias": 18,
         "spinDirection": "ccw",
         "spinFormat": "12",
         "spinTimezone": "UTC+7"
@@ -354,11 +354,11 @@
     }
   },
   {
-    "LayerID": "CLOCKGLOW1",
-    "ImageID": "CLOCKGLOW1-",
+    "LayerID": "C12needele",
+    "ImageID": "CLOCKGLOW1",
     "renderer": "2D",
     "LayerOrder": 750,
-    "ImageScale": [100, 100],
+    "ImageScale": [85, 85],
     "groups": {
       "Basic Config": {
         "BasicStagePoint": [1024, 1024],
