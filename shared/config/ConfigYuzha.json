@@ -1,9 +1,9 @@
 [
   {
     "LayerID": "clock-background",
-    "ImageID": "CLOCKBG0",
+    "ImageID": "CLOCKBG",
     "renderer": "2D",
-    "LayerOrder": 0,
+    "LayerOrder": 10,
     "ImageScale": [100, 100],
     "groups": {
       "Basic Config": {
@@ -279,7 +279,7 @@
   },
   {
     "LayerID": "clock-second-hand",
-    "ImageID": "UI_Clock_MinuteHand",
+    "ImageID": "UI_Clock_MinuteHand0",
     "renderer": "2D",
     "LayerOrder": 920,
     "ImageScale": [100, 100],
@@ -301,7 +301,7 @@
   },
   {
     "LayerID": "clock-hour-hand",
-    "ImageID": "UI_Clock_HourHand",
+    "ImageID": "UI_Clock_HourHand0",
     "renderer": "2D",
     "LayerOrder": 930,
     "ImageScale": [100, 100],
@@ -323,7 +323,7 @@
   },
   {
     "LayerID": "clock-minute-hand",
-    "ImageID": "UI_Clock_MinuteHand",
+    "ImageID": "UI_Clock_MinuteHand0",
     "renderer": "2D",
     "LayerOrder": 940,
     "ImageScale": [100, 100],
