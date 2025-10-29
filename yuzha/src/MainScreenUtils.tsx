@@ -326,41 +326,39 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
 
   return (
     <div className="fixed top-3 right-3 z-[9998] flex flex-col items-end gap-2">
-      <div className="flex flex-row items-center gap-2">
-        {props.rendererLabel && (
-          <div className="pointer-events-none select-none rounded bg-black/60 px-3 py-1 text-xs text-white/80 shadow-inner border border-white/10">
-            {props.rendererLabel}
-          </div>
-        )}
-        {props.onRendererModeChange && (
-          <div className="flex flex-row gap-1">
-            <button
-              type="button"
-              onClick={() => props.onRendererModeChange?.("auto")}
-              className={getRendererButtonClass("auto")}
-              aria-label="Auto renderer mode"
-            >
-              Auto
-            </button>
-            <button
-              type="button"
-              onClick={() => props.onRendererModeChange?.("canvas")}
-              className={getRendererButtonClass("canvas")}
-              aria-label="Canvas renderer mode"
-            >
-              Canvas
-            </button>
-            <button
-              type="button"
-              onClick={() => props.onRendererModeChange?.("three")}
-              className={getRendererButtonClass("three")}
-              aria-label="Three renderer mode"
-            >
-              Three
-            </button>
-          </div>
-        )}
-      </div>
+      {props.rendererLabel && (
+        <div className="pointer-events-none select-none rounded bg-black/60 px-3 py-1 text-xs text-white/80 shadow-inner border border-white/10">
+          {props.rendererLabel}
+        </div>
+      )}
+      {props.onRendererModeChange && (
+        <div className="flex flex-row gap-1">
+          <button
+            type="button"
+            onClick={() => props.onRendererModeChange?.("auto")}
+            className={getRendererButtonClass("auto")}
+            aria-label="Auto renderer mode"
+          >
+            Auto
+          </button>
+          <button
+            type="button"
+            onClick={() => props.onRendererModeChange?.("canvas")}
+            className={getRendererButtonClass("canvas")}
+            aria-label="Canvas renderer mode"
+          >
+            Canvas
+          </button>
+          <button
+            type="button"
+            onClick={() => props.onRendererModeChange?.("three")}
+            className={getRendererButtonClass("three")}
+            aria-label="Three renderer mode"
+          >
+            Three
+          </button>
+        </div>
+      )}
       <div className="flex w-48 flex-col gap-1">
         <button
           type="button"
