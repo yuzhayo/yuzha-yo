@@ -12,6 +12,10 @@
     "path": "shared/asset/CLOCKBG.png"
   },
   {
+    "id": "CLOCKBG-A",
+    "path": "shared/asset/CLOCKBG-A.png"
+  },
+  {
     "id": "CLOCKGLOW",
     "path": "shared/asset/CLOCKGLOW.png"
   },
@@ -22,6 +26,10 @@
   {
     "id": "CLOCKGLOW2",
     "path": "shared/asset/CLOCKGLOW2.png"
+  },
+  {
+    "id": "eff_ui_xingpan09",
+    "path": "shared/asset/eff_ui_xingpan09.png"
   },
   {
     "id": "Enviro_Stars",
@@ -150,5 +158,9 @@
   {
     "id": "V3_LockIcon",
     "path": "shared/asset/V3_LockIcon.png"
+  },
+  {
+    "id": "zodiac",
+    "path": "shared/asset/zodiac.png"
   }
 ]
