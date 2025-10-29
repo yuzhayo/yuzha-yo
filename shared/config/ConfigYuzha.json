@@ -318,6 +318,70 @@
       }
     }
   },
+
+  {
+    "LayerID": "Morning",
+    "ImageID": "UI_ClockIcon_Morning",
+    "renderer": "2D",
+    "LayerOrder": 850,
+    "ImageScale": [91, 91],
+    "groups": {
+      "Basic Config": {
+        "BasicStagePoint": [704, 1020],
+        "BasicImagePoint": [50, 50],
+        "BasicImageAngle": 0
+      }
+    }
+  },
+
+  {
+    "LayerID": "Cneedle",
+    "ImageID": "needle",
+    "renderer": "2D",
+    "LayerOrder": 750,
+    "ImageScale": [47, 47],
+    "groups": {
+      "Basic Config": {
+        "BasicStagePoint": [1024, 1024],
+        "BasicImagePoint": [50, 50],
+        "BasicImageAngle": 0
+      }
+    }
+  },
+
+  {
+    "LayerID": "Cneedle",
+    "ImageID": "needle",
+    "renderer": "2D",
+    "LayerOrder": 750,
+    "ImageScale": [47, 47],
+    "groups": {
+      "Basic Config": {
+        "BasicStagePoint": [1024, 1024],
+        "BasicImagePoint": [50, 50],
+        "BasicImageAngle": 0
+      }
+    }
+  },
+
+  {
+    "LayerID": "Cneedle",
+    "ImageID": "needle",
+    "renderer": "2D",
+    "LayerOrder": 750,
+    "ImageScale": [47, 47],
+    "groups": {
+      "Basic Config": {
+        "BasicStagePoint": [1024, 1024],
+        "BasicImagePoint": [50, 50],
+        "BasicImageAngle": 0
+      }
+    }
+  },
+
+
+
+
   {
     "LayerID": "CLOCKGLOW2",
     "ImageID": "CLOCKGLOW2",
