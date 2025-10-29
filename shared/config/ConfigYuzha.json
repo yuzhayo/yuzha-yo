@@ -395,15 +395,15 @@
   
   {
     "LayerID": "clock-minute-hand",
-    "ImageID": "UI_Clock_MinuteHand",
+    "ImageID": "sprite_005-",
     "renderer": "2D",
     "LayerOrder": 900,
     "ImageScale": [100, 128],
     "groups": {
         "Spin Config": {
         "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, -18],
-        "spinSpeedAlias": "second",
+        "spinImagePoint": [50, 118],
+        "spinSpeedAlias": "hour",
         "spinDirection": "cw",
         "spinFormat": "12",
         "spinTimezone": "UTC+7"
