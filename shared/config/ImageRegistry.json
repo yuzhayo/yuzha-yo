@@ -1,5 +1,9 @@
 [
   {
+    "id": "12needle",
+    "path": "shared/asset/12needle.png"
+  },
+  {
     "id": "BG_ArtifactCraft_Center",
     "path": "shared/asset/BG_ArtifactCraft_Center.png"
   },
