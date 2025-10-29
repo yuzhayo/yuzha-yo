@@ -266,6 +266,16 @@
     }
   },
  
+
+
+
+
+
+
+
+
+
+
   {
     "LayerID": "CLOCKBG",
     "ImageID": "CLOCKBG",
@@ -282,9 +292,9 @@
   },
   {
     "LayerID": "CLOCKGLOW",
-    "ImageID": "CLOCKGLOW0",
+    "ImageID": "CLOCKGLOW",
     "renderer": "2D",
-    "LayerOrder": 800,
+    "LayerOrder": 750,
     "ImageScale": [95, 95],
     "groups": {
       "Basic Config": {
@@ -295,11 +305,11 @@
     }
   },
   {
-    "LayerID": "CLOCKGLOW12",
-    "ImageID": "needle0",
+    "LayerID": "Cneedle",
+    "ImageID": "needle",
     "renderer": "2D",
-    "LayerOrder": 800,
-    "ImageScale": [51, 51],
+    "LayerOrder": 750,
+    "ImageScale": [47, 47],
     "groups": {
       "Basic Config": {
         "BasicStagePoint": [1024, 1024],
@@ -310,10 +320,24 @@
   },
   {
     "LayerID": "CLOCKGLOW2",
-    "ImageID": "CLOCKGLOW20",
+    "ImageID": "CLOCKGLOW2",
     "renderer": "2D",
-    "LayerOrder": 800,
+    "LayerOrder": 750,
     "ImageScale": [130, 130],
+    "groups": {
+      "Basic Config": {
+        "BasicStagePoint": [1024, 1024],
+        "BasicImagePoint": [50, 50],
+        "BasicImageAngle": 0
+      }
+    }
+  },
+  {
+    "LayerID": "CLOCKGLOW1",
+    "ImageID": "CLOCKGLOW1",
+    "renderer": "2D",
+    "LayerOrder": 750,
+    "ImageScale": [100, 100],
     "groups": {
       "Basic Config": {
         "BasicStagePoint": [1024, 1024],
