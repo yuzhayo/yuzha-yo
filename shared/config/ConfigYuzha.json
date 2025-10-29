@@ -278,7 +278,7 @@
 
   {
     "LayerID": "CLOCKBG",
-    "ImageID": "CLOCKBG",
+    "ImageID": "CLOCKBG-A",
     "renderer": "2D",
     "LayerOrder": 751,
     "ImageScale": [100, 100],
@@ -309,7 +309,7 @@
     "ImageID": "needle",
     "renderer": "2D",
     "LayerOrder": 750,
-    "ImageScale": [47, 47],
+    "ImageScale": [45, 45],
     "groups": {
       "Basic Config": {
         "BasicStagePoint": [1024, 1024],
@@ -321,64 +321,21 @@
 
   {
     "LayerID": "Morning",
-    "ImageID": "UI_ClockIcon_Morning",
+    "ImageID": "zodiac",
     "renderer": "2D",
-    "LayerOrder": 850,
-    "ImageScale": [91, 91],
+    "LayerOrder": 701,
+    "ImageScale": [180, 180],
     "groups": {
-      "Basic Config": {
-        "BasicStagePoint": [704, 1020],
-        "BasicImagePoint": [50, 50],
-        "BasicImageAngle": 0
+      "Spin Config": {
+        "spinStagePoint": [1024, 1024],
+        "spinImagePoint": [50, 50],
+        "spinSpeedAlias": 10,
+        "spinDirection": "ccw",
+        "spinFormat": "12",
+        "spinTimezone": "UTC+7"
       }
     }
   },
-
-  {
-    "LayerID": "Cneedle",
-    "ImageID": "needle",
-    "renderer": "2D",
-    "LayerOrder": 750,
-    "ImageScale": [47, 47],
-    "groups": {
-      "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
-        "BasicImageAngle": 0
-      }
-    }
-  },
-
-  {
-    "LayerID": "Cneedle",
-    "ImageID": "needle",
-    "renderer": "2D",
-    "LayerOrder": 750,
-    "ImageScale": [47, 47],
-    "groups": {
-      "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
-        "BasicImageAngle": 0
-      }
-    }
-  },
-
-  {
-    "LayerID": "Cneedle",
-    "ImageID": "needle",
-    "renderer": "2D",
-    "LayerOrder": 750,
-    "ImageScale": [47, 47],
-    "groups": {
-      "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
-        "BasicImageAngle": 0
-      }
-    }
-  },
-
 
 
 
@@ -398,7 +355,7 @@
   },
   {
     "LayerID": "CLOCKGLOW1",
-    "ImageID": "CLOCKGLOW1",
+    "ImageID": "CLOCKGLOW1-",
     "renderer": "2D",
     "LayerOrder": 750,
     "ImageScale": [100, 100],
