@@ -23,7 +23,7 @@
         "StageRedBlueVisible": true,
         "ImagePivot": [50, 50],
         "ImagePivotVisible": true,
-        "ImageSpin": 100,
+        "ImageSpin": 200,
         "ImageSpinDirection":"cw",
         "BlueSpin": 0,
         "BlueSpinDirection":"cw"
