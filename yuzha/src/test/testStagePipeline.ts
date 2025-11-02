@@ -29,6 +29,8 @@ type MinimalTestEntry = {
   ImagePivotVisible?: boolean;
   ImageSpin?: number;
   ImageSpinDirection?: "cw" | "ccw";
+  BlueSpin?: number;
+  BlueSpinDirection?: "cw" | "ccw";
 };
 
 type MarkerKey = "Stage1Blue" | "Stage2Red";
@@ -121,37 +123,100 @@ export async function createTestStagePipeline(stageSize: number = STAGE_SIZE): P
   const seenMarkers = new Set<string>();
 
   preparedEntries.forEach(({ raw, normalised }) => {
+    const rawRecord = raw as Record<string, unknown>;
+    const centerPoint = toStagePoint(raw.Stage2Red, stageSize);
+    const perimeterPoint = toStagePoint(raw.Stage1Blue, stageSize);
+
+    let circleRadius: number | null = null;
+    let initialAngleDeg: number | null = null;
+
+    if (centerPoint && perimeterPoint) {
+      const dx = perimeterPoint.x - centerPoint.x;
+      const dy = perimeterPoint.y - centerPoint.y;
+      circleRadius = Math.hypot(dx, dy);
+      const angleDeg =
+        (Math.atan2(-(perimeterPoint.y - centerPoint.y), perimeterPoint.x - centerPoint.x) * 180) /
+        Math.PI;
+      initialAngleDeg = ((angleDeg % 360) + 360) % 360;
+    }
+
+    const rawBlueSpinExplicit = typeof raw.BlueSpin === "number" ? raw.BlueSpin : undefined;
+    const rawBlueSpinLegacy =
+      typeof rawRecord.BlueSPin === "number" ? (rawRecord.BlueSPin as number) : undefined;
+    const blueSpinValue =
+      typeof rawBlueSpinExplicit === "number" ? rawBlueSpinExplicit : rawBlueSpinLegacy;
+
+    const inferredBlueSpinDirection =
+      rawRecord.BlueSpinDirection === "ccw"
+        ? "ccw"
+        : rawRecord.BlueSpinDirection === "cw"
+          ? "cw"
+          : undefined;
+
+    const blueSpinDirection: "cw" | "ccw" =
+      raw.BlueSpinDirection ??
+      inferredBlueSpinDirection ??
+      (raw.ImageSpinDirection === "ccw" ? "ccw" : "cw");
+
     MARKER_SPECS.forEach(({ key, color, radius, visibleKey }) => {
-      const isVisibleRaw = (raw as Record<string, unknown>)[visibleKey];
+      const isVisibleRaw = rawRecord[visibleKey];
       if (isVisibleRaw === false) {
         return;
       }
-      const point = toStagePoint((raw as Record<string, unknown>)[key], stageSize);
+      let point: { x: number; y: number } | null = null;
+      if (key === "Stage1Blue" && perimeterPoint) {
+        point = perimeterPoint;
+      } else if (key === "Stage2Red" && centerPoint) {
+        point = centerPoint;
+      } else {
+        point = toStagePoint(rawRecord[key], stageSize);
+      }
       if (!point) return;
-      const dedupeKey = `point:${key}:${point.x}:${point.y}:${color}`;
+      const dedupeKey = `point:${key}:${normalised.LayerID}:${point.x}:${point.y}:${color}`;
       if (seenMarkers.has(dedupeKey)) {
         return;
       }
       seenMarkers.add(dedupeKey);
-      markers.push({
+      const marker: StageMarker = {
         id: `${normalised.LayerID}-${key}`,
         x: point.x,
         y: point.y,
         color,
         radius,
         kind: "point",
-      });
+      };
+
+      if (
+        key === "Stage1Blue" &&
+        circleRadius &&
+        initialAngleDeg !== null &&
+        typeof blueSpinValue === "number" &&
+        blueSpinValue !== 0 &&
+        centerPoint
+      ) {
+        marker.motion = {
+          type: "orbit",
+          centerX: centerPoint.x,
+          centerY: centerPoint.y,
+          radius: circleRadius,
+          rotationsPerHour: Math.abs(blueSpinValue),
+          direction: blueSpinDirection,
+          initialAngleDeg,
+        };
+      }
+
+      markers.push(marker);
     });
 
-    const centerPoint = toStagePoint(raw.Stage2Red, stageSize);
-    const perimeterPoint = toStagePoint(raw.Stage1Blue, stageSize);
-    if (centerPoint && perimeterPoint && raw.StageRedBlueVisible !== false) {
-      const dx = perimeterPoint.x - centerPoint.x;
-      const dy = perimeterPoint.y - centerPoint.y;
-      const rawRadius = Math.hypot(dx, dy);
-      const roundedRadius = Math.round(rawRadius * 1000) / 1000;
+    if (
+      centerPoint &&
+      circleRadius &&
+      circleRadius > 0 &&
+      raw.StageRedBlueVisible !== false
+    ) {
+      const roundedRadius = Math.round(circleRadius * 1000) / 1000;
       if (roundedRadius > 0) {
-        const circleKey = `circle:${centerPoint.x}:${centerPoint.y}:${roundedRadius}`;
+        const circleKey = `circle:${normalised.LayerID}:${centerPoint.x}:${centerPoint.y}:${roundedRadius}`;
         if (!seenMarkers.has(circleKey)) {
           seenMarkers.add(circleKey);
           markers.push({
@@ -218,7 +283,7 @@ export async function createTestStagePipeline(stageSize: number = STAGE_SIZE): P
           }
 
           if (pivotStagePoint && raw.ImagePivotVisible !== false) {
-            const pivotKey = `pivot:${pivotStagePoint.x}:${pivotStagePoint.y}`;
+            const pivotKey = `pivot:${entryWithOverrides.LayerID}:${pivotStagePoint.x}:${pivotStagePoint.y}`;
             if (!seenMarkers.has(pivotKey)) {
               seenMarkers.add(pivotKey);
               markers.push({

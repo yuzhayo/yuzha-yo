@@ -349,6 +349,16 @@ export type StageMarker = {
   kind?: "point" | "circle";
   /** Stroke width (used for circle) */
   lineWidth?: number;
+  /** Optional motion descriptor for animated markers */
+  motion?: {
+    type: "orbit";
+    centerX: number;
+    centerY: number;
+    radius: number;
+    rotationsPerHour: number;
+    direction: "cw" | "ccw";
+    initialAngleDeg: number;
+  };
 };
 
 /**

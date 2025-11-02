@@ -25,7 +25,8 @@
         "ImagePivotVisible": true,
         "ImageSpin": 100,
         "ImageSpinDirection":"cw",
-        "BlueSPin": 100
+        "BlueSpin": 100,
+        "BlueSpinDirection":"cw"
         
         
         

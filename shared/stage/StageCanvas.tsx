@@ -179,17 +179,43 @@ async function mountCanvasLayers(
     }
   }
 
-  const hasAnyAnimation = layers.some((layer) => layer.hasAnimation);
+  const hasMarkerAnimation = markers.some((marker) => marker.motion !== undefined);
+  const hasAnyAnimation = layers.some((layer) => layer.hasAnimation) || hasMarkerAnimation;
 
-  const renderMarkers = () => {
+  let markerStartTime: number | undefined;
+
+  const renderMarkers = (timestamp?: number) => {
     if (markers.length === 0) return;
+    const elapsedMs =
+      timestamp !== undefined
+        ? (() => {
+            if (markerStartTime === undefined) {
+              markerStartTime = timestamp;
+              return 0;
+            }
+            return timestamp - markerStartTime;
+          })()
+        : 0;
     ctx.save();
     for (const marker of markers) {
+      let drawX = marker.x;
+      let drawY = marker.y;
+
+      if (marker.motion?.type === "orbit") {
+        const directionSign = marker.motion.direction === "ccw" ? 1 : -1;
+        const elapsedHours = (elapsedMs / 3600000) * directionSign;
+        const angleDeg =
+          marker.motion.initialAngleDeg + elapsedHours * marker.motion.rotationsPerHour * 360;
+        const angleRad = (angleDeg * Math.PI) / 180;
+        drawX = marker.motion.centerX + marker.motion.radius * Math.cos(angleRad);
+        drawY = marker.motion.centerY - marker.motion.radius * Math.sin(angleRad);
+      }
+
       if (marker.kind === "circle") {
         const radius = marker.radius ?? 0;
         if (radius <= 0) continue;
         ctx.beginPath();
-        ctx.arc(marker.x, marker.y, radius, 0, Math.PI * 2);
+        ctx.arc(drawX, drawY, radius, 0, Math.PI * 2);
         ctx.lineWidth = marker.lineWidth ?? 1;
         ctx.strokeStyle = marker.color ?? "rgba(255, 255, 255, 0.9)";
         ctx.stroke();
@@ -198,7 +224,7 @@ async function mountCanvasLayers(
 
       const radius = marker.radius ?? 6;
       ctx.beginPath();
-      ctx.arc(marker.x, marker.y, radius, 0, Math.PI * 2);
+      ctx.arc(drawX, drawY, radius, 0, Math.PI * 2);
       ctx.fillStyle = marker.color ?? "rgba(255, 255, 255, 0.9)";
       ctx.fill();
       ctx.lineWidth = 1;
@@ -268,7 +294,7 @@ async function mountCanvasLayers(
       renderLayer(layer, enhancedData);
     }
 
-    renderMarkers();
+    renderMarkers(timestamp);
 
     pipelineCache.nextFrame();
     requestAnimationFrame(renderFrame);
