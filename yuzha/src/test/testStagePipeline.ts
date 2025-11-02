@@ -27,6 +27,8 @@ type MinimalTestEntry = {
   StageRedBlueVisible?: boolean;
   ImagePivot?: number[];
   ImagePivotVisible?: boolean;
+  ImageSpin?: number;
+  ImageSpinDirection?: "cw" | "ccw";
 };
 
 type MarkerKey = "Stage1Blue" | "Stage2Red";
@@ -46,6 +48,34 @@ function toStagePoint(value: unknown, stageSize: number) {
   const [x, y] = value;
   if (typeof x !== "number" || typeof y !== "number") return null;
   return clampStagePoint({ x, y }, stageSize);
+}
+
+function calculatePivotStagePoint(
+  prepared: {
+    position: { x: number; y: number };
+    scale: { x: number; y: number };
+    imageMapping: { imageDimensions: { width: number; height: number } };
+  },
+  pivotPercent: unknown,
+  stageSize: number,
+) {
+  if (!Array.isArray(pivotPercent) || pivotPercent.length < 2) return null;
+  const [pivotX, pivotY] = pivotPercent;
+  if (typeof pivotX !== "number" || typeof pivotY !== "number") return null;
+
+  const mapping = createImageMapping({
+    width: prepared.imageMapping.imageDimensions.width,
+    height: prepared.imageMapping.imageDimensions.height,
+  });
+  const imagePoint = percentToImagePoint({ x: pivotX, y: pivotY }, mapping);
+
+  return clampStagePoint(
+    {
+      x: prepared.position.x + (imagePoint.x - mapping.center.x) * prepared.scale.x,
+      y: prepared.position.y + (imagePoint.y - mapping.center.y) * prepared.scale.y,
+    },
+    stageSize,
+  );
 }
 
 function normaliseTestEntry(entry: MinimalTestEntry): LayerConfigEntry {
@@ -146,43 +176,66 @@ export async function createTestStagePipeline(stageSize: number = STAGE_SIZE): P
     await Promise.all(
       sortedEntries.map<Promise<PreparedLayer | null>>(async ({ raw, normalised: entry }) => {
         try {
-          const prepared = await prepareLayer(entry, stageSize);
+          let entryWithOverrides: LayerConfigEntry = { ...entry };
+
+          let prepared = await prepareLayer(entryWithOverrides, stageSize);
           if (!prepared) return null;
 
-          const processors = getProcessorsForEntry(entry);
+          const pivotPercentArray =
+            Array.isArray(raw.ImagePivot) &&
+            raw.ImagePivot.length >= 2 &&
+            typeof raw.ImagePivot[0] === "number" &&
+            typeof raw.ImagePivot[1] === "number"
+              ? [raw.ImagePivot[0], raw.ImagePivot[1]] as [number, number]
+              : null;
 
-          if (Array.isArray(raw.ImagePivot) && raw.ImagePivotVisible !== false) {
-            const [pivotX, pivotY] = raw.ImagePivot;
-            if (typeof pivotX === "number" && typeof pivotY === "number") {
-              const mapping = createImageMapping({
-                width: prepared.imageMapping.imageDimensions.width,
-                height: prepared.imageMapping.imageDimensions.height,
-              });
-              const imagePoint = percentToImagePoint({ x: pivotX, y: pivotY }, mapping);
-              const stagePoint = clampStagePoint(
-                {
-                  x: prepared.position.x + (imagePoint.x - mapping.center.x) * prepared.scale.x,
-                  y: prepared.position.y + (imagePoint.y - mapping.center.y) * prepared.scale.y,
-                },
-                stageSize,
-              );
-              const pivotKey = `pivot:${stagePoint.x}:${stagePoint.y}`;
-              if (!seenMarkers.has(pivotKey)) {
-                seenMarkers.add(pivotKey);
-                markers.push({
-                  id: `${entry.LayerID}-ImagePivot`,
-                  x: stagePoint.x,
-                  y: stagePoint.y,
-                  color: "#facc15",
-                  radius: 3,
-                  kind: "point",
-                });
-              }
+          let pivotStagePoint = pivotPercentArray
+            ? calculatePivotStagePoint(prepared, pivotPercentArray, stageSize)
+            : null;
+
+          if (pivotStagePoint && typeof raw.ImageSpin === "number" && raw.ImageSpin !== 0) {
+            entryWithOverrides = {
+              ...entryWithOverrides,
+              spinSpeed: Math.abs(raw.ImageSpin),
+              spinDirection: raw.ImageSpinDirection === "ccw" ? "ccw" : "cw",
+              spinImagePoint: [pivotPercentArray![0], pivotPercentArray![1]],
+              spinStagePoint: [pivotStagePoint.x, pivotStagePoint.y],
+            };
+            prepared = await prepareLayer(entryWithOverrides, stageSize);
+            if (!prepared) return null;
+            const recalculatedPivot = calculatePivotStagePoint(
+              prepared,
+              pivotPercentArray,
+              stageSize,
+            );
+            if (recalculatedPivot) {
+              pivotStagePoint = recalculatedPivot;
+              entryWithOverrides = {
+                ...entryWithOverrides,
+                spinStagePoint: [pivotStagePoint.x, pivotStagePoint.y],
+              };
             }
           }
 
+          if (pivotStagePoint && raw.ImagePivotVisible !== false) {
+            const pivotKey = `pivot:${pivotStagePoint.x}:${pivotStagePoint.y}`;
+            if (!seenMarkers.has(pivotKey)) {
+              seenMarkers.add(pivotKey);
+              markers.push({
+                id: `${entryWithOverrides.LayerID}-ImagePivot`,
+                x: pivotStagePoint.x,
+                y: pivotStagePoint.y,
+                color: "#facc15",
+                radius: 3,
+                kind: "point",
+              });
+            }
+          }
+
+          const processors = getProcessorsForEntry(entryWithOverrides);
+
           return {
-            entry,
+            entry: entryWithOverrides,
             data: prepared,
             processors,
           };
