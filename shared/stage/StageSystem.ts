@@ -345,6 +345,10 @@ export type StageMarker = {
   color?: string;
   /** Radius in stage pixels */
   radius?: number;
+  /** Optional shape hint (default: point) */
+  kind?: "point" | "circle";
+  /** Stroke width (used for circle) */
+  lineWidth?: number;
 };
 
 /**

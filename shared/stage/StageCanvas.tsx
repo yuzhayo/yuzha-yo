@@ -185,6 +185,17 @@ async function mountCanvasLayers(
     if (markers.length === 0) return;
     ctx.save();
     for (const marker of markers) {
+      if (marker.kind === "circle") {
+        const radius = marker.radius ?? 0;
+        if (radius <= 0) continue;
+        ctx.beginPath();
+        ctx.arc(marker.x, marker.y, radius, 0, Math.PI * 2);
+        ctx.lineWidth = marker.lineWidth ?? 1;
+        ctx.strokeStyle = marker.color ?? "rgba(255, 255, 255, 0.9)";
+        ctx.stroke();
+        continue;
+      }
+
       const radius = marker.radius ?? 6;
       ctx.beginPath();
       ctx.arc(marker.x, marker.y, radius, 0, Math.PI * 2);

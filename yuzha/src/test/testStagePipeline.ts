@@ -23,6 +23,7 @@ type MinimalTestEntry = {
   Stage1BlueVisible?: boolean;
   Stage2Red?: number[];
   Stage2RedVisible?: boolean;
+  StageRedBlueVisible?: boolean;
 };
 
 type MarkerKey = "Stage1Blue" | "Stage2Red";
@@ -36,6 +37,13 @@ const MARKER_SPECS: Array<{
   { key: "Stage1Blue", color: "#3b82f6", radius: 6, visibleKey: "Stage1BlueVisible" },
   { key: "Stage2Red", color: "#ef4444", radius: 6, visibleKey: "Stage2RedVisible" },
 ];
+
+function toStagePoint(value: unknown, stageSize: number) {
+  if (!Array.isArray(value) || value.length < 2) return null;
+  const [x, y] = value;
+  if (typeof x !== "number" || typeof y !== "number") return null;
+  return clampStagePoint({ x, y }, stageSize);
+}
 
 function normaliseTestEntry(entry: MinimalTestEntry): LayerConfigEntry {
   const {
@@ -85,16 +93,9 @@ export async function createTestStagePipeline(stageSize: number = STAGE_SIZE): P
       if (isVisibleRaw === false) {
         return;
       }
-      const value = (raw as Record<string, unknown>)[key];
-      if (!Array.isArray(value) || value.length < 2) {
-        return;
-      }
-      const [x, y] = value;
-      if (typeof x !== "number" || typeof y !== "number") {
-        return;
-      }
-      const point = clampStagePoint({ x, y }, stageSize);
-      const dedupeKey = `${key}:${point.x}:${point.y}:${color}`;
+      const point = toStagePoint((raw as Record<string, unknown>)[key], stageSize);
+      if (!point) return;
+      const dedupeKey = `point:${key}:${point.x}:${point.y}:${color}`;
       if (seenMarkers.has(dedupeKey)) {
         return;
       }
@@ -105,8 +106,33 @@ export async function createTestStagePipeline(stageSize: number = STAGE_SIZE): P
         y: point.y,
         color,
         radius,
+        kind: "point",
       });
     });
+
+    const centerPoint = toStagePoint(raw.Stage2Red, stageSize);
+    const perimeterPoint = toStagePoint(raw.Stage1Blue, stageSize);
+    if (centerPoint && perimeterPoint && raw.StageRedBlueVisible !== false) {
+      const dx = perimeterPoint.x - centerPoint.x;
+      const dy = perimeterPoint.y - centerPoint.y;
+      const rawRadius = Math.hypot(dx, dy);
+      const roundedRadius = Math.round(rawRadius * 1000) / 1000;
+      if (roundedRadius > 0) {
+        const circleKey = `circle:${centerPoint.x}:${centerPoint.y}:${roundedRadius}`;
+        if (!seenMarkers.has(circleKey)) {
+          seenMarkers.add(circleKey);
+          markers.push({
+            id: `${normalised.LayerID}-StageCircle`,
+            x: centerPoint.x,
+            y: centerPoint.y,
+            radius: roundedRadius,
+            color: "rgba(255, 255, 255, 0.9)",
+            lineWidth: 1,
+            kind: "circle",
+          });
+        }
+      }
+    }
   });
 
   const sortedEntries = preparedEntries.sort((a, b) =>
