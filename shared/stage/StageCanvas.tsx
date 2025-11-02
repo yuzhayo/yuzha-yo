@@ -39,6 +39,7 @@ import {
   roundStagePoint,
   STAGE_SIZE,
   type StagePipeline,
+  type StageMarker,
   type EnhancedLayerData,
   type LayerProcessor,
 } from "./StageSystem";
@@ -128,6 +129,7 @@ type CanvasLayerEntry = {
 async function mountCanvasLayers(
   ctx: CanvasRenderingContext2D,
   layersWithProcessors: Array<{ data: EnhancedLayerData; processors: LayerProcessor[] }>,
+  markers: StageMarker[] = [],
 ): Promise<() => void> {
   const layers: CanvasLayerEntry[] = [];
 
@@ -178,6 +180,23 @@ async function mountCanvasLayers(
   }
 
   const hasAnyAnimation = layers.some((layer) => layer.hasAnimation);
+
+  const renderMarkers = () => {
+    if (markers.length === 0) return;
+    ctx.save();
+    for (const marker of markers) {
+      const radius = marker.radius ?? 6;
+      ctx.beginPath();
+      ctx.arc(marker.x, marker.y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = marker.color ?? "rgba(255, 255, 255, 0.9)";
+      ctx.fill();
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.6)";
+      ctx.stroke();
+    }
+    ctx.restore();
+  };
+
   const pipelineCache = createPipelineCache<EnhancedLayerData>();
 
   /**
@@ -238,6 +257,8 @@ async function mountCanvasLayers(
       renderLayer(layer, enhancedData);
     }
 
+    renderMarkers();
+
     pipelineCache.nextFrame();
     requestAnimationFrame(renderFrame);
   };
@@ -252,6 +273,7 @@ async function mountCanvasLayers(
 
   // For static scenes, render once
   const frameData = new Map<string, EnhancedLayerData>();
+  ctx.clearRect(0, 0, STAGE_SIZE, STAGE_SIZE);
   const renderStaticLayer = (layer: CanvasLayerEntry) => {
     const enhancedData =
       layer.processors.length > 0 ? runPipeline(layer.baseData, layer.processors) : layer.baseData;
@@ -262,6 +284,8 @@ async function mountCanvasLayers(
   for (const layer of layers) {
     frameData.set(layer.baseData.LayerID, renderStaticLayer(layer));
   }
+
+  renderMarkers();
 
   return () => {};
 }
@@ -307,7 +331,11 @@ async function mountCanvasRenderer(
   });
 
   // Mount layers and start rendering
-  const cleanupLayers = await mountCanvasLayers(context, toRendererInput(pipeline));
+  const cleanupLayers = await mountCanvasLayers(
+    context,
+    toRendererInput(pipeline),
+    pipeline.markers ?? [],
+  );
 
   return () => {
     cleanupTransform?.();

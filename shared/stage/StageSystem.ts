@@ -332,6 +332,22 @@ export type PreparedLayer = {
 };
 
 /**
+ * Optional stage marker primitive for overlay-style drawing within the renderer.
+ */
+export type StageMarker = {
+  /** Unique identifier for the marker */
+  id: string;
+  /** X coordinate in stage space (0-2048) */
+  x: number;
+  /** Y coordinate in stage space (0-2048) */
+  y: number;
+  /** Display color (CSS color string) */
+  color?: string;
+  /** Radius in stage pixels */
+  radius?: number;
+};
+
+/**
  * Complete stage pipeline - all layers prepared and ready for rendering.
  * This is what gets passed to renderers (DOM, Canvas, Three.js).
  */
@@ -340,6 +356,8 @@ export type StagePipeline = {
   stageSize: number;
   /** All prepared layers in render order */
   layers: PreparedLayer[];
+  /** Optional stage markers rendered alongside layers */
+  markers?: StageMarker[];
 };
 
 /**

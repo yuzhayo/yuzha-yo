@@ -4,9 +4,11 @@ import {
   type StagePipeline,
   type PreparedLayer,
   type LayerConfigEntry,
+  type StageMarker,
 } from "../../../shared/stage/StageSystem";
 import { prepareLayer } from "../../../shared/layer/layerCore";
 import { getProcessorsForEntry } from "../../../shared/layer/layer";
+import { clampStagePoint } from "./stageMapping";
 
 type MinimalTestEntry = {
   LayerID: string;
@@ -17,7 +19,23 @@ type MinimalTestEntry = {
   BasicStagePoint?: number[];
   BasicImagePoint?: number[];
   BasicImageAngle?: number;
+  Stage1Blue?: number[];
+  Stage1BlueVisible?: boolean;
+  Stage2Red?: number[];
+  Stage2RedVisible?: boolean;
 };
+
+type MarkerKey = "Stage1Blue" | "Stage2Red";
+
+const MARKER_SPECS: Array<{
+  key: MarkerKey;
+  color: string;
+  radius: number;
+  visibleKey: "Stage1BlueVisible" | "Stage2RedVisible";
+}> = [
+  { key: "Stage1Blue", color: "#3b82f6", radius: 6, visibleKey: "Stage1BlueVisible" },
+  { key: "Stage2Red", color: "#ef4444", radius: 6, visibleKey: "Stage2RedVisible" },
+];
 
 function normaliseTestEntry(entry: MinimalTestEntry): LayerConfigEntry {
   const {
@@ -53,11 +71,51 @@ function sortByLayerOrder(a: LayerConfigEntry, b: LayerConfigEntry): number {
 export async function createTestStagePipeline(stageSize: number = STAGE_SIZE): Promise<StagePipeline> {
   const entries = (Array.isArray(testConfig) ? testConfig : [testConfig]) as MinimalTestEntry[];
 
-  const normalised = entries.map(normaliseTestEntry).sort(sortByLayerOrder);
+  const preparedEntries = entries.map((entry) => ({
+    raw: entry,
+    normalised: normaliseTestEntry(entry),
+  }));
+
+  const markers: StageMarker[] = [];
+  const seenMarkers = new Set<string>();
+
+  preparedEntries.forEach(({ raw, normalised }) => {
+    MARKER_SPECS.forEach(({ key, color, radius, visibleKey }) => {
+      const isVisibleRaw = (raw as Record<string, unknown>)[visibleKey];
+      if (isVisibleRaw === false) {
+        return;
+      }
+      const value = (raw as Record<string, unknown>)[key];
+      if (!Array.isArray(value) || value.length < 2) {
+        return;
+      }
+      const [x, y] = value;
+      if (typeof x !== "number" || typeof y !== "number") {
+        return;
+      }
+      const point = clampStagePoint({ x, y }, stageSize);
+      const dedupeKey = `${key}:${point.x}:${point.y}:${color}`;
+      if (seenMarkers.has(dedupeKey)) {
+        return;
+      }
+      seenMarkers.add(dedupeKey);
+      markers.push({
+        id: `${normalised.LayerID}-${key}`,
+        x: point.x,
+        y: point.y,
+        color,
+        radius,
+      });
+    });
+  });
+
+  const sortedEntries = preparedEntries.sort((a, b) =>
+    sortByLayerOrder(a.normalised, b.normalised),
+  );
 
   const layers = (
     await Promise.all(
-      normalised.map<Promise<PreparedLayer | null>>(async (entry) => {
+      sortedEntries.map<Promise<PreparedLayer | null>>(async ({ normalised: entry }) => {
         try {
           const prepared = await prepareLayer(entry, stageSize);
           if (!prepared) return null;
@@ -80,5 +138,6 @@ export async function createTestStagePipeline(stageSize: number = STAGE_SIZE): P
   return {
     stageSize,
     layers,
+    markers: markers.length > 0 ? markers : undefined,
   };
 }

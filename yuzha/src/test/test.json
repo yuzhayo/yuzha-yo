@@ -3,12 +3,23 @@
         "LayerID": "GEAR1-3",
         "ImageID": "GEAR1",
         "LayerOrder": 300,
-        "ImageScale": [220, 220]
+        "ImageScale": [220, 220],
+        "Stage1Blue": [900, 1024],
+        "Stage1BlueVisible": true,
+        "Stage2Red": [1024, 1024],
+        "Stage2RedVisible": true
+        
     },
     {
         "LayerID": "GEAR1-2",
-        "ImageID": "GEAR3",
+        "ImageID": "GEARMOON",
         "LayerOrder": 400,
-        "ImageScale": [270, 270]
+        "ImageScale": [270, 270],
+        "Stage1Blue": [800, 800],
+        "Stage1BlueVisible": true,
+        "Stage2Red": [950, 950],
+        "Stage2RedVisible": true
+        
+        
     }
 ]
