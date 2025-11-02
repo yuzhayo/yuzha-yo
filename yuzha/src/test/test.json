@@ -1,14 +1,20 @@
 [
     {
-        "LayerID": "GEAR1-3",
-        "ImageID": "GEAR1-",
-        "LayerOrder": 300,
-        "ImageScale": [220, 220],
-        "Stage1Blue": [900, 1024],
-        "Stage1BlueVisible": false,
+        "LayerID": "GEAR-2",
+        "ImageID": "GEARMOON-",
+        "LayerOrder": 400,
+        "ImageScale": [120, 120],
+        "Stage1Blue": [1024, 500],
+        "Stage1BlueVisible": true,
         "Stage2Red": [1024, 1024],
-        "Stage2RedVisible": false,
-        "StageRedBlueVisible": false
+        "Stage2RedVisible": true,
+        "StageRedBlueVisible": true,
+        "ImagePivot": [50, -55],
+        "ImagePivotVisible": true,
+        "ImageSpin": 50,
+        "ImageSpinDirection":"ccw",
+        "BlueSpin": 0,
+        "BlueSpinDirection":"cw"
         
     },
     {
