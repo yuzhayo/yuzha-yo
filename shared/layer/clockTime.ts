@@ -94,7 +94,7 @@ export function parseTimezoneOffset(input?: string | null): number {
   if (!input) return 0;
   const match = TIMEZONE_REGEX.exec(input.trim());
   if (!match) {
-    if (import.meta.env?.DEV) {
+    if (IS_DEV_ENV) {
       console.warn(`[clockTime] Unsupported timezone format "${input}". Falling back to UTC.`);
     }
     return 0;
@@ -186,7 +186,7 @@ export function resolveClockSpeed(
   const numericValue = resolveNumericValue(speed);
   const value = numericValue !== undefined ? numericValue : fallbackNumericSpeed;
 
-  if (numericValue !== undefined && numericValue < 0 && import.meta.env?.DEV) {
+  if (numericValue !== undefined && numericValue < 0 && IS_DEV_ENV) {
     console.warn(
       `[clockTime] Negative speed "${numericValue}" detected. Using absolute value for rotations per hour.`,
     );
