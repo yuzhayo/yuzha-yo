@@ -77,6 +77,8 @@ const MILLIS_PER_MINUTE = 60_000;
 const MILLIS_PER_HOUR = 60 * MILLIS_PER_MINUTE;
 
 const TIMEZONE_REGEX = /^UTC(?:(?<sign>[+-])(?<hours>\d{1,2})(?::?(?<minutes>\d{2}))?)?$/i;
+const metaEnv = (import.meta as any)?.env;
+const IS_DEV_ENV = Boolean(metaEnv?.DEV);
 
 /**
  * Convert a rotation direction literal into a numeric sign (1 = CW, -1 = CCW).
