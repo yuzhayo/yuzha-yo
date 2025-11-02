@@ -13,14 +13,16 @@
     },
     {
         "LayerID": "GEAR1-2",
-        "ImageID": "GEARMOON-",
+        "ImageID": "GEARMOON",
         "LayerOrder": 400,
         "ImageScale": [270, 270],
         "Stage1Blue": [500, 800],
         "Stage1BlueVisible": true,
-        "Stage2Red": [950, 950],
+        "Stage2Red": [1024, 1024],
         "Stage2RedVisible": true,
-        "StageRedBlueVisible": true
+        "StageRedBlueVisible": true,
+        "ImagePivot": [50, 50],
+        "ImagePivotVisible": true
         
         
     }

@@ -9,6 +9,7 @@ import {
 import { prepareLayer } from "../../../shared/layer/layerCore";
 import { getProcessorsForEntry } from "../../../shared/layer/layer";
 import { clampStagePoint } from "./stageMapping";
+import { createImageMapping, percentToImagePoint } from "./imageMapping";
 
 type MinimalTestEntry = {
   LayerID: string;
@@ -24,6 +25,8 @@ type MinimalTestEntry = {
   Stage2Red?: number[];
   Stage2RedVisible?: boolean;
   StageRedBlueVisible?: boolean;
+  ImagePivot?: number[];
+  ImagePivotVisible?: boolean;
 };
 
 type MarkerKey = "Stage1Blue" | "Stage2Red";
@@ -141,12 +144,42 @@ export async function createTestStagePipeline(stageSize: number = STAGE_SIZE): P
 
   const layers = (
     await Promise.all(
-      sortedEntries.map<Promise<PreparedLayer | null>>(async ({ normalised: entry }) => {
+      sortedEntries.map<Promise<PreparedLayer | null>>(async ({ raw, normalised: entry }) => {
         try {
           const prepared = await prepareLayer(entry, stageSize);
           if (!prepared) return null;
 
           const processors = getProcessorsForEntry(entry);
+
+          if (Array.isArray(raw.ImagePivot) && raw.ImagePivotVisible !== false) {
+            const [pivotX, pivotY] = raw.ImagePivot;
+            if (typeof pivotX === "number" && typeof pivotY === "number") {
+              const mapping = createImageMapping({
+                width: prepared.imageMapping.imageDimensions.width,
+                height: prepared.imageMapping.imageDimensions.height,
+              });
+              const imagePoint = percentToImagePoint({ x: pivotX, y: pivotY }, mapping);
+              const stagePoint = clampStagePoint(
+                {
+                  x: prepared.position.x + (imagePoint.x - mapping.center.x) * prepared.scale.x,
+                  y: prepared.position.y + (imagePoint.y - mapping.center.y) * prepared.scale.y,
+                },
+                stageSize,
+              );
+              const pivotKey = `pivot:${stagePoint.x}:${stagePoint.y}`;
+              if (!seenMarkers.has(pivotKey)) {
+                seenMarkers.add(pivotKey);
+                markers.push({
+                  id: `${entry.LayerID}-ImagePivot`,
+                  x: stagePoint.x,
+                  y: stagePoint.y,
+                  color: "#facc15",
+                  radius: 3,
+                  kind: "point",
+                });
+              }
+            }
+          }
 
           return {
             entry,
