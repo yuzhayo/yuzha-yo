@@ -1,0 +1,14 @@
+[
+    {
+        "LayerID": "GEAR1-3",
+        "ImageID": "GEAR1",
+        "LayerOrder": 300,
+        "ImageScale": [220, 220]
+    },
+    {
+        "LayerID": "GEAR1-2",
+        "ImageID": "GEAR3",
+        "LayerOrder": 400,
+        "ImageScale": [270, 270]
+    }
+]

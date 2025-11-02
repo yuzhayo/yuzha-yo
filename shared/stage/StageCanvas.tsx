@@ -315,18 +315,22 @@ async function mountCanvasRenderer(
   };
 }
 
+export type StageCanvasProps = {
+  loadPipeline?: () => Promise<StagePipeline>;
+};
+
 /**
  * StageCanvas React Component
  *
  * LIFECYCLE:
  * 1. Component mounts
- * 2. useEffect creates pipeline from StageSystem
+ * 2. useEffect creates pipeline from StageSystem (or custom loader)
  * 3. mountCanvasRenderer sets up rendering
  * 4. Component unmounts → cleanup is called
  *
- * USAGE: Just render <StageCanvas /> and it handles everything
+ * USAGE: Just render <StageCanvas />. Provide `loadPipeline` to override data source.
  */
-function StageCanvas() {
+function StageCanvas({ loadPipeline = createStagePipeline }: StageCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -340,7 +344,7 @@ function StageCanvas() {
 
     (async () => {
       // Load and prepare all layers
-      const pipeline = await createStagePipeline();
+      const pipeline = await loadPipeline();
       if (!active) return;
       // Mount renderer
       cleanup = await mountCanvasRenderer(container, canvas, pipeline);
@@ -352,7 +356,7 @@ function StageCanvas() {
       active = false;
       cleanup?.();
     };
-  }, []);
+  }, [loadPipeline]);
 
   return (
     <div ref={containerRef} className="absolute inset-0 z-0 pointer-events-none">
