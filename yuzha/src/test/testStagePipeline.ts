@@ -8,8 +8,7 @@ import {
 } from "../../../shared/stage/StageSystem";
 import { prepareLayer } from "../../../shared/layer/layerCore";
 import { getProcessorsForEntry } from "../../../shared/layer/layer";
-import { clampStagePoint } from "./stageMapping";
-import { createImageMapping, percentToImagePoint } from "./imageMapping";
+import { clampStagePoint, createImageMapping, percentToImagePoint } from "./mapping";
 
 type MinimalTestEntry = {
   LayerID: string;
