@@ -16,7 +16,7 @@
         "ImageID": "GEARMOON",
         "LayerOrder": 400,
         "ImageScale": [100, 100],
-        "Stage1Blue": [500, 900],
+        "Stage1Blue": [1024, 500],
         "Stage1BlueVisible": true,
         "Stage2Red": [1024, 1024],
         "Stage2RedVisible": true,
