@@ -508,5 +508,5 @@ function appendMotionMarkers(target: StageMarker[], markers: LayerMotionMarker[]
 // Re-export types and functions that are commonly used together with this module
 // ============================================================================
 
-export type { ProcessorContext, EnhancedLayerData, LayerProcessor } from "../layer/layer";
-export type { LayerConfigEntry } from "../config/Config";
+export type { ProcessorContext, EnhancedLayerData, LayerProcessor } from "./layer";
+export type { LayerConfigEntry } from "./Config";

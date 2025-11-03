@@ -1,12 +1,12 @@
 /**
  * OrderList Component - Order Management Interface
- * 
+ *
  * AI AGENT NOTES:
  * - Admin interface for viewing and managing orders
  * - Table view with all order details
  * - Status management (pending, processing, completed, cancelled)
  * - Order details expansion
- * 
+ *
  * Features:
  * - Orders table with customer info and items
  * - Status badges with colors
@@ -14,11 +14,11 @@
  * - Expandable order details
  * - Filter by status
  * - Sort by date (newest first)
- * 
+ *
  * Props:
  * - orders: Order[] - All orders
  * - onUpdateStatus: (id: string, status: OrderStatus) => void
- * 
+ *
  * When modifying:
  * - Keep table responsive (consider card view on mobile)
  * - Add pagination if orders list grows
@@ -26,9 +26,9 @@
  * - Add print/export functionality
  */
 
-import React, { useState } from 'react';
-import type { Order, OrderStatus } from '@/types';
-import { formatPrice } from '@/data/menuData';
+import React, { useState } from "react";
+import type { Order, OrderStatus } from "@/types";
+import { formatPrice } from "@/data/menuData";
 
 interface OrderListProps {
   orders: Order[];
@@ -36,61 +36,59 @@ interface OrderListProps {
 }
 
 export const OrderList: React.FC<OrderListProps> = ({ orders, onUpdateStatus }) => {
-  const [filterStatus, setFilterStatus] = useState<OrderStatus | 'all'>('all');
+  const [filterStatus, setFilterStatus] = useState<OrderStatus | "all">("all");
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
 
   // Filter and sort orders
   const filteredOrders = (
-    filterStatus === 'all'
-      ? orders
-      : orders.filter((order) => order.status === filterStatus)
+    filterStatus === "all" ? orders : orders.filter((order) => order.status === filterStatus)
   ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   // Status badge colors
   const getStatusColor = (status: OrderStatus) => {
     switch (status) {
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-700';
-      case 'processing':
-        return 'bg-blue-100 text-blue-700';
-      case 'completed':
-        return 'bg-green-100 text-green-700';
-      case 'cancelled':
-        return 'bg-red-100 text-red-700';
+      case "pending":
+        return "bg-yellow-100 text-yellow-700";
+      case "processing":
+        return "bg-blue-100 text-blue-700";
+      case "completed":
+        return "bg-green-100 text-green-700";
+      case "cancelled":
+        return "bg-red-100 text-red-700";
       default:
-        return 'bg-gray-100 text-gray-700';
+        return "bg-gray-100 text-gray-700";
     }
   };
 
   // Status labels
   const getStatusLabel = (status: OrderStatus) => {
     switch (status) {
-      case 'pending':
-        return 'Pending';
-      case 'processing':
-        return 'Diproses';
-      case 'completed':
-        return 'Selesai';
-      case 'cancelled':
-        return 'Dibatalkan';
+      case "pending":
+        return "Pending";
+      case "processing":
+        return "Diproses";
+      case "completed":
+        return "Selesai";
+      case "cancelled":
+        return "Dibatalkan";
     }
   };
 
   // Format date
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('id-ID', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Intl.DateTimeFormat("id-ID", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     }).format(date);
   };
 
   // Count orders by status
-  const countByStatus = (status: OrderStatus | 'all') => {
-    if (status === 'all') return orders.length;
+  const countByStatus = (status: OrderStatus | "all") => {
+    if (status === "all") return orders.length;
     return orders.filter((order) => order.status === status).length;
   };
 
@@ -106,44 +104,44 @@ export const OrderList: React.FC<OrderListProps> = ({ orders, onUpdateStatus }) 
       {/* Status Filter */}
       <div className="flex flex-wrap gap-2">
         <button
-          onClick={() => setFilterStatus('all')}
+          onClick={() => setFilterStatus("all")}
           className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-            filterStatus === 'all'
-              ? 'bg-orange text-white'
-              : 'bg-white text-brown border-2 border-brown border-opacity-20'
+            filterStatus === "all"
+              ? "bg-orange text-white"
+              : "bg-white text-brown border-2 border-brown border-opacity-20"
           }`}
         >
-          Semua ({countByStatus('all')})
+          Semua ({countByStatus("all")})
         </button>
         <button
-          onClick={() => setFilterStatus('pending')}
+          onClick={() => setFilterStatus("pending")}
           className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-            filterStatus === 'pending'
-              ? 'bg-orange text-white'
-              : 'bg-white text-brown border-2 border-brown border-opacity-20'
+            filterStatus === "pending"
+              ? "bg-orange text-white"
+              : "bg-white text-brown border-2 border-brown border-opacity-20"
           }`}
         >
-          Pending ({countByStatus('pending')})
+          Pending ({countByStatus("pending")})
         </button>
         <button
-          onClick={() => setFilterStatus('processing')}
+          onClick={() => setFilterStatus("processing")}
           className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-            filterStatus === 'processing'
-              ? 'bg-orange text-white'
-              : 'bg-white text-brown border-2 border-brown border-opacity-20'
+            filterStatus === "processing"
+              ? "bg-orange text-white"
+              : "bg-white text-brown border-2 border-brown border-opacity-20"
           }`}
         >
-          Diproses ({countByStatus('processing')})
+          Diproses ({countByStatus("processing")})
         </button>
         <button
-          onClick={() => setFilterStatus('completed')}
+          onClick={() => setFilterStatus("completed")}
           className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-            filterStatus === 'completed'
-              ? 'bg-orange text-white'
-              : 'bg-white text-brown border-2 border-brown border-opacity-20'
+            filterStatus === "completed"
+              ? "bg-orange text-white"
+              : "bg-white text-brown border-2 border-brown border-opacity-20"
           }`}
         >
-          Selesai ({countByStatus('completed')})
+          Selesai ({countByStatus("completed")})
         </button>
       </div>
 
@@ -162,15 +160,9 @@ export const OrderList: React.FC<OrderListProps> = ({ orders, onUpdateStatus }) 
             <table className="w-full">
               <thead className="bg-cream">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-bold text-brown">
-                    No. Pesanan
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-bold text-brown">
-                    Pelanggan
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-bold text-brown">
-                    Tanggal
-                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-bold text-brown">No. Pesanan</th>
+                  <th className="px-4 py-3 text-left text-sm font-bold text-brown">Pelanggan</th>
+                  <th className="px-4 py-3 text-left text-sm font-bold text-brown">Tanggal</th>
                   <th className="px-4 py-3 text-left text-sm font-bold text-brown">Total</th>
                   <th className="px-4 py-3 text-left text-sm font-bold text-brown">Status</th>
                   <th className="px-4 py-3 text-center text-sm font-bold text-brown">Aksi</th>
@@ -205,11 +197,9 @@ export const OrderList: React.FC<OrderListProps> = ({ orders, onUpdateStatus }) 
                       <td className="px-4 py-3">
                         <select
                           value={order.status}
-                          onChange={(e) =>
-                            onUpdateStatus(order.id, e.target.value as OrderStatus)
-                          }
+                          onChange={(e) => onUpdateStatus(order.id, e.target.value as OrderStatus)}
                           className={`px-2 py-1 rounded-full text-xs font-bold border-0 focus:outline-none focus:ring-2 focus:ring-orange ${getStatusColor(
-                            order.status
+                            order.status,
                           )}`}
                         >
                           <option value="pending">Pending</option>
@@ -221,9 +211,7 @@ export const OrderList: React.FC<OrderListProps> = ({ orders, onUpdateStatus }) 
                       <td className="px-4 py-3 text-center">
                         <button
                           onClick={() =>
-                            setExpandedOrder(
-                              expandedOrder === order.id ? null : order.id
-                            )
+                            setExpandedOrder(expandedOrder === order.id ? null : order.id)
                           }
                           className="p-1.5 text-orange hover:bg-orange hover:bg-opacity-10 rounded transition-colors"
                           aria-label="Toggle details"
@@ -231,7 +219,7 @@ export const OrderList: React.FC<OrderListProps> = ({ orders, onUpdateStatus }) 
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             className={`h-5 w-5 transition-transform ${
-                              expandedOrder === order.id ? 'rotate-180' : ''
+                              expandedOrder === order.id ? "rotate-180" : ""
                             }`}
                             fill="none"
                             viewBox="0 0 24 24"
@@ -258,10 +246,7 @@ export const OrderList: React.FC<OrderListProps> = ({ orders, onUpdateStatus }) 
                               <h4 className="font-bold text-brown mb-2">Item Pesanan:</h4>
                               <div className="space-y-2">
                                 {order.items.map((item) => (
-                                  <div
-                                    key={item.id}
-                                    className="flex justify-between text-sm"
-                                  >
+                                  <div key={item.id} className="flex justify-between text-sm">
                                     <span className="text-brown">
                                       {item.quantity}x {item.name}
                                     </span>

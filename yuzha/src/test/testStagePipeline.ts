@@ -178,11 +178,19 @@ function createTestLayerProcessor(config: TestAnimationConfig): TestLayerProcess
     const elapsedMs = timestamp - startTimestamp;
 
     let pivotStage = config.blueStage;
-    if (hasOrbit && config.redStage && config.circleRadius !== undefined && config.initialAngleDeg !== undefined) {
+    if (
+      hasOrbit &&
+      config.redStage &&
+      config.circleRadius !== undefined &&
+      config.initialAngleDeg !== undefined
+    ) {
       const directionSign = config.blueSpinDirection === "ccw" ? 1 : -1;
       const angleDeg =
         config.initialAngleDeg +
-        directionSign * Math.abs(config.blueSpinValue) * HOURS_TO_DEGREES * (elapsedMs / MILLISECONDS_PER_HOUR);
+        directionSign *
+          Math.abs(config.blueSpinValue) *
+          HOURS_TO_DEGREES *
+          (elapsedMs / MILLISECONDS_PER_HOUR);
       const angleRad = (angleDeg * Math.PI) / 180;
       pivotStage = {
         x: config.redStage.x + config.circleRadius * Math.cos(angleRad),
@@ -194,7 +202,10 @@ function createTestLayerProcessor(config: TestAnimationConfig): TestLayerProcess
     if (hasSpin) {
       const directionSign = config.imageSpinDirection === "ccw" ? -1 : 1;
       rotationDeg =
-        directionSign * Math.abs(config.imageSpinValue) * HOURS_TO_DEGREES * (elapsedMs / MILLISECONDS_PER_HOUR);
+        directionSign *
+        Math.abs(config.imageSpinValue) *
+        HOURS_TO_DEGREES *
+        (elapsedMs / MILLISECONDS_PER_HOUR);
       rotationDeg = ((rotationDeg % 360) + 360) % 360;
     }
 
@@ -243,11 +254,9 @@ export async function createTestStagePipeline(
       : undefined;
     const initialAngleDeg =
       redStage && circleRadius !== undefined && circleRadius > 0
-        ? (
-            (Math.atan2(-(blueStage.y - redStage.y), blueStage.x - redStage.x) * 180) /
-              Math.PI +
-            360
-          ) % 360
+        ? ((Math.atan2(-(blueStage.y - redStage.y), blueStage.x - redStage.x) * 180) / Math.PI +
+            360) %
+          360
         : undefined;
 
     const derived: DerivedInfo = {

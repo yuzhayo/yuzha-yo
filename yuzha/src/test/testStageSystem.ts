@@ -123,11 +123,7 @@ export function createTestStageTransformer(
 /**
  * Apply absolute positioning using stage coordinates.
  */
-export function applyTestStagePosition(
-  element: HTMLElement,
-  stageX: number,
-  stageY: number,
-): void {
+export function applyTestStagePosition(element: HTMLElement, stageX: number, stageY: number): void {
   element.style.position = "absolute";
   element.style.left = `${stageX}px`;
   element.style.top = `${stageY}px`;
@@ -199,7 +195,7 @@ export interface TestLayerConfigEntry {
  * We intentionally keep it as `any` to avoid coupling with shared layer types
  * while still allowing the test renderer to access known properties.
  */
- 
+
 export type TestLayerData = any;
 
 export type TestLayerProcessor = (layer: TestLayerData, timestamp?: number) => TestLayerData;

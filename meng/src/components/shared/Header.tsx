@@ -1,38 +1,38 @@
 /**
  * Shared Header Component
- * 
+ *
  * AI AGENT NOTES:
  * - Main navigation header for the app
  * - Shows logo, app name, and navigation items
  * - Displays cart item count badge
  * - Switches between customer and admin views
  * - Mobile-responsive with hamburger menu capability
- * 
+ *
  * Props:
  * - view: 'customer' | 'admin' - Current view mode
  * - onViewChange: (view: 'customer' | 'admin') => void - Switch view
  * - cartItemCount: number - Number of items in cart (for badge)
  * - onCartClick: () => void - Handler for cart button click
- * 
+ *
  * Features:
  * - Sticky header on scroll
  * - Logo with brand name
  * - View switcher buttons
  * - Cart icon with badge (customer view only)
  * - Admin logout button (admin view only)
- * 
+ *
  * When modifying:
  * - Keep mobile responsive design
  * - Maintain z-index for proper stacking
  * - Test view switching logic
  */
 
-import React from 'react';
-import { Button } from './Button';
+import React from "react";
+import { Button } from "./Button";
 
 interface HeaderProps {
-  view: 'customer' | 'admin';
-  onViewChange: (view: 'customer' | 'admin') => void;
+  view: "customer" | "admin";
+  onViewChange: (view: "customer" | "admin") => void;
   cartItemCount?: number;
   onCartClick?: () => void;
   onLogout?: () => void;
@@ -51,22 +51,18 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center justify-between">
           {/* Logo and Brand */}
           <div className="flex items-center gap-3">
-            <img
-              src="/logo.png"
-              alt="Warung Meng Logo"
-              className="h-10 w-10 object-contain"
-            />
+            <img src="/logo.png" alt="Warung Meng Logo" className="h-10 w-10 object-contain" />
             <div>
               <h1 className="text-xl font-bold text-brown">Warung Meng</h1>
               <p className="text-xs text-brown text-opacity-60">
-                {view === 'customer' ? 'Restoran & Kuliner' : 'Admin Dashboard'}
+                {view === "customer" ? "Restoran & Kuliner" : "Admin Dashboard"}
               </p>
             </div>
           </div>
 
           {/* Navigation */}
           <div className="flex items-center gap-2">
-            {view === 'customer' ? (
+            {view === "customer" ? (
               <>
                 {/* Cart Button */}
                 <button
@@ -90,28 +86,20 @@ export const Header: React.FC<HeaderProps> = ({
                   </svg>
                   {cartItemCount > 0 && (
                     <span className="absolute -top-1 -right-1 bg-orange text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                      {cartItemCount > 99 ? '99+' : cartItemCount}
+                      {cartItemCount > 99 ? "99+" : cartItemCount}
                     </span>
                   )}
                 </button>
 
                 {/* Switch to Admin */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onViewChange('admin')}
-                >
+                <Button variant="ghost" size="sm" onClick={() => onViewChange("admin")}>
                   Admin
                 </Button>
               </>
             ) : (
               <>
                 {/* Switch to Customer */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onViewChange('customer')}
-                >
+                <Button variant="ghost" size="sm" onClick={() => onViewChange("customer")}>
                   Lihat Menu
                 </Button>
 

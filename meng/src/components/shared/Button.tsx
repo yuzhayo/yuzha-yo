@@ -1,12 +1,12 @@
 /**
  * Shared Button Component
- * 
+ *
  * AI AGENT NOTES:
  * - Reusable button with consistent styling
  * - Supports multiple variants (primary, secondary, outline, ghost)
  * - Includes loading and disabled states
  * - Fully accessible with proper ARIA attributes
- * 
+ *
  * Props:
  * - variant: 'primary' | 'secondary' | 'outline' | 'ghost'
  * - size: 'sm' | 'md' | 'lg'
@@ -15,62 +15,60 @@
  * - fullWidth: boolean - Takes full container width
  * - children: ReactNode - Button content
  * - onClick, className, etc. - Standard button props
- * 
+ *
  * Usage:
  * <Button variant="primary" onClick={handleClick}>Click Me</Button>
  * <Button variant="outline" size="lg" loading>Loading...</Button>
- * 
+ *
  * When modifying:
  * - Keep accessibility features (disabled, aria-disabled)
  * - Maintain color consistency with design system
  * - Test all variant combinations
  */
 
-import React from 'react';
+import React from "react";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: "primary" | "secondary" | "outline" | "ghost";
+  size?: "sm" | "md" | "lg";
   loading?: boolean;
   fullWidth?: boolean;
   children: React.ReactNode;
 }
 
 export const Button: React.FC<ButtonProps> = ({
-  variant = 'primary',
-  size = 'md',
+  variant = "primary",
+  size = "md",
   loading = false,
   fullWidth = false,
   disabled = false,
-  className = '',
+  className = "",
   children,
   ...props
 }) => {
   // Base styles
   const baseStyles =
-    'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2';
+    "inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2";
 
   // Variant styles
   const variantStyles = {
-    primary:
-      'bg-orange text-white hover:bg-opacity-90 focus:ring-orange disabled:bg-opacity-50',
-    secondary:
-      'bg-gold text-brown hover:bg-opacity-90 focus:ring-gold disabled:bg-opacity-50',
+    primary: "bg-orange text-white hover:bg-opacity-90 focus:ring-orange disabled:bg-opacity-50",
+    secondary: "bg-gold text-brown hover:bg-opacity-90 focus:ring-gold disabled:bg-opacity-50",
     outline:
-      'border-2 border-orange text-orange hover:bg-orange hover:text-white focus:ring-orange disabled:border-opacity-50 disabled:text-opacity-50',
+      "border-2 border-orange text-orange hover:bg-orange hover:text-white focus:ring-orange disabled:border-opacity-50 disabled:text-opacity-50",
     ghost:
-      'text-orange hover:bg-orange hover:bg-opacity-10 focus:ring-orange disabled:text-opacity-50',
+      "text-orange hover:bg-orange hover:bg-opacity-10 focus:ring-orange disabled:text-opacity-50",
   };
 
   // Size styles
   const sizeStyles = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-base',
-    lg: 'px-6 py-3 text-lg',
+    sm: "px-3 py-1.5 text-sm",
+    md: "px-4 py-2 text-base",
+    lg: "px-6 py-3 text-lg",
   };
 
   // Width style
-  const widthStyle = fullWidth ? 'w-full' : '';
+  const widthStyle = fullWidth ? "w-full" : "";
 
   // Combine all styles
   const combinedStyles = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${widthStyle} ${className}`;

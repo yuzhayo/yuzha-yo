@@ -1,35 +1,35 @@
 /**
  * OrderForm Component - Checkout Form
- * 
+ *
  * AI AGENT NOTES:
  * - Customer information form for checkout
  * - Collects name, phone, address, and optional notes
  * - Form validation before submission
  * - Creates order and shows confirmation
- * 
+ *
  * Props:
  * - items: CartItem[] - Items being ordered
  * - totalPrice: number - Total order price
  * - onSubmit: (customer: CustomerInfo) => void - Submit order
  * - onCancel: () => void - Cancel and go back
- * 
+ *
  * Features:
  * - Input validation (required fields)
  * - Phone number formatting
  * - Order summary display
  * - Loading state during submission
  * - Success confirmation with order number
- * 
+ *
  * When modifying:
  * - Keep validation strict for required fields
  * - Test phone number formats (Indonesian)
  * - Ensure form is mobile-friendly
  */
 
-import React, { useState } from 'react';
-import type { CartItem, CustomerInfo } from '@/types';
-import { formatPrice } from '@/data/menuData';
-import { Button } from '../shared/Button';
+import React, { useState } from "react";
+import type { CartItem, CustomerInfo } from "@/types";
+import { formatPrice } from "@/data/menuData";
+import { Button } from "../shared/Button";
 
 interface OrderFormProps {
   items: CartItem[];
@@ -38,17 +38,12 @@ interface OrderFormProps {
   onCancel: () => void;
 }
 
-export const OrderForm: React.FC<OrderFormProps> = ({
-  items,
-  totalPrice,
-  onSubmit,
-  onCancel,
-}) => {
+export const OrderForm: React.FC<OrderFormProps> = ({ items, totalPrice, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState<CustomerInfo>({
-    name: '',
-    phone: '',
-    address: '',
-    notes: '',
+    name: "",
+    phone: "",
+    address: "",
+    notes: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<CustomerInfo>>({});
@@ -58,17 +53,17 @@ export const OrderForm: React.FC<OrderFormProps> = ({
     const newErrors: Partial<CustomerInfo> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Nama wajib diisi';
+      newErrors.name = "Nama wajib diisi";
     }
 
     if (!formData.phone.trim()) {
-      newErrors.phone = 'Nomor telepon wajib diisi';
+      newErrors.phone = "Nomor telepon wajib diisi";
     } else if (!/^[\d\s+\-()]+$/.test(formData.phone)) {
-      newErrors.phone = 'Format nomor telepon tidak valid';
+      newErrors.phone = "Format nomor telepon tidak valid";
     }
 
     if (!formData.address.trim()) {
-      newErrors.address = 'Alamat wajib diisi';
+      newErrors.address = "Alamat wajib diisi";
     }
 
     setErrors(newErrors);
@@ -76,9 +71,7 @@ export const OrderForm: React.FC<OrderFormProps> = ({
   };
 
   // Handle input change
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     // Clear error for this field
@@ -139,7 +132,7 @@ export const OrderForm: React.FC<OrderFormProps> = ({
             value={formData.name}
             onChange={handleChange}
             className={`w-full px-4 py-2 rounded-lg border-2 ${
-              errors.name ? 'border-red-500' : 'border-brown border-opacity-20'
+              errors.name ? "border-red-500" : "border-brown border-opacity-20"
             } focus:border-orange focus:outline-none transition-colors`}
             placeholder="Masukkan nama lengkap"
           />
@@ -158,7 +151,7 @@ export const OrderForm: React.FC<OrderFormProps> = ({
             value={formData.phone}
             onChange={handleChange}
             className={`w-full px-4 py-2 rounded-lg border-2 ${
-              errors.phone ? 'border-red-500' : 'border-brown border-opacity-20'
+              errors.phone ? "border-red-500" : "border-brown border-opacity-20"
             } focus:border-orange focus:outline-none transition-colors`}
             placeholder="08xx xxxx xxxx"
           />
@@ -177,13 +170,11 @@ export const OrderForm: React.FC<OrderFormProps> = ({
             value={formData.address}
             onChange={handleChange}
             className={`w-full px-4 py-2 rounded-lg border-2 ${
-              errors.address ? 'border-red-500' : 'border-brown border-opacity-20'
+              errors.address ? "border-red-500" : "border-brown border-opacity-20"
             } focus:border-orange focus:outline-none transition-colors`}
             placeholder="Alamat lengkap atau nomor meja"
           />
-          {errors.address && (
-            <p className="text-red-500 text-sm mt-1">{errors.address}</p>
-          )}
+          {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address}</p>}
         </div>
 
         {/* Notes */}
@@ -222,8 +213,8 @@ export const OrderForm: React.FC<OrderFormProps> = ({
             <div className="text-sm text-brown">
               <p className="font-bold mb-1">Informasi Pembayaran</p>
               <p>
-                Pesanan Anda akan diproses setelah konfirmasi. Pembayaran dapat dilakukan
-                saat pesanan tiba atau di kasir.
+                Pesanan Anda akan diproses setelah konfirmasi. Pembayaran dapat dilakukan saat
+                pesanan tiba atau di kasir.
               </p>
             </div>
           </div>

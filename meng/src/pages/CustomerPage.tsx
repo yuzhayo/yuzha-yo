@@ -1,50 +1,50 @@
 /**
  * CustomerPage - Main Customer View
- * 
+ *
  * AI AGENT NOTES:
  * - Main page for customer-facing interface
  * - Combines Hero, MenuGrid, Cart, and OrderForm
  * - Manages view state (menu, cart, checkout, confirmation)
  * - Handles all customer interactions
- * 
+ *
  * View States:
  * - 'menu': Default view with hero and menu grid
  * - 'checkout': Order form view
  * - 'confirmation': Order success view
- * 
+ *
  * Features:
  * - Menu browsing and filtering
  * - Add to cart functionality
  * - Cart management (update, remove items)
  * - Order placement
  * - Order confirmation with number
- * 
+ *
  * Context Usage:
  * - useCart: Shopping cart state and actions
  * - menuData: Menu items from local data
- * 
+ *
  * When modifying:
  * - Keep view transitions smooth
  * - Test cart persistence (localStorage via context)
  * - Ensure order flow is intuitive
  */
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useCart } from '@/context/CartContext';
-import { getMenuItems, addOrder } from '@/data/menuData';
-import type { MenuItem, CustomerInfo } from '@/types';
-import { Hero } from '@/components/customer/Hero';
-import { MenuGrid } from '@/components/customer/MenuGrid';
-import { Cart } from '@/components/customer/Cart';
-import { OrderForm } from '@/components/customer/OrderForm';
+import React, { useState, useEffect, useRef } from "react";
+import { useCart } from "@/context/CartContext";
+import { getMenuItems, addOrder } from "@/data/menuData";
+import type { MenuItem, CustomerInfo } from "@/types";
+import { Hero } from "@/components/customer/Hero";
+import { MenuGrid } from "@/components/customer/MenuGrid";
+import { Cart } from "@/components/customer/Cart";
+import { OrderForm } from "@/components/customer/OrderForm";
 
-type View = 'menu' | 'checkout' | 'confirmation';
+type View = "menu" | "checkout" | "confirmation";
 
 export const CustomerPage: React.FC = () => {
-  const [view, setView] = useState<View>('menu');
+  const [view, setView] = useState<View>("menu");
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [orderNumber, setOrderNumber] = useState('');
+  const [orderNumber, setOrderNumber] = useState("");
   const menuRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -70,14 +70,14 @@ export const CustomerPage: React.FC = () => {
 
   // Handle view menu click - scroll to menu section
   const handleViewMenu = () => {
-    menuRef.current?.scrollIntoView({ behavior: 'smooth' });
+    menuRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   // Handle checkout
   const handleCheckout = () => {
     setIsCartOpen(false);
-    setView('checkout');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setView("checkout");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Handle order submission
@@ -86,38 +86,34 @@ export const CustomerPage: React.FC = () => {
       customer: customerInfo,
       items: cartItems,
       total: totalPrice,
-      status: 'pending',
+      status: "pending",
     });
 
     setOrderNumber(order.orderNumber);
     clearCart();
-    setView('confirmation');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setView("confirmation");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Handle back to menu
   const handleBackToMenu = () => {
-    setView('menu');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setView("menu");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Render based on view
-  if (view === 'confirmation') {
+  if (view === "confirmation") {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center animate-fade-in">
           <div className="text-6xl mb-4">✅</div>
-          <h2 className="text-2xl font-bold text-brown mb-2">
-            Pesanan Berhasil Dibuat!
-          </h2>
+          <h2 className="text-2xl font-bold text-brown mb-2">Pesanan Berhasil Dibuat!</h2>
           <p className="text-brown text-opacity-70 mb-6">
             Terima kasih telah memesan di Warung Meng
           </p>
 
           <div className="bg-cream rounded-lg p-4 mb-6">
-            <p className="text-sm text-brown text-opacity-70 mb-1">
-              Nomor Pesanan Anda
-            </p>
+            <p className="text-sm text-brown text-opacity-70 mb-1">Nomor Pesanan Anda</p>
             <p className="text-3xl font-bold text-orange">{orderNumber}</p>
           </div>
 
@@ -126,8 +122,8 @@ export const CustomerPage: React.FC = () => {
               <strong>Pesanan Anda sedang diproses.</strong>
               <br />
               <br />
-              Kami akan menghubungi Anda secepatnya untuk konfirmasi. Pembayaran dapat
-              dilakukan saat pesanan tiba atau di kasir.
+              Kami akan menghubungi Anda secepatnya untuk konfirmasi. Pembayaran dapat dilakukan
+              saat pesanan tiba atau di kasir.
               <br />
               <br />
               Simpan nomor pesanan Anda untuk referensi.
@@ -145,7 +141,7 @@ export const CustomerPage: React.FC = () => {
     );
   }
 
-  if (view === 'checkout') {
+  if (view === "checkout") {
     return (
       <div className="min-h-screen bg-cream py-8 px-4">
         <OrderForm

@@ -1,12 +1,12 @@
 /**
  * MenuManager Component - Menu CRUD Interface
- * 
+ *
  * AI AGENT NOTES:
  * - Admin interface for managing menu items
  * - Full CRUD operations (Create, Read, Update, Delete)
  * - Table view with inline actions
  * - Modal form for add/edit
- * 
+ *
  * Features:
  * - Menu items table with all details
  * - Add new item button
@@ -15,12 +15,12 @@
  * - Toggle availability (available/soldout)
  * - Badge management
  * - Search/filter by category
- * 
+ *
  * State Management:
  * - items: MenuItem[] - All menu items
  * - isModalOpen: boolean - Form modal state
  * - editingItem: MenuItem | null - Item being edited
- * 
+ *
  * When modifying:
  * - Keep table responsive on mobile (consider card view)
  * - Add image upload capability (currently URL input)
@@ -28,36 +28,29 @@
  * - Add bulk actions if needed
  */
 
-import React, { useState } from 'react';
-import type { MenuItem, MenuCategory, MenuStatus, MenuBadge } from '@/types';
-import { getCategories, formatPrice } from '@/data/menuData';
-import { Button } from '../shared/Button';
+import React, { useState } from "react";
+import type { MenuItem, MenuCategory, MenuStatus, MenuBadge } from "@/types";
+import { getCategories, formatPrice } from "@/data/menuData";
+import { Button } from "../shared/Button";
 
 interface MenuManagerProps {
   items: MenuItem[];
-  onAdd: (item: Omit<MenuItem, 'id'>) => void;
+  onAdd: (item: Omit<MenuItem, "id">) => void;
   onUpdate: (id: string, updates: Partial<MenuItem>) => void;
   onDelete: (id: string) => void;
 }
 
-export const MenuManager: React.FC<MenuManagerProps> = ({
-  items,
-  onAdd,
-  onUpdate,
-  onDelete,
-}) => {
+export const MenuManager: React.FC<MenuManagerProps> = ({ items, onAdd, onUpdate, onDelete }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
-  const [filterCategory, setFilterCategory] = useState<MenuCategory | 'all'>('all');
+  const [filterCategory, setFilterCategory] = useState<MenuCategory | "all">("all");
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   const categories = getCategories();
 
   // Filter items by category
   const filteredItems =
-    filterCategory === 'all'
-      ? items
-      : items.filter((item) => item.category === filterCategory);
+    filterCategory === "all" ? items : items.filter((item) => item.category === filterCategory);
 
   // Open add/edit modal
   const handleOpenModal = (item?: MenuItem) => {
@@ -84,8 +77,7 @@ export const MenuManager: React.FC<MenuManagerProps> = ({
 
   // Toggle status
   const handleToggleStatus = (item: MenuItem) => {
-    const newStatus: MenuStatus =
-      item.status === 'available' ? 'soldout' : 'available';
+    const newStatus: MenuStatus = item.status === "available" ? "soldout" : "available";
     onUpdate(item.id, { status: newStatus });
   };
 
@@ -120,11 +112,11 @@ export const MenuManager: React.FC<MenuManagerProps> = ({
       {/* Category Filter */}
       <div className="flex flex-wrap gap-2">
         <button
-          onClick={() => setFilterCategory('all')}
+          onClick={() => setFilterCategory("all")}
           className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-            filterCategory === 'all'
-              ? 'bg-orange text-white'
-              : 'bg-white text-brown border-2 border-brown border-opacity-20'
+            filterCategory === "all"
+              ? "bg-orange text-white"
+              : "bg-white text-brown border-2 border-brown border-opacity-20"
           }`}
         >
           Semua ({items.length})
@@ -135,8 +127,8 @@ export const MenuManager: React.FC<MenuManagerProps> = ({
             onClick={() => setFilterCategory(cat)}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
               filterCategory === cat
-                ? 'bg-orange text-white'
-                : 'bg-white text-brown border-2 border-brown border-opacity-20'
+                ? "bg-orange text-white"
+                : "bg-white text-brown border-2 border-brown border-opacity-20"
             }`}
           >
             {cat} ({items.filter((item) => item.category === cat).length})
@@ -184,12 +176,12 @@ export const MenuManager: React.FC<MenuManagerProps> = ({
                     <button
                       onClick={() => handleToggleStatus(item)}
                       className={`px-2 py-1 rounded-full text-xs font-bold ${
-                        item.status === 'available'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-red-100 text-red-700'
+                        item.status === "available"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-700"
                       }`}
                     >
-                      {item.status === 'available' ? 'Tersedia' : 'Habis'}
+                      {item.status === "available" ? "Tersedia" : "Habis"}
                     </button>
                   </td>
                   <td className="px-4 py-3 text-sm text-brown">
@@ -225,8 +217,8 @@ export const MenuManager: React.FC<MenuManagerProps> = ({
                         onClick={() => handleDelete(item.id)}
                         className={`p-1.5 rounded transition-colors ${
                           deleteConfirm === item.id
-                            ? 'bg-red-500 text-white'
-                            : 'text-red-600 hover:bg-red-50'
+                            ? "bg-red-500 text-white"
+                            : "text-red-600 hover:bg-red-50"
                         }`}
                         aria-label="Delete"
                       >
@@ -283,17 +275,17 @@ export const MenuManager: React.FC<MenuManagerProps> = ({
 interface MenuFormModalProps {
   item: MenuItem | null;
   onClose: () => void;
-  onSubmit: (data: Omit<MenuItem, 'id'>) => void;
+  onSubmit: (data: Omit<MenuItem, "id">) => void;
 }
 
 const MenuFormModal: React.FC<MenuFormModalProps> = ({ item, onClose, onSubmit }) => {
-  const [formData, setFormData] = useState<Omit<MenuItem, 'id'>>({
-    name: item?.name || '',
-    description: item?.description || '',
+  const [formData, setFormData] = useState<Omit<MenuItem, "id">>({
+    name: item?.name || "",
+    description: item?.description || "",
     price: item?.price || 0,
-    category: item?.category || 'Makanan Utama',
-    image: item?.image || '',
-    status: item?.status || 'available',
+    category: item?.category || "Makanan Utama",
+    image: item?.image || "",
+    status: item?.status || "available",
     badge: item?.badge || null,
   });
 
@@ -306,22 +298,17 @@ const MenuFormModal: React.FC<MenuFormModalProps> = ({ item, onClose, onSubmit }
 
   return (
     <>
-      <div
-        className="fixed inset-0 bg-black bg-opacity-50 z-40"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={onClose} />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
           <div className="p-6">
             <h3 className="text-2xl font-bold text-brown mb-6">
-              {item ? 'Edit Menu' : 'Tambah Menu Baru'}
+              {item ? "Edit Menu" : "Tambah Menu Baru"}
             </h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-brown mb-1">
-                    Nama Menu
-                  </label>
+                  <label className="block text-sm font-medium text-brown mb-1">Nama Menu</label>
                   <input
                     type="text"
                     value={formData.name}
@@ -352,9 +339,7 @@ const MenuFormModal: React.FC<MenuFormModalProps> = ({ item, onClose, onSubmit }
                 <label className="block text-sm font-medium text-brown mb-1">Deskripsi</label>
                 <textarea
                   value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={3}
                   className="w-full px-3 py-2 border-2 border-brown border-opacity-20 rounded-lg focus:border-orange focus:outline-none resize-none"
                   required
@@ -363,15 +348,11 @@ const MenuFormModal: React.FC<MenuFormModalProps> = ({ item, onClose, onSubmit }
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-brown mb-1">
-                    Harga (Rp)
-                  </label>
+                  <label className="block text-sm font-medium text-brown mb-1">Harga (Rp)</label>
                   <input
                     type="number"
                     value={formData.price}
-                    onChange={(e) =>
-                      setFormData({ ...formData, price: Number(e.target.value) })
-                    }
+                    onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
                     min="0"
                     className="w-full px-3 py-2 border-2 border-brown border-opacity-20 rounded-lg focus:border-orange focus:outline-none"
                     required
@@ -393,9 +374,7 @@ const MenuFormModal: React.FC<MenuFormModalProps> = ({ item, onClose, onSubmit }
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-brown mb-1">
-                  URL Gambar
-                </label>
+                <label className="block text-sm font-medium text-brown mb-1">URL Gambar</label>
                 <input
                   type="url"
                   value={formData.image}
@@ -411,7 +390,7 @@ const MenuFormModal: React.FC<MenuFormModalProps> = ({ item, onClose, onSubmit }
                   Badge (Opsional)
                 </label>
                 <select
-                  value={formData.badge || ''}
+                  value={formData.badge || ""}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
@@ -432,7 +411,7 @@ const MenuFormModal: React.FC<MenuFormModalProps> = ({ item, onClose, onSubmit }
                   Batal
                 </Button>
                 <Button type="submit" variant="primary" fullWidth>
-                  {item ? 'Simpan' : 'Tambah'}
+                  {item ? "Simpan" : "Tambah"}
                 </Button>
               </div>
             </form>

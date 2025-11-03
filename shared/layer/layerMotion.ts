@@ -96,8 +96,8 @@ function deriveLayerMotionConfig(
 ): LayerMotionConfig | null {
   const stageCenter = { x: stageSize / 2, y: stageSize / 2 };
 
-  const pivotPercent =
-    sanitizePercent(entry.spinImagePoint) ?? sanitizePercent(entry.BasicImagePoint) ?? {
+  const pivotPercent = sanitizePercent(entry.spinImagePoint) ??
+    sanitizePercent(entry.BasicImagePoint) ?? {
       x: 50,
       y: 50,
     };
@@ -110,36 +110,37 @@ function deriveLayerMotionConfig(
 
   const redStage = sanitizeStagePoint(entry.orbitStagePoint, stageSize);
 
-  const circleRadius =
-    redStage !== undefined
-      ? distanceBetween(blueStage, redStage)
-      : undefined;
+  const circleRadius = redStage !== undefined ? distanceBetween(blueStage, redStage) : undefined;
   const initialAngleDeg =
     redStage !== undefined && circleRadius !== undefined && circleRadius > 0
-      ? ((Math.atan2(-(blueStage.y - redStage.y), blueStage.x - redStage.x) * 180) / Math.PI + 360) %
+      ? ((Math.atan2(-(blueStage.y - redStage.y), blueStage.x - redStage.x) * 180) / Math.PI +
+          360) %
         360
       : undefined;
 
-  const spinMotion = resolveMotion({
-    speed: entry.spinSpeedAlias ?? entry.spinSpeed,
-    direction: entry.spinDirection,
-    format: entry.spinFormat,
-    timezone: entry.spinTimezone,
-  }, entry.spinSpeed ?? 0);
+  const spinMotion = resolveMotion(
+    {
+      speed: entry.spinSpeedAlias ?? entry.spinSpeed,
+      direction: entry.spinDirection,
+      format: entry.spinFormat,
+      timezone: entry.spinTimezone,
+    },
+    entry.spinSpeed ?? 0,
+  );
 
-  const orbitMotion = resolveMotion({
-    speed: entry.orbitSpeedAlias ?? entry.orbitSpeed,
-    direction: entry.orbitDirection,
-    format: entry.orbitFormat,
-    timezone: entry.orbitTimezone,
-  }, entry.orbitSpeed ?? 0);
+  const orbitMotion = resolveMotion(
+    {
+      speed: entry.orbitSpeedAlias ?? entry.orbitSpeed,
+      direction: entry.orbitDirection,
+      format: entry.orbitFormat,
+      timezone: entry.orbitTimezone,
+    },
+    entry.orbitSpeed ?? 0,
+  );
 
   const spinActive = spinMotion.active;
   const orbitActive =
-    redStage !== undefined &&
-    circleRadius !== undefined &&
-    circleRadius > 0 &&
-    orbitMotion.active;
+    redStage !== undefined && circleRadius !== undefined && circleRadius > 0 && orbitMotion.active;
 
   if (!spinActive && !orbitActive) {
     return null;
@@ -309,7 +310,10 @@ function createMotionMarkers(layerId: string, config: LayerMotionConfig): LayerM
 
   if (config.blueStage) {
     const motion =
-      config.orbitMotion.active && config.redStage && config.circleRadius && config.initialAngleDeg !== undefined
+      config.orbitMotion.active &&
+      config.redStage &&
+      config.circleRadius &&
+      config.initialAngleDeg !== undefined
         ? {
             type: "orbit" as const,
             centerX: config.redStage.x,
@@ -360,15 +364,12 @@ function createMotionMarkers(layerId: string, config: LayerMotionConfig): LayerM
 
 function resolveMotion(motion: ClockMotionConfig, fallbackNumeric: number): MotionResolution {
   const hasConfig =
-    motion.speed !== undefined ||
-    motion.format !== undefined ||
-    motion.timezone !== undefined;
+    motion.speed !== undefined || motion.format !== undefined || motion.timezone !== undefined;
 
   const resolved = resolveClockSpeed(hasConfig ? motion : undefined, 0, fallbackNumeric);
 
   const active =
-    resolved.kind === "alias" ||
-    (resolved.kind === "numeric" && resolved.rotationsPerHour !== 0);
+    resolved.kind === "alias" || (resolved.kind === "numeric" && resolved.rotationsPerHour !== 0);
 
   return {
     active,
@@ -415,7 +416,9 @@ function sanitizePercent(value?: number[] | PercentPoint | null): PercentPoint |
   if (!value) return undefined;
   if (Array.isArray(value)) {
     if (value.length < 2) return undefined;
-    const [x, y] = value;
+    const x = value[0];
+    const y = value[1];
+    if (x === undefined || y === undefined) return undefined;
     if (!Number.isFinite(x) || !Number.isFinite(y)) return undefined;
     return {
       x: normalizePercent(x),
@@ -431,12 +434,11 @@ function sanitizePercent(value?: number[] | PercentPoint | null): PercentPoint |
   return undefined;
 }
 
-function sanitizeStagePoint(
-  value: number[] | undefined,
-  stageSize: number,
-): Point2D | undefined {
+function sanitizeStagePoint(value: number[] | undefined, stageSize: number): Point2D | undefined {
   if (!value || value.length < 2) return undefined;
-  const [x, y] = value;
+  const x = value[0];
+  const y = value[1];
+  if (x === undefined || y === undefined) return undefined;
   if (!Number.isFinite(x) || !Number.isFinite(y)) return undefined;
   return {
     x: clampStageCoordinate(x, stageSize),

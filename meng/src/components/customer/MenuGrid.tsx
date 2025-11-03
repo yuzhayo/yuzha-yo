@@ -1,38 +1,38 @@
 /**
  * MenuGrid Component - Menu Display with Filters
- * 
+ *
  * AI AGENT NOTES:
  * - Main component for displaying menu items in a grid
  * - Includes category filter tabs
  * - Search functionality
  * - Responsive grid layout
  * - Empty state when no items match filters
- * 
+ *
  * Props:
  * - items: MenuItem[] - All available menu items
  * - onAddToCart: (item: MenuItem) => void - Handler for adding items to cart
- * 
+ *
  * State:
  * - selectedCategory: MenuCategory | 'all' - Current filter
  * - searchQuery: string - Search input value
- * 
+ *
  * Features:
  * - Category tabs with counts
  * - Real-time search filtering
  * - Responsive grid (1-4 columns based on screen size)
  * - Smooth transitions
  * - Empty state message
- * 
+ *
  * When modifying:
  * - Keep filter logic efficient for large lists
  * - Test search with Indonesian characters
  * - Ensure grid responsiveness on all devices
  */
 
-import React, { useState, useMemo } from 'react';
-import type { MenuItem, MenuCategory } from '@/types';
-import { getCategories } from '@/data/menuData';
-import { MenuCard } from './MenuCard';
+import React, { useState, useMemo } from "react";
+import type { MenuItem, MenuCategory } from "@/types";
+import { getCategories } from "@/data/menuData";
+import { MenuCard } from "./MenuCard";
 
 interface MenuGridProps {
   items: MenuItem[];
@@ -40,8 +40,8 @@ interface MenuGridProps {
 }
 
 export const MenuGrid: React.FC<MenuGridProps> = ({ items, onAddToCart }) => {
-  const [selectedCategory, setSelectedCategory] = useState<MenuCategory | 'all'>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<MenuCategory | "all">("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const categories = getCategories();
 
@@ -50,7 +50,7 @@ export const MenuGrid: React.FC<MenuGridProps> = ({ items, onAddToCart }) => {
     let filtered = items;
 
     // Filter by category
-    if (selectedCategory !== 'all') {
+    if (selectedCategory !== "all") {
       filtered = filtered.filter((item) => item.category === selectedCategory);
     }
 
@@ -59,8 +59,7 @@ export const MenuGrid: React.FC<MenuGridProps> = ({ items, onAddToCart }) => {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (item) =>
-          item.name.toLowerCase().includes(query) ||
-          item.description.toLowerCase().includes(query)
+          item.name.toLowerCase().includes(query) || item.description.toLowerCase().includes(query),
       );
     }
 
@@ -68,8 +67,8 @@ export const MenuGrid: React.FC<MenuGridProps> = ({ items, onAddToCart }) => {
   }, [items, selectedCategory, searchQuery]);
 
   // Count items per category
-  const getCategoryCount = (category: MenuCategory | 'all') => {
-    if (category === 'all') return items.length;
+  const getCategoryCount = (category: MenuCategory | "all") => {
+    if (category === "all") return items.length;
     return items.filter((item) => item.category === category).length;
   };
 
@@ -103,14 +102,14 @@ export const MenuGrid: React.FC<MenuGridProps> = ({ items, onAddToCart }) => {
       {/* Category Tabs */}
       <div className="flex flex-wrap gap-2">
         <button
-          onClick={() => setSelectedCategory('all')}
+          onClick={() => setSelectedCategory("all")}
           className={`px-4 py-2 rounded-lg font-medium transition-all ${
-            selectedCategory === 'all'
-              ? 'bg-orange text-white shadow-md'
-              : 'bg-white text-brown hover:bg-cream border-2 border-brown border-opacity-20'
+            selectedCategory === "all"
+              ? "bg-orange text-white shadow-md"
+              : "bg-white text-brown hover:bg-cream border-2 border-brown border-opacity-20"
           }`}
         >
-          Semua ({getCategoryCount('all')})
+          Semua ({getCategoryCount("all")})
         </button>
         {categories.map((category) => (
           <button
@@ -118,8 +117,8 @@ export const MenuGrid: React.FC<MenuGridProps> = ({ items, onAddToCart }) => {
             onClick={() => setSelectedCategory(category)}
             className={`px-4 py-2 rounded-lg font-medium transition-all ${
               selectedCategory === category
-                ? 'bg-orange text-white shadow-md'
-                : 'bg-white text-brown hover:bg-cream border-2 border-brown border-opacity-20'
+                ? "bg-orange text-white shadow-md"
+                : "bg-white text-brown hover:bg-cream border-2 border-brown border-opacity-20"
             }`}
           >
             {category} ({getCategoryCount(category)})

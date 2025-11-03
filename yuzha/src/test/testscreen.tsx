@@ -18,9 +18,10 @@ export default function TestScreen({ onBack }: TestScreenProps) {
 
     const handleBeforeUpdate = (event: { updates: Array<{ path: string }> }) => {
       if (
-        event.updates.some((update) =>
-          update.path.endsWith("/test/testStagePipeline.ts") ||
-          update.path.endsWith("/test/test.json"),
+        event.updates.some(
+          (update) =>
+            update.path.endsWith("/test/testStagePipeline.ts") ||
+            update.path.endsWith("/test/test.json"),
         )
       ) {
         bumpReloadKey();

@@ -1,17 +1,17 @@
 /**
  * TypeScript Type Definitions for Warung Meng
- * 
+ *
  * AI AGENT NOTES:
  * - All data structures for menu items, orders, and cart
  * - Keep these types in sync with data/menuData.ts
  * - When adding new fields, update CRUD functions accordingly
- * 
+ *
  * Type Hierarchy:
  * - MenuItem: Individual menu item with all details
  * - CartItem: MenuItem + quantity for shopping cart
  * - Order: Complete order with customer info and items
  * - Category: Menu categories (Makanan, Minuman, Snack, Dessert)
- * 
+ *
  * Status Enums:
  * - MenuStatus: 'available' | 'soldout'
  * - OrderStatus: 'pending' | 'processing' | 'completed' | 'cancelled'
@@ -20,22 +20,22 @@
 /**
  * Menu item categories
  */
-export type MenuCategory = 'Makanan Utama' | 'Minuman' | 'Snack' | 'Dessert';
+export type MenuCategory = "Makanan Utama" | "Minuman" | "Snack" | "Dessert";
 
 /**
  * Menu item status (stock availability)
  */
-export type MenuStatus = 'available' | 'soldout';
+export type MenuStatus = "available" | "soldout";
 
 /**
  * Badge types for special menu items
  */
-export type MenuBadge = 'bestseller' | 'recommended' | 'new' | null;
+export type MenuBadge = "bestseller" | "recommended" | "new" | null;
 
 /**
  * Order status for tracking
  */
-export type OrderStatus = 'pending' | 'processing' | 'completed' | 'cancelled';
+export type OrderStatus = "pending" | "processing" | "completed" | "cancelled";
 
 /**
  * Menu Item Interface

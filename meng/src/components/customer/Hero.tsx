@@ -1,29 +1,29 @@
 /**
  * Hero Component - Landing Section
- * 
+ *
  * AI AGENT NOTES:
  * - Main hero section for customer landing page
  * - Features restaurant logo, tagline, and CTA buttons
  * - Animated entrance with fade-in and slide-up
  * - Mobile-responsive design
- * 
+ *
  * Features:
  * - Large logo display
  * - Welcome text and tagline
  * - Primary CTA button (scroll to menu or open menu)
  * - Clean, elegant design matching brand colors
- * 
+ *
  * Props:
  * - onViewMenu: () => void - Handler for "Lihat Menu" button
- * 
+ *
  * When modifying:
  * - Keep animations smooth (uses Tailwind animate classes)
  * - Test mobile responsiveness
  * - Ensure CTAs are clearly visible
  */
 
-import React from 'react';
-import { Button } from '../shared/Button';
+import React from "react";
+import { Button } from "../shared/Button";
 
 interface HeroProps {
   onViewMenu: () => void;
@@ -43,9 +43,7 @@ export const Hero: React.FC<HeroProps> = ({ onViewMenu }) => {
         </div>
 
         {/* Title */}
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-brown mb-4">
-          Warung Meng
-        </h1>
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-brown mb-4">Warung Meng</h1>
 
         {/* Tagline */}
         <p className="text-lg md:text-xl text-brown text-opacity-80 mb-8 max-w-2xl mx-auto">

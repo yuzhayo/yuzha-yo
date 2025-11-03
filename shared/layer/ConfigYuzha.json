@@ -33,8 +33,8 @@
     }
   },
 
-
-  { "LayerID": "BACKGROUND-STAR",
+  {
+    "LayerID": "BACKGROUND-STAR",
     "ImageID": "STARBG",
     "renderer": "2D",
     "LayerOrder": 50,
@@ -44,29 +44,10 @@
         "spinStagePoint": [1024, 1024],
         "spinImagePoint": [50, 50],
         "spinSpeed": 10,
-        "spinDirection": "cw"}}
+        "spinDirection": "cw"
+      }
+    }
   },
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   {
     "LayerID": "GEAR1-0",
@@ -75,25 +56,29 @@
     "LayerOrder": 350,
     "ImageScale": [220, 220],
     "groups": {
-        "Spin Config": {
+      "Spin Config": {
         "spinStagePoint": [920, 1420],
         "spinImagePoint": [50, 50],
         "spinSpeed": 20,
-        "spinDirection": "ccw"}}
+        "spinDirection": "ccw"
+      }
+    }
   },
 
-   {
+  {
     "LayerID": "GEAR1-1",
     "ImageID": "GEAR1",
     "renderer": "2D",
     "LayerOrder": 410,
     "ImageScale": [100, 100],
     "groups": {
-        "Spin Config": {
+      "Spin Config": {
         "spinStagePoint": [950, 1090],
         "spinImagePoint": [50, 50],
         "spinSpeed": 50,
-        "spinDirection": "cw"}}
+        "spinDirection": "cw"
+      }
+    }
   },
 
   {
@@ -103,11 +88,13 @@
     "LayerOrder": 410,
     "ImageScale": [190, 190],
     "groups": {
-        "Spin Config": {
+      "Spin Config": {
         "spinStagePoint": [1190, 1200],
         "spinImagePoint": [50, 50],
         "spinSpeed": 80,
-        "spinDirection": "ccw"}}
+        "spinDirection": "ccw"
+      }
+    }
   },
 
   {
@@ -117,11 +104,13 @@
     "LayerOrder": 390,
     "ImageScale": [80, 80],
     "groups": {
-        "Spin Config": {
+      "Spin Config": {
         "spinStagePoint": [1100, 1000],
         "spinImagePoint": [50, 50],
         "spinSpeed": "second",
-        "spinDirection": "cw"}}
+        "spinDirection": "cw"
+      }
+    }
   },
 
   {
@@ -131,11 +120,13 @@
     "LayerOrder": 400,
     "ImageScale": [70, 70],
     "groups": {
-        "Spin Config": {
+      "Spin Config": {
         "spinStagePoint": [1190, 1200],
         "spinImagePoint": [50, 50],
         "spinSpeed": 50,
-        "spinDirection": "ccw"}}
+        "spinDirection": "ccw"
+      }
+    }
   },
 
   {
@@ -145,17 +136,15 @@
     "LayerOrder": 390,
     "ImageScale": [100, 100],
     "groups": {
-        "Spin Config": {
+      "Spin Config": {
         "spinStagePoint": [1120, 880],
         "spinImagePoint": [50, 50],
         "spinSpeed": 70,
-        "spinDirection": "ccw"}}
+        "spinDirection": "ccw"
+      }
+    }
   },
 
-
-
-
-  
   {
     "LayerID": "GEAR2-1-center",
     "ImageID": "GEAR2",
@@ -163,67 +152,30 @@
     "LayerOrder": 485,
     "ImageScale": [100, 100],
     "groups": {
-        "Spin Config": {
+      "Spin Config": {
         "spinStagePoint": [1024, 1024],
         "spinImagePoint": [50, 50],
         "spinSpeed": 120,
         "spinDirection": "ccw"
-        
       }
     }
   },
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  {"LayerID": "BACKGROUND-STAR-h",
+  {
+    "LayerID": "BACKGROUND-STAR-h",
     "ImageID": "STARBG9H",
     "renderer": "2D",
     "LayerOrder": 700,
     "ImageScale": [100, 100],
     "groups": {
-        "Spin Config": {
+      "Spin Config": {
         "spinStagePoint": [1024, 1024],
         "spinImagePoint": [50, 50],
         "spinSpeed": 10,
-        "spinDirection": "cw"}}
+        "spinDirection": "cw"
+      }
+    }
   },
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   {
     "LayerID": "nviro_Stars_Big",
@@ -265,16 +217,6 @@
       }
     }
   },
- 
-
-
-
-
-
-
-
-
-
 
   {
     "LayerID": "CLOCKBG",
@@ -337,8 +279,6 @@
     }
   },
 
-
-
   {
     "LayerID": "CLOCKGLOW2",
     "ImageID": "CLOCKGLOW2",
@@ -368,13 +308,6 @@
     }
   },
 
-
-
-
-
-
-
-
   {
     "LayerID": "HOUR-hand",
     "ImageID": "UI_Clock_HourHand",
@@ -392,7 +325,7 @@
       }
     }
   },
-  
+
   {
     "LayerID": "clock-minute-hand",
     "ImageID": "sprite_005-",
@@ -400,7 +333,7 @@
     "LayerOrder": 900,
     "ImageScale": [100, 128],
     "groups": {
-        "Spin Config": {
+      "Spin Config": {
         "spinStagePoint": [1024, 1024],
         "spinImagePoint": [50, 118],
         "spinSpeedAlias": "hour",

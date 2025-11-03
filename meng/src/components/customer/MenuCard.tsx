@@ -1,17 +1,17 @@
 /**
  * MenuCard Component - Individual Menu Item Card
- * 
+ *
  * AI AGENT NOTES:
  * - Card component for displaying individual menu items
  * - Shows image, name, price, description, and badges
  * - Handles add to cart action
  * - Displays sold out state
  * - Responsive design with hover effects
- * 
+ *
  * Props:
  * - item: MenuItem - The menu item to display
  * - onAddToCart: (item: MenuItem) => void - Handler for add to cart
- * 
+ *
  * Features:
  * - Image with lazy loading
  * - Badge display (bestseller, recommended, new)
@@ -19,17 +19,17 @@
  * - Add to cart button
  * - Sold out overlay
  * - Hover animations
- * 
+ *
  * When modifying:
  * - Keep image aspect ratio consistent
  * - Test sold out state thoroughly
  * - Ensure price formatting stays consistent
  */
 
-import React from 'react';
-import type { MenuItem } from '@/types';
-import { formatPrice } from '@/data/menuData';
-import { Button } from '../shared/Button';
+import React from "react";
+import type { MenuItem } from "@/types";
+import { formatPrice } from "@/data/menuData";
+import { Button } from "../shared/Button";
 
 interface MenuCardProps {
   item: MenuItem;
@@ -37,38 +37,38 @@ interface MenuCardProps {
 }
 
 export const MenuCard: React.FC<MenuCardProps> = ({ item, onAddToCart }) => {
-  const getBadgeColor = (badge: MenuItem['badge']) => {
+  const getBadgeColor = (badge: MenuItem["badge"]) => {
     switch (badge) {
-      case 'bestseller':
-        return 'bg-orange text-white';
-      case 'recommended':
-        return 'bg-gold text-brown';
-      case 'new':
-        return 'bg-green-500 text-white';
+      case "bestseller":
+        return "bg-orange text-white";
+      case "recommended":
+        return "bg-gold text-brown";
+      case "new":
+        return "bg-green-500 text-white";
       default:
-        return '';
+        return "";
     }
   };
 
-  const getBadgeLabel = (badge: MenuItem['badge']) => {
+  const getBadgeLabel = (badge: MenuItem["badge"]) => {
     switch (badge) {
-      case 'bestseller':
-        return 'Best Seller';
-      case 'recommended':
-        return 'Rekomendasi';
-      case 'new':
-        return 'Baru';
+      case "bestseller":
+        return "Best Seller";
+      case "recommended":
+        return "Rekomendasi";
+      case "new":
+        return "Baru";
       default:
-        return '';
+        return "";
     }
   };
 
-  const isSoldOut = item.status === 'soldout';
+  const isSoldOut = item.status === "soldout";
 
   return (
     <div
       className={`bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
-        isSoldOut ? 'opacity-60' : ''
+        isSoldOut ? "opacity-60" : ""
       }`}
     >
       {/* Image Container */}
@@ -79,12 +79,12 @@ export const MenuCard: React.FC<MenuCardProps> = ({ item, onAddToCart }) => {
           className="w-full h-full object-cover"
           loading="lazy"
         />
-        
+
         {/* Badge */}
         {item.badge && !isSoldOut && (
           <div
             className={`absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-bold ${getBadgeColor(
-              item.badge
+              item.badge,
             )}`}
           >
             {getBadgeLabel(item.badge)}
@@ -107,20 +107,14 @@ export const MenuCard: React.FC<MenuCardProps> = ({ item, onAddToCart }) => {
         <p className="text-xs text-orange font-medium mb-1">{item.category}</p>
 
         {/* Name */}
-        <h3 className="text-lg font-bold text-brown mb-2 line-clamp-1">
-          {item.name}
-        </h3>
+        <h3 className="text-lg font-bold text-brown mb-2 line-clamp-1">{item.name}</h3>
 
         {/* Description */}
-        <p className="text-sm text-brown text-opacity-70 mb-3 line-clamp-2">
-          {item.description}
-        </p>
+        <p className="text-sm text-brown text-opacity-70 mb-3 line-clamp-2">{item.description}</p>
 
         {/* Price and Action */}
         <div className="flex items-center justify-between">
-          <span className="text-xl font-bold text-orange">
-            {formatPrice(item.price)}
-          </span>
+          <span className="text-xl font-bold text-orange">{formatPrice(item.price)}</span>
           <Button
             variant="primary"
             size="sm"
