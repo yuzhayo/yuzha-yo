@@ -199,7 +199,7 @@ export interface TestLayerConfigEntry {
  * We intentionally keep it as `any` to avoid coupling with shared layer types
  * while still allowing the test renderer to access known properties.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export type TestLayerData = any;
 
 export type TestLayerProcessor = (layer: TestLayerData, timestamp?: number) => TestLayerData;
