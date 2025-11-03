@@ -19,6 +19,7 @@ export type ImageMapping = {
 
 export type PercentPoint = { x: number; y: number };
 type Point2D = { x: number; y: number };
+export type ScaleVector = { x: number; y: number };
 
 const FALLBACK_IMAGE_DIMENSIONS: ImageDimensions = { width: 100, height: 100 };
 
@@ -116,4 +117,33 @@ export function percentToStagePoint(
 export function getStageCenter(stageSize = TEST_STAGE_SIZE): StagePoint {
   const half = stageSize / 2;
   return { x: half, y: half };
+}
+
+export function computePositionForPivot(
+  stageAnchor: StagePoint,
+  pivotPercent: PercentPoint,
+  imageDimensions: ImageDimensions,
+  scale: ScaleVector,
+  rotationDeg: number,
+): StagePoint {
+  const mapping = createImageMapping(imageDimensions);
+  const pivotPoint = percentToImagePoint(pivotPercent, mapping);
+  const offsetFromCenter = {
+    x: (pivotPoint.x - mapping.center.x) * scale.x,
+    y: (pivotPoint.y - mapping.center.y) * scale.y,
+  };
+
+  const rotationRad = (rotationDeg * Math.PI) / 180;
+  const cosR = Math.cos(rotationRad);
+  const sinR = Math.sin(rotationRad);
+
+  const rotatedOffset = {
+    x: offsetFromCenter.x * cosR - offsetFromCenter.y * sinR,
+    y: offsetFromCenter.x * sinR + offsetFromCenter.y * cosR,
+  };
+
+  return {
+    x: stageAnchor.x - rotatedOffset.x,
+    y: stageAnchor.y - rotatedOffset.y,
+  };
 }

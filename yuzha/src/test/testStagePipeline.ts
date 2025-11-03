@@ -5,10 +5,16 @@ import {
   type PreparedLayer,
   type LayerConfigEntry,
   type StageMarker,
+  type LayerProcessor,
 } from "../../../shared/stage/StageSystem";
 import { prepareLayer } from "../../../shared/layer/layerCore";
-import { getProcessorsForEntry } from "../../../shared/layer/layer";
-import { clampStagePoint, createImageMapping, percentToImagePoint } from "./mapping";
+import {
+  clampStagePoint,
+  computePositionForPivot,
+  type StagePoint,
+  type PercentPoint,
+  type ImageDimensions,
+} from "./mapping";
 
 type MinimalTestEntry = {
   LayerID: string;
@@ -32,51 +38,49 @@ type MinimalTestEntry = {
   BlueSpinDirection?: "cw" | "ccw";
 };
 
-type MarkerKey = "Stage1Blue" | "Stage2Red";
+type PreparedEntry = {
+  raw: MinimalTestEntry;
+  normalised: LayerConfigEntry;
+  derived: DerivedInfo;
+};
 
-const MARKER_SPECS: Array<{
-  key: MarkerKey;
-  color: string;
-  radius: number;
-  visibleKey: "Stage1BlueVisible" | "Stage2RedVisible";
-}> = [
-  { key: "Stage1Blue", color: "#3b82f6", radius: 6, visibleKey: "Stage1BlueVisible" },
-  { key: "Stage2Red", color: "#ef4444", radius: 6, visibleKey: "Stage2RedVisible" },
-];
+type DerivedInfo = {
+  blueStage: StagePoint;
+  blueVisible: boolean;
+  redStage?: StagePoint;
+  redVisible: boolean;
+  circleVisible: boolean;
+  pivotPercent: PercentPoint;
+  pivotVisible: boolean;
+  circleRadius?: number;
+  initialAngleDeg?: number;
+  blueSpinValue: number;
+  blueSpinDirection: "cw" | "ccw";
+  imageSpinValue: number;
+  imageSpinDirection: "cw" | "ccw";
+};
 
-function toStagePoint(value: unknown, stageSize: number) {
+type TestAnimationConfig = {
+  pivotPercent: PercentPoint;
+  blueStage: StagePoint;
+  redStage?: StagePoint;
+  circleRadius?: number;
+  initialAngleDeg?: number;
+  blueSpinValue: number;
+  blueSpinDirection: "cw" | "ccw";
+  imageSpinValue: number;
+  imageSpinDirection: "cw" | "ccw";
+  imageDimensions: ImageDimensions;
+};
+
+const HOURS_TO_DEGREES = 360;
+const MILLISECONDS_PER_HOUR = 3600000;
+
+function toStagePoint(value: unknown, stageSize: number): StagePoint | null {
   if (!Array.isArray(value) || value.length < 2) return null;
   const [x, y] = value;
   if (typeof x !== "number" || typeof y !== "number") return null;
   return clampStagePoint({ x, y }, stageSize);
-}
-
-function calculatePivotStagePoint(
-  prepared: {
-    position: { x: number; y: number };
-    scale: { x: number; y: number };
-    imageMapping: { imageDimensions: { width: number; height: number } };
-  },
-  pivotPercent: unknown,
-  stageSize: number,
-) {
-  if (!Array.isArray(pivotPercent) || pivotPercent.length < 2) return null;
-  const [pivotX, pivotY] = pivotPercent;
-  if (typeof pivotX !== "number" || typeof pivotY !== "number") return null;
-
-  const mapping = createImageMapping({
-    width: prepared.imageMapping.imageDimensions.width,
-    height: prepared.imageMapping.imageDimensions.height,
-  });
-  const imagePoint = percentToImagePoint({ x: pivotX, y: pivotY }, mapping);
-
-  return clampStagePoint(
-    {
-      x: prepared.position.x + (imagePoint.x - mapping.center.x) * prepared.scale.x,
-      y: prepared.position.y + (imagePoint.y - mapping.center.y) * prepared.scale.y,
-    },
-    stageSize,
-  );
 }
 
 function normaliseTestEntry(entry: MinimalTestEntry): LayerConfigEntry {
@@ -107,204 +111,252 @@ function sortByLayerOrder(a: LayerConfigEntry, b: LayerConfigEntry): number {
   return (a.LayerOrder ?? 0) - (b.LayerOrder ?? 0);
 }
 
-/**
- * Create a stage pipeline using the local test configuration.
- */
+function sanitisePivotPercent(value: number[] | undefined): PercentPoint {
+  if (!Array.isArray(value) || value.length < 2) {
+    return { x: 50, y: 50 };
+  }
+  const [rawX, rawY] = value;
+  return {
+    x: Number.isFinite(rawX) ? (rawX as number) : 50,
+    y: Number.isFinite(rawY) ? (rawY as number) : 50,
+  };
+}
+
+function normaliseSpin(value: number | undefined): number {
+  return Number.isFinite(value) ? (value as number) : 0;
+}
+
+function createOrbitMotion(derived: DerivedInfo): StageMarker["motion"] | undefined {
+  if (
+    derived.blueSpinValue === 0 ||
+    !derived.redStage ||
+    derived.circleRadius === undefined ||
+    derived.circleRadius <= 0 ||
+    derived.initialAngleDeg === undefined
+  ) {
+    return undefined;
+  }
+
+  return {
+    type: "orbit",
+    centerX: derived.redStage.x,
+    centerY: derived.redStage.y,
+    radius: derived.circleRadius,
+    rotationsPerHour: Math.abs(derived.blueSpinValue),
+    direction: derived.blueSpinDirection,
+    initialAngleDeg: derived.initialAngleDeg,
+  };
+}
+
+function createTestLayerProcessor(config: TestAnimationConfig): LayerProcessor | null {
+  const hasOrbit =
+    config.blueSpinValue !== 0 &&
+    config.redStage !== undefined &&
+    config.circleRadius !== undefined &&
+    config.circleRadius > 0 &&
+    config.initialAngleDeg !== undefined;
+  const hasSpin = config.imageSpinValue !== 0;
+
+  if (!hasOrbit && !hasSpin) {
+    return null;
+  }
+
+  let startTimestamp: number | null = null;
+
+  return (layer, timestamp) => {
+    if (timestamp === undefined) return layer;
+    if (startTimestamp === null) startTimestamp = timestamp;
+
+    const elapsedMs = timestamp - startTimestamp;
+
+    let pivotStage = config.blueStage;
+    if (hasOrbit && config.redStage && config.circleRadius !== undefined && config.initialAngleDeg !== undefined) {
+      const directionSign = config.blueSpinDirection === "ccw" ? 1 : -1;
+      const angleDeg =
+        config.initialAngleDeg +
+        directionSign * Math.abs(config.blueSpinValue) * HOURS_TO_DEGREES * (elapsedMs / MILLISECONDS_PER_HOUR);
+      const angleRad = (angleDeg * Math.PI) / 180;
+      pivotStage = {
+        x: config.redStage.x + config.circleRadius * Math.cos(angleRad),
+        y: config.redStage.y - config.circleRadius * Math.sin(angleRad),
+      };
+    }
+
+    let rotationDeg = layer.rotation ?? 0;
+    if (hasSpin) {
+      const directionSign = config.imageSpinDirection === "ccw" ? -1 : 1;
+      rotationDeg =
+        directionSign * Math.abs(config.imageSpinValue) * HOURS_TO_DEGREES * (elapsedMs / MILLISECONDS_PER_HOUR);
+      rotationDeg = ((rotationDeg % 360) + 360) % 360;
+    }
+
+    const newPosition = computePositionForPivot(
+      pivotStage,
+      config.pivotPercent,
+      config.imageDimensions,
+      layer.scale,
+      rotationDeg,
+    );
+
+    return {
+      ...layer,
+      position: newPosition,
+      currentRotation: rotationDeg,
+      hasSpinAnimation: hasSpin,
+      hasOrbitalAnimation: hasOrbit,
+      orbitPoint: pivotStage,
+    };
+  };
+}
+
 export async function createTestStagePipeline(stageSize: number = STAGE_SIZE): Promise<StagePipeline> {
   const entries = (Array.isArray(testConfig) ? testConfig : [testConfig]) as MinimalTestEntry[];
 
-  const preparedEntries = entries.map((entry) => ({
-    raw: entry,
-    normalised: normaliseTestEntry(entry),
-  }));
+  const defaultStage = clampStagePoint({ x: stageSize / 2, y: stageSize / 2 }, stageSize);
 
-  const markers: StageMarker[] = [];
-  const seenMarkers = new Set<string>();
+  const preparedEntries: PreparedEntry[] = entries.map((entry) => {
+    const baseNormalised = normaliseTestEntry(entry);
 
-  preparedEntries.forEach(({ raw, normalised }) => {
-    const rawRecord = raw as Record<string, unknown>;
-    const centerPoint = toStagePoint(raw.Stage2Red, stageSize);
-    const perimeterPoint = toStagePoint(raw.Stage1Blue, stageSize);
+    const rawBlue = toStagePoint(entry.Stage1Blue, stageSize);
+    const blueStage = rawBlue ?? defaultStage;
+    const pivotPercent = sanitisePivotPercent(entry.ImagePivot);
 
-    let circleRadius: number | null = null;
-    let initialAngleDeg: number | null = null;
+    const normalised: LayerConfigEntry = {
+      ...baseNormalised,
+      BasicStagePoint: [blueStage.x, blueStage.y],
+      BasicImagePoint: [pivotPercent.x, pivotPercent.y],
+    };
 
-    if (centerPoint && perimeterPoint) {
-      const dx = perimeterPoint.x - centerPoint.x;
-      const dy = perimeterPoint.y - centerPoint.y;
-      circleRadius = Math.hypot(dx, dy);
-      const angleDeg =
-        (Math.atan2(-(perimeterPoint.y - centerPoint.y), perimeterPoint.x - centerPoint.x) * 180) /
-        Math.PI;
-      initialAngleDeg = ((angleDeg % 360) + 360) % 360;
-    }
+    const redStage = toStagePoint(entry.Stage2Red, stageSize) ?? undefined;
+    const circleRadius = redStage
+      ? Math.hypot(blueStage.x - redStage.x, blueStage.y - redStage.y)
+      : undefined;
+    const initialAngleDeg =
+      redStage && circleRadius !== undefined && circleRadius > 0
+        ? (
+            (Math.atan2(-(blueStage.y - redStage.y), blueStage.x - redStage.x) * 180) /
+              Math.PI +
+            360
+          ) % 360
+        : undefined;
 
-    const rawBlueSpinExplicit = typeof raw.BlueSpin === "number" ? raw.BlueSpin : undefined;
-    const rawBlueSpinLegacy =
-      typeof rawRecord.BlueSPin === "number" ? (rawRecord.BlueSPin as number) : undefined;
-    const blueSpinValue =
-      typeof rawBlueSpinExplicit === "number" ? rawBlueSpinExplicit : rawBlueSpinLegacy;
+    const derived: DerivedInfo = {
+      blueStage,
+      blueVisible: entry.Stage1BlueVisible !== false,
+      redStage,
+      redVisible: entry.Stage2RedVisible !== false,
+      circleVisible: entry.StageRedBlueVisible !== false,
+      pivotPercent,
+      pivotVisible: entry.ImagePivotVisible !== false,
+      circleRadius,
+      initialAngleDeg,
+      blueSpinValue: normaliseSpin(entry.BlueSpin),
+      blueSpinDirection: entry.BlueSpinDirection === "ccw" ? "ccw" : "cw",
+      imageSpinValue: normaliseSpin(entry.ImageSpin),
+      imageSpinDirection: entry.ImageSpinDirection === "ccw" ? "ccw" : "cw",
+    };
 
-    const inferredBlueSpinDirection =
-      rawRecord.BlueSpinDirection === "ccw"
-        ? "ccw"
-        : rawRecord.BlueSpinDirection === "cw"
-          ? "cw"
-          : undefined;
-
-    const blueSpinDirection: "cw" | "ccw" =
-      raw.BlueSpinDirection ??
-      inferredBlueSpinDirection ??
-      (raw.ImageSpinDirection === "ccw" ? "ccw" : "cw");
-
-    MARKER_SPECS.forEach(({ key, color, radius, visibleKey }) => {
-      const isVisibleRaw = rawRecord[visibleKey];
-      if (isVisibleRaw === false) {
-        return;
-      }
-      let point: { x: number; y: number } | null = null;
-      if (key === "Stage1Blue" && perimeterPoint) {
-        point = perimeterPoint;
-      } else if (key === "Stage2Red" && centerPoint) {
-        point = centerPoint;
-      } else {
-        point = toStagePoint(rawRecord[key], stageSize);
-      }
-      if (!point) return;
-      const dedupeKey = `point:${key}:${normalised.LayerID}:${point.x}:${point.y}:${color}`;
-      if (seenMarkers.has(dedupeKey)) {
-        return;
-      }
-      seenMarkers.add(dedupeKey);
-      const marker: StageMarker = {
-        id: `${normalised.LayerID}-${key}`,
-        x: point.x,
-        y: point.y,
-        color,
-        radius,
-        kind: "point",
-      };
-
-      if (
-        key === "Stage1Blue" &&
-        circleRadius &&
-        initialAngleDeg !== null &&
-        typeof blueSpinValue === "number" &&
-        blueSpinValue !== 0 &&
-        centerPoint
-      ) {
-        marker.motion = {
-          type: "orbit",
-          centerX: centerPoint.x,
-          centerY: centerPoint.y,
-          radius: circleRadius,
-          rotationsPerHour: Math.abs(blueSpinValue),
-          direction: blueSpinDirection,
-          initialAngleDeg,
-        };
-      }
-
-      markers.push(marker);
-    });
-
-    if (
-      centerPoint &&
-      circleRadius &&
-      circleRadius > 0 &&
-      raw.StageRedBlueVisible !== false
-    ) {
-      const roundedRadius = Math.round(circleRadius * 1000) / 1000;
-      if (roundedRadius > 0) {
-        const circleKey = `circle:${normalised.LayerID}:${centerPoint.x}:${centerPoint.y}:${roundedRadius}`;
-        if (!seenMarkers.has(circleKey)) {
-          seenMarkers.add(circleKey);
-          markers.push({
-            id: `${normalised.LayerID}-StageCircle`,
-            x: centerPoint.x,
-            y: centerPoint.y,
-            radius: roundedRadius,
-            color: "rgba(255, 255, 255, 0.9)",
-            lineWidth: 1,
-            kind: "circle",
-          });
-        }
-      }
-    }
+    return { raw: entry, normalised, derived };
   });
 
-  const sortedEntries = preparedEntries.sort((a, b) =>
+  const sortedEntries = [...preparedEntries].sort((a, b) =>
     sortByLayerOrder(a.normalised, b.normalised),
   );
 
+  const markers: StageMarker[] = [];
+
+  sortedEntries.forEach(({ normalised, derived }) => {
+    const motion = createOrbitMotion(derived);
+
+    if (derived.redVisible && derived.redStage) {
+      markers.push({
+        id: `${normalised.LayerID}-Stage2Red`,
+        x: derived.redStage.x,
+        y: derived.redStage.y,
+        color: "#ef4444",
+        radius: 6,
+        kind: "point",
+      });
+    }
+
+    if (derived.blueVisible) {
+      markers.push({
+        id: `${normalised.LayerID}-Stage1Blue`,
+        x: derived.blueStage.x,
+        y: derived.blueStage.y,
+        color: "#3b82f6",
+        radius: 6,
+        kind: "point",
+        motion,
+      });
+    }
+
+    if (
+      derived.circleVisible &&
+      derived.redStage &&
+      derived.circleRadius !== undefined &&
+      derived.circleRadius > 0
+    ) {
+      markers.push({
+        id: `${normalised.LayerID}-StageCircle`,
+        x: derived.redStage.x,
+        y: derived.redStage.y,
+        radius: derived.circleRadius,
+        color: "rgba(255, 255, 255, 0.9)",
+        lineWidth: 1,
+        kind: "circle",
+      });
+    }
+
+    if (derived.pivotVisible) {
+      markers.push({
+        id: `${normalised.LayerID}-ImagePivot`,
+        x: derived.blueStage.x,
+        y: derived.blueStage.y,
+        color: "#facc15",
+        radius: 3,
+        kind: "point",
+        motion,
+      });
+    }
+  });
+
   const layers = (
     await Promise.all(
-      sortedEntries.map<Promise<PreparedLayer | null>>(async ({ raw, normalised: entry }) => {
+      sortedEntries.map<Promise<PreparedLayer | null>>(async ({ normalised, derived }) => {
         try {
-          let entryWithOverrides: LayerConfigEntry = { ...entry };
-
-          let prepared = await prepareLayer(entryWithOverrides, stageSize);
+          const prepared = await prepareLayer(normalised, stageSize);
           if (!prepared) return null;
 
-          const pivotPercentArray =
-            Array.isArray(raw.ImagePivot) &&
-            raw.ImagePivot.length >= 2 &&
-            typeof raw.ImagePivot[0] === "number" &&
-            typeof raw.ImagePivot[1] === "number"
-              ? [raw.ImagePivot[0], raw.ImagePivot[1]] as [number, number]
-              : null;
+          const animationConfig: TestAnimationConfig = {
+            pivotPercent: derived.pivotPercent,
+            blueStage: derived.blueStage,
+            redStage: derived.redStage,
+            circleRadius: derived.circleRadius,
+            initialAngleDeg: derived.initialAngleDeg,
+            blueSpinValue: derived.blueSpinValue,
+            blueSpinDirection: derived.blueSpinDirection,
+            imageSpinValue: derived.imageSpinValue,
+            imageSpinDirection: derived.imageSpinDirection,
+            imageDimensions: {
+              width: prepared.imageMapping.imageDimensions.width,
+              height: prepared.imageMapping.imageDimensions.height,
+            },
+          };
 
-          let pivotStagePoint = pivotPercentArray
-            ? calculatePivotStagePoint(prepared, pivotPercentArray, stageSize)
-            : null;
-
-          if (pivotStagePoint && typeof raw.ImageSpin === "number" && raw.ImageSpin !== 0) {
-            entryWithOverrides = {
-              ...entryWithOverrides,
-              spinSpeed: Math.abs(raw.ImageSpin),
-              spinDirection: raw.ImageSpinDirection === "ccw" ? "ccw" : "cw",
-              spinImagePoint: [pivotPercentArray![0], pivotPercentArray![1]],
-              spinStagePoint: [pivotStagePoint.x, pivotStagePoint.y],
-            };
-            prepared = await prepareLayer(entryWithOverrides, stageSize);
-            if (!prepared) return null;
-            const recalculatedPivot = calculatePivotStagePoint(
-              prepared,
-              pivotPercentArray,
-              stageSize,
-            );
-            if (recalculatedPivot) {
-              pivotStagePoint = recalculatedPivot;
-              entryWithOverrides = {
-                ...entryWithOverrides,
-                spinStagePoint: [pivotStagePoint.x, pivotStagePoint.y],
-              };
-            }
-          }
-
-          if (pivotStagePoint && raw.ImagePivotVisible !== false) {
-            const pivotKey = `pivot:${entryWithOverrides.LayerID}:${pivotStagePoint.x}:${pivotStagePoint.y}`;
-            if (!seenMarkers.has(pivotKey)) {
-              seenMarkers.add(pivotKey);
-              markers.push({
-                id: `${entryWithOverrides.LayerID}-ImagePivot`,
-                x: pivotStagePoint.x,
-                y: pivotStagePoint.y,
-                color: "#facc15",
-                radius: 3,
-                kind: "point",
-              });
-            }
-          }
-
-          const processors = getProcessorsForEntry(entryWithOverrides);
+          const processor = createTestLayerProcessor(animationConfig);
+          const processors: LayerProcessor[] = processor ? [processor] : [];
 
           return {
-            entry: entryWithOverrides,
+            entry: normalised,
             data: prepared,
             processors,
           };
         } catch (error) {
-          console.error(`[TestStagePipeline] Failed to prepare layer "${entry.LayerID}"`, error);
+          console.error(
+            `[TestStagePipeline] Failed to prepare layer "${normalised.LayerID}" (renderer=${normalised.renderer})`,
+            error,
+          );
           return null;
         }
       }),
