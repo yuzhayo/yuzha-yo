@@ -62,7 +62,7 @@
  * @module layer/layerCore
  */
 
-import type { LayerConfigEntry } from "../config/Config";
+import type { LayerConfigEntry } from "./Config";
 import registryData from "../config/ImageRegistry.json" assert { type: "json" };
 import {
   type Point2D,

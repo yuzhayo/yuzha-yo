@@ -7,17 +7,17 @@
  * stage markers.
  */
 
-import type { LayerConfigEntry } from "../config/Config";
-import { getImageCenter, type ImageMapping } from "../layer/layerCore";
-import type { UniversalLayerData } from "../layer/layerCore";
-import { normalizePercent, type PercentPoint, type Point2D } from "../layer/layerBasic";
+import type { LayerConfigEntry } from "./Config";
+import { getImageCenter, type ImageMapping } from "./layerCore";
+import type { UniversalLayerData } from "./layerCore";
+import { normalizePercent, type PercentPoint, type Point2D } from "./layerBasic";
 import {
   calculateRotationDegrees,
   resolveClockSpeed,
   type ClockMotionConfig,
   type RotationDirection,
-} from "../layer/clockTime";
-import type { EnhancedLayerData } from "../layer/layer";
+} from "./clockTime";
+import type { EnhancedLayerData } from "./layer";
 
 export type LayerMotionMarker = {
   id: string;

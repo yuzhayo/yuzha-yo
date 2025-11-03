@@ -35,15 +35,15 @@
  * @module StageSystem
  */
 
-import { loadLayerConfig, type LayerConfigEntry } from "../config/Config";
-import { is2DLayer, prepareLayer } from "../layer/layerCore";
+import { loadLayerConfig, type LayerConfigEntry } from "./Config";
+import { is2DLayer, prepareLayer } from "./layerCore";
 import {
   getProcessorsForEntry,
   type ProcessorContext,
   type EnhancedLayerData,
   type LayerProcessor,
-} from "../layer/layer";
-import { buildLayerMotion, type LayerMotionMarker } from "../motion/layerMotion";
+} from "./layer";
+import { buildLayerMotion, type LayerMotionMarker } from "./layerMotion";
 
 // ============================================================================
 // SECTION 1: COORDINATE SYSTEM

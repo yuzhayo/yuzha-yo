@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
-import StageCanvas from "@shared/stage/StageCanvas";
-import StageThree from "@shared/stage/StageThree";
+import StageCanvas from "@shared/layer/StageCanvas";
+import StageThree from "@shared/layer/StageThree";
 import { getRendererType } from "@shared/utils/RendererDetector";
 import { MainScreenBtnPanel, useMainScreenBtnGesture, MainScreenUpdater } from "./MainScreenUtils";
 

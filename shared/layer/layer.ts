@@ -78,7 +78,7 @@
  */
 
 import type { UniversalLayerData } from "./layerCore";
-import type { LayerConfigEntry } from "../config/Config";
+import type { LayerConfigEntry } from "./Config";
 import type { ClockSpeedAlias, TimeFormat } from "./clockTime";
 
 // ============================================================================
