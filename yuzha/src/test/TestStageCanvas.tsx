@@ -382,6 +382,7 @@ async function mountCanvasRenderer(
 
 export type TestStageCanvasProps = {
   loadPipeline?: () => Promise<TestStagePipeline>;
+  reloadKey?: number;
 };
 
 /**
@@ -395,7 +396,10 @@ export type TestStageCanvasProps = {
  *
  * USAGE: Just render <TestStageCanvas />. Provide `loadPipeline` to override data source.
  */
-function TestStageCanvas({ loadPipeline = createTestStagePipeline }: TestStageCanvasProps) {
+function TestStageCanvas({
+  loadPipeline = createTestStagePipeline,
+  reloadKey = 0,
+}: TestStageCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -421,7 +425,7 @@ function TestStageCanvas({ loadPipeline = createTestStagePipeline }: TestStageCa
       active = false;
       cleanup?.();
     };
-  }, [loadPipeline]);
+  }, [loadPipeline, reloadKey]);
 
   return (
     <div ref={containerRef} className="absolute inset-0 z-0 pointer-events-none">

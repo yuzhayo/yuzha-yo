@@ -1,4 +1,3 @@
-import testConfig from "./test.json";
 import { prepareLayer } from "../../../shared/layer/layerCore";
 import {
   clampStagePoint,
@@ -15,6 +14,15 @@ import {
   type TestStageMarker,
   type TestLayerProcessor,
 } from "./testStageSystem";
+
+async function loadTestConfig(): Promise<MinimalTestEntry[]> {
+  const module = (await import(
+    /* @vite-ignore */
+    `./test.json?t=${Date.now()}`
+  )) as { default: MinimalTestEntry | MinimalTestEntry[] };
+  const config = module.default;
+  return Array.isArray(config) ? config : [config];
+}
 
 type MinimalTestEntry = {
   LayerID: string;
@@ -212,7 +220,7 @@ function createTestLayerProcessor(config: TestAnimationConfig): TestLayerProcess
 export async function createTestStagePipeline(
   stageSize: number = TEST_STAGE_SIZE,
 ): Promise<TestStagePipeline> {
-  const entries = (Array.isArray(testConfig) ? testConfig : [testConfig]) as MinimalTestEntry[];
+  const entries = await loadTestConfig();
 
   const defaultStage = clampStagePoint({ x: stageSize / 2, y: stageSize / 2 }, stageSize);
 

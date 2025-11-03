@@ -2,11 +2,38 @@ import React from "react";
 import TestStageCanvas from "./TestStageCanvas";
 import { createTestStagePipeline } from "./testStageSystem";
 
+if (import.meta.hot) {
+  import.meta.hot.accept();
+}
+
 export type TestScreenProps = {
   onBack?: () => void;
 };
 
 export default function TestScreen({ onBack }: TestScreenProps) {
+  const [reloadKey, bumpReloadKey] = React.useReducer((key: number) => key + 1, 0);
+
+  React.useEffect(() => {
+    if (!import.meta.hot) return;
+
+    const handleBeforeUpdate = (event: { updates: Array<{ path: string }> }) => {
+      if (
+        event.updates.some((update) =>
+          update.path.endsWith("/test/testStagePipeline.ts") ||
+          update.path.endsWith("/test/test.json"),
+        )
+      ) {
+        bumpReloadKey();
+      }
+    };
+
+    import.meta.hot.on("vite:beforeUpdate", handleBeforeUpdate);
+
+    return () => {
+      import.meta.hot?.off?.("vite:beforeUpdate", handleBeforeUpdate);
+    };
+  }, []);
+
   return (
     <div className="relative flex h-screen w-screen overflow-hidden bg-slate-950 text-white">
       <button
@@ -24,7 +51,7 @@ export default function TestScreen({ onBack }: TestScreenProps) {
           <code>LayerOrder</code> to verify rendering.
         </p>
       </div>
-      <TestStageCanvas loadPipeline={createTestStagePipeline} />
+      <TestStageCanvas loadPipeline={createTestStagePipeline} reloadKey={reloadKey} />
     </div>
   );
 }
