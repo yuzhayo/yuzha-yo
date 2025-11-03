@@ -1,12 +1,4 @@
 import testConfig from "./test.json";
-import {
-  STAGE_SIZE,
-  type StagePipeline,
-  type PreparedLayer,
-  type LayerConfigEntry,
-  type StageMarker,
-  type LayerProcessor,
-} from "../../../shared/stage/StageSystem";
 import { prepareLayer } from "../../../shared/layer/layerCore";
 import {
   clampStagePoint,
@@ -15,13 +7,21 @@ import {
   type PercentPoint,
   type ImageDimensions,
 } from "./mapping";
+import {
+  TEST_STAGE_SIZE,
+  type TestLayerConfigEntry,
+  type TestStagePipeline,
+  type TestPreparedLayer,
+  type TestStageMarker,
+  type TestLayerProcessor,
+} from "./testStageSystem";
 
 type MinimalTestEntry = {
   LayerID: string;
   ImageID: string;
   LayerOrder?: number;
   ImageScale?: number[];
-  renderer?: LayerConfigEntry["renderer"];
+  renderer?: TestLayerConfigEntry["renderer"];
   BasicStagePoint?: number[];
   BasicImagePoint?: number[];
   BasicImageAngle?: number;
@@ -40,7 +40,7 @@ type MinimalTestEntry = {
 
 type PreparedEntry = {
   raw: MinimalTestEntry;
-  normalised: LayerConfigEntry;
+  normalised: TestLayerConfigEntry;
   derived: DerivedInfo;
 };
 
@@ -83,7 +83,7 @@ function toStagePoint(value: unknown, stageSize: number): StagePoint | null {
   return clampStagePoint({ x, y }, stageSize);
 }
 
-function normaliseTestEntry(entry: MinimalTestEntry): LayerConfigEntry {
+function normaliseTestEntry(entry: MinimalTestEntry): TestLayerConfigEntry {
   const {
     LayerID,
     ImageID,
@@ -107,8 +107,8 @@ function normaliseTestEntry(entry: MinimalTestEntry): LayerConfigEntry {
   };
 }
 
-function sortByLayerOrder(a: LayerConfigEntry, b: LayerConfigEntry): number {
-  return (a.LayerOrder ?? 0) - (b.LayerOrder ?? 0);
+function sortByLayerOrder(a: TestLayerConfigEntry, b: TestLayerConfigEntry): number {
+  return a.LayerOrder - b.LayerOrder;
 }
 
 function sanitisePivotPercent(value: number[] | undefined): PercentPoint {
@@ -126,7 +126,7 @@ function normaliseSpin(value: number | undefined): number {
   return Number.isFinite(value) ? (value as number) : 0;
 }
 
-function createOrbitMotion(derived: DerivedInfo): StageMarker["motion"] | undefined {
+function createOrbitMotion(derived: DerivedInfo): TestStageMarker["motion"] | undefined {
   if (
     derived.blueSpinValue === 0 ||
     !derived.redStage ||
@@ -148,7 +148,7 @@ function createOrbitMotion(derived: DerivedInfo): StageMarker["motion"] | undefi
   };
 }
 
-function createTestLayerProcessor(config: TestAnimationConfig): LayerProcessor | null {
+function createTestLayerProcessor(config: TestAnimationConfig): TestLayerProcessor | null {
   const hasOrbit =
     config.blueSpinValue !== 0 &&
     config.redStage !== undefined &&
@@ -209,7 +209,9 @@ function createTestLayerProcessor(config: TestAnimationConfig): LayerProcessor |
   };
 }
 
-export async function createTestStagePipeline(stageSize: number = STAGE_SIZE): Promise<StagePipeline> {
+export async function createTestStagePipeline(
+  stageSize: number = TEST_STAGE_SIZE,
+): Promise<TestStagePipeline> {
   const entries = (Array.isArray(testConfig) ? testConfig : [testConfig]) as MinimalTestEntry[];
 
   const defaultStage = clampStagePoint({ x: stageSize / 2, y: stageSize / 2 }, stageSize);
@@ -221,7 +223,7 @@ export async function createTestStagePipeline(stageSize: number = STAGE_SIZE): P
     const blueStage = rawBlue ?? defaultStage;
     const pivotPercent = sanitisePivotPercent(entry.ImagePivot);
 
-    const normalised: LayerConfigEntry = {
+    const normalised: TestLayerConfigEntry = {
       ...baseNormalised,
       BasicStagePoint: [blueStage.x, blueStage.y],
       BasicImagePoint: [pivotPercent.x, pivotPercent.y],
@@ -263,7 +265,7 @@ export async function createTestStagePipeline(stageSize: number = STAGE_SIZE): P
     sortByLayerOrder(a.normalised, b.normalised),
   );
 
-  const markers: StageMarker[] = [];
+  const markers: TestStageMarker[] = [];
 
   sortedEntries.forEach(({ normalised, derived }) => {
     const motion = createOrbitMotion(derived);
@@ -323,7 +325,7 @@ export async function createTestStagePipeline(stageSize: number = STAGE_SIZE): P
 
   const layers = (
     await Promise.all(
-      sortedEntries.map<Promise<PreparedLayer | null>>(async ({ normalised, derived }) => {
+      sortedEntries.map<Promise<TestPreparedLayer | null>>(async ({ normalised, derived }) => {
         try {
           const prepared = await prepareLayer(normalised, stageSize);
           if (!prepared) return null;
@@ -345,7 +347,7 @@ export async function createTestStagePipeline(stageSize: number = STAGE_SIZE): P
           };
 
           const processor = createTestLayerProcessor(animationConfig);
-          const processors: LayerProcessor[] = processor ? [processor] : [];
+          const processors: TestLayerProcessor[] = processor ? [processor] : [];
 
           return {
             entry: normalised,
@@ -361,7 +363,7 @@ export async function createTestStagePipeline(stageSize: number = STAGE_SIZE): P
         }
       }),
     )
-  ).filter((layer): layer is PreparedLayer => layer !== null);
+  ).filter((layer): layer is TestPreparedLayer => layer !== null);
 
   return {
     stageSize,

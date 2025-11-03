@@ -1,6 +1,6 @@
 import React from "react";
-import StageCanvas from "../../../shared/stage/StageCanvas";
-import { createTestStagePipeline } from "./testStagePipeline";
+import TestStageCanvas from "./TestStageCanvas";
+import { createTestStagePipeline } from "./testStageSystem";
 
 export type TestScreenProps = {
   onBack?: () => void;
@@ -24,7 +24,7 @@ export default function TestScreen({ onBack }: TestScreenProps) {
           <code>LayerOrder</code> to verify rendering.
         </p>
       </div>
-      <StageCanvas loadPipeline={createTestStagePipeline} />
+      <TestStageCanvas loadPipeline={createTestStagePipeline} />
     </div>
   );
 }
