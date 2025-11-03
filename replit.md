@@ -32,7 +32,55 @@ The core animation logic revolves around a Layer System where JSON configuration
 
 ## Recent Changes
 
-### Extended Coordinate System & Image Center Refactoring (Latest - Oct 24, 2025)
+### Layer Module Consolidation (Latest - Nov 3, 2025)
+
+Complete file structure consolidation to unify all layer-related code under a single directory:
+
+- **Unified Directory Structure**: All layer functionality consolidated into `shared/layer/`
+  - **Config.ts** (moved from `shared/config/`) - Layer configuration loading and validation
+  - **ConfigYuzha.json** (moved from `shared/config/`) - Layer definitions and animation parameters
+  - **StageSystem.ts** (moved from `shared/stage/`) - Coordinate system and data pipeline
+  - **StageCanvas.tsx** (moved from `shared/stage/`) - Canvas 2D renderer with static buffering
+  - **StageThree.tsx** (moved from `shared/stage/`) - Three.js WebGL renderer with scene management
+  - **layerMotion.ts** (moved from `shared/motion/`) - Motion processing and transformations
+  - **layerCore.ts** - Core layer preparation and asset resolution
+  - **layer.ts** - Processor pipeline orchestrator
+  - **layerBasic.ts** - Pure math utilities
+  - **clockTime.ts** - Time/clock calculations
+
+- **Updated index.ts**: Comprehensive module exports with clear documentation
+  - Exports all layer types, functions, renderers, and configuration utilities
+  - Added detailed JSDoc comments explaining old vs new structure for future AI agents
+  - Includes migration notes for legacy import paths
+
+- **Deleted Empty Directories**: 
+  - Removed `shared/stage/` (stage rendering now in shared/layer/)
+  - Removed `shared/motion/` (motion logic now in shared/layer/)
+  - Kept `shared/config/` for ImageRegistry files only
+
+- **Import Path Updates**: Updated 23+ files across the codebase
+  - `@shared/config/Config` → `@shared/layer/Config`
+  - `@shared/stage/StageSystem` → `@shared/layer/StageSystem`
+  - `@shared/motion/layerMotion` → `@shared/layer/layerMotion`
+
+- **Architecture Flow**: ConfigYuzha.json → Config.ts → layerCore.prepareLayer() → layer.ts processors → StageSystem → Renderers → MainScreen
+
+- **Benefits**:
+  - Single source of truth for all layer functionality
+  - Reduced cognitive load - no need to jump between config/, stage/, motion/, layer/ directories
+  - Clearer dependency relationships within one directory
+  - Simplified imports for future development
+
+- **Verified**:
+  - ✅ TypeScript compilation passed (yuzha workspace)
+  - ✅ ESLint passed with zero errors
+  - ✅ Prettier formatting applied
+  - ✅ Workflow restarted successfully
+  - ✅ No new console errors in browser
+  - ✅ All animations rendering correctly
+  - ✅ Fixed array destructuring TypeScript errors in layerMotion.ts
+
+### Extended Coordinate System & Image Center Refactoring (Oct 24, 2025)
 
 Architectural improvements to unlock creative animation capabilities while simplifying the codebase:
 
