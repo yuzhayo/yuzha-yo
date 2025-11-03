@@ -1,0 +1,30 @@
+Here’s the plan I’d follow to consolidate everything under shared/layer/ while trimming the code to the leanest viable set:
+
+1. Inventory & Target Layout
+Map current dependencies: list the exports each file uses so we know what must move together.
+Decide the new structure: e.g.
+shared/layer/math.ts (current layerBasic)
+shared/layer/core.ts (trimmed layerCore)
+shared/layer/motion.ts (new motion engine)
+shared/layer/pipeline.ts (essential pieces from layer.ts)
+shared/layer/config.ts (the pieces the stage system needs from Config)
+shared/layer/stage.tsx (trimmed StageCanvas helper, only if truly required inside layer)
+Only keep files that the stage/test screens actually need.
+
+2. Split & Simplify Modules
+Prune layerBasic down to the math functions actually referenced (drop comment walls, legacy helpers never imported).
+Refactor layerCore to only prepare base layer data (position/scale/image mapping); remove any spin/orbit hooks that motion now owns.
+Keep motion.ts lean: only the new CPU calculations, alias resolution, and marker builders.
+Create pipeline.ts with just the essentials from layer.ts: processor type definitions, runPipeline, pipeline cache, and maybe a no-op for now (since StageSystem can build processors directly).
+3. Relocate Stage/Config Pieces
+Extract from shared/stage/StageSystem.ts whatever now belongs in the new pipeline (e.g. StagePipeline types, marker types). The actual React renderers (StageCanvas.tsx, StageThree.tsx) stay in shared/stage/ but import from the new layer modules.
+Move the layer-specific config transforms out of shared/config/Config.ts into a small shared/layer/config.ts helper that StageSystem can call, leaving the rest of config untouched.
+4. Update Imports & Build
+Replace all @shared/config, @shared/stage references with the new consolidated paths.
+Delete the now-empty shared/motion, shared/stage helpers that have been absorbed.
+Run type-check/build to verify no stale references remain.
+5. Clean Trim
+Remove any residual exports in shared/layer/index.ts so it only exposes the lean modules.
+Delete unused utilities once the compiler confirms they’re not referenced.
+Write a quick smoke test (or manual sanity check) to ensure layers still animate, markers render, and the test screen works.
+This approach keeps everything layer-related in one folder, pares each module to the minimum surface, and leaves Stage/Test renderers as thin consumers. Let me know when you want to start executing the steps.
