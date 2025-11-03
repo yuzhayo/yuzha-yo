@@ -80,8 +80,6 @@
 import type { UniversalLayerData } from "./layerCore";
 import type { LayerConfigEntry } from "../config/Config";
 import type { ClockSpeedAlias, TimeFormat } from "./clockTime";
-import { createSpinProcessor } from "./layerSpin";
-import { createOrbitalProcessor } from "./layerOrbit";
 
 // ============================================================================
 // SECTION 1: TYPES & CORE PIPELINE
@@ -398,70 +396,6 @@ export function getProcessorsForEntry(
 // - The actual processor logic is in separate files (LayerCorePipelineSpin, etc.)
 // - shouldAttach() checks config properties to decide if processor is needed
 // ============================================================================
-
-/**
- * Spin Processor
- *
- * Attaches spin animation to layers with spinSpeed > 0
- * Rotates layers around a pivot point at constant angular velocity
- */
-registerProcessor({
-  name: "spin",
-  shouldAttach(entry) {
-    return (
-      (typeof entry.spinSpeed === "number" && entry.spinSpeed > 0) ||
-      entry.spinSpeedAlias !== undefined ||
-      entry.spinFormat !== undefined ||
-      entry.spinTimezone !== undefined
-    );
-  },
-  create(entry) {
-    return createSpinProcessor({
-      spinSpeed: entry.spinSpeed,
-      spinDirection: entry.spinDirection,
-      spinSpeedAlias: entry.spinSpeedAlias,
-      spinFormat: entry.spinFormat,
-      spinTimezone: entry.spinTimezone,
-    });
-  },
-});
-
-/**
- * Orbital Processor
- *
- * Attaches orbital motion and orientation to layers
- * Moves layers in circular paths around a center point
- * Can also orient layers to face the center (like a clock hand)
- */
-registerProcessor({
-  name: "orbital",
-  shouldAttach(entry) {
-    return Boolean(
-      entry.orbitStagePoint !== undefined ||
-        entry.orbitOrient === true ||
-        (entry.orbitSpeed !== undefined && entry.orbitSpeed !== 0) ||
-        entry.orbitSpeedAlias !== undefined ||
-        entry.orbitFormat !== undefined ||
-        entry.orbitTimezone !== undefined ||
-        entry.orbitLine === true ||
-        entry.orbitLinePoint !== undefined ||
-        entry.orbitImagePoint !== undefined,
-    );
-  },
-  create(entry) {
-    return createOrbitalProcessor({
-      orbitStagePoint: entry.orbitStagePoint as [number, number] | undefined,
-      orbitLinePoint: entry.orbitLinePoint as [number, number] | undefined,
-      orbitImagePoint: entry.orbitImagePoint as [number, number] | undefined,
-      orbitLine: entry.orbitLine,
-      orbitSpeed: entry.orbitSpeed,
-      orbitDirection: entry.orbitDirection,
-      orbitSpeedAlias: entry.orbitSpeedAlias,
-      orbitFormat: entry.orbitFormat,
-      orbitTimezone: entry.orbitTimezone,
-    });
-  },
-});
 
 // ============================================================================
 // SECTION 3: ANIMATION UTILITIES

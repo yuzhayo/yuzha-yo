@@ -43,6 +43,7 @@ import {
   type EnhancedLayerData,
   type LayerProcessor,
 } from "../layer/layer";
+import { buildLayerMotion, type LayerMotionMarker } from "../motion/layerMotion";
 
 // ============================================================================
 // SECTION 1: COORDINATE SYSTEM
@@ -429,6 +430,7 @@ export async function createStagePipeline(
   const twoDLayers = config.filter(is2DLayer);
 
   // Prepare all layers in parallel
+  const motionMarkers: StageMarker[] = [];
   const prepared = (
     await Promise.all(
       twoDLayers.map(async (entry) => {
@@ -443,6 +445,15 @@ export async function createStagePipeline(
 
           // Attach processors (spin, orbit, debug, etc.)
           const processors = getProcessorsForEntry(entry, processorContext);
+
+          const motionArtifacts = buildLayerMotion(entry, layer, stageSize);
+          if (motionArtifacts.processor) {
+            processors.push(motionArtifacts.processor as LayerProcessor);
+          }
+          if (motionArtifacts.markers) {
+            appendMotionMarkers(motionMarkers, motionArtifacts.markers);
+          }
+
           return {
             entry,
             data: layer as EnhancedLayerData,
@@ -462,7 +473,33 @@ export async function createStagePipeline(
   return {
     stageSize,
     layers: prepared,
+    markers: motionMarkers.length > 0 ? motionMarkers : undefined,
   };
+}
+
+function appendMotionMarkers(target: StageMarker[], markers: LayerMotionMarker[]): void {
+  for (const marker of markers) {
+    target.push({
+      id: marker.id,
+      x: marker.x,
+      y: marker.y,
+      color: marker.color,
+      radius: marker.radius,
+      kind: marker.kind,
+      lineWidth: marker.lineWidth,
+      motion: marker.motion
+        ? {
+            type: "orbit",
+            centerX: marker.motion.centerX,
+            centerY: marker.motion.centerY,
+            radius: marker.motion.radius,
+            rotationsPerHour: marker.motion.rotationsPerHour,
+            direction: marker.motion.direction,
+            initialAngleDeg: marker.motion.initialAngleDeg,
+          }
+        : undefined,
+    });
+  }
 }
 
 // ============================================================================

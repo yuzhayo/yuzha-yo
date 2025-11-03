@@ -46,7 +46,7 @@ import {
 import { loadImage, getImageCenter } from "../layer/layerCore";
 import { runPipeline, AnimationConstants, createPipelineCache } from "../layer/layer";
 
-const IS_DEV = import.meta.env?.DEV ?? false;
+const IS_DEV = Boolean((import.meta as ImportMeta & { env?: { DEV?: boolean } }).env?.DEV);
 
 // ============================================================================
 // CANVAS LAYER RENDERING ENGINE

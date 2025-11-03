@@ -16,7 +16,5 @@
 
 export * from "./layerCore";
 export * from "./layerBasic";
-export * from "./layerSpin";
-export * from "./layerOrbit";
 export * from "./layer";
 export * from "./clockTime";
