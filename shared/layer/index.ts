@@ -120,20 +120,11 @@ export {
   // Configuration loading
   loadLayerConfig,
   validateLayerConfig,
-} from "./Config";
-
-export {
+  
   // Clock constants
   CLOCK_DEFAULTS,
   CLOCK_SPEED_ALIASES,
-
-  // Clock/time functions
-  toDirectionSign,
-  parseTimezoneOffset,
-  resolveTimezoneOffset,
-  resolveClockSpeed,
-  calculateRotationDegrees,
-} from "./clockTime";
+} from "./model";
 
 // ============================================================================
 // MATH EXPORTS - Pure Calculation Functions
@@ -170,6 +161,13 @@ export {
   // Angle & rotation math
   normalizeAngle,
   calculateAngleToPoint,
+  
+  // Clock/time functions
+  toDirectionSign,
+  parseTimezoneOffset,
+  resolveTimezoneOffset,
+  resolveClockSpeed,
+  calculateRotationDegrees,
 } from "./math";
 
 // ============================================================================
