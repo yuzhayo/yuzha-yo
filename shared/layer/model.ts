@@ -652,8 +652,10 @@ function normalizeMotionAlias(entry: LayerConfigEntry, prefix: "spin" | "orbit")
 
   // Check if it's a clock alias
   if (CLOCK_ALIAS_VALUES.has(rawSpeed)) {
-    // Move to alias field
-    (entry[aliasKey] as any) = rawSpeed as ClockSpeedAlias;
+    // Move to alias field (only if not already set to avoid overwriting)
+    if (!entry[aliasKey]) {
+      (entry[aliasKey] as any) = rawSpeed as ClockSpeedAlias;
+    }
     delete entry[speedKey];
 
     // Set defaults if not provided
