@@ -1,11 +1,11 @@
 [
   {
     "LayerID": "sample",
-    "ImageID": "GEARMOON",
+    "ImageID": "zodiac0",
     "renderer": "2D",
     "LayerOrder": 1000,
-    "ImageScale": [100, 100],
-    "BasicStagePoint": [1024, 1024],
+    "ImageScale": [200, 200],
+    "BasicStagePoint": [1024, 500],
     "BasicImagePoint": [50, 50],
     "BasicImageAngle": 0,
     "spinSpeed": 0,
