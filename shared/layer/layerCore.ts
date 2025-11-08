@@ -63,7 +63,7 @@
  */
 
 import type { LayerConfigEntry } from "./Config";
-import registryData from "../asset/ImageRegistry.json" assert { type: "json" };
+import registryData from "../Asset/ImageRegistry.json" assert { type: "json" };
 import {
   type Point2D,
   type PercentPoint,
