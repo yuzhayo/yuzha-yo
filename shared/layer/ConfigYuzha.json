@@ -1,9 +1,9 @@
 [
   {
     "LayerID": "sample",
-    "ImageID": "sample",
+    "ImageID": "GEARMOON",
     "renderer": "2D",
-    "LayerOrder": 10,
+    "LayerOrder": 1000,
     "ImageScale": [100, 100],
     "BasicStagePoint": [1024, 1024],
     "BasicImagePoint": [50, 50],
