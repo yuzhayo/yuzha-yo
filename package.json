@@ -41,7 +41,7 @@
     "dev:l": "npm run typecheck && npm run lint && npm run format:fix",
     "dev:shared": "npm run typecheck:shared && npm run lint:shared && npm run test:shared",
     "dev:shared:fix": "npm run typecheck:shared && npm run lint:shared:fix && npm run format:fix && npm run test:shared",
-    "sync:image": "node -e \"import(\\\"./shared/config/ImageRegistry.mjs\\\").then(m => m.syncImageRegistry())\"",
+    "sync:image": "node -e \"import(\\\"./shared/asset/ImageRegistry.mjs\\\").then(m => m.syncImageRegistry())\"",
     "deps:update": "npm update && npm outdated",
     "deps:audit": "npm audit && npm audit fix",
     "start": "npm run preview:5000"

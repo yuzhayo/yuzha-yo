@@ -29,7 +29,7 @@ export async function hasImage(id) {
 // ----------------------------------------------------------------------------
 const repoRoot = path.resolve(fileURLToPath(new URL("../../", import.meta.url)));
 const assetDir = path.join(repoRoot, "shared", "asset");
-const registryPath = path.join(repoRoot, "shared", "config", "ImageRegistry.json");
+const registryPath = path.join(repoRoot, "shared", "asset", "ImageRegistry.json");
 
 function toForwardSlash(value) {
   return value.split(path.sep).join("/");
