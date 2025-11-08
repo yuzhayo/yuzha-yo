@@ -66,9 +66,9 @@ import {
   normalizePercentInput,
   normalizeStagePointInput,
   normalizePercent,
+  calculateRotationDegrees,
+  resolveClockSpeed,
 } from "./math";
-
-import { calculateRotationDegrees, resolveClockSpeed } from "./clockTime";
 
 import registryData from "../asset/ImageRegistry.json" assert { type: "json" };
 
