@@ -1,0 +1,29 @@
+Layer Simplification Plan
+
+Goal
+Flatten the shared/layer module into a handful of clear, single-purpose files while keeping every current behavior intact. Work in small, verifiable steps so we never break StageSystem or renderers.
+
+1. Establish the Source of Truth
+Keep: shared/layer/model.ts, shared/layer/math.ts, shared/layer/engine.ts, shared/layer/index.ts, shared/layer/ConfigYuzha.json, StageSystem.ts, StageCanvas.tsx, StageThree.tsx.
+Remove after migration: shared/layer/Config.ts, shared/layer/clockTime.ts.
+Reason: their responsibilities already live inside model.ts and math.ts; we just need to wire consumers over.
+2. Align Config Loading
+Update every import of loadLayerConfig, LayerConfigEntry, etc. to pull from model.ts (via the barrel).
+Copy any validation/console behavior from Config.ts into model.ts if something is missing (they already overlap heavily).
+Once all references point at model.ts, delete Config.ts.
+3. Consolidate Clock & Time Helpers
+Move any remaining functions that only exist in clockTime.ts into the relevant sections of math.ts (if a function already exists there, ensure signatures match).
+Switch engine.ts and the barrel exports to import parseTimezoneOffset, resolveClockSpeed, calculateRotationDegrees, etc. from math.ts.
+Remove clockTime.ts.
+4. Verify Engine Dependencies
+Ensure engine.ts references only model.ts (types/constants) and math.ts (pure helpers). No other shared files should be required.
+Confirm the ImageRegistry import path matches the earlier relocation (shared/asset/ImageRegistry.json).
+5. Refresh Barrel Exports
+In index.ts, re-export config helpers from model.ts and clock utilities from math.ts.
+Remove any exports that referenced deleted files (Config.ts, clockTime.ts).
+6. Clean Up Tests & Docs
+If any tests or docs still mention the old files, point them at the new ones.
+Optional: add a short section to shared/layer/CHANGELOG.md describing the consolidation so future agents know why files vanished.
+7. Validation Steps
+Run npm run typecheck:shared and any relevant tests (npm run test if available) after each major deletion.
+Smoke-test StageSystem or the app (if quick) to confirm layers still render.
