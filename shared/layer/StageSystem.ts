@@ -36,14 +36,16 @@
  */
 
 import { loadLayerConfig, type LayerConfigEntry } from "./Config";
-import { is2DLayer, prepareLayer } from "./layerCore";
 import {
+  is2DLayer,
+  prepareLayer,
   getProcessorsForEntry,
+  buildLayerMotion,
   type ProcessorContext,
   type EnhancedLayerData,
   type LayerProcessor,
-} from "./layer";
-import { buildLayerMotion, type LayerMotionMarker } from "./layerMotion";
+  type LayerMotionMarker,
+} from "./engine";
 
 // ============================================================================
 // SECTION 1: COORDINATE SYSTEM
@@ -508,5 +510,5 @@ function appendMotionMarkers(target: StageMarker[], markers: LayerMotionMarker[]
 // Re-export types and functions that are commonly used together with this module
 // ============================================================================
 
-export type { ProcessorContext, EnhancedLayerData, LayerProcessor } from "./layer";
+export type { ProcessorContext, EnhancedLayerData, LayerProcessor } from "./engine";
 export type { LayerConfigEntry } from "./Config";
