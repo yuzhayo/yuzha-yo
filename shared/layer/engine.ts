@@ -70,7 +70,7 @@ import {
 
 import { calculateRotationDegrees, resolveClockSpeed } from "./clockTime";
 
-import registryData from "../Asset/ImageRegistry.json" assert { type: "json" };
+import registryData from "../asset/ImageRegistry.json" assert { type: "json" };
 
 // ============================================================================
 // SECTION 1: ASSET LOADING & RESOLUTION
@@ -134,7 +134,7 @@ export function resolveAssetUrl(path: string): string {
   if (!path.toLowerCase().startsWith("shared/asset/")) {
     throw new Error(`Unsupported asset path: ${path}`);
   }
-  const relative = path.replace(/^shared\/asset\//i, "../Asset/");
+  const relative = path.replace(/^shared\/asset\//i, "../asset/");
   return new URL(relative, import.meta.url).href;
 }
 
