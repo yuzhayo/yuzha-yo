@@ -1,0 +1,75 @@
+You are working inside a TypeScript monorepo called Yuzha, a modular multi-layer rendering system built with React, Canvas 2D, and Three.js.
+The codebase is organized into two main areas:
+
+1. shared/layer/ → Core logic layer
+This contains all the rendering, configuration, and motion logic.
+
+ConfigYuzha.json: main scene manifest (Basic, Spin, Orbit, Clock groups).
+
+Config.ts: loads and flattens the JSON config into LayerConfigEntry.
+
+layerBasic.ts: base transform utilities (position, scale, pivot).
+
+layerCore.ts: image registry, scaling, and pivot math.
+
+layer.ts: unified layer executor (runPipeline, createPipelineCache, processor registry).
+
+layerMotion.ts: old unified Spin+Orbit logic (now deprecated).
+
+clockTime.ts: old time-to-degree converter.
+
+StageSystem.ts: master orchestrator — manages coordinate system (2048x2048), transformer, and builds the stage pipeline (createStagePipeline).
+
+StageCanvas.tsx: Canvas 2D renderer (translate-rotate-translate pivot logic, marker orbit).
+
+StageThree.tsx: WebGL renderer using Three.js (centered coordinates, LineLoop orbit, SRGB textures).
+
+2. yuzha/src/test/ → Experimental AI agent sandbox
+This is a parallel test environment used to experiment with pipeline and motion logic.
+
+testStageSystem.ts: minimal version of StageSystem for testing.
+
+testStagePipeline.ts: newer, cleaner pipeline system — includes updated motion logic (spin/orbit).
+
+TestStageCanvas.tsx: test renderer for Canvas 2D, simplified but consistent with StageCanvas.
+
+mapping.ts: local image/path mapping used in test environment.
+
+test.json: small dataset representing test layers.
+
+testscreen.tsx: React entry screen with hot-reload logic (reloads pipeline when test files change).
+
+3. UI entry & runtime
+
+main.tsx, App.tsx, and MainScreen.tsx initialize React and choose between renderer modes (StageCanvas or StageThree).
+
+MainScreenUtils.tsx manages gesture detection, cache-clearing, and renderer switching.
+
+4. Architectural flow
+
+ConfigYuzha.json
+  ↓ (via Config.ts)
+layerCore.ts + layerBasic.ts
+  ↓
+layer.ts + layerMotion.ts (processors)
+  ↓
+StageSystem.ts → StagePipeline { layers, markers }
+  ↓
+StageCanvas.tsx / StageThree.tsx → rendered output
+  ↓
+MainScreen.tsx → displayed UI
+
+
+5. Test system parallel flow
+
+test.json
+  ↓
+testStagePipeline.ts + testStageSystem.ts
+  ↓
+TestStageCanvas.tsx → sandbox renderer
+
+
+The entire codebase uses TypeScript ES2020+, React 18, and Vite + TailwindCSS, with 2048×2048 fixed coordinate space (“stage space”) that auto-scales to fit viewport (createStageTransformer).
+Every layer runs through a unified pipeline of loading, preparing, animating, and rendering.
+
+Your job as an AI agent is to fully understand how this ecosystem works — every connection between config, layer core, motion, pipeline, and renderer — so you can reason accurately about any code modification or analysis request in the Yuzha system, without guessing or making assumptions.

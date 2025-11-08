@@ -5,32 +5,20 @@
     "renderer": "2D",
     "LayerOrder": 10,
     "ImageScale": [100, 100],
-    "groups": {
-      "Basic Config": {
-        "BasicStagePoint": [1024, 1024],
-        "BasicImagePoint": [50, 50],
-        "BasicImageAngle": 0
-      },
-      "Spin Config": {
-        "spinStagePoint": [1024, 1024],
-        "spinImagePoint": [50, 50],
-        "spinSpeed": 0,
-        "spinDirection": "cw",
-        "spinFormat": "24",
-        "spinTimezone": "UTC"
-      },
-      "Orbital Config": {
-        "orbitStagePoint": [1024, 1024],
-        "orbitLinePoint": [1024, 1024],
-        "orbitImagePoint": [50, 50],
-        "orbitLine": false,
-        "orbitOrient": false,
-        "orbitSpeed": 0,
-        "orbitDirection": "cw",
-        "orbitFormat": "24",
-        "orbitTimezone": "UTC"
-      }
-    }
+    "BasicStagePoint": [1024, 1024],
+    "BasicImagePoint": [50, 50],
+    "BasicImageAngle": 0,
+    
+    "spinSpeed": 0,
+    "spinDirection": "cw",
+    "spinFormat": "24",
+    "spinTimezone": "UTC",
+    
+    "orbitStagePoint": [1024, 1024],
+    "orbitSpeed": 0,
+    "orbitDirection": "cw",
+    "orbitFormat": "24",
+    "orbitTimezone": "UTC"
   },
 
   {
