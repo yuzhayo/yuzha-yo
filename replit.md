@@ -16,19 +16,19 @@ Core animation logic is driven by a Layer System where JSON configurations defin
 
 **Key Technical Implementations & Design Choices:**
 
--   **Monorepo Structure:** `yuzha/` for the main application and `shared/` for common logic.
--   **Rendering:** Three.js (WebGL) for high-performance; Canvas 2D as fallback.
--   **Coordinate System:** Stage2048 system (2048x2048 pixels) for consistent scaling, `normalizePercent()` for extended range.
--   **Layer System:** JSON config drives `LayerCore` with extensible processors for transformations and animations, consolidated under `shared/layer/`.
--   **Configuration:** `ConfigYuzha.json` defines layer properties and animation parameters in a flat structure, with `transformConfig` for conditional overrides and clock alias normalization.
--   **Performance:** Pipeline caching, pre-calculated constants, `StaticLayerBuffer`, image dimension/mapping caches, lazy calculations, and `React.memo`.
--   **Debugging:** `ImageMappingDebugConfig` for visual helpers across renderers.
--   **TypeScript:** Strict type checking with Vite for compilation.
+- **Monorepo Structure:** `yuzha/` for the main application and `shared/` for common logic.
+- **Rendering:** Three.js (WebGL) for high-performance; Canvas 2D as fallback.
+- **Coordinate System:** Stage2048 system (2048x2048 pixels) for consistent scaling, `normalizePercent()` for extended range.
+- **Layer System:** JSON config drives `LayerCore` with extensible processors for transformations and animations, consolidated under `shared/layer/`.
+- **Configuration:** `ConfigYuzha.json` defines layer properties and animation parameters in a flat structure, with `transformConfig` for conditional overrides and clock alias normalization.
+- **Performance:** Pipeline caching, pre-calculated constants, `StaticLayerBuffer`, image dimension/mapping caches, lazy calculations, and `React.memo`.
+- **Debugging:** `ImageMappingDebugConfig` for visual helpers across renderers.
+- **TypeScript:** Strict type checking with Vite for compilation.
 
 ## External Dependencies
 
--   **React 18:** Frontend UI library.
--   **TypeScript:** Programming language.
--   **Vite 7:** Build tool and development server.
--   **Three.js:** WebGL 3D library.
--   **Tailwind CSS:** Utility-first CSS framework.
+- **React 18:** Frontend UI library.
+- **TypeScript:** Programming language.
+- **Vite 7:** Build tool and development server.
+- **Three.js:** WebGL 3D library.
+- **Tailwind CSS:** Utility-first CSS framework.

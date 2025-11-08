@@ -1,44 +1,253 @@
 /**
  * ============================================================================
- * LAYER MODULE EXPORTS
+ * LAYER MODULE - Barrel Export
  * ============================================================================
  *
- * This file exports ALL layer-related modules now consolidated under shared/layer/.
+ * PURPOSE FOR FUTURE AI AGENTS:
+ * ------------------------------
+ * This is the SINGLE ENTRY POINT for all layer system functionality.
+ * Import from this file instead of individual modules to maintain clean
+ * dependency boundaries and make refactoring easier.
  *
- * IMPORTANT FOR FUTURE AI AGENTS:
- * -------------------------------
- * All layer-related functionality has been consolidated into shared/layer/:
- * - Config.ts (previously shared/config/) - Layer configuration
- * - StageSystem.ts (previously shared/stage/) - Coordinate system & pipeline
- * - StageCanvas.tsx (previously shared/stage/) - Canvas 2D renderer
- * - StageThree.tsx (previously shared/stage/) - Three.js WebGL renderer
- * - layerMotion.ts (previously shared/motion/) - Motion processing
- * - layerCore.ts - Layer data preparation
- * - layer.ts - Processor pipeline
- * - layerBasic.ts - Math utilities
- * - clockTime.ts - Time/clock calculations
+ * ARCHITECTURE AFTER REFACTORING (2025):
+ * ---------------------------------------
+ * The layer system is now organized into THREE focused modules:
  *
- * OLD STRUCTURE (deprecated):
- * - shared/config/Config.ts → shared/layer/Config.ts
- * - shared/stage/StageSystem.ts → shared/layer/StageSystem.ts
- * - shared/motion/layerMotion.ts → shared/layer/layerMotion.ts
+ * 1. model.ts - Types, interfaces, and configuration
+ *    - All type definitions (Point2D, LayerConfig, etc.)
+ *    - Configuration loading (loadLayerConfig)
+ *    - Clock/time types and constants
+ *    - NO runtime code, NO dependencies (except JSON imports)
+ *
+ * 2. math.ts - Pure calculation functions
+ *    - Coordinate transformations (image ↔ stage, pixel ↔ percent)
+ *    - Angle calculations and normalizations
+ *    - Time/clock calculations
+ *    - Validation and sanitization
+ *    - Imports only types from model.ts
+ *    - ALL functions are pure (no side effects)
+ *
+ * 3. engine.ts - Runtime execution and processing
+ *    - Asset loading and resolution
+ *    - Image mapping computation
+ *    - Layer preparation (prepareLayer, etc.)
+ *    - Motion processor building (buildLayerMotion)
+ *    - Processor registry (registerProcessor, getProcessorsForEntry)
+ *    - Pipeline execution (runPipeline, processBatch)
+ *    - Animation utilities
+ *    - Performance utilities (caching, batching)
+ *    - Imports types from model.ts, functions from math.ts
+ *
+ * OLD STRUCTURE (DELETED):
+ * -------------------------
+ * - layerBasic.ts → math.ts (coordinate transformations)
+ * - layerCore.ts → engine.ts (asset loading, layer preparation)
+ * - layerMotion.ts → engine.ts (motion processing)
+ * - layer.ts → engine.ts (processor registry, pipeline)
+ *
+ * HOW TO USE THIS MODULE:
+ * -----------------------
+ * ```typescript
+ * // Import everything you need from the barrel export
+ * import {
+ *   // Types from model.ts
+ *   Point2D,
+ *   LayerConfig,
+ *   UniversalLayerData,
+ *
+ *   // Config loading from model.ts
+ *   loadLayerConfig,
+ *
+ *   // Math functions from math.ts
+ *   imagePointToStagePoint,
+ *   normalizeAngle,
+ *
+ *   // Runtime functions from engine.ts
+ *   prepareLayer,
+ *   buildLayerMotion,
+ *   runPipeline,
+ * } from "@shared/layer";
+ * ```
+ *
+ * DEPENDENCY FLOW:
+ * ----------------
+ * model.ts ← math.ts ← engine.ts ← index.ts (this file) ← consumers
+ *   ↑          ↑          ↑
+ *   |          |          |
+ * types    functions   runtime
  *
  * @module layer/index
  */
 
-// Core layer types and data preparation
-export * from "./layerCore";
-export * from "./layerBasic";
-export * from "./layer";
-export * from "./clockTime";
+// ============================================================================
+// MODEL EXPORTS - Types, Interfaces, and Configuration
+// ============================================================================
 
-// Configuration
-export * from "./Config";
+export type {
+  // Geometric primitives
+  Point2D,
+  PercentPoint,
+  CoordinateBundle,
+  DualSpaceCoordinate,
+  OrbitCoordinate,
+  Layer2DTransform,
 
-// Stage system and renderers
+  // Layer data types
+  ImageMapping,
+  LayerCalculationPoints,
+  UniversalLayerData,
+  BaseLayerState,
+  SpinPreparationState,
+  OrbitPreparationState,
+
+  // Configuration types
+  LayerRenderer,
+  LayerConfigEntry,
+  LayerConfig,
+
+  // Clock/Time types
+  RotationDirection,
+  ClockSpeedAlias,
+  TimeFormat,
+  DirectionSign,
+  ClockSpeedValue,
+  ClockSpeedSetting,
+  ClockMotionConfig,
+  ResolvedClockSpeed,
+} from "./model";
+
+export {
+  // Configuration loading
+  loadLayerConfig,
+  validateLayerConfig,
+} from "./Config";
+
+export {
+  // Clock constants
+  CLOCK_DEFAULTS,
+  CLOCK_SPEED_ALIASES,
+
+  // Clock/time functions
+  toDirectionSign,
+  parseTimezoneOffset,
+  resolveTimezoneOffset,
+  resolveClockSpeed,
+  calculateRotationDegrees,
+} from "./clockTime";
+
+// ============================================================================
+// MATH EXPORTS - Pure Calculation Functions
+// ============================================================================
+
+export {
+  // Coordinate transformations
+  imagePointToStagePoint,
+  stagePointToImagePoint,
+  imagePointToPercent,
+  imagePercentToImagePoint,
+  stagePointToPercent,
+  stagePercentToStagePoint,
+
+  // Pivot-based positioning
+  calculatePositionForPivot,
+
+  // Coordinate bundles
+  createCoordinateBundle,
+  createDualSpaceCoordinate,
+
+  // Validation & sanitization
+  validatePoint,
+  validateScale,
+  validateDimensions,
+
+  // Normalization utilities
+  normalizePercent,
+  normalizePair,
+  normalizePercentInput,
+  normalizeStagePointInput,
+  clampedPercentToScale,
+
+  // Angle & rotation math
+  normalizeAngle,
+  calculateAngleToPoint,
+} from "./math";
+
+// ============================================================================
+// ENGINE EXPORTS - Runtime Execution & Processing
+// ============================================================================
+
+export type {
+  // Enhanced layer data (includes processor properties)
+  EnhancedLayerData,
+
+  // Processor types
+  LayerProcessor,
+  ProcessorContext,
+
+  // Motion types
+  LayerMotionMarker,
+  LayerMotionArtifacts,
+
+  // Performance types
+  LayerBatch,
+} from "./engine";
+
+export {
+  // Asset loading
+  resolveAssetPath,
+  resolveAssetUrl,
+  preloadCriticalAssets,
+  loadImage,
+
+  // Image mapping
+  getImageCenter,
+  computeImageMapping,
+
+  // Layer preparation
+  prepareBasicState,
+  prepareSpinState,
+  prepareOrbitState,
+  prepareLayer,
+  is2DLayer,
+  compute2DTransform,
+
+  // Motion processing
+  buildLayerMotion,
+
+  // Processor registry
+  registerProcessor,
+  getProcessorsForEntry,
+
+  // Pipeline execution
+  runPipeline,
+  processBatch,
+
+  // Animation utilities
+  AnimationConstants,
+  degreesToRadians,
+  radiansToDegrees,
+  applyRotationDirection,
+  calculateOrbitPosition,
+  calculateElapsedTime,
+  isPointInBounds,
+  calculateOrbitalVisibility,
+  easeInOutQuad,
+  easeOutElastic,
+  easeOutBounce,
+
+  // Performance utilities
+  PipelineCache,
+  createPipelineCache,
+  StaticLayerBuffer,
+  batchLayersByAnimation,
+} from "./engine";
+
+// ============================================================================
+// STAGE SYSTEM & RENDERERS
+// ============================================================================
+// These remain in separate files for size/complexity reasons but are
+// re-exported here for convenience
+
 export * from "./StageSystem";
 export { default as StageCanvas } from "./StageCanvas";
 export { default as StageThree } from "./StageThree";
-
-// Motion processing
-export * from "./layerMotion";

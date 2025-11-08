@@ -1,4 +1,4 @@
-import { prepareLayer } from "../../../shared/layer/layerCore";
+import { prepareLayer } from "../../../shared/layer/engine";
 import {
   clampStagePoint,
   computePositionForPivot,

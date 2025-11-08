@@ -220,11 +220,11 @@ function normalizeMotionGroup(
   // Handle string speed values
   if (typeof rawSpeed === "string") {
     const numeric = Number(rawSpeed);
-    
+
     // Try parsing as number
     if (!Number.isNaN(numeric)) {
       entry[speedKey] = numeric;
-    } 
+    }
     // Check if it's a clock alias
     else if (CLOCK_ALIAS_VALUES.has(rawSpeed)) {
       if (!entry[aliasKey]) {
@@ -261,10 +261,22 @@ function normalizeMotionGroup(
 function normalizeConfig(config: LayerConfigEntry[]): LayerConfig {
   config.forEach((entry) => {
     // Normalize spin motion aliases
-    normalizeMotionGroup(entry as Record<string, unknown>, "spinSpeed", "spinSpeedAlias", "spinFormat", "spinTimezone");
-    
+    normalizeMotionGroup(
+      entry as Record<string, unknown>,
+      "spinSpeed",
+      "spinSpeedAlias",
+      "spinFormat",
+      "spinTimezone",
+    );
+
     // Normalize orbit motion aliases
-    normalizeMotionGroup(entry as Record<string, unknown>, "orbitSpeed", "orbitSpeedAlias", "orbitFormat", "orbitTimezone");
+    normalizeMotionGroup(
+      entry as Record<string, unknown>,
+      "orbitSpeed",
+      "orbitSpeedAlias",
+      "orbitFormat",
+      "orbitTimezone",
+    );
   });
 
   return config;
@@ -344,10 +356,11 @@ export function validateLayerConfig(entry: LayerConfigEntry): string[] {
  * @returns Same config (for chaining)
  */
 function validateConfig(config: LayerConfig): LayerConfig {
-  const IS_DEV = typeof import.meta !== 'undefined' && 
-                 typeof (import.meta as any).env !== 'undefined' ? 
-                 (import.meta as any).env.DEV : true;
-                 
+  const IS_DEV =
+    typeof import.meta !== "undefined" && typeof (import.meta as any).env !== "undefined"
+      ? (import.meta as any).env.DEV
+      : true;
+
   if (!IS_DEV) return config; // Skip validation in production
 
   config.forEach((entry, index) => {
@@ -382,7 +395,7 @@ function validateConfig(config: LayerConfig): LayerConfig {
  * rawConfig → normalizeConfig() → validateConfig() → sort by LayerOrder → config
  */
 const config: LayerConfig = validateConfig(
-  normalizeConfig(rawConfig as unknown as LayerConfigEntry[])
+  normalizeConfig(rawConfig as unknown as LayerConfigEntry[]),
 ).sort((a, b) => (a.LayerOrder ?? 0) - (b.LayerOrder ?? 0));
 
 /**
@@ -404,7 +417,7 @@ const config: LayerConfig = validateConfig(
  * Usage:
  * ```typescript
  * import { loadLayerConfig } from "./Config";
- * 
+ *
  * const layers = loadLayerConfig();
  * layers.forEach(layer => {
  *   // Each layer is a LayerConfigEntry with flat properties
@@ -415,6 +428,6 @@ const config: LayerConfig = validateConfig(
  * @returns Sorted array of layer configurations
  */
 export function loadLayerConfig(): LayerConfig {
-  console.log('[Config] Loaded flat config with', config.length, 'layers');
+  console.log("[Config] Loaded flat config with", config.length, "layers");
   return config;
 }

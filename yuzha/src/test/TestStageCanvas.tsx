@@ -43,8 +43,13 @@ import {
   type TestLayerData,
   type TestLayerProcessor,
 } from "./testStageSystem";
-import { loadImage, getImageCenter } from "../../../shared/layer/layerCore";
-import { runPipeline, AnimationConstants, createPipelineCache } from "../../../shared/layer/layer";
+import {
+  loadImage,
+  getImageCenter,
+  runPipeline,
+  AnimationConstants,
+  createPipelineCache,
+} from "../../../shared/layer/engine";
 
 const IS_DEV = import.meta.env?.DEV ?? false;
 
