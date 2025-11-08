@@ -96,7 +96,11 @@ type AssetRegistryEntry = { id: string; path: string };
 const registry = registryData as Array<AssetRegistryEntry>;
 
 // Validate registry entries at initialization (development only)
-if (import.meta.env?.DEV) {
+const IS_DEV_VALIDATION = typeof import.meta !== 'undefined' && 
+                          typeof (import.meta as any).env !== 'undefined' ? 
+                          (import.meta as any).env.DEV : true;
+
+if (IS_DEV_VALIDATION) {
   registry.forEach((entry, index) => {
     if (!entry.id || typeof entry.id !== "string") {
       console.error(`[LayerCore] Invalid asset registry entry #${index}: missing or invalid id`);
@@ -707,7 +711,9 @@ export async function prepareLayer(
   stageSize: number,
 ): Promise<UniversalLayerData | null> {
   // Performance tracking (development only)
-  const IS_DEV = import.meta.env?.DEV ?? false;
+  const IS_DEV = typeof import.meta !== 'undefined' && 
+                 typeof (import.meta as any).env !== 'undefined' ? 
+                 (import.meta as any).env.DEV : false;
   const perfStart = IS_DEV ? performance.now() : 0;
 
   const baseState = await prepareBasicState(entry, stageSize);

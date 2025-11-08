@@ -1,337 +1,292 @@
+/**
+ * ============================================================================
+ * LAYER CONFIG - Flat Configuration System
+ * ============================================================================
+ *
+ * PURPOSE FOR FUTURE AI AGENTS:
+ * ------------------------------
+ * This module loads and validates layer configuration from ConfigYuzha.json.
+ * The config uses a FLAT structure (no groups) for simplicity.
+ *
+ * SIMPLIFIED ARCHITECTURE (2025):
+ * -------------------------------
+ * - ConfigYuzha.json uses flat properties (no "groups" nesting)
+ * - Direct loading: JSON → LayerConfigEntry[] → validation → sorted by LayerOrder
+ * - Clock alias normalization: "second"/"minute"/"hour" → spinSpeedAlias/orbitSpeedAlias
+ *
+ * WHAT THIS MODULE DOES:
+ * -----------------------
+ * 1. Define LayerConfigEntry type (flat runtime structure)
+ * 2. Load ConfigYuzha.json
+ * 3. Normalize clock aliases (string speeds → alias fields)
+ * 4. Validate config entries (ranges, required fields)
+ * 5. Sort by LayerOrder (background to foreground)
+ * 6. Export via loadLayerConfig()
+ *
+ * CONFIG STRUCTURE:
+ * -----------------
+ * Each layer has:
+ * - CORE (required): LayerID, ImageID, renderer, LayerOrder, ImageScale
+ * - POSITIONING (optional): BasicStagePoint, BasicImagePoint, BasicImageAngle
+ * - SPIN (optional): spinStagePoint, spinImagePoint, spinSpeed, spinDirection, spinFormat, spinTimezone
+ * - ORBIT (optional): orbitStagePoint, orbitLinePoint, orbitSpeed, orbitDirection, orbitFormat, orbitTimezone
+ *
+ * Example flat config entry:
+ * {
+ *   "LayerID": "hour-hand",
+ *   "ImageID": "HOUR_HAND",
+ *   "renderer": "2D",
+ *   "LayerOrder": 900,
+ *   "ImageScale": [100, 100],
+ *   "BasicStagePoint": [1024, 1024],
+ *   "BasicImagePoint": [50, 50],
+ *   "spinStagePoint": [1024, 1024],
+ *   "spinImagePoint": [50, 80],
+ *   "spinSpeed": "hour",        // Clock alias (converted to spinSpeedAlias)
+ *   "spinDirection": "cw",
+ *   "spinFormat": "24",
+ *   "spinTimezone": "UTC+7"
+ * }
+ *
+ * CLOCK ALIASES:
+ * --------------
+ * Speed values can be:
+ * - Numeric: rotations per hour (1.0 = 1 full rotation in 1 hour)
+ * - Alias: "second" (60/hour), "minute" (1/hour), "hour" (1/12 or 1/24 per hour)
+ *
+ * When alias is used:
+ * - spinSpeed: "hour" → sets spinSpeedAlias: "hour", removes spinSpeed
+ * - Defaults: spinFormat="24", spinTimezone="UTC" (if not provided)
+ *
+ * USED BY:
+ * --------
+ * - StageSystem.ts (loads config and creates layers)
+ * - layerCore.ts (prepares layer data from config entries)
+ * - layerMotion.ts (reads spin/orbit properties for animation)
+ *
+ * @module layer/Config
+ */
+
 import rawConfig from "./ConfigYuzha.json";
 
 /**
  * Layer Renderer Type
  * - "2D": Canvas 2D renderer (most layers use this)
- * - "3D": Three.js WebGL renderer (for 3D objects)
+ * - "3D": Three.js WebGL renderer (for 3D objects, not currently used)
  */
 export type LayerRenderer = "2D" | "3D";
 
 /**
- * LayerConfigEntry - Flattened runtime layer configuration
+ * LayerConfigEntry - Flat layer configuration (runtime format)
  *
- * This is the final structure used by the layer system after JSON transformation.
- * Properties are organized into logical groups:
+ * FOR FUTURE AI AGENTS:
+ * ---------------------
+ * This is the ONLY config type. JSON uses this structure directly (no transformation).
+ * All properties are at the top level - no nested groups.
+ *
+ * PROPERTY GROUPS (logical organization, not code structure):
  *
  * CORE PROPERTIES (always required):
  * - LayerID: Unique identifier for this layer instance
- * - ImageID: Asset reference from the asset registry
+ * - ImageID: Asset reference from ImageRegistry.json
+ * - renderer: Which rendering system ("2D" or "3D")
  * - LayerOrder: Draw order (lower = background, higher = foreground)
- * - renderer: Which rendering system to use ("2D" or "3D")
  * - ImageScale: Size scaling as [x%, y%] percentage (10-500, default 100)
  *
- * BASIC CONFIG (optional, for static positioning):
+ * BASIC POSITIONING (optional, for static layers):
  * - BasicStagePoint: Stage anchor position [x, y] in pixels (0-2048)
  * - BasicImagePoint: Image anchor point [x%, y%] as percentage (0-100)
  * - BasicImageAngle: Static rotation in degrees (0-360)
  *
- * SPIN CONFIG (optional, for rotation animation):
+ * SPIN ANIMATION (optional, for rotating layers):
  * - spinStagePoint: Pivot point on stage [x, y] pixels
  * - spinImagePoint: Pivot point on image [x%, y%] percentage
- * - spinSpeed: Rotation speed in rotations per hour (1 = 1 full rotation in 1 hour)
+ * - spinSpeed: Rotation speed (rotations/hour) or undefined if using alias
+ * - spinSpeedAlias: Clock alias ("second", "minute", "hour")
  * - spinDirection: "cw" (clockwise) or "ccw" (counter-clockwise)
- * - spinFormat (planned): Clock format ("12"/"24") when using alias speeds
- * - spinTimezone (planned): Timezone string ("UTC±HH[:MM]") for alias speeds
+ * - spinFormat: Clock format ("12" or "24") for alias speeds
+ * - spinTimezone: Timezone string ("UTC±HH[:MM]") for alias speeds
  *
- * ORBITAL CONFIG (optional, for orbital motion):
+ * ORBITAL ANIMATION (optional, for orbiting layers):
  * - orbitStagePoint: Orbit center [x, y] stage pixels
  * - orbitLinePoint: Point defining orbit radius [x, y]
- * - orbitImagePoint: Which image point follows the orbit [x%, y%]
- * - orbitLine: Whether to draw the orbit path circle
+ * - orbitImagePoint: Which image point follows orbit [x%, y%]
+ * - orbitLine: Whether to draw orbit path circle
  * - orbitOrient: Auto-rotate image to face orbit direction
- * - orbitSpeed: Orbital rotation speed in rotations per hour (1 = 1 full orbit in 1 hour)
+ * - orbitSpeed: Orbital speed (rotations/hour) or undefined if using alias
+ * - orbitSpeedAlias: Clock alias for orbital motion
  * - orbitDirection: "cw" or "ccw"
- * - orbitFormat (planned): Clock format for alias orbit speeds
- * - orbitTimezone (planned): Timezone string for alias orbit speeds
+ * - orbitFormat: Clock format for orbital alias speeds
+ * - orbitTimezone: Timezone for orbital alias speeds
  *
- * For future AI agents:
- * - A layer needs CORE properties always
- * - Add Basic Config for static positioned layers
- * - Add Spin Config for rotating layers (can work without Basic Config)
- * - Add Orbital Config for orbiting layers (can work without Basic Config)
- * - Spin + Orbital = object spins while orbiting (like Earth)
+ * COMBINING PROPERTIES:
+ * ---------------------
+ * - Core only: Static positioned layer (no animation)
+ * - Core + Spin: Rotating layer
+ * - Core + Orbit: Orbiting layer
+ * - Core + Spin + Orbit: Layer spins while orbiting (like Earth)
  */
 export type LayerConfigEntry = {
   // ===== CORE PROPERTIES (Required) =====
-  /** Unique layer instance identifier (e.g., "GEAR1", "stars-background") */
   LayerID: string;
-  /** Asset ID from asset registry (e.g., "GEAR1", "STARBG") */
   ImageID: string;
-  /** Rendering system: "2D" for canvas, "3D" for Three.js */
   renderer: LayerRenderer;
-  /** Draw order: lower values = drawn first (background), higher = drawn later (foreground) */
   LayerOrder: number;
-  /** Image scale as [xPercent, yPercent] (10-500, default 100). Applied uniformly. */
   ImageScale?: number[];
 
   // ===== BASIC CONFIG (Static Positioning) =====
   /** @deprecated Use BasicStagePoint and BasicImagePoint instead */
   position?: number[];
-  /** Stage anchor point [x, y] in pixels (0-2048). The BasicImagePoint will be placed here. */
   BasicStagePoint?: number[];
-  /** Image anchor point [x, y] as percentage (0-100). This point aligns with BasicStagePoint. */
   BasicImagePoint?: number[];
-  /**
-   * Static rotation angle in degrees (0-360, default 0°).
-   * - 0° = original orientation (no rotation)
-   * - 90° = rotated 90° counter-clockwise
-   * - 180° = upside down
-   * - 270° = rotated 90° clockwise
-   * Note: Rotates around image center (50%, 50%). Separate from position.
-   * Note: When spin animation is active (spinSpeed > 0), this is reset to 0.
-   */
   BasicImageAngle?: number;
 
   // ===== SPIN CONFIG (Rotation Animation) =====
-  /** Pivot point on stage [x, y] in absolute pixels (0-2048). Image rotates around this point. */
   spinStagePoint?: number[];
-  /** Pivot point on image [x%, y%] in percentage (0-100). This point aligns with spinStagePoint. */
   spinImagePoint?: number[];
-  /**
-   * Rotation speed in rotations per hour. 0 or undefined = no rotation.
-   * - 1.0 = 1 full rotation (360°) in 1 hour
-   * - 2.0 = 2 full rotations in 1 hour (faster)
-   * - 0.5 = half rotation (180°) in 1 hour (slower)
-   * Low value = slow speed, High value = fast speed
-   */
   spinSpeed?: number;
-  /** Rotation direction: "cw" (clockwise) or "ccw" (counter-clockwise) */
   spinDirection?: "cw" | "ccw";
-  /** Clock alias speed (e.g., "second", "minute", "hour") */
   spinSpeedAlias?: "second" | "minute" | "hour";
-  /** Clock rotation format when alias speed is active ("12" | "24") */
   spinFormat?: "12" | "24";
-  /** Timezone identifier used for alias speeds (e.g., "UTC+7") */
   spinTimezone?: string;
 
   // ===== ORBITAL CONFIG (Orbital Motion) =====
-  /** Orbit center [x, y] in stage coordinates (0-2048), default [1024, 1024] */
   orbitStagePoint?: number[];
-  /** Point [x, y] defining the orbit radius (distance from orbitStagePoint) */
   orbitLinePoint?: number[];
-  /** Image point [x%, y%] (0-100) that follows the orbital path */
   orbitImagePoint?: number[];
-  /** Whether to render the orbit path circle (visual orbit indicator) */
   orbitLine?: boolean;
-  /** Auto-orient image to face along the orbit radius direction */
   orbitOrient?: boolean;
-  /**
-   * Orbital rotation speed in rotations per hour (0 = static position).
-   * - 1.0 = 1 full orbit (360°) in 1 hour
-   * - 2.0 = 2 full orbits in 1 hour (faster)
-   * - 0.5 = half orbit (180°) in 1 hour (slower)
-   * Low value = slow speed, High value = fast speed
-   */
   orbitSpeed?: number;
-  /** Orbital direction: "cw" (clockwise) or "ccw" (counter-clockwise) */
   orbitDirection?: "cw" | "ccw";
-  /** Clock alias speed for orbital motion (e.g., "second", "minute", "hour") */
   orbitSpeedAlias?: "second" | "minute" | "hour";
-  /** Clock rotation format for orbital alias speeds ("12" | "24") */
   orbitFormat?: "12" | "24";
-  /** Timezone identifier used for orbital alias speeds (e.g., "UTC+7") */
   orbitTimezone?: string;
 };
 
 export type LayerConfig = LayerConfigEntry[];
 
+/**
+ * Clock alias configuration defaults
+ *
+ * FOR FUTURE AI AGENTS:
+ * ---------------------
+ * When a layer uses clock alias (e.g., spinSpeed: "hour"), these defaults apply
+ * if format/timezone are not explicitly specified.
+ */
 const CLOCK_ALIAS_DEFAULT_FORMAT = "24";
 const CLOCK_ALIAS_DEFAULT_TIMEZONE = "UTC";
 const CLOCK_ALIAS_VALUES = new Set(["second", "minute", "hour"]);
 
+/**
+ * Normalize motion configuration for clock aliases
+ *
+ * FOR FUTURE AI AGENTS:
+ * ---------------------
+ * This function handles the special case where speed is a string:
+ *
+ * CASE 1: Numeric string (e.g., "60")
+ * - Convert to number: entry.spinSpeed = 60
+ *
+ * CASE 2: Clock alias (e.g., "second", "minute", "hour")
+ * - Move to alias field: entry.spinSpeedAlias = "second"
+ * - Remove speed field: delete entry.spinSpeed
+ * - Set defaults: spinFormat="24", spinTimezone="UTC" (if not provided)
+ *
+ * CASE 3: Already a number
+ * - No changes
+ *
+ * Example transformations:
+ * - spinSpeed: "60" → spinSpeed: 60
+ * - spinSpeed: "hour" → spinSpeedAlias: "hour", spinFormat: "24", spinTimezone: "UTC"
+ * - spinSpeed: 1.5 → no change
+ *
+ * This modifies the entry object in-place.
+ *
+ * @param entry - Config entry to normalize (modified in-place)
+ * @param speedKey - Which speed field to check ("spinSpeed" or "orbitSpeed")
+ * @param aliasKey - Where to store alias ("spinSpeedAlias" or "orbitSpeedAlias")
+ * @param formatKey - Where to store format ("spinFormat" or "orbitFormat")
+ * @param timezoneKey - Where to store timezone ("spinTimezone" or "orbitTimezone")
+ */
 function normalizeMotionGroup(
-  group: Record<string, unknown>,
+  entry: Record<string, unknown>,
   speedKey: "spinSpeed" | "orbitSpeed",
   aliasKey: "spinSpeedAlias" | "orbitSpeedAlias",
   formatKey: "spinFormat" | "orbitFormat",
   timezoneKey: "spinTimezone" | "orbitTimezone",
 ): void {
-  const rawSpeed = group[speedKey];
+  const rawSpeed = entry[speedKey];
 
+  // Handle string speed values
   if (typeof rawSpeed === "string") {
     const numeric = Number(rawSpeed);
+    
+    // Try parsing as number
     if (!Number.isNaN(numeric)) {
-      group[speedKey] = numeric;
-    } else if (CLOCK_ALIAS_VALUES.has(rawSpeed)) {
-      if (!group[aliasKey]) {
-        group[aliasKey] = rawSpeed;
+      entry[speedKey] = numeric;
+    } 
+    // Check if it's a clock alias
+    else if (CLOCK_ALIAS_VALUES.has(rawSpeed)) {
+      if (!entry[aliasKey]) {
+        entry[aliasKey] = rawSpeed;
       }
-      delete group[speedKey];
+      delete entry[speedKey];
     }
   }
 
-  if (group[aliasKey]) {
-    if (!group[formatKey]) {
-      group[formatKey] = CLOCK_ALIAS_DEFAULT_FORMAT;
+  // If alias is set, ensure format and timezone have defaults
+  if (entry[aliasKey]) {
+    if (!entry[formatKey]) {
+      entry[formatKey] = CLOCK_ALIAS_DEFAULT_FORMAT;
     }
-    if (!group[timezoneKey]) {
-      group[timezoneKey] = CLOCK_ALIAS_DEFAULT_TIMEZONE;
+    if (!entry[timezoneKey]) {
+      entry[timezoneKey] = CLOCK_ALIAS_DEFAULT_TIMEZONE;
     }
   }
 }
 
 /**
- * ConfigYuzhaEntry - JSON structure from ConfigYuzha.json
+ * Normalize config entries for clock aliases
  *
- * The JSON file uses a grouped structure for better organization:
- * - Core properties (LayerID, ImageID, etc.) are at top level
- * - ImageScale is at top level (moved from Basic Config for clarity)
- * - Related settings are grouped ("Basic Config", "Spin Config", etc.)
+ * FOR FUTURE AI AGENTS:
+ * ---------------------
+ * Processes the raw JSON config to handle clock alias strings.
+ * Each entry is normalized in-place for both spin and orbit motion.
  *
- * Example minimal layer (Core only):
- * {
- *   "LayerID": "my-layer",
- *   "ImageID": "MY_ASSET",
- *   "renderer": "2D",
- *   "LayerOrder": 100,
- *   "ImageScale": [100, 100]
- * }
+ * This is the transformation step between JSON loading and validation.
  *
- * Example with Spin (Core + Spin Config):
- * {
- *   "LayerID": "spinning-gear",
- *   "ImageID": "GEAR1",
- *   "renderer": "2D",
- *   "LayerOrder": 200,
- *   "ImageScale": [80, 80],
- *   "groups": {
- *     "Spin Config": {
- *       "spinStagePoint": [1024, 1024],
- *       "spinImagePoint": [50, 50],
- *       "spinSpeed": 10,
- *       "spinDirection": "cw"
- *     }
- *   }
- * }
- *
- * For future AI agents:
- * - groups are OPTIONAL - a layer can have just Core properties
- * - Groups can be mixed: Basic + Spin, Core + Orbit, Core + Spin + Orbit, etc.
- * - transformConfig() below flattens this structure into LayerConfigEntry
+ * @param config - Array of config entries from JSON
+ * @returns Same array (entries modified in-place)
  */
-type ConfigYuzhaEntry = {
-  // Core properties (always at top level)
-  LayerID: string;
-  ImageID: string;
-  renderer: "2D" | "3D";
-  LayerOrder: number;
-  ImageScale?: number[]; // Moved to top level (was in Basic Config)
-
-  // Optional grouped configurations
-  groups?: {
-    [groupName: string]: {
-      // Basic Config properties
-      position?: number[];
-      BasicStagePoint?: number[];
-      BasicImagePoint?: number[];
-      BasicImageAngle?: number; // Renamed from BasicAngleImage
-
-      // Spin Config properties
-      spinStagePoint?: number[];
-      spinImagePoint?: number[];
-      spinSpeed?: number;
-      spinDirection?: "cw" | "ccw";
-
-      // Orbital Config properties
-      orbitStagePoint?: number[];
-      orbitLinePoint?: number[];
-      orbitImagePoint?: number[];
-      orbitLine?: boolean;
-      orbitOrient?: boolean;
-      orbitSpeed?: number;
-      orbitDirection?: "cw" | "ccw";
-    };
-  };
-};
-
-/**
- * Transform grouped JSON structure to flat LayerConfigEntry format
- *
- * This function:
- * 1. Extracts core properties from top level (LayerID, ImageID, LayerOrder, ImageScale, renderer)
- * 2. Merges group properties in priority order: Basic ? Spin ? Orbital
- * 3. Applies special merge rules (e.g., Spin overrides Basic positioning when active)
- *
- * Merge Priority (later groups override earlier ones):
- * 1. Core (LayerID, ImageID, LayerOrder, ImageScale, renderer) - always present
- * 2. Basic Config - static positioning and rotation
- * 3. Spin Config - overrides BasicStagePoint/BasicImagePoint when spinSpeed > 0
- * 4. Orbital Config - orbital motion settings
- *
- * Special Rules:
- * - When spinSpeed > 0: Spin positioning replaces Basic positioning, BasicImageAngle resets to 0
- * - When spinSpeed = 0 or undefined: Spin config is stored but doesn't override Basic positioning
- * - Groups are optional: a layer with only Core properties is valid
- *
- * For future AI agents:
- * - If you add new properties, add them to both types and this merge function
- * - Preserve the merge order to maintain config priority behavior
- * - Test with layers that have: Core only, Core+Spin, Core+Orbital, Core+Spin+Orbital
- *
- * @param raw - Array of ConfigYuzhaEntry from JSON file
- * @returns Array of flattened LayerConfigEntry for runtime use
- */
-function transformConfig(raw: ConfigYuzhaEntry[]): LayerConfig {
-  return raw.map((entry) => {
-    // Step 1: Start with Core properties (always required)
-    const merged: Partial<LayerConfigEntry> = {
-      LayerID: entry.LayerID,
-      ImageID: entry.ImageID,
-      renderer: entry.renderer as LayerRenderer,
-      LayerOrder: entry.LayerOrder,
-      ImageScale: entry.ImageScale, // Now at top level
-    };
-
-    // Step 2: Extract config groups (all are optional)
-    const groups = entry.groups || {};
-    const basic = groups["Basic Config"] || {};
-    const spin = groups["Spin Config"] || {};
-    const orbital = groups["Orbital Config"] || {};
-
-    normalizeMotionGroup(spin, "spinSpeed", "spinSpeedAlias", "spinFormat", "spinTimezone");
-    normalizeMotionGroup(orbital, "orbitSpeed", "orbitSpeedAlias", "orbitFormat", "orbitTimezone");
-
-    // Step 3: Merge Basic Config (static positioning and rotation)
-    // These provide default positioning when no animation is active
-    Object.assign(merged, basic);
-
-    // Step 4: Merge Spin Config with special rules
-    if (spin.spinSpeed && spin.spinSpeed > 0) {
-      // Active spin: merge only dynamic spin data (basic anchors stay untouched)
-      Object.assign(merged, spin);
-
-      // Reset static rotation: spin controls rotation dynamically
-      merged.BasicImageAngle = 0;
-    } else {
-      // Inactive spin: just store spin config for potential future use
-      Object.assign(merged, spin);
-    }
-
-    // Step 5: Merge Orbital Config
-    // Orbital properties are independent and don't override Basic/Spin
-    if (orbital.orbitStagePoint) merged.orbitStagePoint = orbital.orbitStagePoint;
-    if (orbital.orbitLinePoint) merged.orbitLinePoint = orbital.orbitLinePoint;
-    if (orbital.orbitImagePoint) merged.orbitImagePoint = orbital.orbitImagePoint;
-    if (orbital.orbitLine !== undefined) merged.orbitLine = orbital.orbitLine;
-    if (orbital.orbitOrient !== undefined) merged.orbitOrient = orbital.orbitOrient;
-    if (orbital.orbitSpeed !== undefined) merged.orbitSpeed = orbital.orbitSpeed;
-    if (orbital.orbitDirection) merged.orbitDirection = orbital.orbitDirection;
-
-    return merged as LayerConfigEntry;
+function normalizeConfig(config: LayerConfigEntry[]): LayerConfig {
+  config.forEach((entry) => {
+    // Normalize spin motion aliases
+    normalizeMotionGroup(entry as Record<string, unknown>, "spinSpeed", "spinSpeedAlias", "spinFormat", "spinTimezone");
+    
+    // Normalize orbit motion aliases
+    normalizeMotionGroup(entry as Record<string, unknown>, "orbitSpeed", "orbitSpeedAlias", "orbitFormat", "orbitTimezone");
   });
+
+  return config;
 }
 
 /**
  * Validate layer configuration entry for common errors
  *
- * Checks:
- * - Required core properties are present
- * - Numeric values are in valid ranges
- * - No invalid enum values
+ * FOR FUTURE AI AGENTS:
+ * ---------------------
+ * Checks a single config entry for:
+ * - Required core properties (LayerID, ImageID, renderer, LayerOrder)
+ * - Valid numeric ranges (ImageScale: 10-500%, angles: 0-360°)
+ * - Non-negative speeds
  *
- * For future AI agents:
- * - Add validation when you add new properties with constraints
- * - Return descriptive error messages (shown in console during dev)
+ * Returns array of error messages (empty if valid).
+ * Errors are logged to console in development but don't block loading.
+ *
+ * To add new validations:
+ * 1. Check property value
+ * 2. Push descriptive error message to errors array
+ * 3. Return errors array
  *
  * @param entry - Layer config to validate
  * @returns Array of error messages (empty if valid)
@@ -377,14 +332,22 @@ export function validateLayerConfig(entry: LayerConfigEntry): string[] {
 /**
  * Validate entire config and log warnings for any issues
  *
+ * FOR FUTURE AI AGENTS:
+ * ---------------------
+ * Validates all config entries and logs errors to console.
  * Only runs in development mode for performance.
- * Logs validation errors to console but doesn't block loading.
+ *
+ * Validation errors are warnings - they don't block config loading.
+ * This allows partial configs to work while highlighting issues.
  *
  * @param config - Full layer config array
  * @returns Same config (for chaining)
  */
 function validateConfig(config: LayerConfig): LayerConfig {
-  const IS_DEV = import.meta.env?.DEV ?? true;
+  const IS_DEV = typeof import.meta !== 'undefined' && 
+                 typeof (import.meta as any).env !== 'undefined' ? 
+                 (import.meta as any).env.DEV : true;
+                 
   if (!IS_DEV) return config; // Skip validation in production
 
   config.forEach((entry, index) => {
@@ -401,28 +364,57 @@ function validateConfig(config: LayerConfig): LayerConfig {
 }
 
 /**
- * Main config pipeline:
- * 1. Load raw JSON (ConfigYuzhaEntry[])
- * 2. Transform to flat structure (LayerConfigEntry[])
+ * Main config pipeline
+ *
+ * FOR FUTURE AI AGENTS:
+ * ---------------------
+ * The complete loading and processing pipeline:
+ *
+ * 1. Load ConfigYuzha.json (raw flat structure)
+ * 2. Normalize clock aliases (string → alias fields)
  * 3. Validate entries (development only)
  * 4. Sort by LayerOrder (ascending = background to foreground)
+ *
+ * This executes once at module initialization.
+ * The result is cached and returned by loadLayerConfig().
+ *
+ * PIPELINE FLOW:
+ * rawConfig → normalizeConfig() → validateConfig() → sort by LayerOrder → config
  */
 const config: LayerConfig = validateConfig(
-  transformConfig(rawConfig as unknown as ConfigYuzhaEntry[])
-    .slice()
-    .sort((a, b) => (a.LayerOrder ?? 0) - (b.LayerOrder ?? 0)),
-);
+  normalizeConfig(rawConfig as unknown as LayerConfigEntry[])
+).sort((a, b) => (a.LayerOrder ?? 0) - (b.LayerOrder ?? 0));
 
 /**
  * Get the loaded and processed layer configuration
  *
- * For future AI agents:
- * - This is the main entry point used by the layer system
- * - Config is loaded once at module initialization
- * - Returns sorted, validated, flattened config ready for rendering
+ * FOR FUTURE AI AGENTS:
+ * ---------------------
+ * This is the MAIN ENTRY POINT used by the layer system.
+ *
+ * What you get:
+ * - Flat config entries (no groups)
+ * - Clock aliases normalized (spinSpeedAlias, orbitSpeedAlias)
+ * - Validated (warnings logged in dev)
+ * - Sorted by LayerOrder (background to foreground)
+ *
+ * The config is loaded once at module initialization.
+ * Subsequent calls return the same cached array.
+ *
+ * Usage:
+ * ```typescript
+ * import { loadLayerConfig } from "./Config";
+ * 
+ * const layers = loadLayerConfig();
+ * layers.forEach(layer => {
+ *   // Each layer is a LayerConfigEntry with flat properties
+ *   console.log(layer.LayerID, layer.spinSpeed, layer.spinSpeedAlias);
+ * });
+ * ```
  *
  * @returns Sorted array of layer configurations
  */
 export function loadLayerConfig(): LayerConfig {
+  console.log('[Config] Loaded flat config with', config.length, 'layers');
   return config;
 }
