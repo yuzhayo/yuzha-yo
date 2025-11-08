@@ -1,7 +1,7 @@
 [
   {
     "LayerID": "sample",
-    "ImageID": "zodiac0",
+    "ImageID": "SAMPLE",
     "renderer": "2D",
     "LayerOrder": 1000,
     "ImageScale": [200, 200],
@@ -27,7 +27,7 @@
     "ImageScale": [100, 100],
     "spinStagePoint": [1024, 1024],
     "spinImagePoint": [50, 50],
-    "spinSpeed": 10,
+    "spinSpeed": "minute",
     "spinDirection": "cw"
   },
 
@@ -238,19 +238,7 @@
     "spinDirection": "cw",
     "spinFormat": "24",
     "spinTimezone": "UTC+7"
-  },
-
-  {
-    "LayerID": "clock-minute-hand",
-    "ImageID": "sprite_005-",
-    "renderer": "2D",
-    "LayerOrder": 900,
-    "ImageScale": [100, 128],
-    "spinStagePoint": [1024, 1024],
-    "spinImagePoint": [50, 118],
-    "spinSpeed": "hour",
-    "spinDirection": "cw",
-    "spinFormat": "12",
-    "spinTimezone": "UTC+7"
   }
+
+
 ]
