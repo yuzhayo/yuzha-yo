@@ -77,7 +77,27 @@ import registryData from "../asset/ImageRegistry.json" assert { type: "json" };
 // ============================================================================
 // Convert imageId to file paths, URLs, and load image dimensions.
 // FOR FUTURE AI AGENTS: This is how we find and load image files.
+//
+// CRITICAL FOR PRODUCTION BUILDS:
+// We use import.meta.glob to statically import all assets. This allows Vite
+// to analyze and bundle assets at build time, preventing 404s in production.
+// Dynamic URL construction with new URL(variable, import.meta.url) breaks builds!
 // ============================================================================
+
+/**
+ * Static asset manifest using import.meta.glob
+ * 
+ * This ensures Vite can statically analyze which assets to bundle in production.
+ * The eager:true loads all URLs immediately, and query:'?url' gives us the URL string.
+ * 
+ * Maps: '../asset/filename.png' → '/assets/filename-hash.png' (in production)
+ *       '../asset/filename.png' → '/@fs/.../shared/asset/filename.png' (in dev)
+ */
+const assetManifest = import.meta.glob('../asset/*.{png,jpg,jpeg,gif,svg,webp}', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+}) as Record<string, string>;
 
 type AssetRegistryEntry = { id: string; path: string };
 const registry = registryData as Array<AssetRegistryEntry>;
@@ -124,6 +144,22 @@ export function resolveAssetPath(imageId: string): string | null {
  *
  * Transforms registry path to URL that can be loaded by browser
  *
+ * FOR FUTURE AI AGENTS:
+ * ---------------------
+ * This function uses the static asset manifest created by import.meta.glob.
+ * This is CRITICAL for production builds - Vite can only bundle assets that
+ * are statically analyzable. Dynamic URL construction breaks production builds!
+ *
+ * HOW IT WORKS:
+ * 1. Registry has: "shared/asset/image.png"
+ * 2. We extract: "image.png"
+ * 3. We look up: "../asset/image.png" in assetManifest
+ * 4. Manifest returns: production URL (with hash) or dev URL (/@fs/ path)
+ *
+ * CASE SENSITIVITY:
+ * The registry paths must use lowercase "shared/asset/" to match the
+ * actual directory structure. Case sensitivity matters on Linux/production.
+ *
  * @param path - Asset path from registry (e.g., "shared/asset/image.png")
  * @returns URL for loading the asset
  */
@@ -131,11 +167,29 @@ export function resolveAssetUrl(path: string): string {
   if (!path || typeof path !== "string") {
     throw new Error(`Invalid asset path: ${path}`);
   }
+  
+  // Validate path format (case-insensitive check)
   if (!path.toLowerCase().startsWith("shared/asset/")) {
     throw new Error(`Unsupported asset path: ${path}`);
   }
-  const relative = path.replace(/^shared\/asset\//i, "../asset/");
-  return new URL(relative, import.meta.url).href;
+  
+  // Extract filename: "shared/asset/file.png" → "file.png"
+  const filename = path.replace(/^shared\/asset\//i, "");
+  
+  // Build manifest key (relative to THIS file: shared/layer/engine.ts)
+  const manifestKey = `../asset/${filename}`;
+  
+  // Look up in static asset manifest (populated by import.meta.glob)
+  const url = assetManifest[manifestKey];
+  
+  if (!url) {
+    throw new Error(
+      `Asset not found in manifest: ${manifestKey} (from registry path: ${path}). ` +
+      `Available assets: ${Object.keys(assetManifest).join(', ')}`
+    );
+  }
+  
+  return url;
 }
 
 /**
