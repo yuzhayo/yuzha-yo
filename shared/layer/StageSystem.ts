@@ -35,9 +35,8 @@
  * @module StageSystem
  */
 
+import { loadLayerConfig, type LayerConfigEntry } from "./model";
 import {
-  loadLayerConfig,
-  type LayerConfigEntry,
   is2DLayer,
   prepareLayer,
   getProcessorsForEntry,
@@ -46,7 +45,7 @@ import {
   type EnhancedLayerData,
   type LayerProcessor,
   type LayerMotionMarker,
-} from "./index";
+} from "./engine";
 
 // ============================================================================
 // SECTION 1: COORDINATE SYSTEM
