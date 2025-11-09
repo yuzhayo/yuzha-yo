@@ -513,4 +513,4 @@ function appendMotionMarkers(target: StageMarker[], markers: LayerMotionMarker[]
 // ============================================================================
 
 export type { ProcessorContext, EnhancedLayerData, LayerProcessor } from "./engine";
-export type { LayerConfigEntry } from "./Config";
+export type { LayerConfigEntry } from "./index";
