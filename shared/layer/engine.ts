@@ -86,17 +86,17 @@ import registryData from "../asset/ImageRegistry.json" assert { type: "json" };
 
 /**
  * Static asset manifest using import.meta.glob
- * 
+ *
  * This ensures Vite can statically analyze which assets to bundle in production.
  * The eager:true loads all URLs immediately, and query:'?url' gives us the URL string.
- * 
+ *
  * Maps: '../asset/filename.png' → '/assets/filename-hash.png' (in production)
  *       '../asset/filename.png' → '/@fs/.../shared/asset/filename.png' (in dev)
  */
-const assetManifest = import.meta.glob('../asset/*.{png,jpg,jpeg,gif,svg,webp}', {
+const assetManifest = import.meta.glob("../asset/*.{png,jpg,jpeg,gif,svg,webp}", {
   eager: true,
-  query: '?url',
-  import: 'default',
+  query: "?url",
+  import: "default",
 }) as Record<string, string>;
 
 type AssetRegistryEntry = { id: string; path: string };
@@ -167,28 +167,28 @@ export function resolveAssetUrl(path: string): string {
   if (!path || typeof path !== "string") {
     throw new Error(`Invalid asset path: ${path}`);
   }
-  
+
   // Validate path format (case-insensitive check)
   if (!path.toLowerCase().startsWith("shared/asset/")) {
     throw new Error(`Unsupported asset path: ${path}`);
   }
-  
+
   // Extract filename: "shared/asset/file.png" → "file.png"
   const filename = path.replace(/^shared\/asset\//i, "");
-  
+
   // Build manifest key (relative to THIS file: shared/layer/engine.ts)
   const manifestKey = `../asset/${filename}`;
-  
+
   // Look up in static asset manifest (populated by import.meta.glob)
   const url = assetManifest[manifestKey];
-  
+
   if (!url) {
     throw new Error(
       `Asset not found in manifest: ${manifestKey} (from registry path: ${path}). ` +
-      `Available assets: ${Object.keys(assetManifest).join(', ')}`
+        `Available assets: ${Object.keys(assetManifest).join(", ")}`,
     );
   }
-  
+
   return url;
 }
 

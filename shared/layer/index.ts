@@ -120,7 +120,7 @@ export {
   // Configuration loading
   loadLayerConfig,
   validateLayerConfig,
-  
+
   // Clock constants
   CLOCK_DEFAULTS,
   CLOCK_SPEED_ALIASES,
@@ -161,7 +161,7 @@ export {
   // Angle & rotation math
   normalizeAngle,
   calculateAngleToPoint,
-  
+
   // Clock/time functions
   toDirectionSign,
   parseTimezoneOffset,

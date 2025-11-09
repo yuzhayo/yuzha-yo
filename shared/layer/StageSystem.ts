@@ -37,7 +37,6 @@
 
 import {
   loadLayerConfig,
-  validateLayerConfig,
   type LayerConfigEntry,
   is2DLayer,
   prepareLayer,
