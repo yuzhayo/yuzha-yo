@@ -35,17 +35,20 @@
  * @module StageSystem
  */
 
-import { loadLayerConfig, type LayerConfigEntry } from "./model";
 import {
-  is2DLayer,
-  prepareLayer,
-  getProcessorsForEntry,
-  buildLayerMotion,
+  loadLayerConfig,
+  type LayerConfigEntry,
+  type LayerMotionMarker,
   type ProcessorContext,
   type EnhancedLayerData,
   type LayerProcessor,
-  type LayerMotionMarker,
-} from "./engine";
+  type Point2D,
+  type ImageMapping,
+} from "./model";
+import { is2DLayer, prepareLayer, getProcessorsForEntry } from "./engine";
+import { buildLayerMotion } from "./motion";
+
+const IS_DEV = import.meta.env?.DEV ?? false;
 
 // ============================================================================
 // SECTION 1: COORDINATE SYSTEM
@@ -364,6 +367,56 @@ export type StageMarker = {
   };
 };
 
+/** Axis-aligned bounds helper used for culling decisions. */
+export type LayerBounds = {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+};
+
+export function computeLayerBounds(
+  position: Point2D,
+  scale: Point2D,
+  imageMapping: ImageMapping,
+): LayerBounds {
+  const width = imageMapping.imageDimensions.width * scale.x;
+  const height = imageMapping.imageDimensions.height * scale.y;
+  const halfWidth = width / 2;
+  const halfHeight = height / 2;
+  return {
+    minX: position.x - halfWidth,
+    maxX: position.x + halfWidth,
+    minY: position.y - halfHeight,
+    maxY: position.y + halfHeight,
+  };
+}
+
+export function isLayerWithinStageBounds(
+  bounds: LayerBounds,
+  stageSize: number,
+  padding: number = 0,
+): boolean {
+  return !(
+    bounds.maxX < -padding ||
+    bounds.minX > stageSize + padding ||
+    bounds.maxY < -padding ||
+    bounds.minY > stageSize + padding
+  );
+}
+
+export function isLayerWithinStage(
+  layer: { position: Point2D; scale: Point2D; imageMapping: ImageMapping },
+  stageSize: number,
+  padding: number = 0,
+): boolean {
+  return isLayerWithinStageBounds(
+    computeLayerBounds(layer.position, layer.scale, layer.imageMapping),
+    stageSize,
+    padding,
+  );
+}
+
 /**
  * Complete stage pipeline - all layers prepared and ready for rendering.
  * This is what gets passed to renderers (DOM, Canvas, Three.js).
@@ -447,8 +500,21 @@ export async function createStagePipeline(
 
           // Attach processors (spin, orbit, debug, etc.)
           const processors = getProcessorsForEntry(entry, processorContext);
+          const enhancedLayer = layer as EnhancedLayerData;
+          const hasAnimation =
+            processors.length > 0 ||
+            Boolean(enhancedLayer.hasSpinAnimation || enhancedLayer.hasOrbitalAnimation);
 
-          const motionArtifacts = buildLayerMotion(entry, layer, stageSize);
+          if (!hasAnimation && !isLayerWithinStage(enhancedLayer, stageSize)) {
+            if (IS_DEV) {
+              console.info(
+                `[StageSystem] Skipping static offscreen layer "${entry.LayerID}" (${entry.ImageID})`,
+              );
+            }
+            return null;
+          }
+
+          const motionArtifacts = buildLayerMotion(entry, enhancedLayer, stageSize);
           if (motionArtifacts.processor) {
             processors.push(motionArtifacts.processor as LayerProcessor);
           }
@@ -458,7 +524,7 @@ export async function createStagePipeline(
 
           return {
             entry,
-            data: layer as EnhancedLayerData,
+            data: enhancedLayer,
             processors,
           } satisfies PreparedLayer;
         } catch (error) {
@@ -510,5 +576,5 @@ function appendMotionMarkers(target: StageMarker[], markers: LayerMotionMarker[]
 // Re-export types and functions that are commonly used together with this module
 // ============================================================================
 
-export type { ProcessorContext, EnhancedLayerData, LayerProcessor } from "./engine";
+export type { ProcessorContext, EnhancedLayerData, LayerProcessor } from "./model";
 export type { LayerConfigEntry } from "./index";

@@ -37,11 +37,13 @@ import {
   toRendererInput,
   createStageTransformer,
   roundStagePoint,
-  STAGE_SIZE,
   type StagePipeline,
   type StageMarker,
+  type LayerBounds,
   type EnhancedLayerData,
   type LayerProcessor,
+  computeLayerBounds,
+  isLayerWithinStageBounds,
 } from "./StageSystem";
 import { loadImage, runPipeline, createPipelineCache } from "./engine";
 import { getImageCenter, AnimationConstants } from "./math";
@@ -80,6 +82,27 @@ type CanvasTransformCache = {
   hasRotation: boolean;
 };
 
+const transformCachePool: CanvasTransformCache[] = [];
+const STATIC_CULL_PADDING = 4;
+const DYNAMIC_CULL_PADDING = 48;
+
+const acquireTransformCache = (): CanvasTransformCache =>
+  transformCachePool.pop() ?? {
+    scaledWidth: 0,
+    scaledHeight: 0,
+    centerX: 0,
+    centerY: 0,
+    pivotX: 0,
+    pivotY: 0,
+    dx: 0,
+    dy: 0,
+    hasRotation: false,
+  };
+
+const releaseTransformCache = (cache: CanvasTransformCache): void => {
+  transformCachePool.push(cache);
+};
+
 /**
  * Internal representation of a Canvas layer.
  * Contains the image and data needed for rendering.
@@ -97,6 +120,8 @@ type CanvasLayerEntry = {
   isStatic: boolean;
   /** Whether this layer has animation */
   hasAnimation: boolean;
+  /** Precomputed bounds for the base layer state */
+  baseBounds: LayerBounds;
 };
 
 /**
@@ -130,6 +155,7 @@ async function mountCanvasLayers(
   ctx: CanvasRenderingContext2D,
   layersWithProcessors: Array<{ data: EnhancedLayerData; processors: LayerProcessor[] }>,
   markers: StageMarker[] = [],
+  stageSize: number,
 ): Promise<() => void> {
   const layers: CanvasLayerEntry[] = [];
 
@@ -142,27 +168,34 @@ async function mountCanvasLayers(
       const hasAnimation = !isStatic;
 
       // Pre-calculate transform values for performance
-      const scaledWidth = image.width * item.data.scale.x;
-      const scaledHeight = image.height * item.data.scale.y;
-      const centerX = (image.width / 2) * item.data.scale.x;
-      const centerY = (image.height / 2) * item.data.scale.y;
+      const transformCache = acquireTransformCache();
+      transformCache.scaledWidth = image.width * item.data.scale.x;
+      transformCache.scaledHeight = image.height * item.data.scale.y;
+      transformCache.centerX = (image.width / 2) * item.data.scale.x;
+      transformCache.centerY = (image.height / 2) * item.data.scale.y;
       const pivot = getImageCenter(item.data.imageMapping);
-      const pivotX = pivot.x * item.data.scale.x;
-      const pivotY = pivot.y * item.data.scale.y;
-      const dx = centerX - pivotX;
-      const dy = centerY - pivotY;
+      transformCache.pivotX = pivot.x * item.data.scale.x;
+      transformCache.pivotY = pivot.y * item.data.scale.y;
+      transformCache.dx = transformCache.centerX - transformCache.pivotX;
+      transformCache.dy = transformCache.centerY - transformCache.pivotY;
+      transformCache.hasRotation = (item.data.rotation ?? 0) !== 0;
 
-      const transformCache: CanvasTransformCache = {
-        scaledWidth,
-        scaledHeight,
-        centerX,
-        centerY,
-        pivotX,
-        pivotY,
-        dx,
-        dy,
-        hasRotation: (item.data.rotation ?? 0) !== 0,
-      };
+      const baseBounds = computeLayerBounds(
+        item.data.position,
+        item.data.scale,
+        item.data.imageMapping,
+      );
+      if (
+        isStatic &&
+        item.data.visible !== false &&
+        !isLayerWithinStageBounds(baseBounds, stageSize)
+      ) {
+        releaseTransformCache(transformCache);
+        if (IS_DEV) {
+          console.info(`[StageCanvas] Skipping offscreen static layer "${item.data.LayerID}"`);
+        }
+        continue;
+      }
 
       layers.push({
         image,
@@ -171,6 +204,7 @@ async function mountCanvasLayers(
         transformCache,
         isStatic,
         hasAnimation,
+        baseBounds,
       });
     } catch (error) {
       if (IS_DEV) {
@@ -235,13 +269,28 @@ async function mountCanvasLayers(
   };
 
   const pipelineCache = createPipelineCache<EnhancedLayerData>();
+  const releaseCaches = (): void => {
+    for (const layer of layers) {
+      releaseTransformCache(layer.transformCache);
+    }
+    layers.length = 0;
+  };
+
+  const computeRuntimeBounds = (data: EnhancedLayerData): LayerBounds =>
+    computeLayerBounds(data.position, data.scale, data.imageMapping);
+
+  const shouldRenderLayer = (layer: CanvasLayerEntry, enhancedData: EnhancedLayerData): boolean => {
+    if (enhancedData.visible === false) return false;
+    const padding = layer.hasAnimation ? DYNAMIC_CULL_PADDING : STATIC_CULL_PADDING;
+    return isLayerWithinStageBounds(computeRuntimeBounds(enhancedData), stageSize, padding);
+  };
 
   /**
    * Renders a single layer to the canvas.
    * Handles positioning, rotation, and scaling.
    */
   const renderLayer = (layer: CanvasLayerEntry, enhancedData: EnhancedLayerData) => {
-    if (enhancedData.visible === false) return;
+    if (!shouldRenderLayer(layer, enhancedData)) return;
 
     const { transformCache } = layer;
     const rotation =
@@ -278,9 +327,7 @@ async function mountCanvasLayers(
    * Clears canvas, updates all layers, renders composited pixels.
    */
   const renderFrame = (timestamp: number) => {
-    ctx.clearRect(0, 0, STAGE_SIZE, STAGE_SIZE);
-    const frameData = new Map<string, EnhancedLayerData>();
-
+    ctx.clearRect(0, 0, stageSize, stageSize);
     // Render all layers
     for (const layer of layers) {
       const enhancedData =
@@ -290,7 +337,6 @@ async function mountCanvasLayers(
             )
           : layer.baseData;
 
-      frameData.set(layer.baseData.LayerID, enhancedData);
       renderLayer(layer, enhancedData);
     }
 
@@ -305,12 +351,12 @@ async function mountCanvasLayers(
     requestAnimationFrame(renderFrame);
     return () => {
       pipelineCache.clear();
+      releaseCaches();
     };
   }
 
   // For static scenes, render once
-  const frameData = new Map<string, EnhancedLayerData>();
-  ctx.clearRect(0, 0, STAGE_SIZE, STAGE_SIZE);
+  ctx.clearRect(0, 0, stageSize, stageSize);
   const renderStaticLayer = (layer: CanvasLayerEntry) => {
     const enhancedData =
       layer.processors.length > 0 ? runPipeline(layer.baseData, layer.processors) : layer.baseData;
@@ -319,12 +365,14 @@ async function mountCanvasLayers(
   };
 
   for (const layer of layers) {
-    frameData.set(layer.baseData.LayerID, renderStaticLayer(layer));
+    renderStaticLayer(layer);
   }
 
   renderMarkers();
 
-  return () => {};
+  return () => {
+    releaseCaches();
+  };
 }
 
 // ============================================================================
@@ -372,6 +420,7 @@ async function mountCanvasRenderer(
     context,
     toRendererInput(pipeline),
     pipeline.markers ?? [],
+    pipeline.stageSize,
   );
 
   return () => {

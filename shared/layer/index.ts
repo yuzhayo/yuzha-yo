@@ -114,6 +114,13 @@ export type {
   ClockSpeedSetting,
   ClockMotionConfig,
   ResolvedClockSpeed,
+
+  // Processor & motion types
+  LayerProcessor,
+  ProcessorContext,
+  EnhancedLayerData,
+  LayerMotionMarker,
+  LayerMotionArtifacts,
 } from "./model";
 
 export {
@@ -188,17 +195,6 @@ export {
 // ============================================================================
 
 export type {
-  // Enhanced layer data (includes processor properties)
-  EnhancedLayerData,
-
-  // Processor types
-  LayerProcessor,
-  ProcessorContext,
-
-  // Motion types
-  LayerMotionMarker,
-  LayerMotionArtifacts,
-
   // Performance types
   LayerBatch,
 } from "./engine";
@@ -221,11 +217,12 @@ export {
   is2DLayer,
   compute2DTransform,
 
-  // Motion processing
-  buildLayerMotion,
-
   // Processor registry
   registerProcessor,
+  unregisterProcessor,
+  clearProcessors,
+  listRegisteredProcessors,
+  resolveProcessorsForEntry,
   getProcessorsForEntry,
 
   // Pipeline execution
@@ -241,6 +238,12 @@ export {
   StaticLayerBuffer,
   batchLayersByAnimation,
 } from "./engine";
+
+// ============================================================================
+// MOTION EXPORTS - Motion builder utilities
+// ============================================================================
+
+export { buildLayerMotion } from "./motion";
 
 // ============================================================================
 // STAGE SYSTEM & RENDERERS

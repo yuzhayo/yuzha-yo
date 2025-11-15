@@ -38,10 +38,12 @@ import {
   toRendererInput,
   createStageTransformer,
   roundStagePoint,
-  STAGE_SIZE,
   type StagePipeline,
   type EnhancedLayerData,
   type LayerProcessor,
+  type LayerBounds,
+  computeLayerBounds,
+  isLayerWithinStageBounds,
 } from "./StageSystem";
 import { runPipeline, createPipelineCache } from "./engine";
 import { AnimationConstants } from "./math";
@@ -93,6 +95,8 @@ type ThreeMeshEntry = {
   isStatic: boolean;
   /** Whether this layer has animation */
   hasAnimation: boolean;
+  /** Precomputed bounds for the base layer */
+  baseBounds: LayerBounds;
 };
 
 /**
@@ -133,10 +137,19 @@ async function mountThreeLayers(
   renderer: THREE.WebGLRenderer,
   camera: THREE.Camera,
   layersWithProcessors: Array<{ data: EnhancedLayerData; processors: LayerProcessor[] }>,
+  stageSize: number,
 ): Promise<() => void> {
   const meshData: ThreeMeshEntry[] = [];
   const textureLoader = new THREE.TextureLoader();
   const pipelineCache = createPipelineCache<EnhancedLayerData>();
+  const halfStage = stageSize / 2;
+  const computeRuntimeBounds = (data: EnhancedLayerData): LayerBounds =>
+    computeLayerBounds(data.position, data.scale, data.imageMapping);
+  const shouldRenderEntry = (entry: ThreeMeshEntry, enhanced: EnhancedLayerData): boolean => {
+    if (enhanced.visible === false) return false;
+    const padding = entry.hasAnimation ? 96 : 40;
+    return isLayerWithinStageBounds(computeRuntimeBounds(enhanced), stageSize, padding);
+  };
 
   // Load all textures in parallel
   const texturePromises = layersWithProcessors.map(async (item) => {
@@ -177,6 +190,15 @@ async function mountThreeLayers(
       scaledHeight,
       hasRotation: (data.rotation ?? 0) !== 0,
     };
+    const baseBounds = computeLayerBounds(data.position, data.scale, data.imageMapping);
+    const offscreenStatic =
+      isStatic && data.visible !== false && !isLayerWithinStageBounds(baseBounds, stageSize);
+    if (offscreenStatic) {
+      if (typeof texture.dispose === "function") {
+        texture.dispose();
+      }
+      continue;
+    }
 
     // Create plane geometry and material
     const planeGeometry = new THREE.PlaneGeometry(scaledWidth, scaledHeight);
@@ -192,7 +214,7 @@ async function mountThreeLayers(
 
     // Convert stage coordinates to Three.js world space
     const initialPosition = roundStagePoint(data.position);
-    group.position.set(initialPosition.x - STAGE_SIZE / 2, STAGE_SIZE / 2 - initialPosition.y, 0);
+    group.position.set(initialPosition.x - halfStage, halfStage - initialPosition.y, 0);
     group.add(mesh);
     scene.add(group);
 
@@ -215,11 +237,7 @@ async function mountThreeLayers(
       orbitLine = new THREE.LineLoop(circleGeometry, circleMaterial);
       orbitLine.userData = { baseRadius: Math.max(baseRadiusRounded, 1) };
       const roundedStagePoint = roundStagePoint(data.orbitStagePoint);
-      orbitLine.position.set(
-        roundedStagePoint.x - STAGE_SIZE / 2,
-        STAGE_SIZE / 2 - roundedStagePoint.y,
-        0,
-      );
+      orbitLine.position.set(roundedStagePoint.x - halfStage, halfStage - roundedStagePoint.y, 0);
       orbitLine.scale.set(baseRadiusRounded, baseRadiusRounded, 1);
       scene.add(orbitLine);
     }
@@ -233,6 +251,7 @@ async function mountThreeLayers(
       transformCache,
       isStatic,
       hasAnimation,
+      baseBounds,
     });
   }
 
@@ -252,8 +271,15 @@ async function mountThreeLayers(
           : entry.baseData;
 
       // Update visibility
-      entry.group.visible = enhanced.visible !== false;
-      if (!entry.group.visible) continue;
+      const isVisible = shouldRenderEntry(entry, enhanced);
+      entry.group.visible = isVisible;
+      entry.mesh.visible = isVisible;
+      if (!isVisible) {
+        if (entry.orbitLine) {
+          entry.orbitLine.visible = false;
+        }
+        continue;
+      }
 
       // Update position (convert stage coords to Three.js world space)
       // Preserve sub-pixel precision for orbital animation to prevent jitter at low speeds
@@ -261,7 +287,7 @@ async function mountThreeLayers(
         enhanced.hasOrbitalAnimation || enhanced.hasSpinAnimation
           ? enhanced.position
           : roundStagePoint(enhanced.position);
-      entry.group.position.set(position.x - STAGE_SIZE / 2, STAGE_SIZE / 2 - position.y, 0);
+      entry.group.position.set(position.x - halfStage, halfStage - position.y, 0);
 
       // Update rotation (negative because Three.js Y-axis is flipped)
       const rotation =
@@ -284,8 +310,8 @@ async function mountThreeLayers(
           const scale = baseRadius > 0 ? roundedRadius / baseRadius : 1;
           entry.orbitLine.visible = true;
           entry.orbitLine.position.set(
-            roundedStagePoint.x - STAGE_SIZE / 2,
-            -(roundedStagePoint.y - STAGE_SIZE / 2),
+            roundedStagePoint.x - halfStage,
+            -(roundedStagePoint.y - halfStage),
             0,
           );
           entry.orbitLine.scale.set(baseRadius * scale, baseRadius * scale, 1);
@@ -323,6 +349,8 @@ async function mountThreeLayers(
       }
     });
 
+    pipelineCache.clear();
+    meshData.length = 0;
     renderer.dispose();
   };
 }
@@ -390,7 +418,13 @@ async function mountThreeRenderer(
   });
 
   // Mount layers and start rendering
-  const cleanupLayers = await mountThreeLayers(scene, renderer, camera, toRendererInput(pipeline));
+  const cleanupLayers = await mountThreeLayers(
+    scene,
+    renderer,
+    camera,
+    toRendererInput(pipeline),
+    pipeline.stageSize,
+  );
 
   return () => {
     cleanupTransform?.();
