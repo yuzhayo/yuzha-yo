@@ -49,6 +49,28 @@ type ProcessorState = {
   orbitTimezoneCache: Map<number, Date>;
 };
 
+const processorStateCache = new Map<string, ProcessorState>();
+
+const acquireProcessorState = (layerId: string): ProcessorState => {
+  let state = processorStateCache.get(layerId);
+  if (!state) {
+    state = {
+      spinTimezoneCache: new Map<number, Date>(),
+      orbitTimezoneCache: new Map<number, Date>(),
+    };
+    processorStateCache.set(layerId, state);
+  }
+  return state;
+};
+
+export const clearProcessorStates = (layerId?: string): void => {
+  if (layerId) {
+    processorStateCache.delete(layerId);
+    return;
+  }
+  processorStateCache.clear();
+};
+
 /** Build layer motion processor and markers. */
 export function buildLayerMotion(
   entry: LayerConfigEntry,
@@ -168,10 +190,7 @@ function createLayerMotionProcessor(
   config: LayerMotionConfig,
   imageMapping: ImageMapping,
 ): LayerProcessor | undefined {
-  const state: ProcessorState = {
-    spinTimezoneCache: new Map<number, Date>(),
-    orbitTimezoneCache: new Map<number, Date>(),
-  };
+  const state = acquireProcessorState(entry.LayerID);
 
   const hasSpin = config.spinMotion.active;
   const hasOrbit = config.orbitMotion.active && config.redStage && config.circleRadius;

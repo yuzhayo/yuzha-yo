@@ -39,6 +39,7 @@ import {
   createStageTransformer,
   roundStagePoint,
   type StagePipeline,
+  type LayerMetadata,
   type EnhancedLayerData,
   type LayerProcessor,
   type LayerBounds,
@@ -97,6 +98,58 @@ type ThreeMeshEntry = {
   hasAnimation: boolean;
   /** Precomputed bounds for the base layer */
   baseBounds: LayerBounds;
+  /** Geometry cache key for pooling */
+  geometryKey: string;
+};
+
+type PlaneGeometryEntry = {
+  geometry: THREE.PlaneGeometry;
+  refCount: number;
+};
+
+const planeGeometryCache = new Map<string, PlaneGeometryEntry>();
+const ORBIT_LINE_SEGMENTS = 64;
+const orbitLineGeometryCache = new Map<number, THREE.BufferGeometry>();
+
+const planeGeometryKey = (width: number, height: number): string =>
+  `${width.toFixed(3)}x${height.toFixed(3)}`;
+
+const acquirePlaneGeometry = (
+  width: number,
+  height: number,
+): { geometry: THREE.PlaneGeometry; key: string } => {
+  const key = planeGeometryKey(width, height);
+  const cached = planeGeometryCache.get(key);
+  if (cached) {
+    cached.refCount += 1;
+    return { geometry: cached.geometry, key };
+  }
+  const geometry = new THREE.PlaneGeometry(width, height);
+  planeGeometryCache.set(key, { geometry, refCount: 1 });
+  return { geometry, key };
+};
+
+const releasePlaneGeometry = (key: string): void => {
+  const cached = planeGeometryCache.get(key);
+  if (!cached) return;
+  cached.refCount -= 1;
+  if (cached.refCount <= 0) {
+    cached.geometry.dispose();
+    planeGeometryCache.delete(key);
+  }
+};
+
+const getOrbitLineGeometry = (segments: number): THREE.BufferGeometry => {
+  const cached = orbitLineGeometryCache.get(segments);
+  if (cached) return cached;
+  const points: THREE.Vector3[] = [];
+  for (let i = 0; i <= segments; i += 1) {
+    const angle = (i / segments) * Math.PI * 2;
+    points.push(new THREE.Vector3(Math.cos(angle), Math.sin(angle), 0));
+  }
+  const geometry = new THREE.BufferGeometry().setFromPoints(points);
+  orbitLineGeometryCache.set(segments, geometry);
+  return geometry;
 };
 
 /**
@@ -136,7 +189,11 @@ async function mountThreeLayers(
   scene: THREE.Scene,
   renderer: THREE.WebGLRenderer,
   camera: THREE.Camera,
-  layersWithProcessors: Array<{ data: EnhancedLayerData; processors: LayerProcessor[] }>,
+  layersWithProcessors: Array<{
+    data: EnhancedLayerData;
+    processors: LayerProcessor[];
+    metadata: LayerMetadata;
+  }>,
   stageSize: number,
 ): Promise<() => void> {
   const meshData: ThreeMeshEntry[] = [];
@@ -177,9 +234,8 @@ async function mountThreeLayers(
     if (!result) continue;
 
     const { item, texture } = result;
-    const { data, processors } = item;
-    const isStatic = processors.length === 0;
-    const hasAnimation = !isStatic;
+    const { data, processors, metadata } = item;
+    const { isStatic, hasAnimation, baseBounds, visibleByDefault } = metadata;
 
     // Calculate scaled dimensions
     const scaledWidth = texture.image.width * data.scale.x;
@@ -190,9 +246,8 @@ async function mountThreeLayers(
       scaledHeight,
       hasRotation: (data.rotation ?? 0) !== 0,
     };
-    const baseBounds = computeLayerBounds(data.position, data.scale, data.imageMapping);
     const offscreenStatic =
-      isStatic && data.visible !== false && !isLayerWithinStageBounds(baseBounds, stageSize);
+      isStatic && visibleByDefault && !isLayerWithinStageBounds(baseBounds, stageSize);
     if (offscreenStatic) {
       if (typeof texture.dispose === "function") {
         texture.dispose();
@@ -201,7 +256,10 @@ async function mountThreeLayers(
     }
 
     // Create plane geometry and material
-    const planeGeometry = new THREE.PlaneGeometry(scaledWidth, scaledHeight);
+    const { geometry: planeGeometry, key: geometryKey } = acquirePlaneGeometry(
+      scaledWidth,
+      scaledHeight,
+    );
     const planeMaterial = new THREE.MeshBasicMaterial({
       map: texture,
       transparent: true,
@@ -222,13 +280,7 @@ async function mountThreeLayers(
     let orbitLine: THREE.Line | undefined;
     const baseRadiusRounded = Math.max(0, Math.round(data.orbitRadius ?? 0));
     if (data.orbitLineVisible && baseRadiusRounded > 0 && data.orbitStagePoint) {
-      const segments = 64;
-      const points: THREE.Vector3[] = [];
-      for (let i = 0; i <= segments; i += 1) {
-        const angle = (i / segments) * Math.PI * 2;
-        points.push(new THREE.Vector3(Math.cos(angle), Math.sin(angle), 0));
-      }
-      const circleGeometry = new THREE.BufferGeometry().setFromPoints(points);
+      const circleGeometry = getOrbitLineGeometry(ORBIT_LINE_SEGMENTS);
       const circleMaterial = new THREE.LineBasicMaterial({
         color: 0xffffff,
         transparent: true,
@@ -252,6 +304,7 @@ async function mountThreeLayers(
       isStatic,
       hasAnimation,
       baseBounds,
+      geometryKey,
     });
   }
 
@@ -336,13 +389,12 @@ async function mountThreeLayers(
     // Dispose layer meshes
     meshData.forEach((entry) => {
       scene.remove(entry.group);
-      entry.mesh.geometry.dispose();
+      releasePlaneGeometry(entry.geometryKey);
       if (entry.mesh.material instanceof THREE.Material) {
         entry.mesh.material.dispose();
       }
       if (entry.orbitLine) {
         scene.remove(entry.orbitLine);
-        entry.orbitLine.geometry.dispose();
         if (entry.orbitLine.material instanceof THREE.Material) {
           entry.orbitLine.material.dispose();
         }

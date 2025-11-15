@@ -40,6 +40,7 @@ import {
   type StagePipeline,
   type StageMarker,
   type LayerBounds,
+  type LayerMetadata,
   type EnhancedLayerData,
   type LayerProcessor,
   computeLayerBounds,
@@ -85,7 +86,6 @@ type CanvasTransformCache = {
 const transformCachePool: CanvasTransformCache[] = [];
 const STATIC_CULL_PADDING = 4;
 const DYNAMIC_CULL_PADDING = 48;
-
 const acquireTransformCache = (): CanvasTransformCache =>
   transformCachePool.pop() ?? {
     scaledWidth: 0,
@@ -102,6 +102,22 @@ const acquireTransformCache = (): CanvasTransformCache =>
 const releaseTransformCache = (cache: CanvasTransformCache): void => {
   transformCachePool.push(cache);
 };
+
+type PreparedMarker =
+  | {
+      marker: StageMarker;
+      motion?: undefined;
+    }
+  | {
+      marker: StageMarker;
+      motion: {
+        angularVelocityDegPerMs: number;
+        initialAngleDeg: number;
+        centerX: number;
+        centerY: number;
+        radius: number;
+      };
+    };
 
 /**
  * Internal representation of a Canvas layer.
@@ -153,7 +169,11 @@ type CanvasLayerEntry = {
  */
 async function mountCanvasLayers(
   ctx: CanvasRenderingContext2D,
-  layersWithProcessors: Array<{ data: EnhancedLayerData; processors: LayerProcessor[] }>,
+  layersWithProcessors: Array<{
+    data: EnhancedLayerData;
+    processors: LayerProcessor[];
+    metadata: LayerMetadata;
+  }>,
   markers: StageMarker[] = [],
   stageSize: number,
 ): Promise<() => void> {
@@ -162,45 +182,34 @@ async function mountCanvasLayers(
   // Load images and setup transform caches
   for (const item of layersWithProcessors) {
     try {
-      const image = await loadImage(item.data.imageUrl);
+      const { data, processors, metadata } = item;
+      const image = await loadImage(data.imageUrl);
+      const { isStatic, hasAnimation, baseBounds, visibleByDefault } = metadata;
 
-      const isStatic = item.processors.length === 0;
-      const hasAnimation = !isStatic;
-
-      // Pre-calculate transform values for performance
       const transformCache = acquireTransformCache();
-      transformCache.scaledWidth = image.width * item.data.scale.x;
-      transformCache.scaledHeight = image.height * item.data.scale.y;
-      transformCache.centerX = (image.width / 2) * item.data.scale.x;
-      transformCache.centerY = (image.height / 2) * item.data.scale.y;
-      const pivot = getImageCenter(item.data.imageMapping);
-      transformCache.pivotX = pivot.x * item.data.scale.x;
-      transformCache.pivotY = pivot.y * item.data.scale.y;
+      transformCache.scaledWidth = image.width * data.scale.x;
+      transformCache.scaledHeight = image.height * data.scale.y;
+      transformCache.centerX = (image.width / 2) * data.scale.x;
+      transformCache.centerY = (image.height / 2) * data.scale.y;
+      const pivot = getImageCenter(data.imageMapping);
+      transformCache.pivotX = pivot.x * data.scale.x;
+      transformCache.pivotY = pivot.y * data.scale.y;
       transformCache.dx = transformCache.centerX - transformCache.pivotX;
       transformCache.dy = transformCache.centerY - transformCache.pivotY;
-      transformCache.hasRotation = (item.data.rotation ?? 0) !== 0;
+      transformCache.hasRotation = (data.rotation ?? 0) !== 0;
 
-      const baseBounds = computeLayerBounds(
-        item.data.position,
-        item.data.scale,
-        item.data.imageMapping,
-      );
-      if (
-        isStatic &&
-        item.data.visible !== false &&
-        !isLayerWithinStageBounds(baseBounds, stageSize)
-      ) {
+      if (isStatic && visibleByDefault && !isLayerWithinStageBounds(baseBounds, stageSize)) {
         releaseTransformCache(transformCache);
         if (IS_DEV) {
-          console.info(`[StageCanvas] Skipping offscreen static layer "${item.data.LayerID}"`);
+          console.info(`[StageCanvas] Skipping offscreen static layer "${data.LayerID}"`);
         }
         continue;
       }
 
       layers.push({
         image,
-        baseData: item.data,
-        processors: item.processors,
+        baseData: data,
+        processors,
         transformCache,
         isStatic,
         hasAnimation,
@@ -213,13 +222,32 @@ async function mountCanvasLayers(
     }
   }
 
-  const hasMarkerAnimation = markers.some((marker) => marker.motion !== undefined);
+  const preparedMarkers: PreparedMarker[] = markers.map((marker) => {
+    if (marker.motion?.type === "orbit") {
+      const directionSign = marker.motion.direction === "ccw" ? 1 : -1;
+      const angularVelocityDegPerMs =
+        (marker.motion.rotationsPerHour * 360 * directionSign) / 3600000;
+      return {
+        marker,
+        motion: {
+          angularVelocityDegPerMs,
+          initialAngleDeg: marker.motion.initialAngleDeg,
+          centerX: marker.motion.centerX,
+          centerY: marker.motion.centerY,
+          radius: marker.motion.radius,
+        },
+      };
+    }
+    return { marker };
+  });
+
+  const hasMarkerAnimation = preparedMarkers.some((entry) => entry.motion !== undefined);
   const hasAnyAnimation = layers.some((layer) => layer.hasAnimation) || hasMarkerAnimation;
 
   let markerStartTime: number | undefined;
 
   const renderMarkers = (timestamp?: number) => {
-    if (markers.length === 0) return;
+    if (preparedMarkers.length === 0) return;
     const elapsedMs =
       timestamp !== undefined
         ? (() => {
@@ -231,18 +259,17 @@ async function mountCanvasLayers(
           })()
         : 0;
     ctx.save();
-    for (const marker of markers) {
+    for (const entry of preparedMarkers) {
+      const marker = entry.marker;
       let drawX = marker.x;
       let drawY = marker.y;
 
-      if (marker.motion?.type === "orbit") {
-        const directionSign = marker.motion.direction === "ccw" ? 1 : -1;
-        const elapsedHours = (elapsedMs / 3600000) * directionSign;
+      if (entry.motion) {
         const angleDeg =
-          marker.motion.initialAngleDeg + elapsedHours * marker.motion.rotationsPerHour * 360;
+          entry.motion.initialAngleDeg + elapsedMs * entry.motion.angularVelocityDegPerMs;
         const angleRad = (angleDeg * Math.PI) / 180;
-        drawX = marker.motion.centerX + marker.motion.radius * Math.cos(angleRad);
-        drawY = marker.motion.centerY - marker.motion.radius * Math.sin(angleRad);
+        drawX = entry.motion.centerX + entry.motion.radius * Math.cos(angleRad);
+        drawY = entry.motion.centerY - entry.motion.radius * Math.sin(angleRad);
       }
 
       if (marker.kind === "circle") {
