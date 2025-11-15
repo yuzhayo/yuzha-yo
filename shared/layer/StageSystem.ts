@@ -328,13 +328,6 @@ export type StagePipelineOptions = {
  * A prepared layer ready for rendering.
  * Contains the original config entry, processed layer data, and attached processors.
  */
-export type LayerMetadata = {
-  baseBounds: LayerBounds;
-  isStatic: boolean;
-  hasAnimation: boolean;
-  visibleByDefault: boolean;
-};
-
 export type PreparedLayer = {
   /** Original configuration entry from ConfigYuzha.json */
   entry: LayerConfigEntry;
@@ -342,8 +335,6 @@ export type PreparedLayer = {
   data: EnhancedLayerData;
   /** Behavior processors (spin, orbit, debug visualizations, etc.) */
   processors: LayerProcessor[];
-  /** Metadata used by renderers for culling/behavior */
-  metadata: LayerMetadata;
 };
 
 /**
@@ -450,11 +441,10 @@ export type StagePipeline = {
  */
 export function toRendererInput(
   pipeline: StagePipeline,
-): Array<{ data: EnhancedLayerData; processors: LayerProcessor[]; metadata: LayerMetadata }> {
-  return pipeline.layers.map(({ data, processors, metadata }) => ({
+): Array<{ data: EnhancedLayerData; processors: LayerProcessor[] }> {
+  return pipeline.layers.map(({ data, processors }) => ({
     data,
     processors,
-    metadata,
   }));
 }
 
@@ -511,12 +501,11 @@ export async function createStagePipeline(
           // Attach processors (spin, orbit, debug, etc.)
           const processors = getProcessorsForEntry(entry, processorContext);
           const enhancedLayer = layer as EnhancedLayerData;
-          const baseBounds = computeLayerBounds(layer.position, layer.scale, layer.imageMapping);
           const hasAnimation =
             processors.length > 0 ||
             Boolean(enhancedLayer.hasSpinAnimation || enhancedLayer.hasOrbitalAnimation);
 
-          if (!hasAnimation && !isLayerWithinStageBounds(baseBounds, stageSize)) {
+          if (!hasAnimation && !isLayerWithinStage(enhancedLayer, stageSize)) {
             if (IS_DEV) {
               console.info(
                 `[StageSystem] Skipping static offscreen layer "${entry.LayerID}" (${entry.ImageID})`,
@@ -533,18 +522,10 @@ export async function createStagePipeline(
             appendMotionMarkers(motionMarkers, motionArtifacts.markers);
           }
 
-          const metadata: LayerMetadata = {
-            baseBounds,
-            isStatic: !hasAnimation,
-            hasAnimation,
-            visibleByDefault: enhancedLayer.visible !== false,
-          };
-
           return {
             entry,
             data: enhancedLayer,
             processors,
-            metadata,
           } satisfies PreparedLayer;
         } catch (error) {
           console.error(

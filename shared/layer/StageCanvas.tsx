@@ -40,7 +40,6 @@ import {
   type StagePipeline,
   type StageMarker,
   type LayerBounds,
-  type LayerMetadata,
   type EnhancedLayerData,
   type LayerProcessor,
   computeLayerBounds,
@@ -169,11 +168,7 @@ type CanvasLayerEntry = {
  */
 async function mountCanvasLayers(
   ctx: CanvasRenderingContext2D,
-  layersWithProcessors: Array<{
-    data: EnhancedLayerData;
-    processors: LayerProcessor[];
-    metadata: LayerMetadata;
-  }>,
+  layersWithProcessors: Array<{ data: EnhancedLayerData; processors: LayerProcessor[] }>,
   markers: StageMarker[] = [],
   stageSize: number,
 ): Promise<() => void> {
@@ -182,34 +177,45 @@ async function mountCanvasLayers(
   // Load images and setup transform caches
   for (const item of layersWithProcessors) {
     try {
-      const { data, processors, metadata } = item;
-      const image = await loadImage(data.imageUrl);
-      const { isStatic, hasAnimation, baseBounds, visibleByDefault } = metadata;
+      const image = await loadImage(item.data.imageUrl);
 
+      const isStatic = item.processors.length === 0;
+      const hasAnimation = !isStatic;
+
+      // Pre-calculate transform values for performance
       const transformCache = acquireTransformCache();
-      transformCache.scaledWidth = image.width * data.scale.x;
-      transformCache.scaledHeight = image.height * data.scale.y;
-      transformCache.centerX = (image.width / 2) * data.scale.x;
-      transformCache.centerY = (image.height / 2) * data.scale.y;
-      const pivot = getImageCenter(data.imageMapping);
-      transformCache.pivotX = pivot.x * data.scale.x;
-      transformCache.pivotY = pivot.y * data.scale.y;
+      transformCache.scaledWidth = image.width * item.data.scale.x;
+      transformCache.scaledHeight = image.height * item.data.scale.y;
+      transformCache.centerX = (image.width / 2) * item.data.scale.x;
+      transformCache.centerY = (image.height / 2) * item.data.scale.y;
+      const pivot = getImageCenter(item.data.imageMapping);
+      transformCache.pivotX = pivot.x * item.data.scale.x;
+      transformCache.pivotY = pivot.y * item.data.scale.y;
       transformCache.dx = transformCache.centerX - transformCache.pivotX;
       transformCache.dy = transformCache.centerY - transformCache.pivotY;
-      transformCache.hasRotation = (data.rotation ?? 0) !== 0;
+      transformCache.hasRotation = (item.data.rotation ?? 0) !== 0;
 
-      if (isStatic && visibleByDefault && !isLayerWithinStageBounds(baseBounds, stageSize)) {
+      const baseBounds = computeLayerBounds(
+        item.data.position,
+        item.data.scale,
+        item.data.imageMapping,
+      );
+      if (
+        isStatic &&
+        item.data.visible !== false &&
+        !isLayerWithinStageBounds(baseBounds, stageSize)
+      ) {
         releaseTransformCache(transformCache);
         if (IS_DEV) {
-          console.info(`[StageCanvas] Skipping offscreen static layer "${data.LayerID}"`);
+          console.info(`[StageCanvas] Skipping offscreen static layer "${item.data.LayerID}"`);
         }
         continue;
       }
 
       layers.push({
         image,
-        baseData: data,
-        processors,
+        baseData: item.data,
+        processors: item.processors,
         transformCache,
         isStatic,
         hasAnimation,

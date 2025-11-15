@@ -39,7 +39,6 @@ import {
   createStageTransformer,
   roundStagePoint,
   type StagePipeline,
-  type LayerMetadata,
   type EnhancedLayerData,
   type LayerProcessor,
   type LayerBounds,
@@ -189,11 +188,7 @@ async function mountThreeLayers(
   scene: THREE.Scene,
   renderer: THREE.WebGLRenderer,
   camera: THREE.Camera,
-  layersWithProcessors: Array<{
-    data: EnhancedLayerData;
-    processors: LayerProcessor[];
-    metadata: LayerMetadata;
-  }>,
+  layersWithProcessors: Array<{ data: EnhancedLayerData; processors: LayerProcessor[] }>,
   stageSize: number,
 ): Promise<() => void> {
   const meshData: ThreeMeshEntry[] = [];
@@ -234,8 +229,9 @@ async function mountThreeLayers(
     if (!result) continue;
 
     const { item, texture } = result;
-    const { data, processors, metadata } = item;
-    const { isStatic, hasAnimation, baseBounds, visibleByDefault } = metadata;
+    const { data, processors } = item;
+    const isStatic = processors.length === 0;
+    const hasAnimation = !isStatic;
 
     // Calculate scaled dimensions
     const scaledWidth = texture.image.width * data.scale.x;
@@ -246,8 +242,9 @@ async function mountThreeLayers(
       scaledHeight,
       hasRotation: (data.rotation ?? 0) !== 0,
     };
+    const baseBounds = computeLayerBounds(data.position, data.scale, data.imageMapping);
     const offscreenStatic =
-      isStatic && visibleByDefault && !isLayerWithinStageBounds(baseBounds, stageSize);
+      isStatic && data.visible !== false && !isLayerWithinStageBounds(baseBounds, stageSize);
     if (offscreenStatic) {
       if (typeof texture.dispose === "function") {
         texture.dispose();
