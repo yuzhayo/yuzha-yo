@@ -335,6 +335,8 @@ export type PreparedLayer = {
   data: EnhancedLayerData;
   /** Behavior processors (spin, orbit, debug visualizations, etc.) */
   processors: LayerProcessor[];
+  /** Precomputed metadata used by renderers */
+  metadata: LayerMetadata;
 };
 
 /**
@@ -373,6 +375,13 @@ export type LayerBounds = {
   maxX: number;
   minY: number;
   maxY: number;
+};
+
+export type LayerMetadata = {
+  baseBounds: LayerBounds;
+  isStatic: boolean;
+  hasAnimation: boolean;
+  visibleByDefault: boolean;
 };
 
 export function computeLayerBounds(
@@ -441,10 +450,11 @@ export type StagePipeline = {
  */
 export function toRendererInput(
   pipeline: StagePipeline,
-): Array<{ data: EnhancedLayerData; processors: LayerProcessor[] }> {
-  return pipeline.layers.map(({ data, processors }) => ({
+): Array<{ data: EnhancedLayerData; processors: LayerProcessor[]; metadata: LayerMetadata }> {
+  return pipeline.layers.map(({ data, processors, metadata }) => ({
     data,
     processors,
+    metadata,
   }));
 }
 
@@ -501,18 +511,14 @@ export async function createStagePipeline(
           // Attach processors (spin, orbit, debug, etc.)
           const processors = getProcessorsForEntry(entry, processorContext);
           const enhancedLayer = layer as EnhancedLayerData;
-          const hasAnimation =
+          const baseBounds = computeLayerBounds(
+            enhancedLayer.position,
+            enhancedLayer.scale,
+            enhancedLayer.imageMapping,
+          );
+          const baseHasAnimation =
             processors.length > 0 ||
             Boolean(enhancedLayer.hasSpinAnimation || enhancedLayer.hasOrbitalAnimation);
-
-          if (!hasAnimation && !isLayerWithinStage(enhancedLayer, stageSize)) {
-            if (IS_DEV) {
-              console.info(
-                `[StageSystem] Skipping static offscreen layer "${entry.LayerID}" (${entry.ImageID})`,
-              );
-            }
-            return null;
-          }
 
           const motionArtifacts = buildLayerMotion(entry, enhancedLayer, stageSize);
           if (motionArtifacts.processor) {
@@ -522,10 +528,29 @@ export async function createStagePipeline(
             appendMotionMarkers(motionMarkers, motionArtifacts.markers);
           }
 
+          const finalHasAnimation = baseHasAnimation || Boolean(motionArtifacts.processor);
+
+          const metadata: LayerMetadata = {
+            baseBounds,
+            isStatic: !finalHasAnimation,
+            hasAnimation: finalHasAnimation,
+            visibleByDefault: enhancedLayer.visible !== false,
+          };
+
+          if (!metadata.hasAnimation && !isLayerWithinStageBounds(baseBounds, stageSize)) {
+            if (IS_DEV) {
+              console.info(
+                `[StageSystem] Skipping static offscreen layer "${entry.LayerID}" (${entry.ImageID})`,
+              );
+            }
+            return null;
+          }
+
           return {
             entry,
             data: enhancedLayer,
             processors,
+            metadata,
           } satisfies PreparedLayer;
         } catch (error) {
           console.error(
