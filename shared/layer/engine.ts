@@ -1,40 +1,6 @@
-/**
- * ============================================================================
- * LAYER ENGINE - Runtime Execution & Processing
- * ============================================================================
- *
- * PURPOSE FOR FUTURE AI AGENTS:
- * ------------------------------
- * This is the EXECUTION ENGINE for the layer system. All runtime operations,
- * calculations, and processing logic live here. Think of this as the "brain"
- * that brings static models to life.
- *
- * CRITICAL ARCHITECTURAL PRINCIPLE:
- * ----------------------------------
- * This file contains ALL runtime logic - no business logic should live in
- * model.ts or math.ts. Those files are pure contracts and pure functions.
- * This file orchestrates those contracts and functions into a working system.
- *
- * WHAT THIS FILE CONTAINS:
- * ------------------------
- * 1. Asset Loading (image registry, path resolution, dimension caching)
- * 2. Image Mapping (geometry calculation)
- * 3. Layer Preparation (convert config → renderable data)
- * 4. Motion Processing (spin & orbit animation builders)
- * 5. Processor Registry (plugin system for layer behaviors)
- * 6. Pipeline Execution (run processors on layers)
- * 7. Animation Utilities (angle normalization, orbit calculations, easing)
- * 8. Performance Utilities (caching, batching, static buffers)
- *
- * DEPENDENCY RULES:
- * -----------------
- * - THIS FILE: Imports types from model.ts, functions from math.ts
- * - model.ts: Imports nothing (pure types and config)
- * - math.ts: Imports only types from model.ts (pure functions)
- * - Other modules: Import from THIS FILE for runtime operations
- *
- * @module layer/engine
- */
+/// <reference types="vite/client" />
+
+/** LAYER ENGINE - Runtime Execution & Processing. */
 
 import type {
   Point2D,
@@ -59,6 +25,7 @@ import {
   imagePointToPercent,
   imagePercentToImagePoint,
   stagePointToPercent,
+  getImageCenter,
   createCoordinateBundle,
   createDualSpaceCoordinate,
   normalizePair,
@@ -66,33 +33,21 @@ import {
   normalizePercentInput,
   normalizeStagePointInput,
   normalizePercent,
+  normalizeAngle,
+  calculatePositionForPivot,
   calculateRotationDegrees,
   resolveClockSpeed,
 } from "./math";
 
 import registryData from "../asset/ImageRegistry.json" assert { type: "json" };
 
-// ============================================================================
-// SECTION 1: ASSET LOADING & RESOLUTION
-// ============================================================================
 // Convert imageId to file paths, URLs, and load image dimensions.
-// FOR FUTURE AI AGENTS: This is how we find and load image files.
-//
 // CRITICAL FOR PRODUCTION BUILDS:
 // We use import.meta.glob to statically import all assets. This allows Vite
 // to analyze and bundle assets at build time, preventing 404s in production.
 // Dynamic URL construction with new URL(variable, import.meta.url) breaks builds!
-// ============================================================================
 
-/**
- * Static asset manifest using import.meta.glob
- *
- * This ensures Vite can statically analyze which assets to bundle in production.
- * The eager:true loads all URLs immediately, and query:'?url' gives us the URL string.
- *
- * Maps: '../asset/filename.png' → '/assets/filename-hash.png' (in production)
- *       '../asset/filename.png' → '/@fs/.../shared/asset/filename.png' (in dev)
- */
+/** Static asset manifest using import.meta.glob. */
 const assetManifest = import.meta.glob("../asset/*.{png,jpg,jpeg,gif,svg,webp}", {
   eager: true,
   query: "?url",
@@ -123,14 +78,7 @@ if (IS_DEV_VALIDATION) {
 
 const pathMap = new Map(registry.map((entry) => [entry.id, entry.path]));
 
-/**
- * Resolve asset path from imageId
- *
- * Looks up imageId in the registry and returns the file path
- *
- * @param imageId - Image identifier from config
- * @returns File path or null if not found
- */
+/** Resolve asset path from imageId. */
 export function resolveAssetPath(imageId: string): string | null {
   const path = pathMap.get(imageId);
   if (path && typeof path === "string" && path.length > 0) {
@@ -139,30 +87,7 @@ export function resolveAssetPath(imageId: string): string | null {
   return null;
 }
 
-/**
- * Convert asset path to URL for loading
- *
- * Transforms registry path to URL that can be loaded by browser
- *
- * FOR FUTURE AI AGENTS:
- * ---------------------
- * This function uses the static asset manifest created by import.meta.glob.
- * This is CRITICAL for production builds - Vite can only bundle assets that
- * are statically analyzable. Dynamic URL construction breaks production builds!
- *
- * HOW IT WORKS:
- * 1. Registry has: "shared/asset/image.png"
- * 2. We extract: "image.png"
- * 3. We look up: "../asset/image.png" in assetManifest
- * 4. Manifest returns: production URL (with hash) or dev URL (/@fs/ path)
- *
- * CASE SENSITIVITY:
- * The registry paths must use lowercase "shared/asset/" to match the
- * actual directory structure. Case sensitivity matters on Linux/production.
- *
- * @param path - Asset path from registry (e.g., "shared/asset/image.png")
- * @returns URL for loading the asset
- */
+/** Convert asset path to URL for loading. */
 export function resolveAssetUrl(path: string): string {
   if (!path || typeof path !== "string") {
     throw new Error(`Invalid asset path: ${path}`);
@@ -192,20 +117,10 @@ export function resolveAssetUrl(path: string): string {
   return url;
 }
 
-/**
- * Image dimension cache for performance
- * Avoids redundant image loading for dimensions
- */
+/** Image dimension cache for performance. */
 const IMAGE_DIMENSION_CACHE = new Map<string, { width: number; height: number }>();
 
-/**
- * Get image dimensions (with caching)
- *
- * Loads an image to get its dimensions, caches result for future use
- *
- * @param url - Image URL
- * @returns Promise resolving to { width, height }
- */
+/** Get image dimensions (with caching). */
 async function getImageDimensions(url: string): Promise<{ width: number; height: number }> {
   // Return cached dimensions if available
   if (IMAGE_DIMENSION_CACHE.has(url)) {
@@ -224,13 +139,7 @@ async function getImageDimensions(url: string): Promise<{ width: number; height:
   });
 }
 
-/**
- * Preload critical assets in parallel
- *
- * Call early in app initialization to populate dimension cache
- *
- * @param imageIds - Array of imageIds to preload
- */
+/** Preload critical assets in parallel. */
 export async function preloadCriticalAssets(imageIds: string[]): Promise<void> {
   const preloadPromises = imageIds.map(async (imageId) => {
     const assetPath = resolveAssetPath(imageId);
@@ -247,12 +156,7 @@ export async function preloadCriticalAssets(imageIds: string[]): Promise<void> {
   await Promise.all(preloadPromises);
 }
 
-/**
- * Load image from URL
- *
- * @param src - Image source URL
- * @returns Promise resolving to loaded HTMLImageElement
- */
+/** Load image from URL. */
 export async function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -262,40 +166,9 @@ export async function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-// ============================================================================
-// SECTION 2: IMAGE MAPPING
-// ============================================================================
 // Calculate image geometry information needed for positioning.
-// FOR FUTURE AI AGENTS: This provides metadata about image dimensions.
-// ============================================================================
 
-/**
- * Get image center from ImageMapping
- *
- * FOR FUTURE AI AGENTS: Use this helper instead of accessing a cached center.
- * The center is always the geometric center of the image (width/2, height/2).
- *
- * @param mapping - ImageMapping containing dimensions
- * @returns Point2D representing image center in pixels
- */
-export function getImageCenter(mapping: ImageMapping): Point2D {
-  return {
-    x: mapping.imageDimensions.width / 2,
-    y: mapping.imageDimensions.height / 2,
-  };
-}
-
-/**
- * Compute image mapping from dimensions
- *
- * FOR FUTURE AI AGENTS: Simplified to only store dimensions.
- * Image center is calculated on-demand using getImageCenter() helper.
- * This keeps the pipeline lightweight while still supporting pivot-based
- * positioning and spin/orbit calculations.
- *
- * @param imageDimensions - Image width and height
- * @returns ImageMapping with dimensions only
- */
+/** Compute image mapping from dimensions. */
 export function computeImageMapping(imageDimensions: {
   width: number;
   height: number;
@@ -306,12 +179,7 @@ export function computeImageMapping(imageDimensions: {
   };
 }
 
-// ============================================================================
-// SECTION 3: LAYER PREPARATION
-// ============================================================================
 // Convert configuration to renderable layer data.
-// FOR FUTURE AI AGENTS: This is THE main entry point for layer preparation.
-// ============================================================================
 
 const ZERO_POINT: Point2D = { x: 0, y: 0 };
 const ZERO_PERCENT: PercentPoint = { x: 0, y: 0 };
@@ -323,26 +191,7 @@ const ZERO_DUAL_COORDINATE = createDualSpaceCoordinate(
   ZERO_PERCENT,
 );
 
-/**
- * Compute 2D transform (position + scale) from configuration
- *
- * ALGORITHM:
- * 1. Parse and clamp scale from config (10-500% → 0.1-5.0 scale factor)
- * 2. Check for new BasicStagePoint/BasicImagePoint system
- *    - If present: use pivot-based positioning
- *    - If absent: use legacy position system
- * 3. Return position and scale
- *
- * PIVOT-BASED POSITIONING:
- * BasicStagePoint: Where on stage to place the anchor (pixels)
- * BasicImagePoint: Which point on image to anchor (0-100%)
- * Result: calculatePositionForPivot ensures the image point appears at stage point
- *
- * @param entry - Layer configuration entry
- * @param stageSize - Stage size in pixels (usually 2048)
- * @param imageDimensions - Image width and height
- * @returns Transform with position and scale
- */
+/** Compute 2D transform (position + scale) from configuration. */
 export function compute2DTransform(
   entry: LayerConfigEntry,
   stageSize: number,
@@ -369,12 +218,13 @@ export function compute2DTransform(
     };
 
     // Calculate position that places BasicImagePoint at BasicStagePoint
-    // Use the basic (non-rotation-aware) version for initial positioning
-    const position = calculatePositionForPivotBasic(
+    const minimalMapping: ImageMapping = { imageDimensions };
+    const position = calculatePositionForPivot(
       basicStagePoint,
       basicImagePercent,
-      imageDimensions,
+      minimalMapping,
       scale,
+      0,
     );
 
     return { position, scale };
@@ -388,60 +238,7 @@ export function compute2DTransform(
   }
 }
 
-/**
- * Basic (non-rotation-aware) pivot-based positioning
- * Used for initial layer positioning from BasicStagePoint/BasicImagePoint
- *
- * @param stageAnchor - Where we want the image point to appear on stage
- * @param imagePercent - Which point on image (0-100%) to anchor
- * @param imageDimensions - Image width and height
- * @param scale - Scale factors
- * @returns Position where image center should be placed for rendering
- */
-function calculatePositionForPivotBasic(
-  stageAnchor: Point2D,
-  imagePercent: PercentPoint,
-  imageDimensions: { width: number; height: number },
-  scale: Point2D,
-): Point2D {
-  // Convert percent to image pixels
-  const imagePointPixels: Point2D = {
-    x: (imagePercent.x / 100) * imageDimensions.width,
-    y: (imagePercent.y / 100) * imageDimensions.height,
-  };
-
-  // Image center in pixels
-  const imageCenter: Point2D = {
-    x: imageDimensions.width / 2,
-    y: imageDimensions.height / 2,
-  };
-
-  // Offset from center to desired point (in pixels)
-  const offsetFromCenter: Point2D = {
-    x: imagePointPixels.x - imageCenter.x,
-    y: imagePointPixels.y - imageCenter.y,
-  };
-
-  // Apply scale to offset
-  const scaledOffset: Point2D = {
-    x: offsetFromCenter.x * scale.x,
-    y: offsetFromCenter.y * scale.y,
-  };
-
-  // Calculate position: stageAnchor - scaledOffset
-  const position: Point2D = {
-    x: stageAnchor.x - scaledOffset.x,
-    y: stageAnchor.y - scaledOffset.y,
-  };
-
-  return position;
-}
-
-/**
- * Prepare the basic, renderer-agnostic layer state.
- * This module resolves assets, calculates base transforms, and supplies
- * the dual-space image center the other modules rely on.
- */
+/** Prepare the basic, renderer-agnostic layer state. */
 export async function prepareBasicState(
   entry: LayerConfigEntry,
   stageSize: number,
@@ -497,10 +294,7 @@ export async function prepareBasicState(
   };
 }
 
-/**
- * Prepare spin-specific coordinates and metadata.
- * Accepts only BaseLayerState so it has no hidden dependency on orbit math.
- */
+/** Prepare spin-specific coordinates and metadata. */
 export function prepareSpinState(
   baseState: BaseLayerState,
   entry: LayerConfigEntry,
@@ -551,10 +345,7 @@ export function prepareSpinState(
   };
 }
 
-/**
- * Prepare orbit-specific coordinates and metadata.
- * Consumes only BaseLayerState to stay independent from spin logic.
- */
+/** Prepare orbit-specific coordinates and metadata. */
 export function prepareOrbitState(
   baseState: BaseLayerState,
   entry: LayerConfigEntry,
@@ -641,23 +432,7 @@ export function prepareOrbitState(
   };
 }
 
-/**
- * Prepare layer data from configuration (MAIN ENTRY POINT)
- *
- * This is the PRIMARY function of the engine. StageSystem calls this for each
- * layer to convert configuration into renderable data.
- *
- * ALGORITHM:
- * 1. Prepare basic state (asset loading, position, scale)
- * 2. Prepare spin state (if layer has spin)
- * 3. Prepare orbit state (if layer has orbit)
- * 4. Combine all states into UniversalLayerData
- * 5. Return complete layer data ready for rendering
- *
- * @param entry - Layer configuration from ConfigYuzha.json
- * @param stageSize - Stage size in pixels (usually 2048)
- * @returns Promise resolving to UniversalLayerData or null if invalid
- */
+/** Prepare layer data from configuration (MAIN ENTRY POINT). */
 export async function prepareLayer(
   entry: LayerConfigEntry,
   stageSize: number,
@@ -679,6 +454,10 @@ export async function prepareLayer(
   const layer: UniversalLayerData = {
     ...baseState.baseData,
     calculation,
+    spinStagePoint: spinState.hasSpin ? spinState.spinStagePoint : undefined,
+    spinStagePercent: spinState.hasSpin ? spinState.spinStagePercent : undefined,
+    spinPercent: spinState.hasSpin ? spinState.spinImagePercent : undefined,
+    spinImagePoint: spinState.hasSpin ? spinState.spinImagePoint : undefined,
     orbitStagePoint: orbitState.hasOrbit ? orbitState.orbitStagePoint : undefined,
     orbitLinePoint: orbitState.hasOrbit ? orbitState.orbitLinePoint : undefined,
     orbitLineVisible: orbitState.orbitLineVisible,
@@ -690,26 +469,14 @@ export async function prepareLayer(
   return layer;
 }
 
-/**
- * Check if layer uses 2D renderer
- *
- * @param entry - Layer configuration entry
- * @returns true if layer uses 2D renderer
- */
+/** Check if layer uses 2D renderer. */
 export function is2DLayer(entry: LayerConfigEntry): boolean {
   return entry.renderer === "2D";
 }
 
-// ============================================================================
-// SECTION 4: MOTION PROCESSING
-// ============================================================================
 // Build motion processors for spin and orbit animations.
-// FOR FUTURE AI AGENTS: This creates the runtime animation logic.
-// ============================================================================
 
-/**
- * Layer motion marker (for debug visualization)
- */
+/** Layer motion marker (for debug visualization). */
 export type LayerMotionMarker = {
   id: string;
   x: number;
@@ -729,9 +496,7 @@ export type LayerMotionMarker = {
   };
 };
 
-/**
- * Motion artifacts (processor + markers)
- */
+/** Motion artifacts (processor + markers). */
 export type LayerMotionArtifacts = {
   processor?: LayerProcessor;
   markers?: LayerMotionMarker[];
@@ -765,22 +530,13 @@ type ProcessorState = {
   orbitTimezoneCache: Map<number, Date>;
 };
 
-/**
- * Build layer motion processor and markers
- *
- * MAIN ENTRY POINT for motion system. Creates animation processor for layer.
- *
- * @param entry - Layer configuration
- * @param layer - Prepared layer data
- * @param stageSize - Stage size in pixels
- * @returns Motion artifacts (processor and markers)
- */
+/** Build layer motion processor and markers. */
 export function buildLayerMotion(
   entry: LayerConfigEntry,
   layer: UniversalLayerData,
   stageSize: number,
 ): LayerMotionArtifacts {
-  const config = deriveLayerMotionConfig(entry, stageSize);
+  const config = deriveLayerMotionConfig(entry, layer, stageSize);
   if (!config) {
     return {};
   }
@@ -796,31 +552,56 @@ export function buildLayerMotion(
 
 function deriveLayerMotionConfig(
   entry: LayerConfigEntry,
+  layer: UniversalLayerData,
   stageSize: number,
 ): LayerMotionConfig | null {
   const stageCenter = { x: stageSize / 2, y: stageSize / 2 };
 
-  const pivotPercent = sanitizePercent(entry.spinImagePoint) ??
-    sanitizePercent(entry.BasicImagePoint) ?? {
+  const computedSpinPercent = layer.spinStagePoint
+    ? layer.calculation.spinPoint.image.percent
+    : undefined;
+
+  const pivotPercent = layer.spinPercent ??
+    sanitizePercent(entry.spinImagePoint) ??
+    sanitizePercent(entry.BasicImagePoint) ??
+    computedSpinPercent ?? {
       x: 50,
       y: 50,
     };
 
+  const sanitizedSpinStage = sanitizeStagePoint(entry.spinStagePoint, stageSize);
+  const sanitizedOrbitLine = sanitizeStagePoint(entry.orbitLinePoint, stageSize);
+  const sanitizedBasicStage = sanitizeStagePoint(entry.BasicStagePoint, stageSize);
+
   const blueStage =
-    sanitizeStagePoint(entry.spinStagePoint, stageSize) ??
-    sanitizeStagePoint(entry.orbitLinePoint, stageSize) ??
-    sanitizeStagePoint(entry.BasicStagePoint, stageSize) ??
+    layer.spinStagePoint ??
+    layer.orbitLinePoint ??
+    sanitizedSpinStage ??
+    sanitizedOrbitLine ??
+    sanitizedBasicStage ??
+    layer.calculation.stageCenter.point ??
     stageCenter;
 
-  const redStage = sanitizeStagePoint(entry.orbitStagePoint, stageSize);
+  const redStage = layer.orbitStagePoint ?? sanitizeStagePoint(entry.orbitStagePoint, stageSize);
 
-  const circleRadius = redStage !== undefined ? distanceBetween(blueStage, redStage) : undefined;
+  const circleRadius =
+    layer.orbitRadius ??
+    (redStage !== undefined ? distanceBetween(blueStage, redStage) : undefined);
   const initialAngleDeg =
-    redStage !== undefined && circleRadius !== undefined && circleRadius > 0
-      ? ((Math.atan2(-(blueStage.y - redStage.y), blueStage.x - redStage.x) * 180) / Math.PI +
+    layer.orbitRadius && layer.orbitLinePoint && layer.orbitStagePoint
+      ? ((Math.atan2(
+          -(layer.orbitLinePoint.y - layer.orbitStagePoint.y),
+          layer.orbitLinePoint.x - layer.orbitStagePoint.x,
+        ) *
+          180) /
+          Math.PI +
           360) %
         360
-      : undefined;
+      : redStage !== undefined && circleRadius !== undefined && circleRadius > 0
+        ? ((Math.atan2(-(blueStage.y - redStage.y), blueStage.x - redStage.x) * 180) / Math.PI +
+            360) %
+          360
+        : undefined;
 
   const spinMotion = resolveMotion(
     {
@@ -856,7 +637,7 @@ function deriveLayerMotionConfig(
     blueVisible: true,
     redStage,
     redVisible: Boolean(redStage),
-    circleVisible: Boolean(entry.orbitLine),
+    circleVisible: layer.orbitLineVisible ?? Boolean(entry.orbitLine),
     pivotPercent,
     pivotVisible: Boolean(entry.spinImagePoint),
     circleRadius,
@@ -869,56 +650,6 @@ function deriveLayerMotionConfig(
           motionConfig: undefined,
           resolved: orbitMotion.resolved,
         },
-  };
-}
-
-/**
- * CRITICAL: Rotation-aware pivot positioning
- *
- * This is the CORRECT implementation that supports rotation.
- * Used by motion processor to position layers with spin animation.
- * Supports extended range pivots like spinImagePoint: [50, 118].
- *
- * FROM: layerMotion.ts lines 381-413
- *
- * @param stageAnchor - Stage point to anchor to
- * @param pivotPercent - Image pivot point (percentage, can exceed 0-100)
- * @param imageMapping - Image geometry
- * @param scale - Scale factors
- * @param rotationDeg - Rotation angle in degrees
- * @returns Position where image center should be placed
- */
-function calculatePositionForPivot(
-  stageAnchor: Point2D,
-  pivotPercent: PercentPoint,
-  imageMapping: ImageMapping,
-  scale: Point2D,
-  rotationDeg: number,
-): Point2D {
-  const rotationRad = (rotationDeg * Math.PI) / 180;
-  const imageCenter = getImageCenter(imageMapping);
-
-  const pivotPoint: Point2D = {
-    x: (pivotPercent.x / 100) * imageMapping.imageDimensions.width,
-    y: (pivotPercent.y / 100) * imageMapping.imageDimensions.height,
-  };
-
-  const offsetFromCenter: Point2D = {
-    x: (pivotPoint.x - imageCenter.x) * scale.x,
-    y: (pivotPoint.y - imageCenter.y) * scale.y,
-  };
-
-  const cosR = Math.cos(rotationRad);
-  const sinR = Math.sin(rotationRad);
-
-  const rotatedOffset: Point2D = {
-    x: offsetFromCenter.x * cosR - offsetFromCenter.y * sinR,
-    y: offsetFromCenter.x * sinR + offsetFromCenter.y * cosR,
-  };
-
-  return {
-    x: stageAnchor.x - rotatedOffset.x,
-    y: stageAnchor.y - rotatedOffset.y,
   };
 }
 
@@ -1196,36 +927,12 @@ function resolveRotationsPerHour(resolved: ResolvedClockSpeed): number {
   return 0;
 }
 
-// ============================================================================
-// SECTION 5: PROCESSOR REGISTRY & PIPELINE
-// ============================================================================
 // Plugin system for layer behaviors and pipeline execution.
-// FOR FUTURE AI AGENTS: This is how processors are registered and run.
-// ============================================================================
 
-/**
- * Layer processor function type - transforms UniversalLayerData into EnhancedLayerData
- *
- * Processors can:
- * - Add new properties (spin rotation, orbital position, or other custom state)
- * - Modify existing properties (position, rotation, visibility)
- * - Use timestamp for time-based animations
- *
- * @param layer - Base or enhanced layer data
- * @param timestamp - Optional timestamp in milliseconds for animations
- * @returns Enhanced layer data with added/modified properties
- */
+/** Layer processor function type - transforms UniversalLayerData into EnhancedLayerData. */
 export type LayerProcessor = (layer: UniversalLayerData, timestamp?: number) => EnhancedLayerData;
 
-/**
- * Enhanced universal layer data that can include additional properties from processors
- *
- * Base properties (from UniversalLayerData):
- * - imageMapping, calculation, position, scale, rotation, layerId
- *
- * Processor-added properties:
- * - Spin, Orbital, and other processor properties
- */
+/** Enhanced universal layer data that can include additional properties from processors. */
 export type EnhancedLayerData = UniversalLayerData & {
   // Spin properties
   spinSpeed?: number;
@@ -1258,32 +965,22 @@ export type EnhancedLayerData = UniversalLayerData & {
   filters?: string[];
 };
 
-/**
- * Context for processor attachment decisions
- */
+/** Context for processor attachment decisions. */
 export type ProcessorContext = {
   force?: Record<string, unknown>;
 };
 
-/**
- * Processor plugin definition
- */
+/** Processor plugin definition. */
 type ProcessorPlugin = {
   name: string;
   shouldAttach(entry: LayerConfigEntry, context?: ProcessorContext): boolean;
   create(entry: LayerConfigEntry, context?: ProcessorContext): LayerProcessor;
 };
 
-/**
- * Internal registry of all processor plugins
- */
+/** Internal registry of all processor plugins. */
 const plugins: ProcessorPlugin[] = [];
 
-/**
- * Register a processor plugin
- *
- * @param plugin - Processor plugin definition
- */
+/** Register a processor plugin. */
 export function registerProcessor(plugin: ProcessorPlugin): void {
   const existingIndex = plugins.findIndex((p) => p.name === plugin.name);
   if (existingIndex >= 0) {
@@ -1293,13 +990,7 @@ export function registerProcessor(plugin: ProcessorPlugin): void {
   }
 }
 
-/**
- * Get all processors that should be attached to a layer
- *
- * @param entry - Layer configuration
- * @param context - Optional runtime context
- * @returns Array of processor functions
- */
+/** Get all processors that should be attached to a layer. */
 export function getProcessorsForEntry(
   entry: LayerConfigEntry,
   context?: ProcessorContext,
@@ -1320,14 +1011,7 @@ export function getProcessorsForEntry(
   return attached;
 }
 
-/**
- * Run layer data through a pipeline of processors
- *
- * @param baseLayer - The base layer data
- * @param processors - Array of processors to apply in sequence
- * @param timestamp - Optional timestamp for time-based processors
- * @returns Enhanced layer data with all processor modifications
- */
+/** Run layer data through a pipeline of processors. */
 export function runPipeline(
   baseLayer: UniversalLayerData,
   processors: LayerProcessor[],
@@ -1342,14 +1026,7 @@ export function runPipeline(
   return enhanced;
 }
 
-/**
- * Process multiple layers through the same pipeline
- *
- * @param baseLayers - Array of base layers to process
- * @param processors - Array of processors to apply to each layer
- * @param timestamp - Optional timestamp for time-based processors
- * @returns Array of enhanced layers
- */
+/** Process multiple layers through the same pipeline. */
 export function processBatch(
   baseLayers: UniversalLayerData[],
   processors: LayerProcessor[],
@@ -1358,72 +1035,9 @@ export function processBatch(
   return baseLayers.map((layer) => runPipeline(layer, processors, timestamp));
 }
 
-// ============================================================================
-// SECTION 6: ANIMATION UTILITIES
-// ============================================================================
 // Helper functions for animations and calculations.
-// FOR FUTURE AI AGENTS: Use these for common animation operations.
-// ============================================================================
 
-/**
- * Animation constants for common calculations
- */
-export const AnimationConstants = {
-  DEG_TO_RAD: Math.PI / 180,
-  RAD_TO_DEG: 180 / Math.PI,
-  TWO_PI: Math.PI * 2,
-  HALF_PI: Math.PI / 2,
-  QUARTER_PI: Math.PI / 4,
-} as const;
-
-/**
- * Convert degrees to radians
- */
-export function degreesToRadians(degrees: number): number {
-  return degrees * AnimationConstants.DEG_TO_RAD;
-}
-
-/**
- * Convert radians to degrees
- */
-export function radiansToDegrees(radians: number): number {
-  return radians * AnimationConstants.RAD_TO_DEG;
-}
-
-/**
- * Normalize angle to 0-360 range
- */
-export function normalizeAngle(angle: number): number {
-  let normalized = angle % 360;
-  if (normalized < 0) normalized += 360;
-  return normalized;
-}
-
-/**
- * Apply rotation direction to angle
- */
-export function applyRotationDirection(angle: number, direction: "cw" | "ccw"): number {
-  return direction === "ccw" ? -angle : angle;
-}
-
-/**
- * Calculate position on circular orbit
- */
-export function calculateOrbitPosition(
-  center: Point2D,
-  radius: number,
-  angleInDegrees: number,
-): Point2D {
-  const angleRad = degreesToRadians(angleInDegrees);
-  return {
-    x: center.x + radius * Math.cos(angleRad),
-    y: center.y + radius * Math.sin(angleRad),
-  };
-}
-
-/**
- * Calculate elapsed time from timestamp and start time
- */
+/** Calculate elapsed time from timestamp and start time. */
 export function calculateElapsedTime(
   timestamp: number,
   startTime?: number,
@@ -1435,87 +1049,9 @@ export function calculateElapsedTime(
   return { elapsed, effectiveStartTime: startTime };
 }
 
-/**
- * Check if point is within bounds
- */
-export function isPointInBounds(
-  point: Point2D,
-  bounds: { min: number; max: number },
-  margin: number = 0,
-): boolean {
-  return (
-    point.x >= bounds.min - margin &&
-    point.x <= bounds.max + margin &&
-    point.y >= bounds.min - margin &&
-    point.y <= bounds.max + margin
-  );
-}
-
-/**
- * Calculate if orbital layer is visible on stage
- */
-export function calculateOrbitalVisibility(
-  position: Point2D,
-  dimensions: { width: number; height: number },
-  stageBounds: { min: number; max: number },
-): boolean {
-  const halfWidth = dimensions.width / 2;
-  const halfHeight = dimensions.height / 2;
-
-  return !(
-    position.x + halfWidth < stageBounds.min ||
-    position.x - halfWidth > stageBounds.max ||
-    position.y + halfHeight < stageBounds.min ||
-    position.y - halfHeight > stageBounds.max
-  );
-}
-
-/**
- * Ease-in-out quadratic easing function
- */
-export function easeInOutQuad(t: number): number {
-  return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-}
-
-/**
- * Elastic easing out function
- */
-export function easeOutElastic(t: number): number {
-  const c4 = (2 * Math.PI) / 3;
-  return t === 0 ? 0 : t === 1 ? 1 : Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
-}
-
-/**
- * Bounce easing out function
- */
-export function easeOutBounce(t: number): number {
-  const n1 = 7.5625;
-  const d1 = 2.75;
-  if (t < 1 / d1) {
-    return n1 * t * t;
-  }
-  if (t < 2 / d1) {
-    const p = t - 1.5 / d1;
-    return n1 * p * p + 0.75;
-  }
-  if (t < 2.5 / d1) {
-    const p = t - 2.25 / d1;
-    return n1 * p * p + 0.9375;
-  }
-  const p = t - 2.625 / d1;
-  return n1 * p * p + 0.984375;
-}
-
-// ============================================================================
-// SECTION 7: PERFORMANCE UTILITIES
-// ============================================================================
 // Utilities for optimizing layer rendering performance.
-// FOR FUTURE AI AGENTS: Use these for performance optimization.
-// ============================================================================
 
-/**
- * Frame-based cache for pipeline results
- */
+/** Frame-based cache for pipeline results. */
 export class PipelineCache<T = EnhancedLayerData> {
   private frameId: number = 0;
   private cache = new Map<string, { frameId: number; value: T }>();
@@ -1544,16 +1080,12 @@ export class PipelineCache<T = EnhancedLayerData> {
   }
 }
 
-/**
- * Create a new pipeline cache
- */
+/** Create a new pipeline cache. */
 export function createPipelineCache<T = EnhancedLayerData>(): PipelineCache<T> {
   return new PipelineCache<T>();
 }
 
-/**
- * Offscreen canvas buffer for static layers
- */
+/** Offscreen canvas buffer for static layers. */
 export class StaticLayerBuffer {
   private offscreenCanvas: OffscreenCanvas | null = null;
   private offscreenCtx: OffscreenCanvasRenderingContext2D | null = null;
@@ -1589,9 +1121,7 @@ export class StaticLayerBuffer {
   }
 }
 
-/**
- * Batched layers by animation type
- */
+/** Batched layers by animation type. */
 export type LayerBatch<T> = {
   static: T[];
   spinOnly: T[];
@@ -1599,9 +1129,7 @@ export type LayerBatch<T> = {
   complex: T[];
 };
 
-/**
- * Batch layers by animation type
- */
+/** Batch layers by animation type. */
 export function batchLayersByAnimation<
   T extends {
     hasSpinAnimation?: boolean;

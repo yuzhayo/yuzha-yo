@@ -138,6 +138,7 @@ export {
   imagePercentToImagePoint,
   stagePointToPercent,
   stagePercentToStagePoint,
+  getImageCenter,
 
   // Pivot-based positioning
   calculatePositionForPivot,
@@ -159,8 +160,15 @@ export {
   clampedPercentToScale,
 
   // Angle & rotation math
+  AnimationConstants,
+  degreesToRadians,
+  radiansToDegrees,
   normalizeAngle,
+  applyRotationDirection,
   calculateAngleToPoint,
+  calculateOrbitPosition,
+  calculateOrbitalVisibility,
+  isPointInBounds,
 
   // Clock/time functions
   toDirectionSign,
@@ -168,6 +176,11 @@ export {
   resolveTimezoneOffset,
   resolveClockSpeed,
   calculateRotationDegrees,
+
+  // Easing utilities
+  easeInOutQuad,
+  easeOutElastic,
+  easeOutBounce,
 } from "./math";
 
 // ============================================================================
@@ -198,7 +211,6 @@ export {
   loadImage,
 
   // Image mapping
-  getImageCenter,
   computeImageMapping,
 
   // Layer preparation
@@ -221,17 +233,7 @@ export {
   processBatch,
 
   // Animation utilities
-  AnimationConstants,
-  degreesToRadians,
-  radiansToDegrees,
-  applyRotationDirection,
-  calculateOrbitPosition,
   calculateElapsedTime,
-  isPointInBounds,
-  calculateOrbitalVisibility,
-  easeInOutQuad,
-  easeOutElastic,
-  easeOutBounce,
 
   // Performance utilities
   PipelineCache,

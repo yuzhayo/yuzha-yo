@@ -45,11 +45,11 @@ import {
 } from "./testStageSystem";
 import {
   loadImage,
-  getImageCenter,
   runPipeline,
-  AnimationConstants,
   createPipelineCache,
-} from "../../../shared/layer/engine";
+  getImageCenter,
+  AnimationConstants,
+} from "../../../shared/layer";
 
 const IS_DEV = import.meta.env?.DEV ?? false;
 

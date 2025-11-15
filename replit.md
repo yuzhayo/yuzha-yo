@@ -68,6 +68,7 @@ Core animation logic is driven by a Layer System where JSON configurations defin
 - Asset loading MUST use `import.meta.glob` for Vite static analysis (critical for production builds)
 
 **Validation:**
+
 - ✅ TypeScript typecheck passes
 - ✅ ESLint passes (max-warnings=0)
 - ✅ Prettier formatting verified

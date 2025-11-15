@@ -43,7 +43,8 @@ import {
   type EnhancedLayerData,
   type LayerProcessor,
 } from "./StageSystem";
-import { runPipeline, AnimationConstants, createPipelineCache } from "./engine";
+import { runPipeline, createPipelineCache } from "./engine";
+import { AnimationConstants } from "./math";
 import { getDeviceCapability } from "../utils/DeviceCapability";
 
 const IS_DEV = import.meta.env?.DEV ?? false;

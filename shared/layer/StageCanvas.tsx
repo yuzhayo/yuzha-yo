@@ -43,13 +43,8 @@ import {
   type EnhancedLayerData,
   type LayerProcessor,
 } from "./StageSystem";
-import {
-  loadImage,
-  getImageCenter,
-  runPipeline,
-  AnimationConstants,
-  createPipelineCache,
-} from "./engine";
+import { loadImage, runPipeline, createPipelineCache } from "./engine";
+import { getImageCenter, AnimationConstants } from "./math";
 
 const IS_DEV = Boolean((import.meta as ImportMeta & { env?: { DEV?: boolean } }).env?.DEV);
 
