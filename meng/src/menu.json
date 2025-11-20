@@ -1,0 +1,44 @@
+[
+  {
+    "id": "iga-bakar",
+    "name": "Iga Bakar",
+    "description": "Grilled beef ribs marinated with special Indonesian spices, served with rice and vegetables",
+    "imageUrl": "https://images.unsplash.com/photo-1611354574034-9655b5b72d59?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHwxfHxncmlsbGVkJTIwcmlic3xlbnwwfHx8fDE3NjIxMzIzNzN8MA&ixlib=rb-4.1.0&q=85",
+    "category": "featured"
+  },
+  {
+    "id": "hot-plate-singapore",
+    "name": "Hot Plate Singapore",
+    "imageUrl": "https://images.unsplash.com/photo-1520720303147-80e4538f2327?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzl8MHwxfHNlYXJjaHwxfHxob3QlMjBwbGF0ZXxlbnwwfHx8fDE3NjIxMzIzODF8MA&ixlib=rb-4.1.0&q=85",
+    "description": "Sizzling hot plate with Singapore-style stir-fried noodles, vegetables, and your choice of protein",
+    "category": "featured"
+  },
+  {
+    "id": "grilled-specialty",
+    "name": "Grilled Specialty",
+    "description": "Premium grilled meat with our signature glaze and fresh garden salad",
+    "imageUrl": "https://images.unsplash.com/photo-1761712826031-6456b87bd811?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHwzfHxncmlsbGVkJTIwcmlic3xlbnwwfHx8fDE3NjIxMzIzNzN8MA&ixlib=rb-4.1.0&q=85",
+    "category": "main"
+  },
+  {
+    "id": "indonesian-platter",
+    "name": "Indonesian Platter",
+    "description": "A variety of traditional Indonesian dishes served on one plate",
+    "imageUrl": "https://images.unsplash.com/photo-1562607635-4608ff48a859?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2MzR8MHwxfHNlYXJjaHwxfHxpbmRvbmVzaWFuJTIwZm9vZHxlbnwwfHx8fDE3NjIxMzIzODZ8MA&ixlib=rb-4.1.0&q=85",
+    "category": "main"
+  },
+  {
+    "id": "asian-fusion",
+    "name": "Asian Fusion Special",
+    "description": "Exquisite blend of Indonesian and Asian flavors in every bite",
+    "imageUrl": "https://images.unsplash.com/photo-1539755530862-00f623c00f52?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2MzR8MHwxfHNlYXJjaHwyfHxpbmRvbmVzaWFuJTIwZm9vZHxlbnwwfHx8fDE3NjIxMzIzODZ8MA&ixlib=rb-4.1.0&q=85",
+    "category": "main"
+  },
+  {
+    "id": "hot-plate-deluxe",
+    "name": "Hot Plate Deluxe",
+    "description": "Premium hot plate selection with mixed seafood and vegetables",
+    "imageUrl": "https://images.unsplash.com/photo-1750660736346-668a8ab7340f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzl8MHwxfHNlYXJjaHw0fHxob3QlMjBwbGF0ZXxlbnwwfHx8fDE3NjIxMzIzODF8MA&ixlib=rb-4.1.0&q=85",
+    "category": "main"
+  }
+]

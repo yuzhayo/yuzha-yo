@@ -1,0 +1,25 @@
+{
+  "heading": "Contact Us",
+  "subheading": "Get in touch for reservations and inquiries",
+  "cards": {
+    "phone": {
+      "title": "Phone",
+      "value": "0811-1658-033"
+    },
+    "location": {
+      "title": "Location",
+      "lines": ["Bandung, West Java", "Mountain View Area"]
+    },
+    "hours": {
+      "title": "Opening Hours",
+      "days": "Monday - Sunday",
+      "hours": "10:00 AM - 10:00 PM"
+    }
+  },
+  "whatsapp": {
+    "number": "6281116580330",
+    "message": "Hello! I would like to know more about The Plantation Cafe & Resto.",
+    "label": "Contact via WhatsApp"
+  },
+  "ctaNote": "For More Information"
+}

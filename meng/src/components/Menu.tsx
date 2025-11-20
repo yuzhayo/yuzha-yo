@@ -10,14 +10,17 @@
  * - Hover effects
  *
  * For Future AI Agents:
- * - Data imported from src/data/menuItems.ts
+ * - Data imported from src/menu.json
  * - Images from vision_expert_agent
  * - Grid: 1 column mobile, 2 columns tablet, 3 columns desktop
  * - Featured items shown first
- * - Add new items by updating menuItems.ts
+ * - Add new items by updating menu.json
  */
 
-import { menuItems } from '../data/menuItems'
+import menuData from '../menu.json'
+import type { MenuItem } from '../types'
+
+const menuItems = menuData as MenuItem[]
 
 const Menu = () => {
   const featuredItems = menuItems.filter((item) => item.category === 'featured')
@@ -48,7 +51,12 @@ const Menu = () => {
                 className="bg-white rounded-2xl shadow-lg overflow-hidden transform hover:scale-105 transition-transform duration-300"
               >
                 <div className="relative h-64 overflow-hidden">
-                  <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                  <img
+                    src={item.imageUrl}
+                    alt={item.name}
+                    loading="lazy"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div className="p-6">
                   <h4 className="text-2xl font-display font-semibold text-gray-900 mb-3">
@@ -77,6 +85,7 @@ const Menu = () => {
                     <img
                       src={item.imageUrl}
                       alt={item.name}
+                      loading="lazy"
                       className="w-full h-full object-cover"
                     />
                   </div>

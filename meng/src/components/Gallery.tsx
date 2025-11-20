@@ -10,14 +10,17 @@
  * - Category filtering (optional for future)
  *
  * For Future AI Agents:
- * - Data imported from src/data/galleryItems.ts
+ * - Data imported from src/gallery.json
  * - Images from vision_expert_agent
  * - Grid: 1 column mobile, 2 columns tablet, 3-4 columns desktop
  * - Add lightbox library like 'yet-another-react-lightbox' for full-screen view
  * - Categories: food, ambiance, pool, exterior, interior
  */
 
-import { galleryItems } from '../data/galleryItems'
+import galleryData from '../gallery.json'
+import type { GalleryItem } from '../types'
+
+const galleryItems = galleryData as GalleryItem[]
 
 const Gallery = () => {
   return (
@@ -41,6 +44,7 @@ const Gallery = () => {
               <img
                 src={item.url}
                 alt={item.caption || 'Gallery image'}
+                loading="lazy"
                 className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
               />
               {/* Overlay on hover */}

@@ -1,12 +1,12 @@
-# Plantation Cafe Resto - Codebase Guide
+﻿# Plantation Cafe Resto - Codebase Guide
 
-## 📋 Overview
+## ðŸ“‹ Overview
 This is a modern, fully responsive website for **The Plantation Cafe & Resto** - a garden-concept restaurant in Bandung, Indonesia. Built with React 18, TypeScript, Tailwind CSS, and Vite.
 
-## 🎯 Purpose
+## ðŸŽ¯ Purpose
 Replicate the original website at https://plantationcaferesto.com/ with modern tech stack and improved user experience.
 
-## 🏗️ Architecture
+## ðŸ—ï¸ Architecture
 
 ### Tech Stack
 - **Frontend Framework:** React 18.2.0
@@ -19,36 +19,28 @@ Replicate the original website at https://plantationcaferesto.com/ with modern t
 ### Project Structure
 ```
 /app/meng/
-├── src/
-│   ├── components/      # React components
-│   │   ├── Navbar.tsx   # Fixed navigation bar
-│   │   ├── Hero.tsx     # Hero banner section
-│   │   ├── About.tsx    # About Us section
-│   │   ├── Menu.tsx     # Menu items display
-│   │   ├── Gallery.tsx  # Photo gallery
-│   │   ├── Contact.tsx  # Contact information
-│   │   └── Footer.tsx   # Footer section
-│   ├── data/           # Static data
-│   │   ├── menuItems.ts     # Menu items array
-│   │   └── galleryItems.ts  # Gallery images array
-│   ├── types/          # TypeScript types
-│   │   └── index.ts    # Interface definitions
-│   ├── App.tsx         # Main app component
-│   ├── main.tsx        # Entry point
-│   └── index.css       # Global styles + Tailwind
-├── public/             # Static assets
-├── dist/               # Build output
-├── index.html          # HTML template
-├── package.json        # Dependencies
-├── tsconfig.json       # TypeScript config
-├── vite.config.ts      # Vite config
-├── tailwind.config.ts  # Tailwind config
-├── postcss.config.cjs  # PostCSS config
-├── .eslintrc.json      # ESLint rules
-└── .prettierrc         # Prettier config
+└─ src/
+   ├─ components/      # React components
+   ├─ menu.json        # Menu content (JSON-driven)
+   ├─ gallery.json     # Gallery content (JSON-driven)
+   ├─ contact.json     # Contact content (JSON-driven)
+   ├─ types.ts         # Shared TypeScript types
+   ├─ App.tsx          # Main app component
+   ├─ main.tsx         # Entry point
+   └─ index.css        # Global styles + Tailwind
+public/                # Static assets
+dist/                  # Build output
+index.html             # HTML template
+package.json           # Dependencies
+tsconfig.json          # TypeScript config
+vite.config.ts         # Vite config
+tailwind.config.ts     # Tailwind config
+postcss.config.cjs     # PostCSS config
+.eslintrc.json         # ESLint rules
+.prettierrc            # Prettier config
 ```
 
-## 🔧 Key Components
+## ðŸ”§ Key Components
 
 ### 1. Navbar (`src/components/Navbar.tsx`)
 - **Purpose:** Fixed top navigation
@@ -69,13 +61,13 @@ Replicate the original website at https://plantationcaferesto.com/ with modern t
 
 ### 4. Menu (`src/components/Menu.tsx`)
 - **Purpose:** Display menu items
-- **Data Source:** `src/data/menuItems.ts`
+- **Data Source:** `src/menu.json`
 - **Sections:** Featured items (Iga Bakar, Hot Plate Singapore) + Main items
 - **Layout:** Responsive grid
 
 ### 5. Gallery (`src/components/Gallery.tsx`)
 - **Purpose:** Photo gallery
-- **Data Source:** `src/data/galleryItems.ts`
+- **Data Source:** `src/gallery.json`
 - **Features:** Hover effects, responsive grid
 - **Categories:** food, ambiance, pool, exterior, interior
 
@@ -90,40 +82,43 @@ Replicate the original website at https://plantationcaferesto.com/ with modern t
 - **Content:** Copyright, tagline
 - **Dynamic:** Current year auto-updates
 
-## 📊 Data Management
+## ðŸ“Š Data Management
 
-### Menu Items (`src/data/menuItems.ts`)
-```typescript
-export interface MenuItem {
-  id: string
-  name: string
-  description: string
-  imageUrl: string
-  category: 'featured' | 'main' | 'appetizer' | 'dessert' | 'beverage'
-}
+### Menu Items (`src/menu.json`)
+```json
+[
+  {
+    "id": "iga-bakar",
+    "name": "Iga Bakar",
+    "description": "...",
+    "imageUrl": "https://...",
+    "category": "featured"
+  }
+]
 ```
 **To Add New Items:**
-1. Open `src/data/menuItems.ts`
-2. Add new object to `menuItems` array
-3. Follow MenuItem interface
-4. Component auto-updates
+1. Open `src/menu.json`
+2. Add, edit, or remove objects following the shape above
+3. Save; the Menu component auto-updates
 
-### Gallery Items (`src/data/galleryItems.ts`)
-```typescript
-export interface GalleryItem {
-  id: string
-  url: string
-  type: 'image' | 'video'
-  caption?: string
-  category: 'food' | 'ambiance' | 'pool' | 'exterior' | 'interior'
-}
+### Gallery Items (`src/gallery.json`)
+```json
+[
+  {
+    "id": "gallery-1",
+    "url": "https://...",
+    "type": "image",
+    "caption": "...",
+    "category": "interior"
+  }
+]
 ```
 **To Add New Images:**
-1. Open `src/data/galleryItems.ts`
-2. Add new object to `galleryItems` array
-3. Component auto-updates
+1. Open `src/gallery.json`
+2. Add, edit, or remove objects following the shape above
+3. Save; the Gallery component auto-updates
 
-## 🎨 Styling System
+## ðŸŽ¨ Styling System
 
 ### Tailwind Configuration
 - **Primary Color:** Green (garden theme) - `primary-600`
@@ -143,7 +138,7 @@ export interface GalleryItem {
 - `xl`: 1280px
 - `2xl`: 1536px
 
-## 🚀 Development Commands
+## ðŸš€ Development Commands
 
 ```bash
 # Install dependencies
@@ -168,7 +163,7 @@ npm run build
 npm run preview
 ```
 
-## ✅ Quality Checks
+## âœ… Quality Checks
 
 ### TypeScript
 - Strict mode enabled
@@ -188,7 +183,7 @@ npm run preview
 - 2 space tabs
 - Run: `npm run format`
 
-## 🖼️ Image Sources
+## ðŸ–¼ï¸ Image Sources
 All images sourced from:
 - **Unsplash** (high-quality, royalty-free)
 - **Pexels** (high-quality, royalty-free)
@@ -200,7 +195,7 @@ Images selected via `vision_expert_agent` based on:
 4. Swimming pool with city views
 5. Cafe interior/exterior
 
-## 🔄 Future Enhancements
+## ðŸ”„ Future Enhancements
 
 ### Recommended Additions:
 1. **Lightbox for Gallery:** Install `yet-another-react-lightbox`
@@ -221,7 +216,7 @@ Images selected via `vision_expert_agent` based on:
 4. Add to render tree
 5. Update navigation links in Navbar
 
-## 🐛 Common Issues & Solutions
+## ðŸ› Common Issues & Solutions
 
 ### Issue: Build fails with PostCSS error
 **Solution:** Ensure `postcss.config.cjs` (not .ts) exists
@@ -238,7 +233,7 @@ Images selected via `vision_expert_agent` based on:
 2. Ensure `index.css` imports Tailwind directives
 3. Rebuild: `npm run build`
 
-## 📝 Code Standards
+## ðŸ“ Code Standards
 
 ### Component Structure
 ```typescript
@@ -276,11 +271,11 @@ export default ComponentName
 - **Interfaces:** PascalCase (e.g., `MenuItem`)
 - **CSS Classes:** kebab-case (Tailwind)
 
-## 🔐 Best Practices
+## ðŸ” Best Practices
 
 1. **Always add JSDoc comments** to components
 2. **Use TypeScript types** for all props and state
-3. **Follow responsive-first** approach (mobile → desktop)
+3. **Follow responsive-first** approach (mobile â†’ desktop)
 4. **Optimize images** before adding to production
 5. **Test on multiple devices** (mobile, tablet, desktop)
 6. **Run quality checks** before committing:
@@ -292,7 +287,7 @@ export default ComponentName
 9. **Use semantic HTML** for accessibility
 10. **Add alt text** to all images
 
-## 📞 Contact & Support
+## ðŸ“ž Contact & Support
 
 **Restaurant Contact:**
 - WhatsApp: 0811-1658-033
@@ -305,7 +300,7 @@ export default ComponentName
 
 ---
 
-## 🤖 Notes for Future AI Agents
+## ðŸ¤– Notes for Future AI Agents
 
 ### This codebase was built with you in mind!
 
@@ -324,8 +319,8 @@ Every file includes:
 
 ### Key Files to Understand:
 1. `src/App.tsx` - Application structure
-2. `src/types/index.ts` - Data models
-3. `src/data/*.ts` - Content management
+2. `src/types.ts` - Data models
+3. `src/*.json` - Content (menu/gallery/contact)
 4. Component files - UI implementation
 
 ### Logging for Debugging:
@@ -335,4 +330,4 @@ console.log('[ComponentName] State updated:', newState)
 console.error('[ComponentName] Error occurred:', error)
 ```
 
-**Good luck with your enhancements! 🚀**
+**Good luck with your enhancements! ðŸš€**
