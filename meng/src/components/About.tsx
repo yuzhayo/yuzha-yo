@@ -16,7 +16,7 @@
  * - Stacks vertically on mobile
  */
 
-import { MapPin, Mountain, Waves } from 'lucide-react'
+import { IconMapPin, IconMountain, IconWaves } from '../icons'
 
 const About = () => {
   const aboutImage = 'https://images.unsplash.com/photo-1653192916062-9b29d31896b4'
@@ -56,21 +56,21 @@ const About = () => {
             {/* Features */}
             <div className="space-y-4 mb-8">
               <div className="flex items-start space-x-3">
-                <Mountain className="w-6 h-6 text-primary-600 flex-shrink-0 mt-1" />
+                <IconMountain className="w-6 h-6 text-primary-600 flex-shrink-0 mt-1" />
                 <div>
                   <h3 className="font-semibold text-gray-900">Mountain View</h3>
                   <p className="text-gray-600">Breathtaking views of Bandung mountains</p>
                 </div>
               </div>
               <div className="flex items-start space-x-3">
-                <Waves className="w-6 h-6 text-primary-600 flex-shrink-0 mt-1" />
+                <IconWaves className="w-6 h-6 text-primary-600 flex-shrink-0 mt-1" />
                 <div>
                   <h3 className="font-semibold text-gray-900">Swimming Pool</h3>
                   <p className="text-gray-600">Relax by the pool with city views</p>
                 </div>
               </div>
               <div className="flex items-start space-x-3">
-                <MapPin className="w-6 h-6 text-primary-600 flex-shrink-0 mt-1" />
+                <IconMapPin className="w-6 h-6 text-primary-600 flex-shrink-0 mt-1" />
                 <div>
                   <h3 className="font-semibold text-gray-900">Garden Concept</h3>
                   <p className="text-gray-600">Natural garden setting with fresh air</p>

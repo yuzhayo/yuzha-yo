@@ -13,7 +13,7 @@ Replicate the original website at https://plantationcaferesto.com/ with modern t
 - **Language:** TypeScript 5.2.2
 - **Build Tool:** Vite 5.0.8
 - **Styling:** Tailwind CSS 3.3.6
-- **Icons:** Lucide React
+- **Icons:** Inline SVG (local icons, no external library)
 - **Code Quality:** ESLint + Prettier
 
 ### Project Structure

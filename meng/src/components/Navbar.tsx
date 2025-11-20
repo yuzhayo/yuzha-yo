@@ -10,14 +10,14 @@
  * - Transparent background with backdrop blur
  *
  * For Future AI Agents:
- * - Uses Lucide React icons for menu icon
+ * - Uses local inline SVG icons (no external dependency)
  * - Smooth scroll handled by CSS (scroll-behavior: smooth in index.css)
  * - State management: useState for mobile menu toggle
  * - Sections: Home, About, Menu, Gallery, Contact
  */
 
 import { useState } from 'react'
-import { Menu, X } from 'lucide-react'
+import { IconMenu, IconX } from '../icons'
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -61,7 +61,7 @@ const Navbar = () => {
               className="text-gray-700 hover:text-primary-600 p-2"
               aria-label="Toggle menu"
             >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              {isMenuOpen ? <IconX className="w-6 h-6" /> : <IconMenu className="w-6 h-6" />}
             </button>
           </div>
         </div>

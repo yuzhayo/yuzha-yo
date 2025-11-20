@@ -16,7 +16,7 @@
  * - Add Google Maps embed for location
  */
 
-import { Phone, MapPin, Clock } from 'lucide-react'
+import { IconPhone, IconMapPin, IconClock } from '../icons'
 import contactData from '../contact.json'
 import type { ContactContent } from '../types'
 
@@ -41,7 +41,7 @@ const Contact = () => {
           {/* Phone */}
           <div className="bg-white rounded-xl shadow-md p-8 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-4">
-              <Phone className="w-8 h-8 text-primary-600" />
+              <IconPhone className="w-8 h-8 text-primary-600" />
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
               {content.cards.phone.title}
@@ -52,7 +52,7 @@ const Contact = () => {
           {/* Location */}
           <div className="bg-white rounded-xl shadow-md p-8 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-4">
-              <MapPin className="w-8 h-8 text-primary-600" />
+              <IconMapPin className="w-8 h-8 text-primary-600" />
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
               {content.cards.location.title}
@@ -67,7 +67,7 @@ const Contact = () => {
           {/* Hours */}
           <div className="bg-white rounded-xl shadow-md p-8 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-4">
-              <Clock className="w-8 h-8 text-primary-600" />
+              <IconClock className="w-8 h-8 text-primary-600" />
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
               {content.cards.hours.title}
@@ -86,7 +86,7 @@ const Contact = () => {
             rel="noopener noreferrer"
             className="inline-flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-8 py-4 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
           >
-            <Phone className="w-6 h-6" />
+            <IconPhone className="w-6 h-6" />
             <span>{content.whatsapp.label}</span>
           </a>
         </div>
