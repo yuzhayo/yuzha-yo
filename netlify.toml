@@ -3,8 +3,8 @@
 
 [build]
   base = "."
-  command = "npm run build:launcher"
-  publish = "Launcher/dist"
+  command = "npm run build --workspace yuzha"
+  publish = "yuzha/dist"
 
 [[redirects]]
   from = "/*"
