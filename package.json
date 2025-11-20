@@ -47,7 +47,11 @@
     "deps:audit": "npm audit && npm audit fix",
     "start": "npm run preview:5000",
     "dev:yuzha": "npm run dev --workspace yuzha",
-    "dev:meng": "npm run dev --workspace meng -- --port 3001"
+    "dev:meng": "npm run dev --workspace meng",
+    "build:meng": "npm run build --workspace meng",
+    "lint:meng": "npm run lint --workspace meng",
+    "typecheck:meng": "npm run typecheck --workspace meng",
+    "preview:meng": "npm run preview --workspace meng"
   },
   "devDependencies": {
     "@tailwindcss/aspect-ratio": "^0.4.2",
