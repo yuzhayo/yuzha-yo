@@ -8,14 +8,15 @@
     "node": ">=20"
   },
   "workspaces": [
-    "yuzha"
+    "yuzha",
+    "meng"
   ],
   "scripts": {
-    "dev": "npm run dev --workspace yuzha",
+    "dev": "concurrently -k -n yuzha,meng \"npm run dev:yuzha\" \"npm run dev:meng\"",
     "dev:3000": "npm run dev:3000 --workspace yuzha",
     "dev:5000": "npm run dev:5000 --workspace yuzha",
     "dev:debug": "DEBUG=vite:* npm run dev --workspace yuzha",
-    "dev:host": "npm run dev -- --host",
+    "dev:host": "npm run dev:yuzha -- --host",
     "preview": "npm run preview --workspace yuzha",
     "preview:3000": "npm run preview:3000 --workspace yuzha",
     "preview:5000": "npm run preview:5000 --workspace yuzha",
@@ -44,7 +45,9 @@
     "sync:image": "node -e \"import(\\\"./shared/asset/ImageRegistry.mjs\\\").then(m => m.syncImageRegistry())\"",
     "deps:update": "npm update && npm outdated",
     "deps:audit": "npm audit && npm audit fix",
-    "start": "npm run preview:5000"
+    "start": "npm run preview:5000",
+    "dev:yuzha": "npm run dev --workspace yuzha",
+    "dev:meng": "npm run dev --workspace meng -- --port 3001"
   },
   "devDependencies": {
     "@tailwindcss/aspect-ratio": "^0.4.2",

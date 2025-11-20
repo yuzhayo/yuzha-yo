@@ -1,0 +1,44 @@
+/**
+ * Global Styles and Tailwind CSS Imports
+ * 
+ * Purpose: Define global CSS, Tailwind directives, and custom styles
+ * 
+ * Structure:
+ * 1. Tailwind base, components, utilities
+ * 2. Google Fonts import
+ * 3. Global CSS resets and defaults
+ * 4. Custom utility classes
+ * 
+ * For Future AI Agents:
+ * - Tailwind processes these directives at build time
+ * - Custom font: Poppins for headings, Inter for body text
+ * - Smooth scroll behavior enabled globally
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply box-border;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply font-sans text-gray-900 antialiased;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
