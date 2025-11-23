@@ -37,6 +37,8 @@ export default function TimestampScreen(props: TimestampScreenProps) {
             stampText={state.stampText}
             stampSpec={state.stampSpec}
             activeCenter={state.activeCenter}
+            frameRatio={state.frameRatio}
+            frameBox={state.frameBox}
             previewRef={state.previewRef}
             fileInputRef={state.fileInputRef}
             onBrowse={state.handleBrowseClick}
@@ -46,6 +48,8 @@ export default function TimestampScreen(props: TimestampScreenProps) {
             onPointerDown={state.handlePointerDown}
             onPointerMove={state.handlePointerMove}
             onPointerUp={state.handlePointerUp}
+            onWheel={state.handleWheel}
+            onPreviewResize={state.handlePreviewResize}
           />
 
           <ControlPanel
@@ -54,6 +58,10 @@ export default function TimestampScreen(props: TimestampScreenProps) {
             location={state.location}
             formatId={state.formatId}
             positionPreset={state.positionPreset}
+            frameRatioId={state.frameRatioId}
+            zoom={state.zoom}
+            offset={state.imageOffset}
+            offsetLimit={state.offsetLimit}
             photo={state.photo}
             stampText={state.stampText}
             saving={state.saving}
@@ -66,6 +74,10 @@ export default function TimestampScreen(props: TimestampScreenProps) {
             onFormatChange={state.setFormatId}
             onRandomTime={state.randomizeTime}
             onPresetChange={state.handlePresetChange}
+            onRatioChange={state.handleFrameRatioChange}
+            onZoomChange={state.handleZoomChange}
+            onOffsetChange={state.handleOffsetChange}
+            onResetView={state.handleResetView}
           />
         </div>
       </div>

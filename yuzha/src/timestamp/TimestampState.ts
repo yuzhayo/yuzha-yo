@@ -1,7 +1,8 @@
 import React from "react";
 
 export type PositionPreset = "bottom-left" | "bottom-right" | "top-left" | "top-right" | "center" | "custom";
-export type FormatPresetId = typeof FORMAT_PRESETS[number]["id"];
+export type FormatPresetId = (typeof FORMAT_PRESETS)[number]["id"];
+export type FrameRatioId = (typeof FRAME_RATIO_OPTIONS)[number]["id"];
 
 export type LoadedImage = {
   url: string;
@@ -19,10 +20,21 @@ export type StampSpec = {
   fontFamily: string;
 };
 
+export type FrameSize = { width: number; height: number };
+export type Offset = { x: number; y: number };
+
 export const FORMAT_PRESETS = [
-  { id: "default", label: "DD MMM YYYY · HH:mm · Lokasi", template: "{DATE} · {TIME} · {LOCATION}" },
-  { id: "time-first", label: "HH:mm — DD MMM YYYY · Lokasi", template: "{TIME} — {DATE} · {LOCATION}" },
+  { id: "default", label: "DD MMM YYYY | HH:mm | Lokasi", template: "{DATE} | {TIME} | {LOCATION}" },
+  { id: "time-first", label: "HH:mm - DD MMM YYYY | Lokasi", template: "{TIME} - {DATE} | {LOCATION}" },
   { id: "minimal", label: "DD/MM/YYYY HH:mm (lokasi)", template: "{DATE_SLASH} {TIME} ({LOCATION})" },
+] as const;
+
+export const FRAME_RATIO_OPTIONS = [
+  { id: "2:1", label: "2:1", w: 2, h: 1 },
+  { id: "16:9", label: "16:9", w: 16, h: 9 },
+  { id: "4:3", label: "4:3", w: 4, h: 3 },
+  { id: "3:4", label: "3:4", w: 3, h: 4 },
+  { id: "1:1", label: "1:1", w: 1, h: 1 },
 ] as const;
 
 export const POSITION_PRESETS: { id: PositionPreset; label: string }[] = [
@@ -35,6 +47,8 @@ export const POSITION_PRESETS: { id: PositionPreset; label: string }[] = [
 ];
 
 const DEFAULT_LOCATION = "Jakarta, Indonesia";
+const MIN_ZOOM = 0.6;
+const MAX_ZOOM = 3;
 
 function clamp01(value: number) {
   if (Number.isNaN(value)) return 0;
@@ -43,6 +57,13 @@ function clamp01(value: number) {
 
 function clampToRange(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
+}
+
+function clampOffset(value: Offset, limit: Offset): Offset {
+  return {
+    x: clampToRange(value.x, -limit.x, limit.x),
+    y: clampToRange(value.y, -limit.y, limit.y),
+  };
 }
 
 function formatDateDisplay(dateValue: string) {
@@ -65,7 +86,7 @@ function buildStampText(dateValue: string, timeValue: string, location: string, 
     .replace("{DATE}", formatDateDisplay(dateValue))
     .replace("{DATE_SLASH}", formatDateSlash(dateValue))
     .replace("{TIME}", timeValue || "--:--")
-    .replace("{LOCATION}", location || "–");
+    .replace("{LOCATION}", location || "-");
 }
 
 function randomTimeString() {
@@ -75,7 +96,7 @@ function randomTimeString() {
 }
 
 function measureStamp(imageWidth: number, text: string): StampSpec {
-  const fontSize = clampToRange(Math.round(imageWidth * 0.032), 18, 64);
+  const fontSize = clampToRange(Math.round(imageWidth * 0.032), 18, 72);
   const padding = Math.round(fontSize * 0.7);
   const fontFamily = `"Inter", "Segoe UI", sans-serif`;
   const canvas = document.createElement("canvas");
@@ -160,8 +181,17 @@ function drawRoundedRect(ctx: CanvasRenderingContext2D, x: number, y: number, w:
   ctx.closePath();
 }
 
+function getFrameRatioById(id: FrameRatioId) {
+  return FRAME_RATIO_OPTIONS.find((r) => r.id === id) ?? FRAME_RATIO_OPTIONS[0];
+}
+
 export function useTimestampState() {
   const [photo, setPhoto] = React.useState<LoadedImage | null>(null);
+  const [frameRatioId, setFrameRatioId] = React.useState<FrameRatioId>(FRAME_RATIO_OPTIONS[0].id);
+  const [frameSize, setFrameSize] = React.useState<FrameSize | null>(null);
+  const [zoom, setZoom] = React.useState(1);
+  const [imageOffset, setImageOffset] = React.useState<Offset>({ x: 0, y: 0 });
+
   const [dateValue, setDateValue] = React.useState(() => {
     const today = new Date();
     const yyyy = today.getFullYear();
@@ -179,29 +209,63 @@ export function useTimestampState() {
   const [customCenter, setCustomCenter] = React.useState({ x: 0.18, y: 0.82 });
   const [saving, setSaving] = React.useState(false);
   const [status, setStatus] = React.useState<string | null>(null);
-  const [isDragging, setIsDragging] = React.useState(false);
+  const [isStampDragging, setIsStampDragging] = React.useState(false);
+  const [isPanning, setIsPanning] = React.useState(false);
 
   const previewRef = React.useRef<HTMLDivElement | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const imageObjectUrlRef = React.useRef<string | null>(null);
+  const panStartRef = React.useRef<{ x: number; y: number; offset: Offset }>({
+    x: 0,
+    y: 0,
+    offset: { x: 0, y: 0 },
+  });
 
   const stampText = React.useMemo(
     () => buildStampText(dateValue, timeValue, location, formatId),
     [dateValue, timeValue, location, formatId],
   );
 
-  const stampSpec = React.useMemo(() => {
-    if (!photo) return null;
-    return measureStamp(photo.width, stampText);
-  }, [photo, stampText]);
+  const frameRatio = getFrameRatioById(frameRatioId);
+
+  const baseScale = React.useMemo(() => {
+    if (!photo || !frameSize) return 1;
+    return Math.min(frameSize.width / photo.width, frameSize.height / photo.height);
+  }, [photo, frameSize]);
+
+  const scaledImage = React.useMemo(() => {
+    if (!photo) return { width: 0, height: 0 };
+    const finalScale = baseScale * zoom;
+    return {
+      width: photo.width * finalScale,
+      height: photo.height * finalScale,
+    };
+  }, [photo, baseScale, zoom]);
+
+  const offsetLimit = React.useMemo<Offset>(() => {
+    if (!frameSize || !photo) return { x: 0, y: 0 };
+    const halfX = Math.max(0, (scaledImage.width - frameSize.width) / 2);
+    const halfY = Math.max(0, (scaledImage.height - frameSize.height) / 2);
+    return { x: halfX, y: halfY };
+  }, [frameSize, photo, scaledImage.height, scaledImage.width]);
 
   React.useEffect(() => {
-    if (!photo || !stampSpec) return;
+    setImageOffset((prev) => clampOffset(prev, offsetLimit));
+  }, [offsetLimit]);
+
+  const stampSpec = React.useMemo(() => {
+    const baseWidth = frameSize?.width ?? photo?.width ?? 1024;
+    return measureStamp(baseWidth, stampText);
+  }, [frameSize?.width, photo?.width, stampText]);
+
+  React.useEffect(() => {
+    if (!frameSize || !stampSpec) return;
     if (positionPreset === "custom") return;
-    const nextCenter = computeCenterFromPreset(positionPreset, stampSpec, photo, customCenter);
-    setCustomCenter(nextCenter);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [photo, stampSpec, positionPreset]);
+    const nextCenter = computeCenterFromPreset(positionPreset, stampSpec, frameSize, customCenter);
+    if (nextCenter.x !== customCenter.x || nextCenter.y !== customCenter.y) {
+      setCustomCenter(nextCenter);
+    }
+  }, [customCenter, frameSize, positionPreset, stampSpec]);
 
   React.useEffect(() => {
     return () => {
@@ -229,6 +293,8 @@ export function useTimestampState() {
         height: img.naturalHeight,
         element: img,
       });
+      setImageOffset({ x: 0, y: 0 });
+      setZoom(1);
       setStatus(null);
     };
     img.onerror = () => {
@@ -256,8 +322,106 @@ export function useTimestampState() {
     e.preventDefault();
   };
 
+  const frameBox = React.useMemo(() => {
+    if (!frameSize) return null;
+    const clampedOffset = clampOffset(imageOffset, offsetLimit);
+    const left = frameSize.width / 2 - scaledImage.width / 2 + clampedOffset.x;
+    const top = frameSize.height / 2 - scaledImage.height / 2 + clampedOffset.y;
+    return {
+      width: frameSize.width,
+      height: frameSize.height,
+      imgLeft: left,
+      imgTop: top,
+      imgWidth: scaledImage.width,
+      imgHeight: scaledImage.height,
+    };
+  }, [frameSize, imageOffset, offsetLimit, scaledImage.height, scaledImage.width]);
+
+  const activeCenter = React.useMemo(() => {
+    if (!frameSize || !stampSpec) return customCenter;
+    return computeCenterFromPreset(positionPreset, stampSpec, frameSize, customCenter);
+  }, [frameSize, stampSpec, positionPreset, customCenter]);
+
+  const handlePresetChange = (preset: PositionPreset) => {
+    setPositionPreset(preset);
+    if (!frameSize || !stampSpec) return;
+    const center = computeCenterFromPreset(preset, stampSpec, frameSize, customCenter);
+    setCustomCenter(center);
+  };
+
+  const handleFrameRatioChange = (id: FrameRatioId) => {
+    setFrameRatioId(id);
+  };
+
+  const handleZoomChange = (value: number) => {
+    const clamped = clampToRange(value, MIN_ZOOM, MAX_ZOOM);
+    setZoom(clamped);
+  };
+
+  const handleOffsetChange = (next: Offset) => {
+    setImageOffset(clampOffset(next, offsetLimit));
+  };
+
+  const handleResetView = () => {
+    setZoom(1);
+    setImageOffset({ x: 0, y: 0 });
+  };
+
+  const updatePositionFromPointer = (clientX: number, clientY: number) => {
+    const rect = previewRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = (clientX - rect.left) / rect.width;
+    const y = (clientY - rect.top) / rect.height;
+    setPositionPreset("custom");
+    setCustomCenter({ x: clamp01(x), y: clamp01(y) });
+  };
+
+  const handlePointerDown: React.PointerEventHandler<HTMLDivElement> = (e) => {
+    if (!photo) return;
+    const isPanGesture = e.altKey || e.button === 1 || e.button === 2;
+    if (isPanGesture) {
+      setIsPanning(true);
+      panStartRef.current = { x: e.clientX, y: e.clientY, offset: imageOffset };
+      (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+      return;
+    }
+    setIsStampDragging(true);
+    updatePositionFromPointer(e.clientX, e.clientY);
+  };
+
+  const handlePointerMove: React.PointerEventHandler<HTMLDivElement> = (e) => {
+    if (isPanning) {
+      const dx = e.clientX - panStartRef.current.x;
+      const dy = e.clientY - panStartRef.current.y;
+      const nextOffset = {
+        x: panStartRef.current.offset.x + dx,
+        y: panStartRef.current.offset.y + dy,
+      };
+      setImageOffset(clampOffset(nextOffset, offsetLimit));
+      return;
+    }
+    if (!isStampDragging) return;
+    updatePositionFromPointer(e.clientX, e.clientY);
+  };
+
+  const handlePointerUp: React.PointerEventHandler<HTMLDivElement> = (e) => {
+    if (isPanning) {
+      (e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId);
+    }
+    setIsPanning(false);
+    setIsStampDragging(false);
+  };
+
+  const handleWheel: React.WheelEventHandler<HTMLDivElement> = (e) => {
+    if (!photo) return;
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.08 : 0.08;
+    const nextZoom = clampToRange(zoom + delta, MIN_ZOOM, MAX_ZOOM);
+    setZoom(nextZoom);
+  };
+
   const handleSave = async () => {
-    if (!photo || !stampSpec) {
+    if (!photo || !frameSize || !stampSpec) {
       setStatus("Pilih foto dulu sebelum menyimpan.");
       return;
     }
@@ -266,8 +430,8 @@ export function useTimestampState() {
     setStatus(null);
 
     const canvas = document.createElement("canvas");
-    canvas.width = photo.width;
-    canvas.height = photo.height;
+    canvas.width = Math.round(frameSize.width);
+    canvas.height = Math.round(frameSize.height);
     const ctx = canvas.getContext("2d");
 
     if (!ctx) {
@@ -276,10 +440,17 @@ export function useTimestampState() {
       return;
     }
 
-    ctx.drawImage(photo.element, 0, 0, photo.width, photo.height);
+    const finalScale = baseScale * zoom;
+    const clampedOffset = clampOffset(imageOffset, offsetLimit);
+    const drawWidth = photo.width * finalScale;
+    const drawHeight = photo.height * finalScale;
+    const drawX = frameSize.width / 2 - drawWidth / 2 + clampedOffset.x;
+    const drawY = frameSize.height / 2 - drawHeight / 2 + clampedOffset.y;
 
-    const center = computeCenterFromPreset(positionPreset, stampSpec, photo, customCenter);
-    const { x, y } = centerToTopLeftPx(center, stampSpec, photo);
+    ctx.drawImage(photo.element, drawX, drawY, drawWidth, drawHeight);
+
+    const center = activeCenter;
+    const { x, y } = centerToTopLeftPx(center, stampSpec, frameSize);
 
     const radius = Math.round(stampSpec.padding * 0.6);
     drawRoundedRect(ctx, x, y, stampSpec.width, stampSpec.height, radius);
@@ -314,46 +485,26 @@ export function useTimestampState() {
     }, "image/png");
   };
 
-  const updatePositionFromPointer = (clientX: number, clientY: number) => {
-    const rect = previewRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const x = (clientX - rect.left) / rect.width;
-    const y = (clientY - rect.top) / rect.height;
-    setPositionPreset("custom");
-    setCustomCenter({ x: clamp01(x), y: clamp01(y) });
-  };
-
-  const handlePointerDown: React.PointerEventHandler<HTMLDivElement> = (e) => {
-    if (!photo) return;
-    setIsDragging(true);
-    updatePositionFromPointer(e.clientX, e.clientY);
-  };
-
-  const handlePointerMove: React.PointerEventHandler<HTMLDivElement> = (e) => {
-    if (!isDragging) return;
-    updatePositionFromPointer(e.clientX, e.clientY);
-  };
-
-  const handlePointerUp: React.PointerEventHandler<HTMLDivElement> = () => {
-    setIsDragging(false);
-  };
-
-  const activeCenter = React.useMemo(() => {
-    if (!photo || !stampSpec) return customCenter;
-    return computeCenterFromPreset(positionPreset, stampSpec, photo, customCenter);
-  }, [photo, stampSpec, positionPreset, customCenter]);
-
-  const handlePresetChange = (preset: PositionPreset) => {
-    setPositionPreset(preset);
-    if (!photo || !stampSpec) return;
-    const center = computeCenterFromPreset(preset, stampSpec, photo, customCenter);
-    setCustomCenter(center);
+  const handlePreviewResize = (size: FrameSize) => {
+    setFrameSize((prev) => {
+      if (prev && Math.round(prev.width) === Math.round(size.width) && Math.round(prev.height) === Math.round(size.height)) {
+        return prev;
+      }
+      return size;
+    });
   };
 
   const randomizeTime = () => setTimeValue(randomTimeString());
 
   return {
     photo,
+    frameRatio,
+    frameRatioId,
+    frameSize,
+    frameBox,
+    zoom,
+    offsetLimit,
+    imageOffset,
     stampText,
     stampSpec,
     activeCenter,
@@ -373,8 +524,14 @@ export function useTimestampState() {
     handlePointerDown,
     handlePointerMove,
     handlePointerUp,
+    handleWheel,
     handleSave,
     handlePresetChange,
+    handleFrameRatioChange,
+    handlePreviewResize,
+    handleZoomChange,
+    handleOffsetChange,
+    handleResetView,
     setDateValue,
     setTimeValue,
     setLocation,
@@ -384,4 +541,4 @@ export function useTimestampState() {
   };
 }
 
-export { clamp01 };
+export { clamp01, clampToRange };

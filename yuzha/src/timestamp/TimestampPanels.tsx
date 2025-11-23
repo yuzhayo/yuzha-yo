@@ -1,17 +1,36 @@
 import React from "react";
 import type {
   FormatPresetId,
+  FrameRatioId,
+  FrameSize,
   LoadedImage,
+  Offset,
   PositionPreset,
   StampSpec,
 } from "./TimestampState";
-import { FORMAT_PRESETS, POSITION_PRESETS, clamp01 } from "./TimestampState";
+import {
+  FORMAT_PRESETS,
+  FRAME_RATIO_OPTIONS,
+  POSITION_PRESETS,
+  clamp01,
+} from "./TimestampState";
+
+type FrameBox = {
+  width: number;
+  height: number;
+  imgLeft: number;
+  imgTop: number;
+  imgWidth: number;
+  imgHeight: number;
+};
 
 type ImageDropzoneProps = {
   photo: LoadedImage | null;
   stampText: string;
-  stampSpec: StampSpec | null;
+  stampSpec: StampSpec;
   activeCenter: { x: number; y: number };
+  frameRatio: { w: number; h: number };
+  frameBox: FrameBox | null;
   previewRef: React.RefObject<HTMLDivElement>;
   fileInputRef: React.RefObject<HTMLInputElement>;
   onBrowse: () => void;
@@ -21,6 +40,8 @@ type ImageDropzoneProps = {
   onPointerDown: React.PointerEventHandler<HTMLDivElement>;
   onPointerMove: React.PointerEventHandler<HTMLDivElement>;
   onPointerUp: React.PointerEventHandler<HTMLDivElement>;
+  onWheel: React.WheelEventHandler<HTMLDivElement>;
+  onPreviewResize: (size: FrameSize) => void;
 };
 
 type ControlPanelProps = {
@@ -33,6 +54,10 @@ type ControlPanelProps = {
   stampText: string;
   saving: boolean;
   status: string | null;
+  frameRatioId: FrameRatioId;
+  zoom: number;
+  offset: Offset;
+  offsetLimit: Offset;
   onBrowse: () => void;
   onSave: () => void;
   onDateChange: (value: string) => void;
@@ -41,42 +66,66 @@ type ControlPanelProps = {
   onFormatChange: (value: FormatPresetId) => void;
   onRandomTime: () => void;
   onPresetChange: (value: PositionPreset) => void;
+  onRatioChange: (value: FrameRatioId) => void;
+  onZoomChange: (value: number) => void;
+  onOffsetChange: (value: Offset) => void;
+  onResetView: () => void;
 };
 
-function usePreviewStampStyle(
-  photo: LoadedImage | null,
-  stampSpec: StampSpec | null,
-  activeCenter: { x: number; y: number },
-  previewRef: React.RefObject<HTMLDivElement>,
+function useResizeObserver(
+  targetRef: React.RefObject<HTMLElement>,
+  onSize: (size: FrameSize) => void,
+  active: boolean,
 ) {
-  return React.useMemo(() => {
-    if (!photo || !stampSpec || !previewRef.current) return null;
-    const previewWidth = previewRef.current.getBoundingClientRect().width || 1;
-    const previewHeight = previewRef.current.getBoundingClientRect().height || 1;
-    const scaleX = previewWidth / photo.width;
-    const scaleY = previewHeight / photo.height;
-    const left = `${clamp01(activeCenter.x) * 100}%`;
-    const top = `${clamp01(activeCenter.y) * 100}%`;
-    return {
-      left,
-      top,
-      width: stampSpec.width * scaleX,
-      height: stampSpec.height * scaleY,
-      padding: stampSpec.padding * ((scaleX + scaleY) / 2),
-      fontSize: stampSpec.fontSize * ((scaleX + scaleY) / 2),
-    };
-  }, [photo, stampSpec, activeCenter, previewRef]);
+  React.useLayoutEffect(() => {
+    if (!active) return undefined;
+    const el = targetRef.current;
+    if (!el) return undefined;
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      const { width, height } = entry.contentRect;
+      onSize({ width, height });
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [active, onSize, targetRef]);
+}
+
+function ImageOverlayStamp({
+  frameBox,
+  stampSpec,
+  stampText,
+  activeCenter,
+}: {
+  frameBox: FrameBox | null;
+  stampSpec: StampSpec;
+  stampText: string;
+  activeCenter: { x: number; y: number };
+}) {
+  if (!frameBox) return null;
+  const left = `${clamp01(activeCenter.x) * 100}%`;
+  const top = `${clamp01(activeCenter.y) * 100}%`;
+  return (
+    <div
+      className="pointer-events-none absolute inline-flex -translate-x-1/2 -translate-y-1/2 select-none items-center justify-center rounded-lg bg-black/60 text-xs text-white shadow-xl shadow-black/40 backdrop-blur"
+      style={{
+        left,
+        top,
+        width: stampSpec.width,
+        height: stampSpec.height,
+        padding: stampSpec.padding,
+        fontSize: stampSpec.fontSize,
+      }}
+    >
+      {stampText}
+    </div>
+  );
 }
 
 export function ImageDropzone(props: ImageDropzoneProps) {
   const inputId = React.useId();
-
-  const previewStampStyle = usePreviewStampStyle(
-    props.photo,
-    props.stampSpec,
-    props.activeCenter,
-    props.previewRef,
-  );
+  useResizeObserver(props.previewRef as React.RefObject<HTMLElement>, props.onPreviewResize, Boolean(props.photo));
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900/80 via-slate-900 to-slate-950 p-4 shadow-2xl shadow-black/40">
@@ -122,43 +171,39 @@ export function ImageDropzone(props: ImageDropzoneProps) {
               <span className="rounded-full bg-white/5 px-3 py-1 font-medium text-white/80">
                 {props.photo.name} — {props.photo.width}x{props.photo.height}px
               </span>
-              <span>
-                {props.stampSpec
-                  ? props.activeCenter
-                      ? `Posisi: ${props.activeCenter.x.toFixed(2)}, ${props.activeCenter.y.toFixed(2)}`
-                      : "Posisi siap diatur"
-                  : "Posisi siap diatur"}
-              </span>
+              <span>Alt + drag untuk pan gambar, scroll untuk zoom</span>
             </div>
             <div
               ref={props.previewRef}
               className="relative w-full overflow-hidden rounded-xl border border-white/5 bg-slate-950"
+              style={{ aspectRatio: `${props.frameRatio.w} / ${props.frameRatio.h}` }}
               onPointerDown={props.onPointerDown}
               onPointerMove={props.onPointerMove}
               onPointerUp={props.onPointerUp}
               onPointerCancel={props.onPointerUp}
+              onWheel={props.onWheel}
             >
-              <img
-                src={props.photo.url}
-                alt="preview"
-                className="block h-full w-full object-contain"
-                style={{ maxHeight: "70vh" }}
-              />
-              {props.stampSpec && previewStampStyle && (
-                <div
-                  className="pointer-events-none absolute inline-flex -translate-x-1/2 -translate-y-1/2 select-none items-center justify-center rounded-lg bg-black/60 text-xs text-white shadow-xl shadow-black/40 backdrop-blur"
+              {props.frameBox && (
+                <img
+                  src={props.photo.url}
+                  alt="preview"
+                  className="absolute select-none"
+                  draggable={false}
                   style={{
-                    left: previewStampStyle.left,
-                    top: previewStampStyle.top,
-                    width: previewStampStyle.width,
-                    height: previewStampStyle.height,
-                    padding: previewStampStyle.padding,
-                    fontSize: previewStampStyle.fontSize,
+                    width: props.frameBox.imgWidth,
+                    height: props.frameBox.imgHeight,
+                    left: props.frameBox.imgLeft,
+                    top: props.frameBox.imgTop,
+                    objectFit: "cover",
                   }}
-                >
-                  {props.stampText}
-                </div>
+                />
               )}
+              <ImageOverlayStamp
+                frameBox={props.frameBox}
+                stampSpec={props.stampSpec}
+                stampText={props.stampText}
+                activeCenter={props.activeCenter}
+              />
             </div>
           </div>
         )}
@@ -168,9 +213,12 @@ export function ImageDropzone(props: ImageDropzoneProps) {
 }
 
 export function ControlPanel(props: ControlPanelProps) {
+  const offsetXMax = props.offsetLimit.x || 0;
+  const offsetYMax = props.offsetLimit.y || 0;
+
   return (
     <div className="space-y-4 rounded-2xl border border-white/10 bg-slate-900/80 p-4 shadow-xl shadow-black/30">
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <button
           type="button"
           onClick={props.onBrowse}
@@ -247,7 +295,7 @@ export function ControlPanel(props: ControlPanelProps) {
 
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm text-white/80">
-          Posisi
+          Posisi Stamp
           <select
             value={props.positionPreset}
             onChange={(e) => props.onPresetChange(e.target.value as PositionPreset)}
@@ -260,23 +308,80 @@ export function ControlPanel(props: ControlPanelProps) {
             ))}
           </select>
         </label>
-        <div className="flex flex-col justify-end gap-2 text-sm text-white/70">
-          <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2">
-            {props.photo ? (
-              <>
-                <div className="font-medium text-white">Preview Stamp</div>
-                <div className="text-xs text-white/60">{props.stampText}</div>
-              </>
-            ) : (
-              <div className="text-xs text-white/50">Belum ada foto</div>
-            )}
-          </div>
+        <div className="flex flex-col gap-1 text-sm text-white/80">
+          Frame Ratio
+          <select
+            value={props.frameRatioId}
+            onChange={(e) => props.onRatioChange(e.target.value as FrameRatioId)}
+            className="rounded-lg border border-white/10 bg-slate-800 px-3 py-2 text-white outline-none transition focus:border-sky-500"
+          >
+            {FRAME_RATIO_OPTIONS.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-white/80">
+        <div className="mb-2 flex items-center justify-between text-xs text-white/60">
+          <span>Zoom</span>
+          <span className="text-white/70">{props.zoom.toFixed(2)}x</span>
+        </div>
+        <input
+          type="range"
+          min={0.6}
+          max={3}
+          step={0.01}
+          value={props.zoom}
+          onChange={(e) => props.onZoomChange(Number(e.target.value))}
+          className="w-full accent-sky-500"
+        />
+        <div className="mt-2 grid gap-2 sm:grid-cols-2">
+          <label className="flex flex-col gap-1 text-xs text-white/70">
+            Pan X
+            <input
+              type="range"
+              min={-offsetXMax}
+              max={offsetXMax}
+              step={1}
+              value={props.offset.x}
+              onChange={(e) => props.onOffsetChange({ x: Number(e.target.value), y: props.offset.y })}
+              className="w-full accent-sky-500"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-white/70">
+            Pan Y
+            <input
+              type="range"
+              min={-offsetYMax}
+              max={offsetYMax}
+              step={1}
+              value={props.offset.y}
+              onChange={(e) => props.onOffsetChange({ x: props.offset.x, y: Number(e.target.value) })}
+              className="w-full accent-sky-500"
+            />
+          </label>
+        </div>
+        <div className="mt-2 flex justify-between text-xs text-white/60">
+          <span>
+            Offset: {Math.round(props.offset.x)},{Math.round(props.offset.y)} px
+          </span>
+          <button
+            type="button"
+            onClick={props.onResetView}
+            className="rounded-lg border border-white/20 px-2 py-1 text-[11px] text-white transition hover:border-white/40"
+          >
+            Reset view
+          </button>
         </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-2 text-xs text-white/60">
-        <span className="rounded-full border border-white/10 px-2 py-1">Drag di preview untuk custom</span>
-        <span className="rounded-full border border-white/10 px-2 py-1">Canvas export: PNG</span>
+        <span className="rounded-full border border-white/10 px-2 py-1">Drag di preview untuk custom stamp</span>
+        <span className="rounded-full border border-white/10 px-2 py-1">Alt+drag untuk pan gambar</span>
+        <span className="rounded-full border border-white/10 px-2 py-1">Canvas export: sesuai frame</span>
       </div>
     </div>
   );
