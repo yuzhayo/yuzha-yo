@@ -1,8 +1,11 @@
 import React from "react";
 
 export type PositionPreset = "bottom-left" | "bottom-right" | "top-left" | "top-right" | "center" | "custom";
-export type FormatPresetId = (typeof FORMAT_PRESETS)[number]["id"];
+export type TextMode = "guided" | "custom";
+export type DateMode = "picker" | "manual";
 export type FrameRatioId = (typeof FRAME_RATIO_OPTIONS)[number]["id"];
+export type TextAlignOption = "left" | "center" | "right";
+export type PresetName = string;
 
 export type LoadedImage = {
   url: string;
@@ -12,22 +15,39 @@ export type LoadedImage = {
   element: HTMLImageElement;
 };
 
+export type StampLine = { text: string; size: number; align: TextAlignOption };
+
 export type StampSpec = {
-  fontSize: number;
   padding: number;
   width: number;
   height: number;
   fontFamily: string;
+  lines: StampLine[];
+  lineSpacing: number;
 };
 
 export type FrameSize = { width: number; height: number };
 export type Offset = { x: number; y: number };
 
-export const FORMAT_PRESETS = [
-  { id: "default", label: "DD MMM YYYY | HH:mm | Lokasi", template: "{DATE} | {TIME} | {LOCATION}" },
-  { id: "time-first", label: "HH:mm - DD MMM YYYY | Lokasi", template: "{TIME} - {DATE} | {LOCATION}" },
-  { id: "minimal", label: "DD/MM/YYYY HH:mm (lokasi)", template: "{DATE_SLASH} {TIME} ({LOCATION})" },
-] as const;
+export type TimestampPreset = {
+  name: PresetName;
+  textMode: TextMode;
+  dateMode: DateMode;
+  datePickerValue: string;
+  dateManual: string;
+  timeFormat: "24h" | "12h";
+  timeValue: string;
+  timeRandomStart: string;
+  timeRandomEnd: string;
+  locationLines: string[];
+  customText: string;
+  styles: TextStyleState;
+  frameRatioId: FrameRatioId;
+  positionPreset: PositionPreset;
+  customCenter: { x: number; y: number };
+  zoom: number;
+  imageOffset: Offset;
+};
 
 export const FRAME_RATIO_OPTIONS = [
   { id: "2:1", label: "2:1", w: 2, h: 1 },
@@ -46,9 +66,11 @@ export const POSITION_PRESETS: { id: PositionPreset; label: string }[] = [
   { id: "custom", label: "Custom (drag)" },
 ];
 
-const DEFAULT_LOCATION = "Jakarta, Indonesia";
+const DEFAULT_LOCATION_LINES = ["Jakarta", "Indonesia"];
+const DEFAULT_FONT_FAMILY = `"Inter", "Segoe UI", sans-serif`;
 const MIN_ZOOM = 0.6;
 const MAX_ZOOM = 3;
+const DATE_DISPLAY_FORMAT = "dd - MM - yyyy";
 
 function clamp01(value: number) {
   if (Number.isNaN(value)) return 0;
@@ -66,69 +88,119 @@ function clampOffset(value: Offset, limit: Offset): Offset {
   };
 }
 
-function formatDateDisplay(dateValue: string) {
-  if (!dateValue) return "Tanggal belum dipilih";
-  const d = new Date(`${dateValue}T00:00:00`);
-  if (Number.isNaN(d.getTime())) return dateValue;
-  return new Intl.DateTimeFormat("id-ID", { day: "2-digit", month: "short", year: "numeric" }).format(d);
-}
-
-function formatDateSlash(dateValue: string) {
-  if (!dateValue) return "";
-  const parts = dateValue.split("-");
-  if (parts.length !== 3) return dateValue;
-  return `${parts[2]}/${parts[1]}/${parts[0]}`;
-}
-
-function buildStampText(dateValue: string, timeValue: string, location: string, templateId: FormatPresetId) {
-  const preset = FORMAT_PRESETS.find((f) => f.id === templateId) ?? FORMAT_PRESETS[0];
-  return preset.template
-    .replace("{DATE}", formatDateDisplay(dateValue))
-    .replace("{DATE_SLASH}", formatDateSlash(dateValue))
-    .replace("{TIME}", timeValue || "--:--")
-    .replace("{LOCATION}", location || "-");
-}
-
 function randomTimeString() {
   const h = Math.floor(Math.random() * 24);
   const m = Math.floor(Math.random() * 60);
   return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
 }
 
-function measureStamp(imageWidth: number, text: string): StampSpec {
-  const fontSize = clampToRange(Math.round(imageWidth * 0.032), 18, 72);
-  const padding = Math.round(fontSize * 0.7);
-  const fontFamily = `"Inter", "Segoe UI", sans-serif`;
+function formatTimeForDisplay(timeValue: string, mode: "24h" | "12h") {
+  if (mode === "24h") return timeValue;
+  const [hStr, mStr] = timeValue.split(":");
+  const h = Number(hStr);
+  const m = Number(mStr);
+  if (Number.isNaN(h) || Number.isNaN(m)) return timeValue;
+  const isPM = h >= 12;
+  const displayH = h % 12 === 0 ? 12 : h % 12;
+  return `${displayH.toString().padStart(2, "0")}:${mStr} ${isPM ? "PM" : "AM"}`;
+}
+
+function defaultDateString() {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
+  return `${dd}-${mm}-${yyyy}`;
+}
+
+function defaultDateIso() {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+function formatDateIsoToDisplay(iso: string) {
+  if (!iso) return "";
+  const [yyyy, mm, dd] = iso.split("-");
+  if (!yyyy || !mm || !dd) return iso;
+  return DATE_DISPLAY_FORMAT.replace("dd", dd).replace("MM", mm).replace("yyyy", yyyy);
+}
+
+function loadPresetsFromStorage(): TimestampPreset[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem("timestamp-presets");
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed;
+  } catch {
+    return [];
+  }
+}
+
+function savePresetsToStorage(presets: TimestampPreset[]) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem("timestamp-presets", JSON.stringify(presets));
+  } catch {
+    /* ignore */
+  }
+}
+
+function getFrameRatioById(id: FrameRatioId) {
+  return FRAME_RATIO_OPTIONS.find((r) => r.id === id) ?? FRAME_RATIO_OPTIONS[0];
+}
+
+function measureStamp(lines: StampLine[], lineSpacing: number, baseWidth: number): StampSpec {
+  const paddingBase = Math.max(14, Math.min(72, Math.round(baseWidth * 0.02)));
+  const padding = paddingBase;
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
-  let textWidth = text.length * fontSize * 0.48;
-  if (ctx) {
-    ctx.font = `${fontSize}px ${fontFamily}`;
-    textWidth = ctx.measureText(text).width;
-  }
-  const lineHeight = Math.round(fontSize * 1.25);
+
+  const measureLine = (line: StampLine) => {
+    if (!ctx) return line.text.length * line.size * 0.48;
+    ctx.font = `${line.size}px ${DEFAULT_FONT_FAMILY}`;
+    return ctx.measureText(line.text).width;
+  };
+
+  let maxWidth = 0;
+  let totalHeight = 0;
+  lines.forEach((line, idx) => {
+    const w = measureLine(line);
+    maxWidth = Math.max(maxWidth, w);
+    const lineHeight = line.size * 1.25;
+    totalHeight += lineHeight;
+    if (idx < lines.length - 1) {
+      totalHeight += lineHeight * (lineSpacing - 1);
+    }
+  });
+
   return {
-    fontSize,
     padding,
-    width: Math.round(textWidth + padding * 2),
-    height: Math.round(lineHeight + padding * 2),
-    fontFamily,
+    width: Math.round(maxWidth + padding * 2),
+    height: Math.round(totalHeight + padding * 2),
+    fontFamily: DEFAULT_FONT_FAMILY,
+    lines,
+    lineSpacing,
   };
 }
 
 function computeCenterFromPreset(
   preset: PositionPreset,
   spec: StampSpec,
-  img: { width: number; height: number },
+  frame: { width: number; height: number },
   currentCustom: { x: number; y: number },
 ): { x: number; y: number } {
   if (preset === "custom") return currentCustom;
 
-  const margin = Math.max(24, Math.round(img.width * 0.02));
-  const marginX = margin / img.width;
-  const marginY = margin / img.height;
-  const widthNorm = spec.width / img.width;
-  const heightNorm = spec.height / img.height;
+  const margin = Math.max(24, Math.round(frame.width * 0.02));
+  const marginX = margin / frame.width;
+  const marginY = margin / frame.height;
+  const widthNorm = spec.width / frame.width;
+  const heightNorm = spec.height / frame.height;
 
   const centerFor = (x: number, y: number) => ({
     x: clamp01(x),
@@ -157,12 +229,12 @@ function computeCenterFromPreset(
 function centerToTopLeftPx(
   center: { x: number; y: number },
   spec: StampSpec,
-  img: { width: number; height: number },
+  frame: { width: number; height: number },
 ) {
-  const cx = center.x * img.width;
-  const cy = center.y * img.height;
-  const x = clampToRange(cx - spec.width / 2, 0, img.width - spec.width);
-  const y = clampToRange(cy - spec.height / 2, 0, img.height - spec.height);
+  const cx = center.x * frame.width;
+  const cy = center.y * frame.height;
+  const x = clampToRange(cx - spec.width / 2, 0, frame.width - spec.width);
+  const y = clampToRange(cy - spec.height / 2, 0, frame.height - spec.height);
   return { x, y };
 }
 
@@ -181,8 +253,43 @@ function drawRoundedRect(ctx: CanvasRenderingContext2D, x: number, y: number, w:
   ctx.closePath();
 }
 
-function getFrameRatioById(id: FrameRatioId) {
-  return FRAME_RATIO_OPTIONS.find((r) => r.id === id) ?? FRAME_RATIO_OPTIONS[0];
+type TextStyleState = {
+  timeSize: number;
+  dateSize: number;
+  locationSize: number;
+  customSize: number;
+  lineSpacing: number;
+  alignTime: TextAlignOption;
+  alignDate: TextAlignOption;
+  alignLocation: TextAlignOption;
+  alignCustom: TextAlignOption;
+};
+
+function buildStampLines(
+  mode: TextMode,
+  guided: { time: string; date: string; locationLines: string[] },
+  styles: TextStyleState,
+  customText: string,
+): StampLine[] {
+  if (mode === "custom") {
+    const lines = customText.split(/\r?\n/).map((l) => l.trimEnd());
+    const filtered = lines.length > 0 ? lines : [""];
+    return filtered.map((text) => ({ text, size: styles.customSize, align: styles.alignCustom }));
+  }
+
+  const lines: StampLine[] = [];
+  if (guided.time) lines.push({ text: guided.time, size: styles.timeSize, align: styles.alignTime });
+  if (guided.date) lines.push({ text: guided.date, size: styles.dateSize, align: styles.alignDate });
+  guided.locationLines
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .forEach((loc) => lines.push({ text: loc, size: styles.locationSize, align: styles.alignLocation }));
+
+  if (lines.length === 0) {
+    lines.push({ text: "Tambahkan teks", size: styles.timeSize, align: styles.alignTime });
+  }
+
+  return lines;
 }
 
 export function useTimestampState() {
@@ -192,26 +299,39 @@ export function useTimestampState() {
   const [zoom, setZoom] = React.useState(1);
   const [imageOffset, setImageOffset] = React.useState<Offset>({ x: 0, y: 0 });
 
-  const [dateValue, setDateValue] = React.useState(() => {
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, "0");
-    const dd = String(today.getDate()).padStart(2, "0");
-    return `${yyyy}-${mm}-${dd}`;
-  });
+  const [textMode, setTextMode] = React.useState<TextMode>("guided");
+  const [dateMode, setDateMode] = React.useState<DateMode>("picker");
+  const [datePickerValue, setDatePickerValue] = React.useState(defaultDateIso());
+  const [dateManual, setDateManual] = React.useState(defaultDateString());
+  const [timeFormat, setTimeFormat] = React.useState<"24h" | "12h">("24h");
+  const [timeRandomStart, setTimeRandomStart] = React.useState("08:00");
+  const [timeRandomEnd, setTimeRandomEnd] = React.useState("20:00");
   const [timeValue, setTimeValue] = React.useState(() => {
     const now = new Date();
     return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
   });
-  const [location, setLocation] = React.useState(DEFAULT_LOCATION);
-  const [formatId, setFormatId] = React.useState<FormatPresetId>("default");
+  const [locationLines, setLocationLines] = React.useState<string[]>(DEFAULT_LOCATION_LINES);
+  const [customText, setCustomText] = React.useState("12.00\n24 - 11 - 2025\nJakarta\nIndonesia");
+  const [styles, setStyles] = React.useState<TextStyleState>({
+    timeSize: 32,
+    dateSize: 28,
+    locationSize: 24,
+    customSize: 28,
+    lineSpacing: 1.2,
+    alignTime: "left",
+    alignDate: "left",
+    alignLocation: "left",
+    alignCustom: "left",
+  });
+  const [presets, setPresets] = React.useState<TimestampPreset[]>([]);
+  const [activePreset, setActivePreset] = React.useState<PresetName | null>(null);
+
   const [positionPreset, setPositionPreset] = React.useState<PositionPreset>("bottom-left");
   const [customCenter, setCustomCenter] = React.useState({ x: 0.18, y: 0.82 });
   const [saving, setSaving] = React.useState(false);
   const [status, setStatus] = React.useState<string | null>(null);
   const [isStampDragging, setIsStampDragging] = React.useState(false);
   const [isPanning, setIsPanning] = React.useState(false);
-
   const previewRef = React.useRef<HTMLDivElement | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const imageObjectUrlRef = React.useRef<string | null>(null);
@@ -221,12 +341,24 @@ export function useTimestampState() {
     offset: { x: 0, y: 0 },
   });
 
-  const stampText = React.useMemo(
-    () => buildStampText(dateValue, timeValue, location, formatId),
-    [dateValue, timeValue, location, formatId],
-  );
-
   const frameRatio = getFrameRatioById(frameRatioId);
+
+  const displayDate = React.useMemo(
+    () => (dateMode === "picker" ? formatDateIsoToDisplay(datePickerValue) : dateManual),
+    [dateMode, dateManual, datePickerValue],
+  );
+  const displayTime = React.useMemo(() => formatTimeForDisplay(timeValue, timeFormat), [timeFormat, timeValue]);
+
+  const stampLines = React.useMemo(
+    () =>
+      buildStampLines(
+        textMode,
+        { time: displayTime, date: displayDate, locationLines },
+        styles,
+        customText,
+      ),
+    [textMode, displayTime, displayDate, locationLines, styles, customText],
+  );
 
   const baseScale = React.useMemo(() => {
     if (!photo || !frameSize) return 1;
@@ -255,8 +387,8 @@ export function useTimestampState() {
 
   const stampSpec = React.useMemo(() => {
     const baseWidth = frameSize?.width ?? photo?.width ?? 1024;
-    return measureStamp(baseWidth, stampText);
-  }, [frameSize?.width, photo?.width, stampText]);
+    return measureStamp(stampLines, styles.lineSpacing, baseWidth);
+  }, [frameSize?.width, photo?.width, stampLines, styles.lineSpacing]);
 
   React.useEffect(() => {
     if (!frameSize || !stampSpec) return;
@@ -265,7 +397,7 @@ export function useTimestampState() {
     if (nextCenter.x !== customCenter.x || nextCenter.y !== customCenter.y) {
       setCustomCenter(nextCenter);
     }
-  }, [customCenter, frameSize, positionPreset, stampSpec]);
+  }, [customCenter.x, customCenter.y, frameSize, positionPreset, stampSpec]);
 
   React.useEffect(() => {
     return () => {
@@ -452,20 +584,34 @@ export function useTimestampState() {
     const center = activeCenter;
     const { x, y } = centerToTopLeftPx(center, stampSpec, frameSize);
 
-    const radius = Math.round(stampSpec.padding * 0.6);
+    const radius = Math.round(Math.max(10, stampSpec.padding * 0.6));
     drawRoundedRect(ctx, x, y, stampSpec.width, stampSpec.height, radius);
     ctx.fillStyle = "rgba(15,15,15,0.55)";
     ctx.filter = "blur(0px)";
     ctx.fill();
     ctx.filter = "none";
 
-    ctx.font = `${stampSpec.fontSize}px ${stampSpec.fontFamily}`;
-    ctx.fillStyle = "rgba(255,255,255,0.96)";
-    ctx.textBaseline = "top";
-    ctx.shadowColor = "rgba(0,0,0,0.35)";
-    ctx.shadowBlur = stampSpec.fontSize * 0.22;
-    ctx.fillText(stampText, x + stampSpec.padding, y + stampSpec.padding);
-    ctx.shadowBlur = 0;
+    let currentY = y + stampSpec.padding;
+    stampSpec.lines.forEach((line, idx) => {
+      const align = line.align;
+      let drawXAligned = x + stampSpec.padding;
+      if (align === "center") drawXAligned = x + stampSpec.width / 2;
+      if (align === "right") drawXAligned = x + stampSpec.width - stampSpec.padding;
+
+      ctx.font = `${line.size}px ${stampSpec.fontFamily}`;
+      ctx.fillStyle = "rgba(255,255,255,0.96)";
+      ctx.textBaseline = "top";
+      ctx.textAlign = align;
+      ctx.shadowColor = "rgba(0,0,0,0.35)";
+      ctx.shadowBlur = line.size * 0.22;
+      ctx.fillText(line.text, drawXAligned, currentY);
+      ctx.shadowBlur = 0;
+      const lineHeight = line.size * 1.25;
+      currentY += lineHeight;
+      if (idx < stampSpec.lines.length - 1) {
+        currentY += lineHeight * (stampSpec.lineSpacing - 1);
+      }
+    });
 
     const downloadName = `${photo.name?.replace(/\.[^/.]+$/, "") || "photo"}-timestamp.png`;
     canvas.toBlob((blob) => {
@@ -495,6 +641,128 @@ export function useTimestampState() {
   };
 
   const randomizeTime = () => setTimeValue(randomTimeString());
+  const randomizeTimeInRange = () => {
+    const parse = (t: string) => {
+      const [h, m] = t.split(":").map((v) => Number(v));
+      if (Number.isNaN(h) || Number.isNaN(m)) return null;
+      return h * 60 + m;
+    };
+    const startMin = parse(timeRandomStart);
+    const endMin = parse(timeRandomEnd);
+    if (startMin === null || endMin === null || endMin < startMin) {
+      setStatus("Range waktu tidak valid");
+      return;
+    }
+    const span = endMin - startMin;
+    const rand = startMin + Math.floor(Math.random() * (span + 1));
+    const hh = String(Math.floor(rand / 60)).padStart(2, "0");
+    const mm = String(rand % 60).padStart(2, "0");
+    setTimeValue(`${hh}:${mm}`);
+    setStatus(null);
+  };
+
+  const buildPresetFromState = React.useCallback(
+    (name: string): TimestampPreset => ({
+      name,
+      textMode,
+      dateMode,
+      datePickerValue,
+      dateManual,
+      timeFormat,
+      timeValue,
+      timeRandomStart,
+      timeRandomEnd,
+      locationLines,
+      customText,
+      styles,
+      frameRatioId,
+      positionPreset,
+      customCenter,
+      zoom,
+      imageOffset,
+    }),
+    [
+      customCenter,
+      customText,
+      dateManual,
+      dateMode,
+      datePickerValue,
+      frameRatioId,
+      imageOffset,
+      locationLines,
+      positionPreset,
+      styles,
+      textMode,
+      timeFormat,
+      timeRandomEnd,
+      timeRandomStart,
+      timeValue,
+      zoom,
+    ],
+  );
+
+  const applyPreset = React.useCallback((preset: TimestampPreset) => {
+    setTextMode(preset.textMode);
+    setDateMode(preset.dateMode);
+    setDatePickerValue(preset.datePickerValue);
+    setDateManual(preset.dateManual);
+    setTimeFormat(preset.timeFormat ?? "24h");
+    setTimeValue(preset.timeValue);
+    setTimeRandomStart(preset.timeRandomStart);
+    setTimeRandomEnd(preset.timeRandomEnd);
+    setLocationLines(preset.locationLines);
+    setCustomText(preset.customText);
+    setStyles(preset.styles);
+    setFrameRatioId(preset.frameRatioId);
+    setPositionPreset(preset.positionPreset);
+    setCustomCenter(preset.customCenter);
+    setZoom(preset.zoom);
+    setImageOffset(preset.imageOffset);
+  }, []);
+
+  const savePreset = (name: string) => {
+    if (!name.trim()) return;
+    const preset = buildPresetFromState(name.trim());
+    setPresets((prev) => {
+      const filtered = prev.filter((p) => p.name !== name.trim());
+      const next = [preset, ...filtered];
+      savePresetsToStorage(next);
+      return next;
+    });
+    setActivePreset(name.trim());
+  };
+
+  const loadPreset = (name: string) => {
+    const preset = presets.find((p) => p.name === name);
+    if (!preset) return;
+    applyPreset(preset);
+    setActivePreset(name);
+  };
+
+  const deletePreset = (name: string) => {
+    setPresets((prev) => {
+      const next = prev.filter((p) => p.name !== name);
+      savePresetsToStorage(next);
+      return next;
+    });
+    if (activePreset === name) {
+      setActivePreset(null);
+    }
+  };
+
+  React.useEffect(() => {
+    const stored = loadPresetsFromStorage();
+    if (stored.length) {
+      setPresets(stored);
+      const last = stored[0];
+      applyPreset(last);
+      setActivePreset(last.name);
+    }
+  }, [applyPreset]);
+
+  const updateLocationLines = (value: string) => {
+    setLocationLines(value.split(/\r?\n/));
+  };
 
   return {
     photo,
@@ -505,16 +773,23 @@ export function useTimestampState() {
     zoom,
     offsetLimit,
     imageOffset,
-    stampText,
     stampSpec,
+    stampLines,
+    textMode,
+    dateMode,
+    datePickerValue,
+    dateManual,
+    timeRandomStart,
+    timeRandomEnd,
+    timeValue,
+    locationLines,
+    customText,
+    styles,
+    timeFormat,
     activeCenter,
     positionPreset,
     saving,
     status,
-    dateValue,
-    timeValue,
-    location,
-    formatId,
     previewRef,
     fileInputRef,
     handleBrowseClick,
@@ -532,11 +807,24 @@ export function useTimestampState() {
     handleZoomChange,
     handleOffsetChange,
     handleResetView,
-    setDateValue,
+    setTextMode,
+    setDateMode,
+    setDatePickerValue,
+    setDateManual,
+    setTimeFormat,
+    setTimeRandomStart,
+    setTimeRandomEnd,
     setTimeValue,
-    setLocation,
-    setFormatId,
+    updateLocationLines,
+    setCustomText,
+    setStyles,
     randomizeTime,
+    randomizeTimeInRange,
+    presets,
+    activePreset,
+    savePreset,
+    loadPreset,
+    deletePreset,
     setStatus,
   };
 }

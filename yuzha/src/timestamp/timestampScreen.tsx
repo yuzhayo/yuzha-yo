@@ -34,7 +34,6 @@ export default function TimestampScreen(props: TimestampScreenProps) {
         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <ImageDropzone
             photo={state.photo}
-            stampText={state.stampText}
             stampSpec={state.stampSpec}
             activeCenter={state.activeCenter}
             frameRatio={state.frameRatio}
@@ -53,26 +52,48 @@ export default function TimestampScreen(props: TimestampScreenProps) {
           />
 
           <ControlPanel
-            dateValue={state.dateValue}
+            textMode={state.textMode}
             timeValue={state.timeValue}
-            location={state.location}
-            formatId={state.formatId}
+            dateMode={state.dateMode}
+            datePickerValue={state.datePickerValue}
+            dateManual={state.dateManual}
+            timeRandomStart={state.timeRandomStart}
+            timeRandomEnd={state.timeRandomEnd}
+            locationLines={state.locationLines}
+            customText={state.customText}
+            styles={state.styles}
             positionPreset={state.positionPreset}
             frameRatioId={state.frameRatioId}
             zoom={state.zoom}
             offset={state.imageOffset}
             offsetLimit={state.offsetLimit}
+            stampLines={state.stampLines}
             photo={state.photo}
-            stampText={state.stampText}
             saving={state.saving}
             status={state.status}
+            presets={state.presets}
+            activePreset={state.activePreset}
             onBrowse={state.handleBrowseClick}
             onSave={state.handleSave}
-            onDateChange={state.setDateValue}
+            onTextModeChange={state.setTextMode}
             onTimeChange={state.setTimeValue}
-            onLocationChange={state.setLocation}
-            onFormatChange={state.setFormatId}
+            onLocationChange={state.updateLocationLines}
+            onCustomTextChange={state.setCustomText}
+            onStyleChange={(patch) => state.setStyles((prev) => ({ ...prev, ...patch }))}
             onRandomTime={state.randomizeTime}
+            onRandomTimeRange={state.randomizeTimeInRange}
+            onTimeRangeChange={(patch) => {
+              if (patch.start !== undefined) state.setTimeRandomStart(patch.start);
+              if (patch.end !== undefined) state.setTimeRandomEnd(patch.end);
+            }}
+            onDateModeChange={state.setDateMode}
+            onDatePickerChange={state.setDatePickerValue}
+            onDateManualChange={state.setDateManual}
+            timeFormat={state.timeFormat}
+            onTimeFormatChange={state.setTimeFormat}
+            onSavePreset={(name) => state.savePreset(name)}
+            onLoadPreset={(name) => state.loadPreset(name)}
+            onDeletePreset={(name) => state.deletePreset(name)}
             onPresetChange={state.handlePresetChange}
             onRatioChange={state.handleFrameRatioChange}
             onZoomChange={state.handleZoomChange}
