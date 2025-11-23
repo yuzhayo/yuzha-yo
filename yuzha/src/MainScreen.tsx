@@ -10,7 +10,7 @@ export type RendererType = "canvas" | "three";
 export type MainScreenProps = {
   children?: React.ReactNode;
   onOpenTestScreen?: () => void;
-  onOpenStruckScreen?: () => void;
+  onOpenTimestampScreen?: () => void;
 };
 
 function MainScreenOverlay({
@@ -18,13 +18,13 @@ function MainScreenOverlay({
   rendererMode,
   onRendererModeChange,
   onOpenTestScreen,
-  onOpenStruckScreen,
+  onOpenTimestampScreen,
 }: {
   rendererLabel: string;
   rendererMode: RendererMode;
   onRendererModeChange: (mode: RendererMode) => void;
   onOpenTestScreen?: () => void;
-  onOpenStruckScreen?: () => void;
+  onOpenTimestampScreen?: () => void;
 }) {
   const gesture = useMainScreenBtnGesture();
 
@@ -43,7 +43,7 @@ function MainScreenOverlay({
         rendererMode={rendererMode}
         onRendererModeChange={onRendererModeChange}
         onOpenTestScreen={onOpenTestScreen}
-        onOpenStruckScreen={onOpenStruckScreen}
+        onOpenTimestampScreen={onOpenTimestampScreen}
       />
     </>
   );
@@ -56,7 +56,7 @@ function MainScreenOverlay({
 export default function MainScreen({
   children,
   onOpenTestScreen,
-  onOpenStruckScreen,
+  onOpenTimestampScreen,
 }: MainScreenProps) {
   const autoDetectedRenderer = useMemo(() => getRendererType(), []);
   const [rendererMode, setRendererMode] = useState<RendererMode>("auto");
@@ -79,7 +79,7 @@ export default function MainScreen({
           rendererMode={rendererMode}
           onRendererModeChange={setRendererMode}
           onOpenTestScreen={onOpenTestScreen}
-          onOpenStruckScreen={onOpenStruckScreen}
+          onOpenTimestampScreen={onOpenTimestampScreen}
         />
       )}
     </div>

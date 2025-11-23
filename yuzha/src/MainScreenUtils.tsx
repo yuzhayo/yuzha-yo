@@ -87,7 +87,7 @@ export type MainScreenUpdaterProps = {
   rendererMode?: "auto" | "canvas" | "three";
   onRendererModeChange?: (mode: "auto" | "canvas" | "three") => void;
   onOpenTestScreen?: () => void;
-  onOpenStruckScreen?: () => void;
+  onOpenTimestampScreen?: () => void;
   rendererLabel?: string;
 };
 
@@ -377,13 +377,13 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
             Test Screen
           </button>
         )}
-        {props.onOpenStruckScreen && (
+        {props.onOpenTimestampScreen && (
           <button
             type="button"
-            onClick={props.onOpenStruckScreen}
+            onClick={props.onOpenTimestampScreen}
             className="text-xs px-3 py-2 rounded bg-emerald-600/80 hover:bg-emerald-500/80 active:bg-emerald-600 text-white shadow-sm border border-white/10 text-center whitespace-normal break-words leading-tight"
           >
-            Struck Screen
+            Timestamp
           </button>
         )}
       </div>
