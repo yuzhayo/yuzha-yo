@@ -97,13 +97,14 @@ function randomTimeString() {
 
 function formatTimeForDisplay(timeValue: string, mode: "24h" | "12h") {
   if (mode === "24h") return timeValue;
-  const [hStr, mStr] = timeValue.split(":");
-  const h = Number(hStr);
-  const m = Number(mStr);
+  const [hhRaw, mmRaw = "00"] = timeValue.split(":");
+  const h = Number(hhRaw);
+  const m = Number(mmRaw);
   if (Number.isNaN(h) || Number.isNaN(m)) return timeValue;
   const isPM = h >= 12;
   const displayH = h % 12 === 0 ? 12 : h % 12;
-  return `${displayH.toString().padStart(2, "0")}:${mStr} ${isPM ? "PM" : "AM"}`;
+  const mm = mmRaw.padStart(2, "0");
+  return `${displayH.toString().padStart(2, "0")}:${mm} ${isPM ? "PM" : "AM"}`;
 }
 
 function defaultDateString() {
@@ -659,7 +660,9 @@ export function useTimestampState() {
   const randomizeTime = () => setTimeValue(randomTimeString());
   const randomizeTimeInRange = () => {
     const parse = (t: string) => {
-      const [h, m] = t.split(":").map((v) => Number(v));
+      const [hhRaw, mmRaw = "00"] = t.split(":");
+      const h = Number(hhRaw);
+      const m = Number(mmRaw);
       if (Number.isNaN(h) || Number.isNaN(m)) return null;
       return h * 60 + m;
     };
@@ -774,8 +777,10 @@ export function useTimestampState() {
     if (stored.length) {
       setPresets(stored);
       const last = stored[0];
-      applyPreset(last);
-      setActivePreset(last.name);
+      if (last) {
+        applyPreset(last);
+        setActivePreset(last.name);
+      }
     }
   }, [applyPreset]);
 

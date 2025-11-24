@@ -318,25 +318,6 @@ export function ControlPanel(props: ControlPanelProps & { stampLines: StampLine[
 
   return (
     <div className="space-y-4 rounded-2xl border border-white/10 bg-slate-900/80 p-4 shadow-xl shadow-black/30 max-h-[calc(100vh-140px)] overflow-y-auto pr-2 md:max-h-[calc(100vh-120px)]">
-      <div className="flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          onClick={props.onBrowse}
-          className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-sky-900/50 transition hover:bg-sky-500 active:bg-sky-600"
-        >
-          Browse
-        </button>
-        <button
-          type="button"
-          onClick={props.onSave}
-          disabled={!props.photo || props.saving}
-          className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-emerald-900/50 transition hover:bg-emerald-500 active:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-emerald-800/60 disabled:text-white/50"
-        >
-          {props.saving ? "Menyimpan..." : "Save"}
-        </button>
-        {props.status && <span className="text-xs text-white/70">{props.status}</span>}
-      </div>
-
       <div className="flex flex-wrap items-center gap-2 rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white/80">
         <div className="flex items-center gap-2">
           <span>Preset:</span>
@@ -375,6 +356,7 @@ export function ControlPanel(props: ControlPanelProps & { stampLines: StampLine[
             Delete
           </button>
         )}
+        {props.status && <span className="text-[11px] text-white/70">{props.status}</span>}
       </div>
 
       <div className="flex flex-wrap gap-2 text-xs">

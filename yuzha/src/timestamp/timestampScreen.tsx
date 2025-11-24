@@ -12,16 +12,33 @@ export default function TimestampScreen(props: TimestampScreenProps) {
   return (
     <div className="min-h-screen w-screen bg-slate-950 text-white overflow-auto">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-3 py-4 md:px-6">
-        <div className="flex items-center justify-end">
-          {props.onBack && (
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            {props.onBack && (
+              <button
+                type="button"
+                onClick={props.onBack}
+                className="rounded-xl border border-white/10 bg-slate-800 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-slate-700 active:bg-slate-800"
+              >
+                Back
+              </button>
+            )}
             <button
               type="button"
-              onClick={props.onBack}
-              className="rounded-xl border border-white/10 bg-slate-800 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-slate-700 active:bg-slate-800"
+              onClick={state.handleBrowseClick}
+              className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-sky-900/50 transition hover:bg-sky-500 active:bg-sky-600"
             >
-              Back
+              Browse
             </button>
-          )}
+            <button
+              type="button"
+              onClick={state.handleSave}
+              disabled={!state.photo || state.saving}
+              className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-emerald-900/50 transition hover:bg-emerald-500 active:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-emerald-800/60 disabled:text-white/50"
+            >
+              {state.saving ? "Saving..." : "Save"}
+            </button>
+          </div>
         </div>
 
         <div className="grid w-full gap-4 md:grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] md:min-h-0 md:overflow-visible">
