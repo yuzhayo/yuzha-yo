@@ -60,6 +60,7 @@ type ControlPanelProps = {
   saving: boolean;
   status: string | null;
   frameRatioId: FrameRatioId;
+  customRatio: { w: number; h: number };
   zoom: number;
   offset: Offset;
   offsetLimit: Offset;
@@ -85,6 +86,7 @@ type ControlPanelProps = {
   onTimeRangeChange: (patch: { start?: string; end?: string }) => void;
   onPresetChange: (value: PositionPreset) => void;
   onRatioChange: (value: FrameRatioId) => void;
+  onCustomRatioChange: (patch: { w?: number; h?: number }) => void;
   onZoomChange: (value: number) => void;
   onOffsetChange: (value: Offset) => void;
   onResetView: () => void;
@@ -208,38 +210,49 @@ export function ImageDropzone(props: ImageDropzoneProps) {
               </span>
               <span>Alt+drag untuk pan gambar, scroll untuk zoom, drag biasa untuk posisi stamp</span>
             </div>
-            <div
-              ref={props.previewRef}
-              className="relative w-full overflow-hidden rounded-xl border border-white/5 bg-slate-950"
-              style={{ aspectRatio: `${props.frameRatio.w} / ${props.frameRatio.h}` }}
-              onPointerDown={props.onPointerDown}
-              onPointerMove={props.onPointerMove}
-              onPointerUp={props.onPointerUp}
-              onPointerCancel={props.onPointerUp}
-              onWheel={props.onWheel}
-            >
-              {props.frameBox && (
-                <img
-                  src={props.photo.url}
-                  alt="preview"
-                  className="absolute select-none"
-                  draggable={false}
+
+            <div className="relative w-full overflow-hidden rounded-xl border border-white/5 bg-slate-950" style={{ aspectRatio: "1 / 1" }}>
+              <div
+                ref={props.previewRef}
+                className="absolute left-1/2 top-1/2 flex h-full w-full -translate-x-1/2 -translate-y-1/2 items-center justify-center"
+                onPointerDown={props.onPointerDown}
+                onPointerMove={props.onPointerMove}
+                onPointerUp={props.onPointerUp}
+                onPointerCancel={props.onPointerUp}
+                onWheel={props.onWheel}
+              >
+                <div
+                  className="relative overflow-hidden rounded-lg border border-white/10"
                   style={{
-                    width: props.frameBox.imgWidth,
-                    height: props.frameBox.imgHeight,
-                    left: props.frameBox.imgLeft,
-                    top: props.frameBox.imgTop,
-                    objectFit: "cover",
+                    aspectRatio: `${props.frameRatio.w} / ${props.frameRatio.h}`,
+                    width: "100%",
+                    maxHeight: "100%",
                   }}
-                />
-              )}
-              {props.frameBox && (
-                <StampPreview
-                  frameBox={props.frameBox}
-                  stampSpec={props.stampSpec}
-                  activeCenter={props.activeCenter}
-                />
-              )}
+                >
+                  {props.frameBox && (
+                    <img
+                      src={props.photo.url}
+                      alt="preview"
+                      className="absolute select-none"
+                      draggable={false}
+                      style={{
+                        width: props.frameBox.imgWidth,
+                        height: props.frameBox.imgHeight,
+                        left: props.frameBox.imgLeft,
+                        top: props.frameBox.imgTop,
+                        objectFit: "cover",
+                      }}
+                    />
+                  )}
+                  {props.frameBox && (
+                    <StampPreview
+                      frameBox={props.frameBox}
+                      stampSpec={props.stampSpec}
+                      activeCenter={props.activeCenter}
+                    />
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -628,17 +641,43 @@ export function ControlPanel(props: ControlPanelProps & { stampLines: StampLine[
         </label>
         <div className="flex flex-col gap-1 text-sm text-white/80">
           Frame Ratio
-          <select
-            value={props.frameRatioId}
-            onChange={(e) => props.onRatioChange(e.target.value as FrameRatioId)}
-            className="rounded-lg border border-white/10 bg-slate-800 px-3 py-2 text-white outline-none transition focus:border-sky-500"
-          >
-            {FRAME_RATIO_OPTIONS.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.label}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center gap-2">
+            <select
+              value={props.frameRatioId}
+              onChange={(e) => props.onRatioChange(e.target.value as FrameRatioId)}
+              className="rounded-lg border border-white/10 bg-slate-800 px-3 py-2 text-white outline-none transition focus:border-sky-500"
+            >
+              {FRAME_RATIO_OPTIONS.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.label}
+                </option>
+              ))}
+              <option value="custom">Custom</option>
+            </select>
+            <div className="flex items-center gap-1 text-xs text-white/70">
+              <input
+                type="number"
+                min={0.5}
+                max={10}
+                step={0.1}
+                value={props.customRatio.w}
+                disabled={props.frameRatioId !== "custom"}
+                onChange={(e) => props.onCustomRatioChange({ w: Number(e.target.value) })}
+                className="w-14 rounded border border-white/15 bg-slate-800 px-2 py-1 text-right text-white outline-none disabled:opacity-50"
+              />
+              <span>:</span>
+              <input
+                type="number"
+                min={0.5}
+                max={10}
+                step={0.1}
+                value={props.customRatio.h}
+                disabled={props.frameRatioId !== "custom"}
+                onChange={(e) => props.onCustomRatioChange({ h: Number(e.target.value) })}
+                className="w-14 rounded border border-white/15 bg-slate-800 px-2 py-1 text-right text-white outline-none disabled:opacity-50"
+              />
+            </div>
+          </div>
         </div>
       </div>
 
