@@ -317,7 +317,7 @@ export function ControlPanel(props: ControlPanelProps & { stampLines: StampLine[
   const [showTextPreview, setShowTextPreview] = React.useState(true);
 
   return (
-    <div className="space-y-4 rounded-2xl border border-white/10 bg-slate-900/80 p-4 shadow-xl shadow-black/30 max-h-[80vh] md:max-h-[calc(100vh-140px)] overflow-y-auto pr-2">
+    <div className="space-y-4 rounded-2xl border border-white/10 bg-slate-900/80 p-4 shadow-xl shadow-black/30 max-h-[calc(100vh-140px)] overflow-y-auto pr-2 md:max-h-[calc(100vh-120px)]">
       <div className="flex flex-wrap items-center gap-3">
         <button
           type="button"
@@ -739,12 +739,17 @@ export function ControlPanel(props: ControlPanelProps & { stampLines: StampLine[
           </button>
         </div>
         {showTextPreview && <LinesPreview lines={props.stampLines} />}
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2 text-xs text-white/60">
-        <span className="rounded-full border border-white/10 px-2 py-1">Drag di preview untuk posisi stamp</span>
-        <span className="rounded-full border border-white/10 px-2 py-1">Alt+drag untuk pan gambar</span>
-        <span className="rounded-full border border-white/10 px-2 py-1">Canvas export: sesuai frame</span>
+        <div className="mt-3 grid gap-2">
+          <div className="h-16 rounded-lg border border-dashed border-white/10 bg-white/5 text-xs text-white/50 flex items-center justify-center">
+            Placeholder 1
+          </div>
+          <div className="h-16 rounded-lg border border-dashed border-white/10 bg-white/5 text-xs text-white/50 flex items-center justify-center">
+            Placeholder 2
+          </div>
+          <div className="h-16 rounded-lg border border-dashed border-white/10 bg-white/5 text-xs text-white/50 flex items-center justify-center">
+            Placeholder 3
+          </div>
+        </div>
       </div>
     </div>
   );

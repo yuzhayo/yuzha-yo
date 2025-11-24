@@ -3,7 +3,7 @@ import React from "react";
 export type PositionPreset = "bottom-left" | "bottom-right" | "top-left" | "top-right" | "center" | "custom";
 export type TextMode = "guided" | "custom";
 export type DateMode = "picker" | "manual";
-export type FrameRatioId = (typeof FRAME_RATIO_OPTIONS)[number]["id"];
+export type FrameRatioId = (typeof FRAME_RATIO_OPTIONS)[number]["id"] | "custom";
 export type TextAlignOption = "left" | "center" | "right";
 export type PresetName = string;
 
@@ -43,6 +43,7 @@ export type TimestampPreset = {
   customText: string;
   styles: TextStyleState;
   frameRatioId: FrameRatioId;
+  customRatio: { w: number; h: number };
   positionPreset: PositionPreset;
   customCenter: { x: number; y: number };
   zoom: number;
@@ -151,6 +152,7 @@ function savePresetsToStorage(presets: TimestampPreset[]) {
 }
 
 function getFrameRatioById(id: FrameRatioId) {
+  if (id === "custom") return null;
   return FRAME_RATIO_OPTIONS.find((r) => r.id === id) ?? FRAME_RATIO_OPTIONS[0];
 }
 
@@ -294,7 +296,8 @@ function buildStampLines(
 
 export function useTimestampState() {
   const [photo, setPhoto] = React.useState<LoadedImage | null>(null);
-  const [frameRatioId, setFrameRatioId] = React.useState<FrameRatioId>(FRAME_RATIO_OPTIONS[0].id);
+  const [frameRatioId, setFrameRatioId] = React.useState<FrameRatioId>("4:3");
+  const [customRatio, setCustomRatio] = React.useState<{ w: number; h: number }>({ w: 4, h: 3 });
   const [frameSize, setFrameSize] = React.useState<FrameSize | null>(null);
   const [zoom, setZoom] = React.useState(1);
   const [imageOffset, setImageOffset] = React.useState<Offset>({ x: 0, y: 0 });
@@ -341,7 +344,8 @@ export function useTimestampState() {
     offset: { x: 0, y: 0 },
   });
 
-  const frameRatio = getFrameRatioById(frameRatioId);
+  const frameRatioPreset = getFrameRatioById(frameRatioId);
+  const frameRatio = frameRatioPreset ?? { w: customRatio.w, h: customRatio.h };
 
   const displayDate = React.useMemo(
     () => (dateMode === "picker" ? formatDateIsoToDisplay(datePickerValue) : dateManual),
@@ -483,6 +487,18 @@ export function useTimestampState() {
 
   const handleFrameRatioChange = (id: FrameRatioId) => {
     setFrameRatioId(id);
+    if (id !== "custom") {
+      const preset = getFrameRatioById(id);
+      if (preset) setCustomRatio({ w: preset.w, h: preset.h });
+    }
+  };
+
+  const handleCustomRatioChange = (patch: { w?: number; h?: number }) => {
+    setFrameRatioId("custom");
+    setCustomRatio((prev) => ({
+      w: patch.w ? clampToRange(patch.w, 0.5, 10) : prev.w,
+      h: patch.h ? clampToRange(patch.h, 0.5, 10) : prev.h,
+    }));
   };
 
   const handleZoomChange = (value: number) => {
@@ -676,6 +692,7 @@ export function useTimestampState() {
       customText,
       styles,
       frameRatioId,
+      customRatio,
       positionPreset,
       customCenter,
       zoom,
@@ -688,6 +705,7 @@ export function useTimestampState() {
       dateMode,
       datePickerValue,
       frameRatioId,
+      customRatio,
       imageOffset,
       locationLines,
       positionPreset,
@@ -714,11 +732,12 @@ export function useTimestampState() {
     setCustomText(preset.customText);
     setStyles(preset.styles);
     setFrameRatioId(preset.frameRatioId);
+    setCustomRatio(preset.customRatio ?? customRatio);
     setPositionPreset(preset.positionPreset);
     setCustomCenter(preset.customCenter);
     setZoom(preset.zoom);
     setImageOffset(preset.imageOffset);
-  }, []);
+  }, [customRatio]);
 
   const savePreset = (name: string) => {
     if (!name.trim()) return;
@@ -773,6 +792,7 @@ export function useTimestampState() {
     zoom,
     offsetLimit,
     imageOffset,
+    customRatio,
     stampSpec,
     stampLines,
     textMode,
@@ -803,6 +823,7 @@ export function useTimestampState() {
     handleSave,
     handlePresetChange,
     handleFrameRatioChange,
+    handleCustomRatioChange,
     handlePreviewResize,
     handleZoomChange,
     handleOffsetChange,
