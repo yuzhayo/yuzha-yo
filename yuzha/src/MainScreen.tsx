@@ -9,7 +9,7 @@ export type RendererType = "canvas" | "three";
 
 export type MainScreenProps = {
   children?: React.ReactNode;
-  onOpenTestScreen?: () => void;
+  onOpenCounterScreen?: () => void;
   onOpenTimestampScreen?: () => void;
   onOpenFloatingScreen?: () => void;
 };
@@ -18,14 +18,14 @@ function MainScreenOverlay({
   rendererLabel,
   rendererMode,
   onRendererModeChange,
-  onOpenTestScreen,
+  onOpenCounterScreen,
   onOpenTimestampScreen,
   onOpenFloatingScreen,
 }: {
   rendererLabel: string;
   rendererMode: RendererMode;
   onRendererModeChange: (mode: RendererMode) => void;
-  onOpenTestScreen?: () => void;
+  onOpenCounterScreen?: () => void;
   onOpenTimestampScreen?: () => void;
   onOpenFloatingScreen?: () => void;
 }) {
@@ -45,7 +45,7 @@ function MainScreenOverlay({
         rendererLabel={rendererLabel}
         rendererMode={rendererMode}
         onRendererModeChange={onRendererModeChange}
-        onOpenTestScreen={onOpenTestScreen}
+        onOpenCounterScreen={onOpenCounterScreen}
         onOpenTimestampScreen={onOpenTimestampScreen}
         onOpenFloatingScreen={onOpenFloatingScreen}
       />
@@ -59,7 +59,7 @@ function MainScreenOverlay({
  */
 export default function MainScreen({
   children,
-  onOpenTestScreen,
+  onOpenCounterScreen,
   onOpenTimestampScreen,
   onOpenFloatingScreen,
 }: MainScreenProps) {
@@ -83,7 +83,7 @@ export default function MainScreen({
           rendererLabel={rendererLabel}
           rendererMode={rendererMode}
           onRendererModeChange={setRendererMode}
-          onOpenTestScreen={onOpenTestScreen}
+          onOpenCounterScreen={onOpenCounterScreen}
           onOpenTimestampScreen={onOpenTimestampScreen}
           onOpenFloatingScreen={onOpenFloatingScreen}
         />
