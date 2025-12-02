@@ -1,6 +1,5 @@
 import React from "react";
 import StageThree from "@shared/layer/StageThree";
-import "@shared/fonts/taimingda.css";
 import { counterUi, systemMessageBg } from "./count";
 import CountTap from "./countTap";
 import { useCounterValue, counterLogic } from "./countLogic";

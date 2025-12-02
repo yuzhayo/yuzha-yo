@@ -30,7 +30,7 @@ export default function CountTap() {
     "pointer-events-none absolute inset-0 flex items-center justify-center";
   const tapButton =
     "pointer-events-auto rounded-xl p-0 shadow-lg shadow-black/30 transition focus:outline-none";
-  const tapImage = "block h-244 w-244 object-contain"; // size of the button
+  const tapImage = "block h-244 w-244 object-contain"; // intentionally large hit area
 
   return (
     <div className={tapContainer}>
