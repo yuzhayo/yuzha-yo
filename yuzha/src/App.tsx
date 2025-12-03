@@ -2,7 +2,7 @@ import React from "react";
 import MainScreen from "./MainScreen";
 import CounterScreen from "./counter/counterScreen";
 import TimestampScreen from "./timestamp/timestampScreen";
-import FloatingScreen from "./floating/FloatingScreen";
+import FloatingScreen from "@shared/floating/FloatingScreen";
 
 type AppView = "main" | "counter" | "timestamp" | "floating";
 

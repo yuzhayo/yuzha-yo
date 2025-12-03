@@ -1,5 +1,5 @@
 import React from "react";
-import FloatingWindowTemplate from "../FloatingWindowTemplate";
+import FloatingWindowTemplate from "./FloatingWindowTemplate";
 
 export type FloatingScreenProps = {
   onBack?: () => void;
