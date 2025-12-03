@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { createCounterPipeline } from "./createCounterPipeline";
 import {
@@ -15,8 +15,14 @@ import {
   type EnhancedLayerData,
   type LayerProcessor,
   type LayerBounds,
+  computeCoverTransform,
+  stageToViewportCoords,
+  type StageTransform,
 } from "@shared/layer";
 import { getDeviceCapability } from "@shared/utils/DeviceCapability";
+import CounterFloating from "./counterFloating";
+import CounterFloatingMessage from "./counterFloatingMessage";
+import CounterSettings from "./counterSettings";
 
 if (import.meta.hot) {
   import.meta.hot.accept();
@@ -372,6 +378,42 @@ export type CounterScreenProps = {
 };
 
 export default function CounterScreen({ onBack }: CounterScreenProps) {
+  const [count, setCount] = useState(0);
+  const [floatingSize, setFloatingSize] = useState(250);
+  const [messageSize, setMessageSize] = useState(240);
+  const [messageFontSize, setMessageFontSize] = useState(48);
+  const [backgroundOpacity, setBackgroundOpacity] = useState(0);
+  const [showSettings, setShowSettings] = useState(false);
+  const [stagePosition, setStagePosition] = useState({ x: 1024, y: 1024 });
+  const [messageStagePosition, setMessageStagePosition] = useState({ x: 1024, y: 400 });
+
+  const [transform, setTransform] = useState<StageTransform>(() =>
+    typeof window !== "undefined"
+      ? computeCoverTransform(window.innerWidth, window.innerHeight)
+      : { scale: 1, offsetX: 0, offsetY: 0, width: 2048, height: 2048 },
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      setTransform(computeCoverTransform(window.innerWidth, window.innerHeight));
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const floatingScreenPosition = useMemo(() => {
+    const { x, y } = stageToViewportCoords(stagePosition.x, stagePosition.y, transform);
+    const half = floatingSize / 2;
+    return { x: x - half, y: y - half };
+  }, [stagePosition, transform, floatingSize]);
+
+  const messageScreenPosition = useMemo(() => {
+    const { x, y } = stageToViewportCoords(messageStagePosition.x, messageStagePosition.y, transform);
+    const half = messageSize / 2;
+    return { x: x - half, y: y - half };
+  }, [messageStagePosition, transform, messageSize]);
+
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-slate-950 text-white">
       <CounterStageThree />
@@ -384,6 +426,55 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
           Back
         </button>
       )}
+      <button
+        type="button"
+        onClick={() => setCount(0)}
+        className="absolute left-24 top-6 rounded bg-slate-700 px-4 py-2 text-sm font-medium text-white shadow-sm shadow-black/30 transition hover:bg-slate-600 active:bg-slate-700"
+      >
+        Reset
+      </button>
+      <button
+        type="button"
+        onClick={() => setShowSettings((prev) => !prev)}
+        className="absolute left-6 top-16 rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white shadow-sm shadow-black/30 transition hover:bg-slate-700 active:bg-slate-800"
+      >
+        {showSettings ? "Hide Settings" : "Settings"}
+      </button>
+      {showSettings && (
+        <CounterSettings
+          size={floatingSize}
+          onSizeChange={setFloatingSize}
+          position={stagePosition}
+          onPositionChange={setStagePosition}
+          messageSize={messageSize}
+          onMessageSizeChange={setMessageSize}
+          messagePosition={messageStagePosition}
+          onMessagePositionChange={setMessageStagePosition}
+          messageFontSize={messageFontSize}
+          onMessageFontSizeChange={setMessageFontSize}
+          backgroundOpacity={backgroundOpacity}
+          onBackgroundOpacityChange={setBackgroundOpacity}
+          onClose={() => setShowSettings(false)}
+        />
+      )}
+      <CounterFloating
+        size={floatingSize}
+        screenPosition={floatingScreenPosition}
+        backgroundOpacity={backgroundOpacity}
+        onActivate={() => setCount((prev) => prev + 1)}
+      />
+      <CounterFloatingMessage
+        size={messageSize}
+        screenPosition={messageScreenPosition}
+        backgroundOpacity={backgroundOpacity}
+      >
+        <div
+          className="flex w-full items-center justify-center text-white drop-shadow"
+          style={{ fontFamily: "Taimingda, sans-serif", fontSize: messageFontSize }}
+        >
+          {count}
+        </div>
+      </CounterFloatingMessage>
     </div>
   );
 }
