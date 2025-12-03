@@ -290,6 +290,7 @@ export default function FloatingWindowTemplate({
             onClick={onClose}
             aria-label="Close"
             style={closeButtonStyle}
+            onPointerDown={(e) => e.stopPropagation()}
             onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.24)")}
             onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.12)")}
           >
