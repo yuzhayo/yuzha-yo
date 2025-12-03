@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 
 /**
  * FloatingWindowTemplate - Draggable & Resizable Window Component
@@ -189,77 +190,135 @@ export default function FloatingWindowTemplate({
     }
   }, [isResizing, activeHandle, position, size]);
 
-  // Detect touch device for larger handles
-  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  // Detect touch device for larger handles (deferred to client to avoid SSR issues)
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsTouchDevice("ontouchstart" in window || navigator.maxTouchPoints > 0);
+    }
+  }, []);
   const handleSize = isTouchDevice ? 12 : 6;
   const edgeThickness = isTouchDevice ? 8 : 4;
 
-  const resizeHandles: Array<{ handle: ResizeHandle; className: string; cursor: string }> = [
-    { handle: "n", className: `top-0 left-0 right-0 h-[${edgeThickness}px]`, cursor: "ns-resize" },
-    { handle: "s", className: `bottom-0 left-0 right-0 h-[${edgeThickness}px]`, cursor: "ns-resize" },
-    { handle: "e", className: `right-0 top-0 bottom-0 w-[${edgeThickness}px]`, cursor: "ew-resize" },
-    { handle: "w", className: `left-0 top-0 bottom-0 w-[${edgeThickness}px]`, cursor: "ew-resize" },
-    { handle: "ne", className: `top-0 right-0 w-[${handleSize}px] h-[${handleSize}px]`, cursor: "nesw-resize" },
-    { handle: "nw", className: `top-0 left-0 w-[${handleSize}px] h-[${handleSize}px]`, cursor: "nwse-resize" },
-    { handle: "se", className: `bottom-0 right-0 w-[${handleSize}px] h-[${handleSize}px]`, cursor: "nwse-resize" },
-    { handle: "sw", className: `bottom-0 left-0 w-[${handleSize}px] h-[${handleSize}px]`, cursor: "nesw-resize" },
+  const resizeHandles: Array<{ handle: ResizeHandle; style: CSSProperties; cursor: string }> = [
+    { handle: "n", style: { top: 0, left: 0, right: 0, height: edgeThickness }, cursor: "ns-resize" },
+    { handle: "s", style: { bottom: 0, left: 0, right: 0, height: edgeThickness }, cursor: "ns-resize" },
+    { handle: "e", style: { right: 0, top: 0, bottom: 0, width: edgeThickness }, cursor: "ew-resize" },
+    { handle: "w", style: { left: 0, top: 0, bottom: 0, width: edgeThickness }, cursor: "ew-resize" },
+    { handle: "ne", style: { top: 0, right: 0, width: handleSize, height: handleSize }, cursor: "nesw-resize" },
+    { handle: "nw", style: { top: 0, left: 0, width: handleSize, height: handleSize }, cursor: "nwse-resize" },
+    { handle: "se", style: { bottom: 0, right: 0, width: handleSize, height: handleSize }, cursor: "nwse-resize" },
+    { handle: "sw", style: { bottom: 0, left: 0, width: handleSize, height: handleSize }, cursor: "nesw-resize" },
   ];
 
+  const containerStyle: CSSProperties = {
+    position: "fixed",
+    background: "#ffffff",
+    boxShadow: "0 20px 55px rgba(0,0,0,0.25)",
+    borderRadius: 12,
+    overflow: "hidden",
+    display: "flex",
+    flexDirection: "column",
+    left: `${position.x}px`,
+    top: `${position.y}px`,
+    width: `${size.width}px`,
+    height: `${size.height}px`,
+    touchAction: "none",
+    userSelect: isDragging || isResizing ? "none" : "auto",
+    zIndex: 1000,
+  };
+
+  const headerStyle: CSSProperties = {
+    background: "linear-gradient(90deg, #2563eb, #7c3aed)",
+    color: "#ffffff",
+    padding: "12px 16px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    cursor: "move",
+    userSelect: "none",
+  };
+
+  const titleStyle: CSSProperties = {
+    fontSize: 14,
+    fontWeight: 600,
+    margin: 0,
+    padding: 0,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  };
+
+  const closeButtonStyle: CSSProperties = {
+    marginLeft: 8,
+    width: 28,
+    height: 28,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 6,
+    border: "none",
+    background: "rgba(255,255,255,0.12)",
+    color: "#ffffff",
+    cursor: "pointer",
+    transition: "background 120ms ease",
+  };
+
+  const contentStyle: CSSProperties = {
+    flex: 1,
+    overflow: "auto",
+    padding: 16,
+    background: "#ffffff",
+  };
+
+  const handleBaseStyle: CSSProperties = {
+    position: "absolute",
+    background: isTouchDevice ? "rgba(59,130,246,0.2)" : "transparent",
+    transition: "background 120ms ease",
+  };
+
   return (
-    <div
-      className="fixed bg-white shadow-2xl rounded-lg overflow-hidden flex flex-col"
-      style={{
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-        width: `${size.width}px`,
-        height: `${size.height}px`,
-        touchAction: "none",
-        userSelect: isDragging || isResizing ? "none" : "auto",
-        zIndex: 1000,
-      }}
-    >
-      {/* Header - Drag Area */}
+    <div style={containerStyle}>
       <div
-        className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-3 flex items-center justify-between cursor-move select-none"
+        style={headerStyle}
         onPointerDown={handleDragStart}
-        style={{ touchAction: "none" }}
       >
-        <h3 className="text-sm font-semibold truncate">{title}</h3>
+        <h3 style={titleStyle} title={title}>{title}</h3>
         {onClose && (
           <button
             type="button"
             onClick={onClose}
-            className="ml-2 flex-shrink-0 w-6 h-6 flex items-center justify-center rounded hover:bg-white/20 transition-colors"
             aria-label="Close"
+            style={closeButtonStyle}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.24)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.12)")}
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         )}
       </div>
 
-      {/* Content Area */}
-      <div className="flex-1 overflow-auto p-4">
+      <div style={contentStyle}>
         {children}
       </div>
 
-      {/* Resize Handles */}
-      {resizeHandles.map(({ handle, className, cursor }) => {
-        const isCorner = handle && handle.length === 2;
-        const bgClass = isTouchDevice 
-          ? (isCorner ? "bg-blue-400/30 hover:bg-blue-500/50" : "bg-blue-400/20 hover:bg-blue-500/40")
-          : "hover:bg-blue-500/30";
-        
-        return (
-          <div
-            key={handle}
-            className={`resize-handle absolute ${className} ${bgClass} transition-colors`}
-            style={{ cursor, touchAction: "none" }}
-            onPointerDown={(e) => handleResizeStart(e, handle)}
-          />
-        );
-      })}
+      {resizeHandles.map(({ handle, style, cursor }) => (
+        <div
+          key={handle}
+          className="resize-handle"
+          style={{
+            ...handleBaseStyle,
+            ...style,
+            cursor,
+            touchAction: "none",
+          }}
+          onPointerDown={(e) => handleResizeStart(e, handle)}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(59,130,246,0.35)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = handleBaseStyle.background as string)}
+        />
+      ))}
     </div>
   );
 }
