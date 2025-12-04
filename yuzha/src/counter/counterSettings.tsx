@@ -18,6 +18,7 @@ export type CounterSettingsProps = {
   onResetPositionChange: (value: { x: number; y: number }) => void;
   settingsPosition: { x: number; y: number };
   onSettingsPositionChange: (value: { x: number; y: number }) => void;
+  onOpenDemo?: () => void;
   onClose?: () => void;
 };
 
@@ -38,6 +39,7 @@ export default function CounterSettings({
   onResetPositionChange,
   settingsPosition,
   onSettingsPositionChange,
+  onOpenDemo,
   onClose,
 }: CounterSettingsProps) {
   const clampStage = (value: number) => Math.min(2048, Math.max(0, value));
@@ -109,7 +111,16 @@ export default function CounterSettings({
       minHeight={360}
       onClose={onClose}
     >
-      <div className="space-y-4 text-slate-800">
+      <div className="relative space-y-4 text-slate-800">
+        {onOpenDemo && (
+          <button
+            type="button"
+            onClick={onOpenDemo}
+            className="absolute right-0 top-0 rounded bg-emerald-600 px-3 py-1 text-xs font-semibold text-white shadow hover:bg-emerald-500"
+          >
+            Effect Demo
+          </button>
+        )}
         <div>
           <p className="text-sm font-semibold">Floating Button Size</p>
           <input

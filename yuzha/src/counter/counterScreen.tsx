@@ -29,6 +29,7 @@ import {
   CounterSettingsButton,
   BUTTON_BASE_SIZE,
 } from "./counterButtons";
+import CounterEffectDemo from "./counterEffectDemo";
 
 if (import.meta.hot) {
   import.meta.hot.accept();
@@ -391,6 +392,7 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
   const [messageSize, setMessageSize] = useState(240);
   const [messageFontSize, setMessageFontSize] = useState(48);
   const [showSettings, setShowSettings] = useState(false);
+  const [showEffectDemo, setShowEffectDemo] = useState(false);
   const [stagePosition, setStagePosition] = useState({ x: 1024, y: 1024 });
   const [messageStagePosition, setMessageStagePosition] = useState({ x: 1024, y: 400 });
   const [backStagePosition, setBackStagePosition] = useState({ x: 180, y: 180 });
@@ -507,9 +509,11 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
           onResetPositionChange={setResetStagePosition}
           settingsPosition={settingsStagePosition}
           onSettingsPositionChange={setSettingsStagePosition}
+          onOpenDemo={() => setShowEffectDemo(true)}
           onClose={() => setShowSettings(false)}
         />
       )}
+      {showEffectDemo && <CounterEffectDemo onClose={() => setShowEffectDemo(false)} />}
       {onBack && (
         <CounterBackButton
           screenPosition={backResolved}
