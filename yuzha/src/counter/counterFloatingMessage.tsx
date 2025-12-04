@@ -5,7 +5,6 @@ export type CounterFloatingMessageProps = {
   size?: number;
   screenPosition?: { x: number; y: number };
   children?: React.ReactNode;
-  backgroundOpacity?: number;
 };
 
 /**
@@ -16,7 +15,6 @@ export default function CounterFloatingMessage({
   size = 240,
   screenPosition = { x: 24, y: 24 },
   children,
-  backgroundOpacity = 0,
 }: CounterFloatingMessageProps) {
   return (
     <div
@@ -33,8 +31,6 @@ export default function CounterFloatingMessage({
           height: size,
           maxWidth: "90vw",
           maxHeight: "90vh",
-          backgroundColor:
-            backgroundOpacity > 0 ? `rgba(0, 0, 0, ${Math.min(1, Math.max(0, backgroundOpacity))})` : "transparent",
         }}
       >
         <img

@@ -6,14 +6,12 @@ export type CounterFloatingProps = {
   size?: number;
   screenPosition?: { x: number; y: number };
   onActivate?: () => void;
-  backgroundOpacity?: number;
 };
 
 export default function CounterFloating({
   size = 128,
   screenPosition = { x: 24, y: 24 },
   onActivate,
-  backgroundOpacity = 0,
 }: CounterFloatingProps) {
   const [active, setActive] = React.useState(false);
 
@@ -52,15 +50,12 @@ export default function CounterFloating({
         onPointerLeave={handlePointerUp}
         onKeyDown={handleKeyDown}
         onKeyUp={handleKeyUp}
-        onClick={onActivate}
         aria-label="Counter Floating Button"
         style={{
           width: size,
           height: size,
           maxWidth: "90vw",
           maxHeight: "90vh",
-          backgroundColor:
-            backgroundOpacity > 0 ? `rgba(0, 0, 0, ${Math.min(1, Math.max(0, backgroundOpacity))})` : "transparent",
         }}
       >
         <img

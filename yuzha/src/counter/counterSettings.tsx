@@ -11,8 +11,12 @@ export type CounterSettingsProps = {
   onMessagePositionChange: (value: { x: number; y: number }) => void;
   messageFontSize: number;
   onMessageFontSizeChange: (value: number) => void;
-  backgroundOpacity: number;
-  onBackgroundOpacityChange: (value: number) => void;
+  backPosition: { x: number; y: number };
+  onBackPositionChange: (value: { x: number; y: number }) => void;
+  resetPosition: { x: number; y: number };
+  onResetPositionChange: (value: { x: number; y: number }) => void;
+  settingsPosition: { x: number; y: number };
+  onSettingsPositionChange: (value: { x: number; y: number }) => void;
   onClose?: () => void;
 };
 
@@ -27,52 +31,73 @@ export default function CounterSettings({
   onMessagePositionChange,
   messageFontSize,
   onMessageFontSizeChange,
-  backgroundOpacity,
-  onBackgroundOpacityChange,
+  backPosition,
+  onBackPositionChange,
+  resetPosition,
+  onResetPositionChange,
+  settingsPosition,
+  onSettingsPositionChange,
   onClose,
 }: CounterSettingsProps) {
   const clampStage = (value: number) => Math.min(2048, Math.max(0, value));
 
   const handleSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const next = Number(event.target.value);
-    if (!Number.isNaN(next)) {
-      onSizeChange(next);
-    }
+    if (!Number.isNaN(next)) onSizeChange(next);
   };
 
   const handleMessageSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const next = Number(event.target.value);
-    if (!Number.isNaN(next)) {
-      onMessageSizeChange(next);
-    }
+    if (!Number.isNaN(next)) onMessageSizeChange(next);
   };
 
-  const handlePositionChange = (axis: "x" | "y") => (event: React.ChangeEvent<HTMLInputElement>) => {
-    const next = Number(event.target.value);
-    if (Number.isNaN(next)) return;
-    onPositionChange({ ...position, [axis]: clampStage(next) });
-  };
-
-  const handleMessagePositionChange =
-    (axis: "x" | "y") => (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePositionChange =
+    (setter: (value: { x: number; y: number }) => void, current: { x: number; y: number }) =>
+    (axis: "x" | "y") =>
+    (event: React.ChangeEvent<HTMLInputElement>) => {
       const next = Number(event.target.value);
       if (Number.isNaN(next)) return;
-      onMessagePositionChange({ ...messagePosition, [axis]: clampStage(next) });
+      setter({ ...current, [axis]: clampStage(next) });
     };
 
   const handleMessageFontChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const next = Number(event.target.value);
-    if (!Number.isNaN(next)) {
-      onMessageFontSizeChange(next);
-    }
+    if (!Number.isNaN(next)) onMessageFontSizeChange(next);
   };
 
-  const handleBackgroundOpacityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const next = Number(event.target.value);
-    if (!Number.isNaN(next)) {
-      onBackgroundOpacityChange(Math.min(1, Math.max(0, next)));
-    }
-  };
+  const renderPositionInputs = (
+    label: string,
+    value: { x: number; y: number },
+    setter: (val: { x: number; y: number }) => void,
+  ) => (
+    <div>
+      <p className="text-sm font-semibold text-slate-800">{label} (stage 0-2048)</p>
+      <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-slate-700">
+        <label className="flex items-center gap-2">
+          <span className="w-4 text-right">X</span>
+          <input
+            type="number"
+            min={0}
+            max={2048}
+            value={value.x}
+            onChange={handlePositionChange(setter, value)("x")}
+            className="w-full rounded border border-slate-300 px-2 py-1 focus:border-blue-500 focus:outline-none"
+          />
+        </label>
+        <label className="flex items-center gap-2">
+          <span className="w-4 text-right">Y</span>
+          <input
+            type="number"
+            min={0}
+            max={2048}
+            value={value.y}
+            onChange={handlePositionChange(setter, value)("y")}
+            className="w-full rounded border border-slate-300 px-2 py-1 focus:border-blue-500 focus:outline-none"
+          />
+        </label>
+      </div>
+    </div>
+  );
 
   return (
     <div className="pointer-events-auto fixed left-6 top-24 z-30 rounded-lg bg-white/95 p-4 shadow-xl shadow-black/30 backdrop-blur">
@@ -93,33 +118,7 @@ export default function CounterSettings({
             <div className="mt-1 text-xs text-slate-600">Current: {size}px</div>
           </div>
 
-          <div>
-            <p className="text-sm font-semibold text-slate-800">Position (stage 0-2048)</p>
-            <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-slate-700">
-              <label className="flex items-center gap-2">
-                <span className="w-4 text-right">X</span>
-                <input
-                  type="number"
-                  min={0}
-                  max={2048}
-                  value={position.x}
-                  onChange={handlePositionChange("x")}
-                  className="w-full rounded border border-slate-300 px-2 py-1 focus:border-blue-500 focus:outline-none"
-                />
-              </label>
-              <label className="flex items-center gap-2">
-                <span className="w-4 text-right">Y</span>
-                <input
-                  type="number"
-                  min={0}
-                  max={2048}
-                  value={position.y}
-                  onChange={handlePositionChange("y")}
-                  className="w-full rounded border border-slate-300 px-2 py-1 focus:border-blue-500 focus:outline-none"
-                />
-              </label>
-            </div>
-          </div>
+          {renderPositionInputs("Position", position, onPositionChange)}
 
           <div>
             <p className="text-sm font-semibold text-slate-800">Message Size</p>
@@ -131,38 +130,12 @@ export default function CounterSettings({
               value={messageSize}
               onChange={handleMessageSizeChange}
               className="mt-2 w-full"
-              aria-label="Message button size"
+              aria-label="Message size"
             />
             <div className="mt-1 text-xs text-slate-600">Current: {messageSize}px</div>
           </div>
 
-          <div>
-            <p className="text-sm font-semibold text-slate-800">Message Position (stage 0-2048)</p>
-            <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-slate-700">
-              <label className="flex items-center gap-2">
-                <span className="w-4 text-right">X</span>
-                <input
-                  type="number"
-                  min={0}
-                  max={2048}
-                  value={messagePosition.x}
-                  onChange={handleMessagePositionChange("x")}
-                  className="w-full rounded border border-slate-300 px-2 py-1 focus:border-blue-500 focus:outline-none"
-                />
-              </label>
-              <label className="flex items-center gap-2">
-                <span className="w-4 text-right">Y</span>
-                <input
-                  type="number"
-                  min={0}
-                  max={2048}
-                  value={messagePosition.y}
-                  onChange={handleMessagePositionChange("y")}
-                  className="w-full rounded border border-slate-300 px-2 py-1 focus:border-blue-500 focus:outline-none"
-                />
-              </label>
-            </div>
-          </div>
+          {renderPositionInputs("Message Position", messagePosition, onMessagePositionChange)}
 
           <div>
             <p className="text-sm font-semibold text-slate-800">Message Font Size</p>
@@ -179,22 +152,9 @@ export default function CounterSettings({
             <div className="mt-1 text-xs text-slate-600">Current: {messageFontSize}px</div>
           </div>
 
-          <div>
-            <p className="text-sm font-semibold text-slate-800">Floating Background Opacity</p>
-            <input
-              type="range"
-              min={0}
-              max={1}
-              step={0.05}
-              value={backgroundOpacity}
-              onChange={handleBackgroundOpacityChange}
-              className="mt-2 w-full"
-              aria-label="Floating background opacity"
-            />
-            <div className="mt-1 text-xs text-slate-600">
-              Current: {Math.round(backgroundOpacity * 100)}%
-            </div>
-          </div>
+          {renderPositionInputs("Back Button Position", backPosition, onBackPositionChange)}
+          {renderPositionInputs("Reset Button Position", resetPosition, onResetPositionChange)}
+          {renderPositionInputs("Settings Button Position", settingsPosition, onSettingsPositionChange)}
         </div>
         {onClose && (
           <button

@@ -23,6 +23,12 @@ import { getDeviceCapability } from "@shared/utils/DeviceCapability";
 import CounterFloating from "./counterFloating";
 import CounterFloatingMessage from "./counterFloatingMessage";
 import CounterSettings from "./counterSettings";
+import {
+  CounterBackButton,
+  CounterResetButton,
+  CounterSettingsButton,
+  BUTTON_SIZE as CONTROL_BUTTON_SIZE,
+} from "./counterButtons";
 
 if (import.meta.hot) {
   import.meta.hot.accept();
@@ -382,10 +388,12 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
   const [floatingSize, setFloatingSize] = useState(250);
   const [messageSize, setMessageSize] = useState(240);
   const [messageFontSize, setMessageFontSize] = useState(48);
-  const [backgroundOpacity, setBackgroundOpacity] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
   const [stagePosition, setStagePosition] = useState({ x: 1024, y: 1024 });
   const [messageStagePosition, setMessageStagePosition] = useState({ x: 1024, y: 400 });
+  const [backStagePosition, setBackStagePosition] = useState({ x: 180, y: 180 });
+  const [resetStagePosition, setResetStagePosition] = useState({ x: 280, y: 180 });
+  const [settingsStagePosition, setSettingsStagePosition] = useState({ x: 380, y: 180 });
 
   const [transform, setTransform] = useState<StageTransform>(() =>
     typeof window !== "undefined"
@@ -414,32 +422,27 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
     return { x: x - half, y: y - half };
   }, [messageStagePosition, transform, messageSize]);
 
+  const backScreenPosition = useMemo(() => {
+    const { x, y } = stageToViewportCoords(backStagePosition.x, backStagePosition.y, transform);
+    const half = CONTROL_BUTTON_SIZE / 2;
+    return { x: x - half, y: y - half };
+  }, [backStagePosition, transform]);
+
+  const resetScreenPosition = useMemo(() => {
+    const { x, y } = stageToViewportCoords(resetStagePosition.x, resetStagePosition.y, transform);
+    const half = CONTROL_BUTTON_SIZE / 2;
+    return { x: x - half, y: y - half };
+  }, [resetStagePosition, transform]);
+
+  const settingsScreenPosition = useMemo(() => {
+    const { x, y } = stageToViewportCoords(settingsStagePosition.x, settingsStagePosition.y, transform);
+    const half = CONTROL_BUTTON_SIZE / 2;
+    return { x: x - half, y: y - half };
+  }, [settingsStagePosition, transform]);
+
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-slate-950 text-white">
       <CounterStageThree />
-      {onBack && (
-        <button
-          type="button"
-          onClick={onBack}
-          className="absolute left-6 top-6 rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm shadow-black/30 transition hover:bg-blue-500 active:bg-blue-600"
-        >
-          Back
-        </button>
-      )}
-      <button
-        type="button"
-        onClick={() => setCount(0)}
-        className="absolute left-24 top-6 rounded bg-slate-700 px-4 py-2 text-sm font-medium text-white shadow-sm shadow-black/30 transition hover:bg-slate-600 active:bg-slate-700"
-      >
-        Reset
-      </button>
-      <button
-        type="button"
-        onClick={() => setShowSettings((prev) => !prev)}
-        className="absolute left-6 top-16 rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white shadow-sm shadow-black/30 transition hover:bg-slate-700 active:bg-slate-800"
-      >
-        {showSettings ? "Hide Settings" : "Settings"}
-      </button>
       {showSettings && (
         <CounterSettings
           size={floatingSize}
@@ -452,22 +455,28 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
           onMessagePositionChange={setMessageStagePosition}
           messageFontSize={messageFontSize}
           onMessageFontSizeChange={setMessageFontSize}
-          backgroundOpacity={backgroundOpacity}
-          onBackgroundOpacityChange={setBackgroundOpacity}
+          backPosition={backStagePosition}
+          onBackPositionChange={setBackStagePosition}
+          resetPosition={resetStagePosition}
+          onResetPositionChange={setResetStagePosition}
+          settingsPosition={settingsStagePosition}
+          onSettingsPositionChange={setSettingsStagePosition}
           onClose={() => setShowSettings(false)}
         />
       )}
+      {onBack && <CounterBackButton screenPosition={backScreenPosition} onClick={onBack} label="Back" />}
+      <CounterResetButton screenPosition={resetScreenPosition} onClick={() => setCount(0)} label="Reset" />
+      <CounterSettingsButton
+        screenPosition={settingsScreenPosition}
+        onClick={() => setShowSettings((prev) => !prev)}
+        label={showSettings ? "Hide" : "Settings"}
+      />
       <CounterFloating
         size={floatingSize}
         screenPosition={floatingScreenPosition}
-        backgroundOpacity={backgroundOpacity}
         onActivate={() => setCount((prev) => prev + 1)}
       />
-      <CounterFloatingMessage
-        size={messageSize}
-        screenPosition={messageScreenPosition}
-        backgroundOpacity={backgroundOpacity}
-      >
+      <CounterFloatingMessage size={messageSize} screenPosition={messageScreenPosition}>
         <div
           className="flex w-full items-center justify-center text-white drop-shadow"
           style={{ fontFamily: "Taimingda, sans-serif", fontSize: messageFontSize }}
