@@ -4,6 +4,26 @@
     "path": "shared/asset/12needle.png"
   },
   {
+    "id": "alpha_noise_256_wave_04",
+    "path": "shared/asset/alpha_noise_256_wave_04.png"
+  },
+  {
+    "id": "alpha_noise_256_wave_05",
+    "path": "shared/asset/alpha_noise_256_wave_05.png"
+  },
+  {
+    "id": "alpha_noise_256_wave_11",
+    "path": "shared/asset/alpha_noise_256_wave_11.png"
+  },
+  {
+    "id": "alpha_noise_256_wave_22",
+    "path": "shared/asset/alpha_noise_256_wave_22.png"
+  },
+  {
+    "id": "alpha_noise_256_wave_23_01_01",
+    "path": "shared/asset/alpha_noise_256_wave_23_01_01.png"
+  },
+  {
     "id": "BG_ArtifactCraft_Center",
     "path": "shared/asset/BG_ArtifactCraft_Center.png"
   },
