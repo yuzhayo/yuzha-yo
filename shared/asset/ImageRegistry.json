@@ -128,6 +128,10 @@
     "path": "shared/asset/needle.png"
   },
   {
+    "id": "overflow_glow_01",
+    "path": "shared/asset/overflow_glow_01.png"
+  },
+  {
     "id": "Prestige_SlotBase",
     "path": "shared/asset/Prestige_SlotBase.png"
   },
