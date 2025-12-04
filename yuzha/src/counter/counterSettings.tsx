@@ -1,4 +1,5 @@
 import React from "react";
+import FloatingWindowTemplate from "@shared/floating/FloatingWindowTemplate";
 
 export type CounterSettingsProps = {
   size: number;
@@ -100,72 +101,68 @@ export default function CounterSettings({
   );
 
   return (
-    <div className="pointer-events-auto fixed left-6 top-24 z-30 rounded-lg bg-white/95 p-4 shadow-xl shadow-black/30 backdrop-blur">
-      <div className="flex items-start justify-between gap-4">
-        <div className="space-y-4">
-          <div>
-            <p className="text-sm font-semibold text-slate-800">Floating Button Size</p>
-            <input
-              type="range"
-              min={200}
-              max={900}
-              step={10}
-              value={size}
-              onChange={handleSizeChange}
-              className="mt-2 w-full"
-              aria-label="Floating button size"
-            />
-            <div className="mt-1 text-xs text-slate-600">Current: {size}px</div>
-          </div>
-
-          {renderPositionInputs("Position", position, onPositionChange)}
-
-          <div>
-            <p className="text-sm font-semibold text-slate-800">Message Size</p>
-            <input
-              type="range"
-              min={200}
-              max={900}
-              step={10}
-              value={messageSize}
-              onChange={handleMessageSizeChange}
-              className="mt-2 w-full"
-              aria-label="Message size"
-            />
-            <div className="mt-1 text-xs text-slate-600">Current: {messageSize}px</div>
-          </div>
-
-          {renderPositionInputs("Message Position", messagePosition, onMessagePositionChange)}
-
-          <div>
-            <p className="text-sm font-semibold text-slate-800">Message Font Size</p>
-            <input
-              type="range"
-              min={16}
-              max={120}
-              step={2}
-              value={messageFontSize}
-              onChange={handleMessageFontChange}
-              className="mt-2 w-full"
-              aria-label="Message font size"
-            />
-            <div className="mt-1 text-xs text-slate-600">Current: {messageFontSize}px</div>
-          </div>
-
-          {renderPositionInputs("Back Button Position", backPosition, onBackPositionChange)}
-          {renderPositionInputs("Reset Button Position", resetPosition, onResetPositionChange)}
-          {renderPositionInputs("Settings Button Position", settingsPosition, onSettingsPositionChange)}
+    <FloatingWindowTemplate
+      title="Settings"
+      initialPos={{ x: 24, y: 24 }}
+      initialSize={{ width: 420, height: 520 }}
+      minWidth={360}
+      minHeight={360}
+      onClose={onClose}
+    >
+      <div className="space-y-4 text-slate-800">
+        <div>
+          <p className="text-sm font-semibold">Floating Button Size</p>
+          <input
+            type="range"
+            min={200}
+            max={900}
+            step={10}
+            value={size}
+            onChange={handleSizeChange}
+            className="mt-2 w-full"
+            aria-label="Floating button size"
+          />
+          <div className="mt-1 text-xs text-slate-600">Current: {size}px</div>
         </div>
-        {onClose && (
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded bg-slate-800 px-3 py-1 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-700 active:bg-slate-800"
-          >
-            Close
-          </button>
-        )}
+
+        {renderPositionInputs("Position", position, onPositionChange)}
+
+        <div>
+          <p className="text-sm font-semibold">Message Size</p>
+          <input
+            type="range"
+            min={200}
+            max={900}
+            step={10}
+            value={messageSize}
+            onChange={handleMessageSizeChange}
+            className="mt-2 w-full"
+            aria-label="Message size"
+          />
+          <div className="mt-1 text-xs text-slate-600">Current: {messageSize}px</div>
+        </div>
+
+        {renderPositionInputs("Message Position", messagePosition, onMessagePositionChange)}
+
+        <div>
+          <p className="text-sm font-semibold">Message Font Size</p>
+          <input
+            type="range"
+            min={16}
+            max={120}
+            step={2}
+            value={messageFontSize}
+            onChange={handleMessageFontChange}
+            className="mt-2 w-full"
+            aria-label="Message font size"
+          />
+          <div className="mt-1 text-xs text-slate-600">Current: {messageFontSize}px</div>
+        </div>
+
+        {renderPositionInputs("Back Button Position", backPosition, onBackPositionChange)}
+        {renderPositionInputs("Reset Button Position", resetPosition, onResetPositionChange)}
+        {renderPositionInputs("Settings Button Position", settingsPosition, onSettingsPositionChange)}
       </div>
-    </div>
+    </FloatingWindowTemplate>
   );
 }

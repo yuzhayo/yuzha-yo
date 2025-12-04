@@ -27,7 +27,7 @@ import {
   CounterBackButton,
   CounterResetButton,
   CounterSettingsButton,
-  BUTTON_SIZE as CONTROL_BUTTON_SIZE,
+  BUTTON_BASE_SIZE,
 } from "./counterButtons";
 
 if (import.meta.hot) {
@@ -422,23 +422,28 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
     return { x: x - half, y: y - half };
   }, [messageStagePosition, transform, messageSize]);
 
+  const controlButtonSize = useMemo(() => {
+    const scaled = BUTTON_BASE_SIZE * transform.scale;
+    return Math.max(36, Math.min(72, scaled));
+  }, [transform.scale]);
+
   const backScreenPosition = useMemo(() => {
     const { x, y } = stageToViewportCoords(backStagePosition.x, backStagePosition.y, transform);
-    const half = CONTROL_BUTTON_SIZE / 2;
+    const half = controlButtonSize / 2;
     return { x: x - half, y: y - half };
-  }, [backStagePosition, transform]);
+  }, [backStagePosition, controlButtonSize, transform]);
 
   const resetScreenPosition = useMemo(() => {
     const { x, y } = stageToViewportCoords(resetStagePosition.x, resetStagePosition.y, transform);
-    const half = CONTROL_BUTTON_SIZE / 2;
+    const half = controlButtonSize / 2;
     return { x: x - half, y: y - half };
-  }, [resetStagePosition, transform]);
+  }, [resetStagePosition, controlButtonSize, transform]);
 
   const settingsScreenPosition = useMemo(() => {
     const { x, y } = stageToViewportCoords(settingsStagePosition.x, settingsStagePosition.y, transform);
-    const half = CONTROL_BUTTON_SIZE / 2;
+    const half = controlButtonSize / 2;
     return { x: x - half, y: y - half };
-  }, [settingsStagePosition, transform]);
+  }, [settingsStagePosition, controlButtonSize, transform]);
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-slate-950 text-white">
@@ -464,12 +469,25 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
           onClose={() => setShowSettings(false)}
         />
       )}
-      {onBack && <CounterBackButton screenPosition={backScreenPosition} onClick={onBack} label="Back" />}
-      <CounterResetButton screenPosition={resetScreenPosition} onClick={() => setCount(0)} label="Reset" />
+      {onBack && (
+        <CounterBackButton
+          screenPosition={backScreenPosition}
+          onClick={onBack}
+          label="Back"
+          size={controlButtonSize}
+        />
+      )}
+      <CounterResetButton
+        screenPosition={resetScreenPosition}
+        onClick={() => setCount(0)}
+        label="Reset"
+        size={controlButtonSize}
+      />
       <CounterSettingsButton
         screenPosition={settingsScreenPosition}
         onClick={() => setShowSettings((prev) => !prev)}
         label={showSettings ? "Hide" : "Settings"}
+        size={controlButtonSize}
       />
       <CounterFloating
         size={floatingSize}

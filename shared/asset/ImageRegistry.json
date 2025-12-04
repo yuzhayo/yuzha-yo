@@ -60,6 +60,46 @@
     "path": "shared/asset/GEARMOON.png"
   },
   {
+    "id": "general_deco_tab_hw",
+    "path": "shared/asset/general_deco_tab_hw.png"
+  },
+  {
+    "id": "general_icon_back1",
+    "path": "shared/asset/general_icon_back1.png"
+  },
+  {
+    "id": "general_icon_chakan",
+    "path": "shared/asset/general_icon_chakan.png"
+  },
+  {
+    "id": "general_icon_delete",
+    "path": "shared/asset/general_icon_delete.png"
+  },
+  {
+    "id": "general_icon_jiantou1",
+    "path": "shared/asset/general_icon_jiantou1.png"
+  },
+  {
+    "id": "general_icon_shezhi",
+    "path": "shared/asset/general_icon_shezhi.png"
+  },
+  {
+    "id": "general_icon_shuaxin",
+    "path": "shared/asset/general_icon_shuaxin.png"
+  },
+  {
+    "id": "general_icon_sousuo",
+    "path": "shared/asset/general_icon_sousuo.png"
+  },
+  {
+    "id": "general_icon_tanhao",
+    "path": "shared/asset/general_icon_tanhao.png"
+  },
+  {
+    "id": "general_icon_zhankai",
+    "path": "shared/asset/general_icon_zhankai.png"
+  },
+  {
     "id": "H12",
     "path": "shared/asset/H12.png"
   },
@@ -74,6 +114,10 @@
   {
     "id": "Img_List_Select",
     "path": "shared/asset/Img_List_Select.png"
+  },
+  {
+    "id": "jhqf_btn_1",
+    "path": "shared/asset/jhqf_btn_1.png"
   },
   {
     "id": "MAINBG",
@@ -94,6 +138,10 @@
   {
     "id": "SAMPLE",
     "path": "shared/asset/SAMPLE.png"
+  },
+  {
+    "id": "SAMPLE (2)",
+    "path": "shared/asset/SAMPLE (2).png"
   },
   {
     "id": "sprite_005",
@@ -118,6 +166,10 @@
   {
     "id": "SystemMessageBg",
     "path": "shared/asset/SystemMessageBg.png"
+  },
+  {
+    "id": "SystemMessageBg - Copy",
+    "path": "shared/asset/SystemMessageBg - Copy.png"
   },
   {
     "id": "UI_Clock_HourHand",
@@ -162,6 +214,14 @@
   {
     "id": "V3_LockIcon",
     "path": "shared/asset/V3_LockIcon.png"
+  },
+  {
+    "id": "xyq_btn_01",
+    "path": "shared/asset/xyq_btn_01.png"
+  },
+  {
+    "id": "xyq_btn_02",
+    "path": "shared/asset/xyq_btn_02.png"
   },
   {
     "id": "zodiac",
