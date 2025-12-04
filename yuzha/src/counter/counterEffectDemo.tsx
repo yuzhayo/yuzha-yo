@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useMemo } from "react";
 import * as THREE from "three";
 import wave22Texture from "@shared/asset/alpha_noise_256_wave_22.png";
 import wave04Texture from "@shared/asset/alpha_noise_256_wave_04.png";
+import polarMaskTexture from "@shared/asset/Untitled-1.png";
 
 export type CounterEffectDemoProps = {
   onClose?: () => void;
@@ -12,6 +13,7 @@ export default function CounterEffectDemo({ onClose }: CounterEffectDemoProps) {
   const [isActive, setIsActive] = React.useState(false);
   const [animationType, setAnimationType] = React.useState<
     | "polar"
+    | "polarMask"
     | "radial"
     | "straight"
     | "perspective"
@@ -188,6 +190,72 @@ export default function CounterEffectDemo({ onClose }: CounterEffectDemoProps) {
       centerMesh.position.z = 0.05;
       scene.add(centerMesh);
       layers.push(centerMesh);
+    } else if (animationType === "polarMask") {
+      // POLAR MASK - layered bloom that scales outward and fades
+      const layerCount = 3;
+
+      const maskTex = textureLoader.load(polarMaskTexture);
+      maskTex.wrapS = THREE.ClampToEdgeWrapping;
+      maskTex.wrapT = THREE.ClampToEdgeWrapping;
+
+      const vertexShader = `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `;
+
+      const fragmentShader = `
+        uniform sampler2D uTexture;
+        uniform float uTime;
+        uniform float uOpacity;
+        uniform float uScaleStart;
+        uniform float uScaleRange;
+        uniform float uSpeed;
+        uniform float uOffset;
+        varying vec2 vUv;
+
+        void main() {
+          vec2 center = vec2(0.5);
+          float t = fract(uTime * uSpeed + uOffset);
+          float scale = uScaleStart + t * uScaleRange;
+          vec2 uv = (vUv - center) / scale + center;
+
+          vec4 tex = texture2D(uTexture, uv);
+
+          // Fade in/out over the loop, keep a small baseline to avoid gaps
+          float fadeShape = smoothstep(0.0, 0.2, t) * smoothstep(1.0, 0.8, t);
+          float fade = mix(0.25, 1.0, fadeShape);
+
+          gl_FragColor = vec4(tex.rgb, tex.a * uOpacity * fade);
+        }
+      `;
+
+      for (let i = 0; i < layerCount; i++) {
+        const material = new THREE.ShaderMaterial({
+          vertexShader,
+          fragmentShader,
+          uniforms: {
+            uTexture: { value: maskTex },
+            uTime: { value: 0 },
+            uOpacity: { value: 0.55 - i * 0.12 },
+            uScaleStart: { value: 0.7 + i * 0.1 },
+            uScaleRange: { value: 0.6 + i * 0.15 },
+            uSpeed: { value: 0.35 + i * 0.08 },
+            uOffset: { value: i * 0.25 },
+          },
+          transparent: true,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+        });
+
+        const geometry = new THREE.PlaneGeometry(2.2, 2.2);
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.z = -i * 0.01;
+        scene.add(mesh);
+        layers.push(mesh);
+      }
     } else if (animationType === "straight") {
       // STRAIGHT SMOKE RAY (test skew effect)
       const layerCount = 3;
@@ -548,6 +616,17 @@ export default function CounterEffectDemo({ onClose }: CounterEffectDemoProps) {
             }`}
           >
             Polar Aura
+          </button>
+          <button
+            type="button"
+            onClick={() => setAnimationType("polarMask")}
+            className={`rounded px-3 py-2 text-xs font-medium shadow transition ${
+              animationType === "polarMask"
+                ? "bg-cyan-700 text-white"
+                : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+            }`}
+          >
+            Polar Mask
           </button>
           <button
             type="button"
