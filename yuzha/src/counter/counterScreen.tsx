@@ -502,8 +502,15 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
     return resolved;
   }, [backScreenPosition, resetScreenPosition, settingsScreenPosition, controlButtonSize]);
 
+  const handleContextMenu = React.useCallback((event: React.MouseEvent) => {
+    event.preventDefault();
+  }, []);
+
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-slate-950 text-white">
+    <div
+      className="counter-no-context relative h-screen w-screen overflow-hidden bg-slate-950 text-white"
+      onContextMenu={handleContextMenu}
+    >
       <CounterStageThree />
       {showSettings && (
         <CounterSettings

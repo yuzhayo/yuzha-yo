@@ -92,3 +92,9 @@ body,
     transform: rotate(360deg);
   }
 }
+/* Disable long-press callout and selection on UI images (counter screen only) */
+.counter-no-context img {
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+  user-select: none;
+}
