@@ -410,16 +410,27 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  function clampToViewport(pos: { x: number; y: number }, size: number) {
+    if (typeof window === "undefined") return pos;
+    const margin = 8;
+    const maxX = Math.max(margin, window.innerWidth - size - margin);
+    const maxY = Math.max(margin, window.innerHeight - size - margin);
+    return {
+      x: Math.min(maxX, Math.max(margin, pos.x)),
+      y: Math.min(maxY, Math.max(margin, pos.y)),
+    };
+  }
+
   const floatingScreenPosition = useMemo(() => {
     const { x, y } = stageToViewportCoords(stagePosition.x, stagePosition.y, transform);
     const half = floatingSize / 2;
-    return { x: x - half, y: y - half };
+    return clampToViewport({ x: x - half, y: y - half }, floatingSize);
   }, [stagePosition, transform, floatingSize]);
 
   const messageScreenPosition = useMemo(() => {
     const { x, y } = stageToViewportCoords(messageStagePosition.x, messageStagePosition.y, transform);
     const half = messageSize / 2;
-    return { x: x - half, y: y - half };
+    return clampToViewport({ x: x - half, y: y - half }, messageSize);
   }, [messageStagePosition, transform, messageSize]);
 
   const controlButtonSize = useMemo(() => {
@@ -430,19 +441,19 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
   const backScreenPosition = useMemo(() => {
     const { x, y } = stageToViewportCoords(backStagePosition.x, backStagePosition.y, transform);
     const half = controlButtonSize / 2;
-    return { x: x - half, y: y - half };
+    return clampToViewport({ x: x - half, y: y - half }, controlButtonSize);
   }, [backStagePosition, controlButtonSize, transform]);
 
   const resetScreenPosition = useMemo(() => {
     const { x, y } = stageToViewportCoords(resetStagePosition.x, resetStagePosition.y, transform);
     const half = controlButtonSize / 2;
-    return { x: x - half, y: y - half };
+    return clampToViewport({ x: x - half, y: y - half }, controlButtonSize);
   }, [resetStagePosition, controlButtonSize, transform]);
 
   const settingsScreenPosition = useMemo(() => {
     const { x, y } = stageToViewportCoords(settingsStagePosition.x, settingsStagePosition.y, transform);
     const half = controlButtonSize / 2;
-    return { x: x - half, y: y - half };
+    return clampToViewport({ x: x - half, y: y - half }, controlButtonSize);
   }, [settingsStagePosition, controlButtonSize, transform]);
 
   return (
