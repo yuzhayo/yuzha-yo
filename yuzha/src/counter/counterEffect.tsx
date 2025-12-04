@@ -11,7 +11,11 @@ export type CounterEffectProps = {
  * CounterEffect - simple radial aura preview using alpha noise.
  * Duplicates a texture in a ring and scales/fades on activate.
  */
-export default function CounterEffect({ size = 320, active = false, rays = 12 }: CounterEffectProps) {
+export default function CounterEffect({
+  size = 320,
+  active = false,
+  rays = 12,
+}: CounterEffectProps) {
   const angleStep = 360 / rays;
   const rayWidth = size * 1.35;
   const rayHeight = size * 0.38;

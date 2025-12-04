@@ -15,7 +15,13 @@ type BaseButtonProps = {
 
 const BUTTON_BASE_SIZE = 56;
 
-function FloatingButton({ screenPosition, onClick, size = BUTTON_BASE_SIZE, icon, label }: BaseButtonProps) {
+function FloatingButton({
+  screenPosition,
+  onClick,
+  size = BUTTON_BASE_SIZE,
+  icon,
+  label,
+}: BaseButtonProps) {
   return (
     <div
       className="pointer-events-none fixed z-30"

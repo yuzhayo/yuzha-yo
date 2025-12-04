@@ -27,8 +27,8 @@ export default function App() {
   }
 
   return (
-    <MainScreen 
-      onOpenCounterScreen={handleOpenCounter} 
+    <MainScreen
+      onOpenCounterScreen={handleOpenCounter}
       onOpenTimestampScreen={handleOpenTimestamp}
       onOpenFloatingScreen={handleOpenFloating}
     />

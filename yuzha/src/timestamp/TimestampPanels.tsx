@@ -140,7 +140,11 @@ function StampPreview({ stampSpec, activeCenter }: StampPreviewProps) {
     >
       {stampSpec.lines.map((line, idx) => {
         const alignClass =
-          line.align === "center" ? "text-center" : line.align === "right" ? "text-right" : "text-left";
+          line.align === "center"
+            ? "text-center"
+            : line.align === "right"
+              ? "text-right"
+              : "text-left";
         return (
           <span
             key={`${line.text}-${idx}`}
@@ -162,7 +166,11 @@ function StampPreview({ stampSpec, activeCenter }: StampPreviewProps) {
 
 export function ImageDropzone(props: ImageDropzoneProps) {
   const inputId = React.useId();
-  useResizeObserver(props.previewRef as React.RefObject<HTMLElement>, props.onPreviewResize, Boolean(props.photo));
+  useResizeObserver(
+    props.previewRef as React.RefObject<HTMLElement>,
+    props.onPreviewResize,
+    Boolean(props.photo),
+  );
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900/80 via-slate-900 to-slate-950 p-4 shadow-2xl shadow-black/40">
@@ -181,7 +189,9 @@ export function ImageDropzone(props: ImageDropzoneProps) {
       >
         {!props.photo && (
           <div className="flex w-full max-w-xl flex-col items-center gap-3 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/5 text-2xl">🕒</div>
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/5 text-2xl">
+              🕒
+            </div>
             <p className="text-lg font-semibold text-white">Seret & lepas foto di sini</p>
             <p className="text-sm text-white/60">atau klik Browse untuk memilih dari komputer</p>
             <div className="flex flex-wrap items-center justify-center gap-3">
@@ -208,10 +218,15 @@ export function ImageDropzone(props: ImageDropzoneProps) {
               <span className="rounded-full bg-white/5 px-3 py-1 font-medium text-white/80">
                 {props.photo.name} — {props.photo.width}x{props.photo.height}px
               </span>
-              <span>Alt+drag untuk pan gambar, scroll untuk zoom, drag biasa untuk posisi stamp</span>
+              <span>
+                Alt+drag untuk pan gambar, scroll untuk zoom, drag biasa untuk posisi stamp
+              </span>
             </div>
 
-            <div className="relative w-full overflow-hidden rounded-xl border border-white/5 bg-slate-950" style={{ aspectRatio: "1 / 1" }}>
+            <div
+              className="relative w-full overflow-hidden rounded-xl border border-white/5 bg-slate-950"
+              style={{ aspectRatio: "1 / 1" }}
+            >
               <div
                 ref={props.previewRef}
                 className="absolute left-1/2 top-1/2 flex h-full w-full -translate-x-1/2 -translate-y-1/2 items-center justify-center"

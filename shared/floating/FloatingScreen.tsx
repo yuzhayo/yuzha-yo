@@ -7,7 +7,7 @@ export type FloatingScreenProps = {
 
 /**
  * FloatingScreen - Demo screen showing FloatingWindowTemplate usage
- * 
+ *
  * This demonstrates how to use the FloatingWindowTemplate component
  * with custom content inside.
  */
@@ -22,10 +22,10 @@ export default function FloatingScreen({ onBack }: FloatingScreenProps) {
         <div className="rounded-lg bg-black/40 backdrop-blur-sm p-4 text-white">
           <h2 className="text-lg font-semibold mb-2">Floating Window Template Demo</h2>
           <p className="text-sm text-slate-300 mb-3">
-            Drag windows by their header. Resize from edges and corners. 
-            Works on desktop and mobile devices.
+            Drag windows by their header. Resize from edges and corners. Works on desktop and mobile
+            devices.
           </p>
-          
+
           <div className="flex gap-2">
             <button
               type="button"
@@ -79,35 +79,23 @@ export default function FloatingScreen({ onBack }: FloatingScreenProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Volume
-              </label>
-              <input 
-                type="range" 
-                className="w-full" 
-                min="0" 
-                max="100" 
-                defaultValue="50"
-              />
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Volume</label>
+              <input type="range" className="w-full" min="0" max="100" defaultValue="50" />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Name
-              </label>
-              <input 
-                type="text" 
-                placeholder="Enter name..." 
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Name</label>
+              <input
+                type="text"
+                placeholder="Enter name..."
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Description
-              </label>
-              <textarea 
-                placeholder="Enter description..." 
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+              <textarea
+                placeholder="Enter description..."
                 rows={4}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
               />

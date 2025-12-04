@@ -43,7 +43,10 @@ export default function CounterFloating({
         top: screenPosition.y,
       }}
     >
-      <div className="relative" style={{ width: size, height: size, maxWidth: "90vw", maxHeight: "90vh" }}>
+      <div
+        className="relative"
+        style={{ width: size, height: size, maxWidth: "90vw", maxHeight: "90vh" }}
+      >
         <img
           src={glow}
           alt=""

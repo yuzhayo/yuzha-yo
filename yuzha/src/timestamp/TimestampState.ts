@@ -1,6 +1,12 @@
 import React from "react";
 
-export type PositionPreset = "bottom-left" | "bottom-right" | "top-left" | "top-right" | "center" | "custom";
+export type PositionPreset =
+  | "bottom-left"
+  | "bottom-right"
+  | "top-left"
+  | "top-right"
+  | "center"
+  | "custom";
 export type TextMode = "guided" | "custom";
 export type DateMode = "picker" | "manual";
 export type FrameRatioId = (typeof FRAME_RATIO_OPTIONS)[number]["id"] | "custom";
@@ -241,7 +247,14 @@ function centerToTopLeftPx(
   return { x, y };
 }
 
-function drawRoundedRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+function drawRoundedRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+) {
   const radius = Math.min(r, w / 2, h / 2);
   ctx.beginPath();
   ctx.moveTo(x + radius, y);
@@ -281,12 +294,16 @@ function buildStampLines(
   }
 
   const lines: StampLine[] = [];
-  if (guided.time) lines.push({ text: guided.time, size: styles.timeSize, align: styles.alignTime });
-  if (guided.date) lines.push({ text: guided.date, size: styles.dateSize, align: styles.alignDate });
+  if (guided.time)
+    lines.push({ text: guided.time, size: styles.timeSize, align: styles.alignTime });
+  if (guided.date)
+    lines.push({ text: guided.date, size: styles.dateSize, align: styles.alignDate });
   guided.locationLines
     .map((l) => l.trim())
     .filter(Boolean)
-    .forEach((loc) => lines.push({ text: loc, size: styles.locationSize, align: styles.alignLocation }));
+    .forEach((loc) =>
+      lines.push({ text: loc, size: styles.locationSize, align: styles.alignLocation }),
+    );
 
   if (lines.length === 0) {
     lines.push({ text: "Tambahkan teks", size: styles.timeSize, align: styles.alignTime });
@@ -352,7 +369,10 @@ export function useTimestampState() {
     () => (dateMode === "picker" ? formatDateIsoToDisplay(datePickerValue) : dateManual),
     [dateMode, dateManual, datePickerValue],
   );
-  const displayTime = React.useMemo(() => formatTimeForDisplay(timeValue, timeFormat), [timeFormat, timeValue]);
+  const displayTime = React.useMemo(
+    () => formatTimeForDisplay(timeValue, timeFormat),
+    [timeFormat, timeValue],
+  );
 
   const stampLines = React.useMemo(
     () =>
@@ -650,7 +670,11 @@ export function useTimestampState() {
 
   const handlePreviewResize = (size: FrameSize) => {
     setFrameSize((prev) => {
-      if (prev && Math.round(prev.width) === Math.round(size.width) && Math.round(prev.height) === Math.round(size.height)) {
+      if (
+        prev &&
+        Math.round(prev.width) === Math.round(size.width) &&
+        Math.round(prev.height) === Math.round(size.height)
+      ) {
         return prev;
       }
       return size;
@@ -722,25 +746,28 @@ export function useTimestampState() {
     ],
   );
 
-  const applyPreset = React.useCallback((preset: TimestampPreset) => {
-    setTextMode(preset.textMode);
-    setDateMode(preset.dateMode);
-    setDatePickerValue(preset.datePickerValue);
-    setDateManual(preset.dateManual);
-    setTimeFormat(preset.timeFormat ?? "24h");
-    setTimeValue(preset.timeValue);
-    setTimeRandomStart(preset.timeRandomStart);
-    setTimeRandomEnd(preset.timeRandomEnd);
-    setLocationLines(preset.locationLines);
-    setCustomText(preset.customText);
-    setStyles(preset.styles);
-    setFrameRatioId(preset.frameRatioId);
-    setCustomRatio(preset.customRatio ?? customRatio);
-    setPositionPreset(preset.positionPreset);
-    setCustomCenter(preset.customCenter);
-    setZoom(preset.zoom);
-    setImageOffset(preset.imageOffset);
-  }, [customRatio]);
+  const applyPreset = React.useCallback(
+    (preset: TimestampPreset) => {
+      setTextMode(preset.textMode);
+      setDateMode(preset.dateMode);
+      setDatePickerValue(preset.datePickerValue);
+      setDateManual(preset.dateManual);
+      setTimeFormat(preset.timeFormat ?? "24h");
+      setTimeValue(preset.timeValue);
+      setTimeRandomStart(preset.timeRandomStart);
+      setTimeRandomEnd(preset.timeRandomEnd);
+      setLocationLines(preset.locationLines);
+      setCustomText(preset.customText);
+      setStyles(preset.styles);
+      setFrameRatioId(preset.frameRatioId);
+      setCustomRatio(preset.customRatio ?? customRatio);
+      setPositionPreset(preset.positionPreset);
+      setCustomCenter(preset.customCenter);
+      setZoom(preset.zoom);
+      setImageOffset(preset.imageOffset);
+    },
+    [customRatio],
+  );
 
   const savePreset = (name: string) => {
     if (!name.trim()) return;

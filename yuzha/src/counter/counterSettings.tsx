@@ -172,7 +172,11 @@ export default function CounterSettings({
 
         {renderPositionInputs("Back Button Position", backPosition, onBackPositionChange)}
         {renderPositionInputs("Reset Button Position", resetPosition, onResetPositionChange)}
-        {renderPositionInputs("Settings Button Position", settingsPosition, onSettingsPositionChange)}
+        {renderPositionInputs(
+          "Settings Button Position",
+          settingsPosition,
+          onSettingsPositionChange,
+        )}
       </div>
     </FloatingWindowTemplate>
   );

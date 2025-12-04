@@ -22,7 +22,7 @@ function appendMotionMarkers(target: LayerMotionMarker[], source?: LayerMotionMa
 
 export async function createCounterPipeline(): Promise<StagePipeline> {
   const stageSize = STAGE_SIZE;
-  const entries = (config as LayerConfigEntry[]).filter(is2DLayer);
+  const entries = (config as unknown as LayerConfigEntry[]).filter(is2DLayer);
   const motionMarkers: LayerMotionMarker[] = [];
 
   const layers = (
@@ -33,7 +33,11 @@ export async function createCounterPipeline(): Promise<StagePipeline> {
 
         const processors = getProcessorsForEntry(entry, undefined);
         const enhanced = layer as EnhancedLayerData;
-        const baseBounds = computeLayerBounds(enhanced.position, enhanced.scale, enhanced.imageMapping);
+        const baseBounds = computeLayerBounds(
+          enhanced.position,
+          enhanced.scale,
+          enhanced.imageMapping,
+        );
 
         const motionArtifacts = buildLayerMotion(entry, enhanced, stageSize);
         if (motionArtifacts.processor) {
@@ -43,7 +47,9 @@ export async function createCounterPipeline(): Promise<StagePipeline> {
 
         const hasAnimation =
           processors.length > 0 ||
-          Boolean(enhanced.hasSpinAnimation || enhanced.hasOrbitalAnimation || motionArtifacts.processor);
+          Boolean(
+            enhanced.hasSpinAnimation || enhanced.hasOrbitalAnimation || motionArtifacts.processor,
+          );
 
         const metadata: LayerMetadata = {
           baseBounds,

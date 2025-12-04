@@ -443,7 +443,11 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
   }, [stagePosition, transform, floatingSize]);
 
   const messageScreenPosition = useMemo(() => {
-    const { x, y } = stageToViewportCoords(messageStagePosition.x, messageStagePosition.y, transform);
+    const { x, y } = stageToViewportCoords(
+      messageStagePosition.x,
+      messageStagePosition.y,
+      transform,
+    );
     const half = messageSize / 2;
     return clampToViewport({ x: x - half, y: y - half }, messageSize);
   }, [messageStagePosition, transform, messageSize]);
@@ -466,18 +470,28 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
   }, [resetStagePosition, controlButtonSize, transform]);
 
   const settingsScreenPosition = useMemo(() => {
-    const { x, y } = stageToViewportCoords(settingsStagePosition.x, settingsStagePosition.y, transform);
+    const { x, y } = stageToViewportCoords(
+      settingsStagePosition.x,
+      settingsStagePosition.y,
+      transform,
+    );
     const half = controlButtonSize / 2;
     return clampToViewport({ x: x - half, y: y - half }, controlButtonSize);
   }, [settingsStagePosition, controlButtonSize, transform]);
 
   const [backResolved, resetResolved, settingsResolved] = useMemo(() => {
-    const items = [backScreenPosition, resetScreenPosition, settingsScreenPosition].map((pos) => ({ ...pos }));
+    const items = [backScreenPosition, resetScreenPosition, settingsScreenPosition] as const;
+    const resolved = items.map((pos) => ({ ...pos })) as [
+      { x: number; y: number },
+      { x: number; y: number },
+      { x: number; y: number },
+    ];
     const gap = controlButtonSize + 8;
-    for (let i = 0; i < items.length; i += 1) {
+    for (let i = 0; i < resolved.length; i += 1) {
       for (let j = 0; j < i; j += 1) {
-        const prev = items[j];
-        const curr = items[i];
+        const prev = resolved[j];
+        const curr = resolved[i];
+        if (!prev || !curr) continue;
         const overlapX = Math.abs(curr.x - prev.x) < controlButtonSize * 0.5;
         const overlapY = Math.abs(curr.y - prev.y) < controlButtonSize * 0.5;
         if (overlapX && overlapY) {
@@ -485,7 +499,7 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
         }
       }
     }
-    return items;
+    return resolved;
   }, [backScreenPosition, resetScreenPosition, settingsScreenPosition, controlButtonSize]);
 
   return (

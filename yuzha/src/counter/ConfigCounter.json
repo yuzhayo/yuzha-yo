@@ -1,4 +1,5 @@
-[  {
+[
+  {
     "LayerID": "BACKGROUND-STAR",
     "ImageID": "zodiac",
     "renderer": "2D",
@@ -8,4 +9,5 @@
     "spinImagePoint": [50, 50],
     "spinSpeed": "second",
     "spinDirection": "cw"
-  }]
+  }
+]

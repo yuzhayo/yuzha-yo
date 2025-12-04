@@ -3,14 +3,14 @@ import type { CSSProperties } from "react";
 
 /**
  * FloatingWindowTemplate - Draggable & Resizable Window Component
- * 
+ *
  * Features:
  * - Drag from header to move
  * - Resize from 8 handles (4 corners + 4 edges)
  * - Support desktop (mouse) and mobile (touch) via Pointer Events API
  * - Boundary constraints to keep window in viewport
  * - Minimum size constraints
- * 
+ *
  * Usage:
  * ```tsx
  * <FloatingWindowTemplate title="Control Panel">
@@ -29,10 +29,7 @@ interface Size {
   height: number;
 }
 
-type ResizeHandle = 
-  | "n" | "s" | "e" | "w" 
-  | "ne" | "nw" | "se" | "sw" 
-  | null;
+type ResizeHandle = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | null;
 
 interface FloatingWindowProps {
   children: React.ReactNode;
@@ -58,7 +55,7 @@ export default function FloatingWindowTemplate({
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [activeHandle, setActiveHandle] = useState<ResizeHandle>(null);
-  
+
   const dragStartRef = useRef<Position>({ x: 0, y: 0 });
   const resizeStartRef = useRef<{ pos: Position; size: Size }>({
     pos: { x: 0, y: 0 },
@@ -68,7 +65,7 @@ export default function FloatingWindowTemplate({
   // Drag handlers
   const handleDragStart = (e: React.PointerEvent<HTMLDivElement>) => {
     if ((e.target as HTMLElement).closest(".resize-handle")) return;
-    
+
     setIsDragging(true);
     dragStartRef.current = {
       x: e.clientX - position.x,
@@ -114,7 +111,7 @@ export default function FloatingWindowTemplate({
 
     const deltaX = e.clientX - resizeStartRef.current.pos.x;
     const deltaY = e.clientY - resizeStartRef.current.pos.y;
-    
+
     let newWidth = resizeStartRef.current.size.width;
     let newHeight = resizeStartRef.current.size.height;
     let newX = position.x;
@@ -201,14 +198,46 @@ export default function FloatingWindowTemplate({
   const edgeThickness = isTouchDevice ? 8 : 4;
 
   const resizeHandles: Array<{ handle: ResizeHandle; style: CSSProperties; cursor: string }> = [
-    { handle: "n", style: { top: 0, left: 0, right: 0, height: edgeThickness }, cursor: "ns-resize" },
-    { handle: "s", style: { bottom: 0, left: 0, right: 0, height: edgeThickness }, cursor: "ns-resize" },
-    { handle: "e", style: { right: 0, top: 0, bottom: 0, width: edgeThickness }, cursor: "ew-resize" },
-    { handle: "w", style: { left: 0, top: 0, bottom: 0, width: edgeThickness }, cursor: "ew-resize" },
-    { handle: "ne", style: { top: 0, right: 0, width: handleSize, height: handleSize }, cursor: "nesw-resize" },
-    { handle: "nw", style: { top: 0, left: 0, width: handleSize, height: handleSize }, cursor: "nwse-resize" },
-    { handle: "se", style: { bottom: 0, right: 0, width: handleSize, height: handleSize }, cursor: "nwse-resize" },
-    { handle: "sw", style: { bottom: 0, left: 0, width: handleSize, height: handleSize }, cursor: "nesw-resize" },
+    {
+      handle: "n",
+      style: { top: 0, left: 0, right: 0, height: edgeThickness },
+      cursor: "ns-resize",
+    },
+    {
+      handle: "s",
+      style: { bottom: 0, left: 0, right: 0, height: edgeThickness },
+      cursor: "ns-resize",
+    },
+    {
+      handle: "e",
+      style: { right: 0, top: 0, bottom: 0, width: edgeThickness },
+      cursor: "ew-resize",
+    },
+    {
+      handle: "w",
+      style: { left: 0, top: 0, bottom: 0, width: edgeThickness },
+      cursor: "ew-resize",
+    },
+    {
+      handle: "ne",
+      style: { top: 0, right: 0, width: handleSize, height: handleSize },
+      cursor: "nesw-resize",
+    },
+    {
+      handle: "nw",
+      style: { top: 0, left: 0, width: handleSize, height: handleSize },
+      cursor: "nwse-resize",
+    },
+    {
+      handle: "se",
+      style: { bottom: 0, right: 0, width: handleSize, height: handleSize },
+      cursor: "nwse-resize",
+    },
+    {
+      handle: "sw",
+      style: { bottom: 0, left: 0, width: handleSize, height: handleSize },
+      cursor: "nesw-resize",
+    },
   ];
 
   const containerStyle: CSSProperties = {
@@ -279,11 +308,10 @@ export default function FloatingWindowTemplate({
 
   return (
     <div style={containerStyle}>
-      <div
-        style={headerStyle}
-        onPointerDown={handleDragStart}
-      >
-        <h3 style={titleStyle} title={title}>{title}</h3>
+      <div style={headerStyle} onPointerDown={handleDragStart}>
+        <h3 style={titleStyle} title={title}>
+          {title}
+        </h3>
         {onClose && (
           <button
             type="button"
@@ -295,15 +323,18 @@ export default function FloatingWindowTemplate({
             onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.12)")}
           >
             <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         )}
       </div>
 
-      <div style={contentStyle}>
-        {children}
-      </div>
+      <div style={contentStyle}>{children}</div>
 
       {resizeHandles.map(({ handle, style, cursor }) => (
         <div
@@ -317,7 +348,9 @@ export default function FloatingWindowTemplate({
           }}
           onPointerDown={(e) => handleResizeStart(e, handle)}
           onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(59,130,246,0.35)")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = handleBaseStyle.background as string)}
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.background = handleBaseStyle.background as string)
+          }
         />
       ))}
     </div>
