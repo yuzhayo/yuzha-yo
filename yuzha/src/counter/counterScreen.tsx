@@ -383,6 +383,8 @@ export type CounterScreenProps = {
   onBack?: () => void;
 };
 
+const COUNT_STORAGE_KEY = "counter/progress/v1";
+
 export default function CounterScreen({ onBack }: CounterScreenProps) {
   const [count, setCount] = useState(0);
   const [floatingSize, setFloatingSize] = useState(250);
@@ -394,6 +396,17 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
   const [backStagePosition, setBackStagePosition] = useState({ x: 180, y: 180 });
   const [resetStagePosition, setResetStagePosition] = useState({ x: 280, y: 180 });
   const [settingsStagePosition, setSettingsStagePosition] = useState({ x: 380, y: 180 });
+
+  // Load saved count on mount
+  useEffect(() => {
+    const saved = window.localStorage.getItem(COUNT_STORAGE_KEY);
+    if (saved !== null) {
+      const parsed = Number(saved);
+      if (!Number.isNaN(parsed)) {
+        setCount(parsed);
+      }
+    }
+  }, []);
 
   const [transform, setTransform] = useState<StageTransform>(() =>
     typeof window !== "undefined"
@@ -507,7 +520,10 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
       )}
       <CounterResetButton
         screenPosition={resetResolved}
-        onClick={() => setCount(0)}
+        onClick={() => {
+          setCount(0);
+          window.localStorage.setItem(COUNT_STORAGE_KEY, "0");
+        }}
         label="Reset"
         size={controlButtonSize}
       />
@@ -520,7 +536,13 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
       <CounterFloating
         size={floatingSize}
         screenPosition={floatingScreenPosition}
-        onActivate={() => setCount((prev) => prev + 1)}
+        onActivate={() => {
+          setCount((prev) => {
+            const next = prev + 1;
+            window.localStorage.setItem(COUNT_STORAGE_KEY, String(next));
+            return next;
+          });
+        }}
       />
       <CounterFloatingMessage size={messageSize} screenPosition={messageScreenPosition}>
         <div
