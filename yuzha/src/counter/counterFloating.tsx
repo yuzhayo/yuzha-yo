@@ -53,8 +53,8 @@ export default function CounterFloating({
           className="pointer-events-none absolute inset-0"
           style={{
             opacity: active ? 1 : 0,
-            transform: active ? "scale(1.35)" : "scale(0.9)",
-            transition: "opacity 2s ease, transform 2s ease",
+            transform: active ? "scale(1.6)" : "scale(0.85)",
+            transition: active ? "opacity 0.45s ease-out, transform 0.45s ease-out" : "none",
           }}
           draggable={false}
         />
