@@ -435,7 +435,7 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
 
   const controlButtonSize = useMemo(() => {
     const scaled = BUTTON_BASE_SIZE * transform.scale;
-    return Math.max(36, Math.min(72, scaled));
+    return Math.max(48, Math.min(72, scaled));
   }, [transform.scale]);
 
   const backScreenPosition = useMemo(() => {
@@ -455,6 +455,23 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
     const half = controlButtonSize / 2;
     return clampToViewport({ x: x - half, y: y - half }, controlButtonSize);
   }, [settingsStagePosition, controlButtonSize, transform]);
+
+  const [backResolved, resetResolved, settingsResolved] = useMemo(() => {
+    const items = [backScreenPosition, resetScreenPosition, settingsScreenPosition].map((pos) => ({ ...pos }));
+    const gap = controlButtonSize + 8;
+    for (let i = 0; i < items.length; i += 1) {
+      for (let j = 0; j < i; j += 1) {
+        const prev = items[j];
+        const curr = items[i];
+        const overlapX = Math.abs(curr.x - prev.x) < controlButtonSize * 0.5;
+        const overlapY = Math.abs(curr.y - prev.y) < controlButtonSize * 0.5;
+        if (overlapX && overlapY) {
+          curr.y = Math.max(curr.y, prev.y + gap);
+        }
+      }
+    }
+    return items;
+  }, [backScreenPosition, resetScreenPosition, settingsScreenPosition, controlButtonSize]);
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-slate-950 text-white">
@@ -482,20 +499,20 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
       )}
       {onBack && (
         <CounterBackButton
-          screenPosition={backScreenPosition}
+          screenPosition={backResolved}
           onClick={onBack}
           label="Back"
           size={controlButtonSize}
         />
       )}
       <CounterResetButton
-        screenPosition={resetScreenPosition}
+        screenPosition={resetResolved}
         onClick={() => setCount(0)}
         label="Reset"
         size={controlButtonSize}
       />
       <CounterSettingsButton
-        screenPosition={settingsScreenPosition}
+        screenPosition={settingsResolved}
         onClick={() => setShowSettings((prev) => !prev)}
         label={showSettings ? "Hide" : "Settings"}
         size={controlButtonSize}
