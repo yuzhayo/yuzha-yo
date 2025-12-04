@@ -37,7 +37,7 @@ export default function CounterFloating({
 
   return (
     <div
-      className="pointer-events-none fixed z-20"
+      className="counter-floating pointer-events-none fixed z-20"
       style={{
         left: screenPosition.x,
         top: screenPosition.y,
@@ -54,13 +54,13 @@ export default function CounterFloating({
           style={{
             opacity: active ? 1 : 0,
             transform: active ? "scale(1.35)" : "scale(0.9)",
-            transition: "opacity 2.5s ease, transform 2.5s ease",
+            transition: "opacity 2s ease, transform 2s ease",
           }}
           draggable={false}
         />
         <button
           type="button"
-          className="pointer-events-auto relative z-10 rounded-xl bg-transparent shadow-lg shadow-black/40 transition hover:scale-[1.02] active:scale-100"
+          className="pointer-events-auto relative z-10 rounded-xl bg-transparent transition hover:scale-[1.02] active:scale-100"
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
           onPointerLeave={handlePointerUp}
@@ -72,6 +72,7 @@ export default function CounterFloating({
             height: size,
             maxWidth: "90vw",
             maxHeight: "90vh",
+            boxShadow: "none",
           }}
         >
           <img

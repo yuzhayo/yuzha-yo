@@ -98,3 +98,16 @@ body,
   -webkit-user-drag: none;
   user-select: none;
 }
+
+/* Remove outlines/borders/tap highlight for the floating counter button */
+.counter-floating button {
+  outline: none;
+  border: none;
+  background: transparent;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: none;
+}
+
+.counter-floating button:focus-visible {
+  outline: none;
+}
