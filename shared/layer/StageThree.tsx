@@ -239,6 +239,8 @@ async function mountThreeLayers(
     const blendMode =
       data.blendMode === "additive" ? THREE.AdditiveBlending : THREE.NormalBlending;
     const opacity = data.opacity ?? 1;
+    const useLuminanceAlpha = data.blendMode === "additive";
+    const alphaTestValue = useLuminanceAlpha ? 0.01 : 0;
 
     // Calculate scaled dimensions
     const scaledWidth = texture.image.width * data.scale.x;
@@ -263,16 +265,19 @@ async function mountThreeLayers(
       scaledWidth,
       scaledHeight,
     );
-    const planeMaterial = new THREE.MeshBasicMaterial({
+    const materialConfig: THREE.MeshBasicMaterialParameters = {
       map: texture,
-      alphaMap: texture,
       transparent: true,
-      alphaTest: 0.01,
       side: THREE.DoubleSide,
       depthWrite: false,
       blending: blendMode,
       opacity,
-    });
+    };
+    if (useLuminanceAlpha) {
+      materialConfig.alphaMap = texture;
+      materialConfig.alphaTest = alphaTestValue;
+    }
+    const planeMaterial = new THREE.MeshBasicMaterial(materialConfig);
 
     const mesh = new THREE.Mesh(planeGeometry, planeMaterial);
     const group = new THREE.Group();
