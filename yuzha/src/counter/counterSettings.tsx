@@ -14,6 +14,10 @@ export type CounterSettingsProps = {
   onMessageFontSizeChange: (value: number) => void;
   messageColor: string;
   onMessageColorChange: (value: string) => void;
+  hapticsEnabled: boolean;
+  onHapticsToggle: (value: boolean) => void;
+  soundEnabled: boolean;
+  onSoundToggle: (value: boolean) => void;
   backPosition: { x: number; y: number };
   onBackPositionChange: (value: { x: number; y: number }) => void;
   resetPosition: { x: number; y: number };
@@ -37,6 +41,10 @@ export default function CounterSettings({
   onMessageFontSizeChange,
   messageColor,
   onMessageColorChange,
+  hapticsEnabled,
+  onHapticsToggle,
+  soundEnabled,
+  onSoundToggle,
   backPosition,
   onBackPositionChange,
   resetPosition,
@@ -186,6 +194,27 @@ export default function CounterSettings({
             />
             <span className="text-slate-600">{messageColor}</span>
           </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 text-xs text-slate-700">
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={hapticsEnabled}
+              onChange={(e) => onHapticsToggle(e.target.checked)}
+              className="h-4 w-4"
+            />
+            <span className="text-sm font-semibold text-slate-800">Haptics</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={soundEnabled}
+              onChange={(e) => onSoundToggle(e.target.checked)}
+              className="h-4 w-4"
+            />
+            <span className="text-sm font-semibold text-slate-800">Sound</span>
+          </label>
         </div>
 
         {renderPositionInputs("Back Button Position", backPosition, onBackPositionChange)}

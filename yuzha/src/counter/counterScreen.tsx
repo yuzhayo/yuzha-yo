@@ -393,6 +393,8 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
   const [messageFontSize, setMessageFontSize] = useState(48);
   const [messageColor, setMessageColor] = useState("#ffffff");
   const [isBumping, setIsBumping] = useState(false);
+  const [hapticsEnabled, setHapticsEnabled] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showEffectDemo, setShowEffectDemo] = useState(false);
   const [stagePosition, setStagePosition] = useState({ x: 1024, y: 1024 });
@@ -528,6 +530,10 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
           onMessageFontSizeChange={setMessageFontSize}
           messageColor={messageColor}
           onMessageColorChange={setMessageColor}
+          hapticsEnabled={hapticsEnabled}
+          onHapticsToggle={setHapticsEnabled}
+          soundEnabled={soundEnabled}
+          onSoundToggle={setSoundEnabled}
           backPosition={backStagePosition}
           onBackPositionChange={setBackStagePosition}
           resetPosition={resetStagePosition}
@@ -554,6 +560,14 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
           window.localStorage.setItem(COUNT_STORAGE_KEY, "0");
           setIsBumping(true);
           setTimeout(() => setIsBumping(false), 250);
+          if (hapticsEnabled && "vibrate" in navigator) {
+            navigator.vibrate(20);
+          }
+          if (soundEnabled) {
+            const audio = new Audio("/click.mp3");
+            audio.volume = 0.2;
+            audio.play().catch(() => {});
+          }
         }}
         label="Reset"
         size={controlButtonSize}
@@ -575,6 +589,14 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
           });
           setIsBumping(true);
           setTimeout(() => setIsBumping(false), 250);
+          if (hapticsEnabled && "vibrate" in navigator) {
+            navigator.vibrate(20);
+          }
+          if (soundEnabled) {
+            const audio = new Audio("/click.mp3");
+            audio.volume = 0.2;
+            audio.play().catch(() => {});
+          }
         }}
       />
       <CounterFloatingMessage size={messageSize} screenPosition={messageScreenPosition}>
