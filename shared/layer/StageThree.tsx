@@ -218,6 +218,9 @@ async function mountThreeLayers(
       texture.magFilter = THREE.LinearFilter;
       texture.anisotropy = 1;
       texture.generateMipmaps = false;
+      if (item.data.blendMode === "additive") {
+        texture.premultiplyAlpha = true;
+      }
       return { item, texture };
     } catch (error) {
       if (IS_DEV) {
@@ -240,7 +243,7 @@ async function mountThreeLayers(
       data.blendMode === "additive" ? THREE.AdditiveBlending : THREE.NormalBlending;
     const opacity = data.opacity ?? 1;
     const useLuminanceAlpha = data.blendMode === "additive";
-    const alphaTestValue = useLuminanceAlpha ? 0.01 : 0;
+    const alphaTestValue = useLuminanceAlpha ? 0 : 0;
 
     // Calculate scaled dimensions
     const scaledWidth = texture.image.width * data.scale.x;
@@ -274,10 +277,24 @@ async function mountThreeLayers(
       opacity,
     };
     if (useLuminanceAlpha) {
-      materialConfig.alphaMap = texture;
+      materialConfig.alphaMap = undefined;
       materialConfig.alphaTest = alphaTestValue;
+      materialConfig.premultipliedAlpha = true;
     }
     const planeMaterial = new THREE.MeshBasicMaterial(materialConfig);
+    if (useLuminanceAlpha) {
+      planeMaterial.onBeforeCompile = (shader) => {
+        shader.fragmentShader = shader.fragmentShader.replace(
+          "gl_FragColor = vec4( outgoingLight, diffuseColor.a );",
+          `
+            float lumAlpha = max(max(diffuseColor.r, diffuseColor.g), diffuseColor.b);
+            vec3 premul = outgoingLight * lumAlpha;
+            gl_FragColor = vec4(premul, lumAlpha);
+          `,
+        );
+      };
+      planeMaterial.needsUpdate = true;
+    }
 
     const mesh = new THREE.Mesh(planeGeometry, planeMaterial);
     const group = new THREE.Group();
