@@ -64,6 +64,26 @@
     "path": "shared/asset/Enviro_Stars_Big.png"
   },
   {
+    "id": "Fx_MagicCircle_16",
+    "path": "shared/asset/Fx_MagicCircle_16.png"
+  },
+  {
+    "id": "Fx_MagicCircle_16_1",
+    "path": "shared/asset/Fx_MagicCircle_16_1.png"
+  },
+  {
+    "id": "Fx_MagicCircle_16_half",
+    "path": "shared/asset/Fx_MagicCircle_16_half.png"
+  },
+  {
+    "id": "Fx_MagicCircle_ChaHaeInMM_1",
+    "path": "shared/asset/Fx_MagicCircle_ChaHaeInMM_1.png"
+  },
+  {
+    "id": "Fx_MagicCircle_LeeJuhee_Ulti02_Clamp",
+    "path": "shared/asset/Fx_MagicCircle_LeeJuhee_Ulti02_Clamp.png"
+  },
+  {
     "id": "GEAR1",
     "path": "shared/asset/GEAR1.png"
   },
@@ -206,6 +226,10 @@
   {
     "id": "sprite_005",
     "path": "shared/asset/sprite_005.png"
+  },
+  {
+    "id": "sprite_effect_pc_war_vskill_hud_512x512",
+    "path": "shared/asset/sprite_effect_pc_war_vskill_hud_512x512.png"
   },
   {
     "id": "STARBG",
