@@ -50,6 +50,8 @@ export default function FloatingWindowTemplate({
   minHeight = 150,
   onClose,
 }: FloatingWindowProps) {
+  const viewportMargin = 12; // keep a small gutter so the window never touches the edges
+
   const [position, setPosition] = useState<Position>(initialPos);
   const [size, setSize] = useState<Size>(initialSize);
   const [isDragging, setIsDragging] = useState(false);
@@ -77,16 +79,17 @@ export default function FloatingWindowTemplate({
   const handleDrag = (e: PointerEvent) => {
     if (!isDragging) return;
 
+    const maxX = Math.max(0, window.innerWidth - size.width - viewportMargin);
+    const maxY = Math.max(0, window.innerHeight - size.height - viewportMargin);
+    const minX = viewportMargin;
+    const minY = viewportMargin;
+
     const newX = e.clientX - dragStartRef.current.x;
     const newY = e.clientY - dragStartRef.current.y;
 
-    // Boundary constraints
-    const maxX = window.innerWidth - size.width;
-    const maxY = window.innerHeight - size.height;
-
     setPosition({
-      x: Math.max(0, Math.min(newX, maxX)),
-      y: Math.max(0, Math.min(newY, maxY)),
+      x: Math.max(minX, Math.min(newX, maxX)),
+      y: Math.max(minY, Math.min(newY, maxY)),
     });
   };
 
@@ -111,6 +114,9 @@ export default function FloatingWindowTemplate({
 
     const deltaX = e.clientX - resizeStartRef.current.pos.x;
     const deltaY = e.clientY - resizeStartRef.current.pos.y;
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
 
     let newWidth = resizeStartRef.current.size.width;
     let newHeight = resizeStartRef.current.size.height;
@@ -140,19 +146,23 @@ export default function FloatingWindowTemplate({
     }
 
     // Apply boundary constraints
-    if (newX + newWidth > window.innerWidth) {
-      newWidth = window.innerWidth - newX;
+    const fitDimension = (value: number, min: number, max: number) =>
+      Math.max(Math.min(value, max), Math.min(min, max));
+
+    const maxWidth = Math.max(0, viewportWidth - newX - viewportMargin);
+    const maxHeight = Math.max(0, viewportHeight - newY - viewportMargin);
+    newWidth = fitDimension(newWidth, minWidth, maxWidth);
+    newHeight = fitDimension(newHeight, minHeight, maxHeight);
+
+    if (newX < viewportMargin) {
+      const diff = viewportMargin - newX;
+      newX = viewportMargin;
+      newWidth = Math.max(minWidth, newWidth - diff);
     }
-    if (newY + newHeight > window.innerHeight) {
-      newHeight = window.innerHeight - newY;
-    }
-    if (newX < 0) {
-      newWidth += newX;
-      newX = 0;
-    }
-    if (newY < 0) {
-      newHeight += newY;
-      newY = 0;
+    if (newY < viewportMargin) {
+      const diff = viewportMargin - newY;
+      newY = viewportMargin;
+      newHeight = Math.max(minHeight, newHeight - diff);
     }
 
     setSize({ width: newWidth, height: newHeight });
@@ -194,6 +204,42 @@ export default function FloatingWindowTemplate({
       setIsTouchDevice("ontouchstart" in window || navigator.maxTouchPoints > 0);
     }
   }, []);
+
+  // Clamp position/size to viewport (useful on small screens or after rotations)
+  useEffect(() => {
+    const fitDimension = (value: number, min: number, max: number) =>
+      Math.max(Math.min(value, max), Math.min(min, max));
+
+    const clampToViewport = () => {
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      setSize((prev) => {
+        const maxWidth = Math.max(0, viewportWidth - viewportMargin * 2);
+        const maxHeight = Math.max(0, viewportHeight - viewportMargin * 2);
+        return {
+          width: fitDimension(prev.width, minWidth, maxWidth),
+          height: fitDimension(prev.height, minHeight, maxHeight),
+        };
+      });
+
+      setPosition((prev) => {
+        const clampedX = Math.min(
+          Math.max(prev.x, viewportMargin),
+          Math.max(viewportMargin, viewportWidth - viewportMargin - size.width),
+        );
+        const clampedY = Math.min(
+          Math.max(prev.y, viewportMargin),
+          Math.max(viewportMargin, viewportHeight - viewportMargin - size.height),
+        );
+        return { x: clampedX, y: clampedY };
+      });
+    };
+
+    clampToViewport();
+    window.addEventListener("resize", clampToViewport);
+    return () => window.removeEventListener("resize", clampToViewport);
+  }, [size.width, size.height, minWidth, minHeight]);
   const handleSize = isTouchDevice ? 12 : 6;
   const edgeThickness = isTouchDevice ? 8 : 4;
 
