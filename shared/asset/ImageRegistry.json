@@ -120,6 +120,14 @@
     "path": "shared/asset/general_icon_zhankai.png"
   },
   {
+    "id": "general_tab_wxzt_tk",
+    "path": "shared/asset/general_tab_wxzt_tk.png"
+  },
+  {
+    "id": "general_tab_xzt_tk",
+    "path": "shared/asset/general_tab_xzt_tk.png"
+  },
+  {
     "id": "H12",
     "path": "shared/asset/H12.png"
   },
@@ -226,6 +234,10 @@
   {
     "id": "UI_ItemIcon_222",
     "path": "shared/asset/UI_ItemIcon_222.png"
+  },
+  {
+    "id": "Untitled-1",
+    "path": "shared/asset/Untitled-1.png"
   },
   {
     "id": "utx_ic_card_cost",
