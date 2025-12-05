@@ -136,6 +136,34 @@
     "path": "shared/asset/H24.png"
   },
   {
+    "id": "Img_CoreEquip_Page_Deco",
+    "path": "shared/asset/Img_CoreEquip_Page_Deco.png"
+  },
+  {
+    "id": "Img_Deco_Enhance_2",
+    "path": "shared/asset/Img_Deco_Enhance_2.png"
+  },
+  {
+    "id": "Img_deco_Level_LineEffect",
+    "path": "shared/asset/Img_deco_Level_LineEffect.png"
+  },
+  {
+    "id": "Img_deco_Level_Round_1",
+    "path": "shared/asset/Img_deco_Level_Round_1.png"
+  },
+  {
+    "id": "Img_deco_Level_Round_2",
+    "path": "shared/asset/Img_deco_Level_Round_2.png"
+  },
+  {
+    "id": "Img_Guild_Rank_List_Active",
+    "path": "shared/asset/Img_Guild_Rank_List_Active.png"
+  },
+  {
+    "id": "Img_Guild_Rank_Title_Deco",
+    "path": "shared/asset/Img_Guild_Rank_Title_Deco.png"
+  },
+  {
     "id": "Img_List_Defalt",
     "path": "shared/asset/Img_List_Defalt.png"
   },
