@@ -124,7 +124,7 @@ export function createPolarAura(
   const meshes: THREE.Mesh[] = [];
 
   for (let i = 0; i < layerCount; i++) {
-    const layerColorTuple = layerColors[i % layerColors.length];
+    const layerColorTuple = layerColors[i % layerColors.length] ?? [1, 1, 1];
     const layerColor = new THREE.Color(
       layerColorTuple[0],
       layerColorTuple[1],
