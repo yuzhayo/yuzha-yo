@@ -12,6 +12,7 @@ export type MainScreenProps = {
   onOpenCounterScreen?: () => void;
   onOpenTimestampScreen?: () => void;
   onOpenFloatingScreen?: () => void;
+  onOpenAlphaRemoveScreen?: () => void;
 };
 
 function MainScreenOverlay({
@@ -21,6 +22,7 @@ function MainScreenOverlay({
   onOpenCounterScreen,
   onOpenTimestampScreen,
   onOpenFloatingScreen,
+  onOpenAlphaRemoveScreen,
 }: {
   rendererLabel: string;
   rendererMode: RendererMode;
@@ -28,6 +30,7 @@ function MainScreenOverlay({
   onOpenCounterScreen?: () => void;
   onOpenTimestampScreen?: () => void;
   onOpenFloatingScreen?: () => void;
+  onOpenAlphaRemoveScreen?: () => void;
 }) {
   const gesture = useMainScreenBtnGesture();
 
@@ -48,6 +51,7 @@ function MainScreenOverlay({
         onOpenCounterScreen={onOpenCounterScreen}
         onOpenTimestampScreen={onOpenTimestampScreen}
         onOpenFloatingScreen={onOpenFloatingScreen}
+        onOpenAlphaRemoveScreen={onOpenAlphaRemoveScreen}
       />
     </>
   );
@@ -62,6 +66,7 @@ export default function MainScreen({
   onOpenCounterScreen,
   onOpenTimestampScreen,
   onOpenFloatingScreen,
+  onOpenAlphaRemoveScreen,
 }: MainScreenProps) {
   const autoDetectedRenderer = useMemo(() => getRendererType(), []);
   const [rendererMode, setRendererMode] = useState<RendererMode>("auto");
@@ -86,6 +91,7 @@ export default function MainScreen({
           onOpenCounterScreen={onOpenCounterScreen}
           onOpenTimestampScreen={onOpenTimestampScreen}
           onOpenFloatingScreen={onOpenFloatingScreen}
+          onOpenAlphaRemoveScreen={onOpenAlphaRemoveScreen}
         />
       )}
     </div>

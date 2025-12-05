@@ -106,12 +106,12 @@
     "LayerID": "BAC9",
     "ImageID": "Fx_MagicCircle_16_half",
     "renderer": "3D",
-    "opacity" : 0.5,
+    "opacity" : 0.9,
     "BlendMode": "additive",
     "LayerOrder": 5,
     "ImageScale": [120, 120],
    "BasicStagePoint": [1024, 1300],
-   "BasicImageAngle": 270
+   "BasicImageAngle": 45
   }
   ,
   {
@@ -132,7 +132,7 @@
     "LayerID": "BAC60",
     "ImageID": "Fx_MagicCircle_ChaHaeInMM_1",
     "renderer": "2D",
-    "opacity" : 0.3,
+    "opacity" : 0.6,
     "LayerOrder": 10,
     "ImageScale": [125, 125],
     "spinStagePoint": [412, 0],
@@ -145,7 +145,7 @@
     "LayerID": "BAC61",
     "ImageID": "Fx_MagicCircle_ChaHaeInMM_1",
     "renderer": "2D",
-    "opacity" : 0.3,
+    "opacity" : 0.6,
     "LayerOrder": 10,
     "ImageScale": [125, 125],
     "spinStagePoint": [1636, 0],

@@ -130,7 +130,8 @@ async function mountThreeLayers(
       texture.anisotropy = 1;
       texture.generateMipmaps = false;
       if (item.data.blendMode === "additive") {
-        texture.premultiplyAlpha = true;
+        texture.wrapS = THREE.ClampToEdgeWrapping;
+        texture.wrapT = THREE.ClampToEdgeWrapping;
       }
       return { item, texture };
     } catch (error) {
@@ -151,7 +152,7 @@ async function mountThreeLayers(
     const blendMode =
       data.blendMode === "additive" ? THREE.AdditiveBlending : THREE.NormalBlending;
     const useLuminanceAlpha = data.blendMode === "additive";
-    const alphaTestValue = useLuminanceAlpha ? 0 : 0;
+    const alphaTestValue = useLuminanceAlpha ? 0.1 : 0;
 
     const scaledWidth = texture.image.width * data.scale.x;
     const scaledHeight = texture.image.height * data.scale.y;
@@ -183,24 +184,10 @@ async function mountThreeLayers(
       opacity,
     };
     if (useLuminanceAlpha) {
-      materialConfig.alphaMap = undefined;
+      materialConfig.alphaMap = texture;
       materialConfig.alphaTest = alphaTestValue;
-      materialConfig.premultipliedAlpha = true;
     }
     const planeMaterial = new THREE.MeshBasicMaterial(materialConfig);
-    if (useLuminanceAlpha) {
-      planeMaterial.onBeforeCompile = (shader) => {
-        shader.fragmentShader = shader.fragmentShader.replace(
-          "gl_FragColor = vec4( outgoingLight, diffuseColor.a );",
-          `
-            float lumAlpha = max(max(diffuseColor.r, diffuseColor.g), diffuseColor.b);
-            vec3 premul = outgoingLight * lumAlpha;
-            gl_FragColor = vec4(premul, lumAlpha);
-          `,
-        );
-      };
-      planeMaterial.needsUpdate = true;
-    }
 
     const mesh = new THREE.Mesh(planeGeometry, planeMaterial);
     const group = new THREE.Group();

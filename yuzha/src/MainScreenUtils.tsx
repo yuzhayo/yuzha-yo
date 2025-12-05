@@ -89,6 +89,7 @@ export type MainScreenUpdaterProps = {
   onOpenCounterScreen?: () => void;
   onOpenTimestampScreen?: () => void;
   onOpenFloatingScreen?: () => void;
+  onOpenAlphaRemoveScreen?: () => void;
   rendererLabel?: string;
 };
 
@@ -394,6 +395,15 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
             className="text-xs px-3 py-2 rounded bg-violet-600/80 hover:bg-violet-500/80 active:bg-violet-600 text-white shadow-sm border border-white/10 text-center whitespace-normal break-words leading-tight"
           >
             Floating Window
+          </button>
+        )}
+        {props.onOpenAlphaRemoveScreen && (
+          <button
+            type="button"
+            onClick={props.onOpenAlphaRemoveScreen}
+            className="text-xs px-3 py-2 rounded bg-orange-600/80 hover:bg-orange-500/80 active:bg-orange-600 text-white shadow-sm border border-white/10 text-center whitespace-normal break-words leading-tight"
+          >
+            Alpha Remover
           </button>
         )}
       </div>
