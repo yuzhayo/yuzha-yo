@@ -23,12 +23,7 @@ import { getDeviceCapability } from "@shared/utils/DeviceCapability";
 import CounterFloating from "./counterFloating";
 import CounterFloatingMessage from "./counterFloatingMessage";
 import CounterSettings from "./counterSettings";
-import {
-  CounterBackButton,
-  CounterResetButton,
-  CounterSettingsButton,
-  BUTTON_BASE_SIZE,
-} from "./counterButtons";
+import { CounterControls } from "./counterButtons";
 import CounterEffectDemo from "./counterEffectDemo";
 
 if (import.meta.hot) {
@@ -456,56 +451,6 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
     return clampToViewport({ x: x - half, y: y - half }, messageSize);
   }, [messageStagePosition, transform, messageSize]);
 
-  const controlButtonSize = useMemo(() => {
-    const scaled = BUTTON_BASE_SIZE * transform.scale;
-    return Math.max(48, Math.min(72, scaled));
-  }, [transform.scale]);
-
-  const backScreenPosition = useMemo(() => {
-    const { x, y } = stageToViewportCoords(backStagePosition.x, backStagePosition.y, transform);
-    const half = controlButtonSize / 2;
-    return clampToViewport({ x: x - half, y: y - half }, controlButtonSize);
-  }, [backStagePosition, controlButtonSize, transform]);
-
-  const resetScreenPosition = useMemo(() => {
-    const { x, y } = stageToViewportCoords(resetStagePosition.x, resetStagePosition.y, transform);
-    const half = controlButtonSize / 2;
-    return clampToViewport({ x: x - half, y: y - half }, controlButtonSize);
-  }, [resetStagePosition, controlButtonSize, transform]);
-
-  const settingsScreenPosition = useMemo(() => {
-    const { x, y } = stageToViewportCoords(
-      settingsStagePosition.x,
-      settingsStagePosition.y,
-      transform,
-    );
-    const half = controlButtonSize / 2;
-    return clampToViewport({ x: x - half, y: y - half }, controlButtonSize);
-  }, [settingsStagePosition, controlButtonSize, transform]);
-
-  const [backResolved, resetResolved, settingsResolved] = useMemo(() => {
-    const items = [backScreenPosition, resetScreenPosition, settingsScreenPosition] as const;
-    const resolved = items.map((pos) => ({ ...pos })) as [
-      { x: number; y: number },
-      { x: number; y: number },
-      { x: number; y: number },
-    ];
-    const gap = controlButtonSize + 8;
-    for (let i = 0; i < resolved.length; i += 1) {
-      for (let j = 0; j < i; j += 1) {
-        const prev = resolved[j];
-        const curr = resolved[i];
-        if (!prev || !curr) continue;
-        const overlapX = Math.abs(curr.x - prev.x) < controlButtonSize * 0.5;
-        const overlapY = Math.abs(curr.y - prev.y) < controlButtonSize * 0.5;
-        if (overlapX && overlapY) {
-          curr.y = Math.max(curr.y, prev.y + gap);
-        }
-      }
-    }
-    return resolved;
-  }, [backScreenPosition, resetScreenPosition, settingsScreenPosition, controlButtonSize]);
-
   const handleContextMenu = React.useCallback((event: React.MouseEvent) => {
     event.preventDefault();
   }, []);
@@ -545,17 +490,13 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
         />
       )}
       {showEffectDemo && <CounterEffectDemo onClose={() => setShowEffectDemo(false)} />}
-      {onBack && (
-        <CounterBackButton
-          screenPosition={backResolved}
-          onClick={onBack}
-          label="Back"
-          size={controlButtonSize}
-        />
-      )}
-      <CounterResetButton
-        screenPosition={resetResolved}
-        onClick={() => {
+      <CounterControls
+        transform={transform}
+        backStagePosition={backStagePosition}
+        resetStagePosition={resetStagePosition}
+        settingsStagePosition={settingsStagePosition}
+        onBack={onBack}
+        onReset={() => {
           setCount(0);
           window.localStorage.setItem(COUNT_STORAGE_KEY, "0");
           setIsBumping(true);
@@ -569,14 +510,8 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
             audio.play().catch(() => {});
           }
         }}
-        label="Reset"
-        size={controlButtonSize}
-      />
-      <CounterSettingsButton
-        screenPosition={settingsResolved}
-        onClick={() => setShowSettings((prev) => !prev)}
-        label={showSettings ? "Hide" : "Settings"}
-        size={controlButtonSize}
+        onToggleSettings={() => setShowSettings((prev) => !prev)}
+        showSettings={showSettings}
       />
       <CounterFloating
         size={floatingSize}

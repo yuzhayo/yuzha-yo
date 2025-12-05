@@ -1,4 +1,5 @@
 import React from "react";
+import { stageToViewportCoords, type StageTransform } from "@shared/layer";
 import iconBack from "@shared/asset/general_icon_jiantou1.png";
 import iconReset from "@shared/asset/general_icon_shuaxin.png";
 import iconSettings from "@shared/asset/general_icon_shezhi.png";
@@ -53,3 +54,112 @@ export function CounterSettingsButton(props: Omit<BaseButtonProps, "icon">) {
 }
 
 export { BUTTON_BASE_SIZE };
+
+type CounterControlsProps = {
+  transform: StageTransform;
+  backStagePosition?: ScreenPosition;
+  resetStagePosition: ScreenPosition;
+  settingsStagePosition: ScreenPosition;
+  onBack?: () => void;
+  onReset: () => void;
+  onToggleSettings: () => void;
+  showSettings: boolean;
+};
+
+type ScreenResult = { x: number; y: number };
+
+const MIN_SIZE = 48;
+const MAX_SIZE = 72;
+
+function clampToViewport(pos: ScreenResult, size: number): ScreenResult {
+  if (typeof window === "undefined") return pos;
+  const margin = 8;
+  const maxX = Math.max(margin, window.innerWidth - size - margin);
+  const maxY = Math.max(margin, window.innerHeight - size - margin);
+  return {
+    x: Math.min(maxX, Math.max(margin, pos.x)),
+    y: Math.min(maxY, Math.max(margin, pos.y)),
+  };
+}
+
+function resolveOverlap(items: ScreenResult[], size: number): ScreenResult[] {
+  const resolved = items.map((pos) => ({ ...pos }));
+  const gap = size + 8;
+  for (let i = 0; i < resolved.length; i += 1) {
+    for (let j = 0; j < i; j += 1) {
+      const prev = resolved[j];
+      const curr = resolved[i];
+      const overlapX = Math.abs(curr.x - prev.x) < size * 0.5;
+      const overlapY = Math.abs(curr.y - prev.y) < size * 0.5;
+      if (overlapX && overlapY) {
+        curr.y = Math.max(curr.y, prev.y + gap);
+      }
+    }
+  }
+  return resolved;
+}
+
+export function CounterControls({
+  transform,
+  backStagePosition,
+  resetStagePosition,
+  settingsStagePosition,
+  onBack,
+  onReset,
+  onToggleSettings,
+  showSettings,
+}: CounterControlsProps) {
+  const controlButtonSize = React.useMemo(() => {
+    const scaled = BUTTON_BASE_SIZE * transform.scale;
+    return Math.max(MIN_SIZE, Math.min(MAX_SIZE, scaled));
+  }, [transform.scale]);
+
+  const { backPos, resetPos, settingsPos } = React.useMemo(() => {
+    const results: Array<ScreenResult> = [];
+    const includeBack = Boolean(onBack && backStagePosition);
+
+    const toScreen = (stage: ScreenPosition): ScreenResult => {
+      const { x, y } = stageToViewportCoords(stage.x, stage.y, transform);
+      const half = controlButtonSize / 2;
+      return clampToViewport({ x: x - half, y: y - half }, controlButtonSize);
+    };
+
+    if (includeBack && backStagePosition) {
+      results.push(toScreen(backStagePosition));
+    }
+    results.push(toScreen(resetStagePosition));
+    results.push(toScreen(settingsStagePosition));
+
+    const resolved = resolveOverlap(results, controlButtonSize);
+
+    return {
+      backPos: includeBack ? resolved[0] : null,
+      resetPos: includeBack ? resolved[1] : resolved[0],
+      settingsPos: includeBack ? resolved[2] : resolved[1],
+    };
+  }, [backStagePosition, controlButtonSize, onBack, resetStagePosition, settingsStagePosition, transform]);
+
+  return (
+    <>
+      {onBack && backPos ? (
+        <CounterBackButton screenPosition={backPos} onClick={onBack} label="Back" size={controlButtonSize} />
+      ) : null}
+      {resetPos ? (
+        <CounterResetButton
+          screenPosition={resetPos}
+          onClick={onReset}
+          label="Reset"
+          size={controlButtonSize}
+        />
+      ) : null}
+      {settingsPos ? (
+        <CounterSettingsButton
+          screenPosition={settingsPos}
+          onClick={onToggleSettings}
+          label={showSettings ? "Hide" : "Settings"}
+          size={controlButtonSize}
+        />
+      ) : null}
+    </>
+  );
+}
