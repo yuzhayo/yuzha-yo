@@ -564,7 +564,7 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
             navigator.vibrate(20);
           }
           if (soundEnabled) {
-            const audio = new Audio("/click.mp3");
+            const audio = new Audio("/sound/dice.wav");
             audio.volume = 0.2;
             audio.play().catch(() => {});
           }
@@ -593,7 +593,7 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
             navigator.vibrate(20);
           }
           if (soundEnabled) {
-            const audio = new Audio("/click.mp3");
+            const audio = new Audio("/sound/dice.wav");
             audio.volume = 0.2;
             audio.play().catch(() => {});
           }
