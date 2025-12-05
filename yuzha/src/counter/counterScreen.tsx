@@ -481,7 +481,7 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
   const [messageSize, setMessageSize] = useState(240);
   const [messageFontSize, setMessageFontSize] = useState(48);
   const [messageColor, setMessageColor] = useState("#ffffff");
-  const [hapticsEnabled, setHapticsEnabled] = useState(false);
+  const [hapticsEnabled, setHapticsEnabled] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showEffectDemo, setShowEffectDemo] = useState(false);
