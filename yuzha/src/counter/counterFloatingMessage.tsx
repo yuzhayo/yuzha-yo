@@ -77,7 +77,7 @@ export default function CounterFloatingMessage({
       }}
     >
       <div
-        className="pointer-events-auto relative rounded-xl bg-transparent shadow-lg shadow-black/40"
+        className="pointer-events-auto relative rounded-xl bg-transparent overflow-hidden"
         style={{
           width: size,
           height: size,
@@ -94,7 +94,7 @@ export default function CounterFloatingMessage({
         <img
           src={systemMessageBg}
           alt="System Message"
-          className="block h-full w-full object-contain"
+          className="pointer-events-none block h-full w-full object-contain select-none"
           draggable={false}
         />
         {children ? (

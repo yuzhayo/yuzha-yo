@@ -391,6 +391,8 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
   const [floatingSize, setFloatingSize] = useState(250);
   const [messageSize, setMessageSize] = useState(240);
   const [messageFontSize, setMessageFontSize] = useState(48);
+  const [messageColor, setMessageColor] = useState("#ffffff");
+  const [isBumping, setIsBumping] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showEffectDemo, setShowEffectDemo] = useState(false);
   const [stagePosition, setStagePosition] = useState({ x: 1024, y: 1024 });
@@ -524,6 +526,8 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
           onMessagePositionChange={setMessageStagePosition}
           messageFontSize={messageFontSize}
           onMessageFontSizeChange={setMessageFontSize}
+          messageColor={messageColor}
+          onMessageColorChange={setMessageColor}
           backPosition={backStagePosition}
           onBackPositionChange={setBackStagePosition}
           resetPosition={resetStagePosition}
@@ -548,6 +552,8 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
         onClick={() => {
           setCount(0);
           window.localStorage.setItem(COUNT_STORAGE_KEY, "0");
+          setIsBumping(true);
+          setTimeout(() => setIsBumping(false), 250);
         }}
         label="Reset"
         size={controlButtonSize}
@@ -567,12 +573,22 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
             window.localStorage.setItem(COUNT_STORAGE_KEY, String(next));
             return next;
           });
+          setIsBumping(true);
+          setTimeout(() => setIsBumping(false), 250);
         }}
       />
       <CounterFloatingMessage size={messageSize} screenPosition={messageScreenPosition}>
         <div
-          className="flex w-full items-center justify-center text-white drop-shadow"
-          style={{ fontFamily: "Taimingda, sans-serif", fontSize: messageFontSize }}
+          className={`flex w-full items-center justify-center text-white drop-shadow ${
+            isBumping ? "count-bump" : ""
+          }`}
+          style={{
+            fontFamily: "Taimingda, sans-serif",
+            fontSize: messageFontSize,
+            color: messageColor,
+            WebkitTextStroke: "1px rgba(0,0,0,0.6)", //stroke for better visibility
+            textShadow: "0 0 5px rgba(0,0,0,0.8)",
+          }}
         >
           {count}
         </div>
@@ -580,3 +596,4 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
     </div>
   );
 }
+

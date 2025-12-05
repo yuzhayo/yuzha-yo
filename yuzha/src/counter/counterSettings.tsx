@@ -12,6 +12,8 @@ export type CounterSettingsProps = {
   onMessagePositionChange: (value: { x: number; y: number }) => void;
   messageFontSize: number;
   onMessageFontSizeChange: (value: number) => void;
+  messageColor: string;
+  onMessageColorChange: (value: string) => void;
   backPosition: { x: number; y: number };
   onBackPositionChange: (value: { x: number; y: number }) => void;
   resetPosition: { x: number; y: number };
@@ -33,6 +35,8 @@ export default function CounterSettings({
   onMessagePositionChange,
   messageFontSize,
   onMessageFontSizeChange,
+  messageColor,
+  onMessageColorChange,
   backPosition,
   onBackPositionChange,
   resetPosition,
@@ -168,6 +172,20 @@ export default function CounterSettings({
             aria-label="Message font size"
           />
           <div className="mt-1 text-xs text-slate-600">Current: {messageFontSize}px</div>
+        </div>
+
+        <div>
+          <p className="text-sm font-semibold">Message Color</p>
+          <div className="mt-2 flex items-center gap-3 text-xs text-slate-700">
+            <input
+              type="color"
+              value={messageColor}
+              onChange={(e) => onMessageColorChange(e.target.value)}
+              className="h-8 w-12 rounded border border-slate-300 bg-white"
+              aria-label="Message color"
+            />
+            <span className="text-slate-600">{messageColor}</span>
+          </div>
         </div>
 
         {renderPositionInputs("Back Button Position", backPosition, onBackPositionChange)}

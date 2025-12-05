@@ -111,3 +111,20 @@ body,
 .counter-floating button:focus-visible {
   outline: none;
 }
+
+/* Count bump animation */
+@keyframes count-bump-keyframes {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.count-bump {
+  animation: count-bump-keyframes 0.25s ease-out;
+}
