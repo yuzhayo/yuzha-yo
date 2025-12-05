@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { createCounterPipeline } from "./createCounterPipeline";
 import {
@@ -380,39 +380,13 @@ export type CounterScreenProps = {
 };
 
 const COUNT_STORAGE_KEY = "counter/progress/v1";
+const INITIAL_TRANSFORM: StageTransform = { scale: 1, offsetX: 0, offsetY: 0, width: 2048, height: 2048 };
 
-export default function CounterScreen({ onBack }: CounterScreenProps) {
-  const [count, setCount] = useState(0);
-  const [floatingSize, setFloatingSize] = useState(250);
-  const [messageSize, setMessageSize] = useState(240);
-  const [messageFontSize, setMessageFontSize] = useState(48);
-  const [messageColor, setMessageColor] = useState("#ffffff");
-  const [isBumping, setIsBumping] = useState(false);
-  const [hapticsEnabled, setHapticsEnabled] = useState(false);
-  const [soundEnabled, setSoundEnabled] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showEffectDemo, setShowEffectDemo] = useState(false);
-  const [stagePosition, setStagePosition] = useState({ x: 1024, y: 1024 });
-  const [messageStagePosition, setMessageStagePosition] = useState({ x: 1024, y: 400 });
-  const [backStagePosition, setBackStagePosition] = useState({ x: 180, y: 180 });
-  const [resetStagePosition, setResetStagePosition] = useState({ x: 280, y: 180 });
-  const [settingsStagePosition, setSettingsStagePosition] = useState({ x: 380, y: 180 });
-
-  // Load saved count on mount
-  useEffect(() => {
-    const saved = window.localStorage.getItem(COUNT_STORAGE_KEY);
-    if (saved !== null) {
-      const parsed = Number(saved);
-      if (!Number.isNaN(parsed)) {
-        setCount(parsed);
-      }
-    }
-  }, []);
-
+function useStageTransform() {
   const [transform, setTransform] = useState<StageTransform>(() =>
     typeof window !== "undefined"
       ? computeCoverTransform(window.innerWidth, window.innerHeight)
-      : { scale: 1, offsetX: 0, offsetY: 0, width: 2048, height: 2048 },
+      : INITIAL_TRANSFORM,
   );
 
   useEffect(() => {
@@ -424,7 +398,7 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  function clampToViewport(pos: { x: number; y: number }, size: number) {
+  const clampToViewport = useCallback((pos: { x: number; y: number }, size: number) => {
     if (typeof window === "undefined") return pos;
     const margin = 8;
     const maxX = Math.max(margin, window.innerWidth - size - margin);
@@ -433,23 +407,102 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
       x: Math.min(maxX, Math.max(margin, pos.x)),
       y: Math.min(maxY, Math.max(margin, pos.y)),
     };
-  }
+  }, []);
 
-  const floatingScreenPosition = useMemo(() => {
-    const { x, y } = stageToViewportCoords(stagePosition.x, stagePosition.y, transform);
-    const half = floatingSize / 2;
-    return clampToViewport({ x: x - half, y: y - half }, floatingSize);
-  }, [stagePosition, transform, floatingSize]);
+  const toScreenPosition = useCallback(
+    (stagePos: { x: number; y: number }, size: number) => {
+      const { x, y } = stageToViewportCoords(stagePos.x, stagePos.y, transform);
+      const half = size / 2;
+      return clampToViewport({ x: x - half, y: y - half }, size);
+    },
+    [clampToViewport, transform],
+  );
 
-  const messageScreenPosition = useMemo(() => {
-    const { x, y } = stageToViewportCoords(
-      messageStagePosition.x,
-      messageStagePosition.y,
-      transform,
-    );
-    const half = messageSize / 2;
-    return clampToViewport({ x: x - half, y: y - half }, messageSize);
-  }, [messageStagePosition, transform, messageSize]);
+  return { transform, toScreenPosition };
+}
+
+function useCounterActions(hapticsEnabled: boolean, soundEnabled: boolean) {
+  const [count, setCount] = useState(0);
+  const [isBumping, setIsBumping] = useState(false);
+  const bumpTimeoutRef = useRef<number | undefined>(undefined);
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem(COUNT_STORAGE_KEY);
+    if (saved !== null) {
+      const parsed = Number(saved);
+      if (!Number.isNaN(parsed)) {
+        setCount(parsed);
+      }
+    }
+    return () => {
+      if (bumpTimeoutRef.current !== undefined) {
+        clearTimeout(bumpTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const triggerFeedback = useCallback(() => {
+    setIsBumping(true);
+    if (bumpTimeoutRef.current !== undefined) {
+      clearTimeout(bumpTimeoutRef.current);
+    }
+    bumpTimeoutRef.current = window.setTimeout(() => setIsBumping(false), 250);
+
+    if (hapticsEnabled && "vibrate" in navigator) {
+      navigator.vibrate(20);
+    }
+    if (soundEnabled) {
+      const audio = new Audio("/sound/dice.wav");
+      audio.volume = 0.2;
+      audio.play().catch(() => {});
+    }
+  }, [hapticsEnabled, soundEnabled]);
+
+  const increment = useCallback(() => {
+    setCount((prev) => {
+      const next = prev + 1;
+      window.localStorage.setItem(COUNT_STORAGE_KEY, String(next));
+      return next;
+    });
+    triggerFeedback();
+  }, [triggerFeedback]);
+
+  const reset = useCallback(() => {
+    setCount(0);
+    window.localStorage.setItem(COUNT_STORAGE_KEY, "0");
+    triggerFeedback();
+  }, [triggerFeedback]);
+
+  return { count, isBumping, increment, reset };
+}
+
+export default function CounterScreen({ onBack }: CounterScreenProps) {
+  const [floatingSize, setFloatingSize] = useState(250);
+  const [messageSize, setMessageSize] = useState(240);
+  const [messageFontSize, setMessageFontSize] = useState(48);
+  const [messageColor, setMessageColor] = useState("#ffffff");
+  const [hapticsEnabled, setHapticsEnabled] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showEffectDemo, setShowEffectDemo] = useState(false);
+  const [stagePosition, setStagePosition] = useState({ x: 1024, y: 1024 });
+  const [messageStagePosition, setMessageStagePosition] = useState({ x: 1024, y: 400 });
+  const [backStagePosition, setBackStagePosition] = useState({ x: 180, y: 180 });
+  const [resetStagePosition, setResetStagePosition] = useState({ x: 280, y: 180 });
+  const [settingsStagePosition, setSettingsStagePosition] = useState({ x: 380, y: 180 });
+
+  const { transform, toScreenPosition } = useStageTransform();
+  const { count, isBumping, increment, reset } = useCounterActions(hapticsEnabled, soundEnabled);
+
+  const floatingScreenPosition = useMemo(
+    () => toScreenPosition(stagePosition, floatingSize),
+    [floatingSize, stagePosition, toScreenPosition],
+  );
+
+  const messageScreenPosition = useMemo(
+    () => toScreenPosition(messageStagePosition, messageSize),
+    [messageSize, messageStagePosition, toScreenPosition],
+  );
 
   const handleContextMenu = React.useCallback((event: React.MouseEvent) => {
     event.preventDefault();
@@ -496,43 +549,14 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
         resetStagePosition={resetStagePosition}
         settingsStagePosition={settingsStagePosition}
         onBack={onBack}
-        onReset={() => {
-          setCount(0);
-          window.localStorage.setItem(COUNT_STORAGE_KEY, "0");
-          setIsBumping(true);
-          setTimeout(() => setIsBumping(false), 250);
-          if (hapticsEnabled && "vibrate" in navigator) {
-            navigator.vibrate(20);
-          }
-          if (soundEnabled) {
-            const audio = new Audio("/sound/dice.wav");
-            audio.volume = 0.2;
-            audio.play().catch(() => {});
-          }
-        }}
+        onReset={reset}
         onToggleSettings={() => setShowSettings((prev) => !prev)}
         showSettings={showSettings}
       />
       <CounterFloating
         size={floatingSize}
         screenPosition={floatingScreenPosition}
-        onActivate={() => {
-          setCount((prev) => {
-            const next = prev + 1;
-            window.localStorage.setItem(COUNT_STORAGE_KEY, String(next));
-            return next;
-          });
-          setIsBumping(true);
-          setTimeout(() => setIsBumping(false), 250);
-          if (hapticsEnabled && "vibrate" in navigator) {
-            navigator.vibrate(20);
-          }
-          if (soundEnabled) {
-            const audio = new Audio("/sound/dice.wav");
-            audio.volume = 0.2;
-            audio.play().catch(() => {});
-          }
-        }}
+        onActivate={increment}
       />
       <CounterFloatingMessage size={messageSize} screenPosition={messageScreenPosition}>
         <div
