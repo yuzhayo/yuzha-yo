@@ -107,6 +107,14 @@ export type LayerConfigEntry = {
   ImageID: string;
   renderer: LayerRenderer;
   LayerOrder: number;
+  /** Optional blend mode for rendering (Three.js renderer). Defaults to "normal". */
+  BlendMode?: "additive" | "normal";
+  /** Optional per-layer opacity (0-1). */
+  Opacity?: number;
+  /** Optional pulse period in seconds; 0 or undefined disables pulse. */
+  PulseSeconds?: number;
+  /** Optional pulse amplitude (0-1) applied to opacity; defaults to 0.15 if PulseSeconds > 0. */
+  PulseAmplitude?: number;
   ImageScale?: number[];
 
   // ===== BASIC CONFIG (Static Positioning) =====
@@ -163,6 +171,10 @@ export type UniversalLayerData = {
   ImageID: string;
   imageUrl: string;
   imagePath: string;
+  blendMode?: "additive" | "normal";
+  opacity?: number;
+  pulseSeconds?: number;
+  pulseAmplitude?: number;
   position: Point2D;
   scale: Point2D;
   imageMapping: ImageMapping;
@@ -221,6 +233,10 @@ export type BaseLayerState = {
     ImageID: string;
     imageUrl: string;
     imagePath: string;
+    blendMode?: "additive" | "normal";
+    opacity?: number;
+    pulseSeconds?: number;
+    pulseAmplitude?: number;
     position: Point2D;
     scale: Point2D;
     imageMapping: ImageMapping;

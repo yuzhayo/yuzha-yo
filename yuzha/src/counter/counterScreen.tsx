@@ -144,6 +144,9 @@ async function mountThreeLayers(
     const { item, texture } = result;
     const { data, processors, metadata } = item;
     const { isStatic, hasAnimation, baseBounds, visibleByDefault } = metadata;
+    const opacity = data.opacity ?? 1;
+    const blendMode =
+      data.blendMode === "additive" ? THREE.AdditiveBlending : THREE.NormalBlending;
 
     const scaledWidth = texture.image.width * data.scale.x;
     const scaledHeight = texture.image.height * data.scale.y;
@@ -168,9 +171,13 @@ async function mountThreeLayers(
     );
     const planeMaterial = new THREE.MeshBasicMaterial({
       map: texture,
+      alphaMap: texture,
       transparent: true,
+      alphaTest: 0.01,
       side: THREE.DoubleSide,
       depthWrite: false,
+      blending: blendMode,
+      opacity,
     });
 
     const mesh = new THREE.Mesh(planeGeometry, planeMaterial);
@@ -221,6 +228,10 @@ async function mountThreeLayers(
               runPipeline(entry.baseData, entry.processors, timestamp),
             )
           : entry.baseData;
+      const currentOpacity = enhanced.opacity ?? 1;
+      if (entry.mesh.material instanceof THREE.Material) {
+        entry.mesh.material.opacity = currentOpacity;
+      }
 
       const isVisible = shouldRenderEntry(entry, enhanced);
       entry.group.visible = isVisible;

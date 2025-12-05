@@ -27,6 +27,7 @@
     "LayerID": "BAC1",
     "ImageID": "Img_Guild_Rank_Title_Deco",
     "renderer": "2D",
+     "opacity" : 0.2,
     "LayerOrder": 10,
     "ImageScale": [280, 280],
    "BasicStagePoint": [1024, 850]
@@ -93,11 +94,63 @@
   {
     "LayerID": "BAC8",
     "ImageID": "general_deco_tab_hw",
-    "renderer": "2D",
+    "renderer": "3D",
+    "BlendMode": "additive",
     "LayerOrder": 10,
     "ImageScale": [500, 500],
    "BasicStagePoint": [1024, 1880],
    "BasicImageAngle": 0
   }
-  
+  ,
+  {
+    "LayerID": "BAC9",
+    "ImageID": "Fx_MagicCircle_16_half",
+    "renderer": "3D",
+    "opacity" : 0.5,
+    "BlendMode": "additive",
+    "LayerOrder": 5,
+    "ImageScale": [120, 120],
+   "BasicStagePoint": [1024, 1300],
+   "BasicImageAngle": 270
+  }
+  ,
+  {
+    "LayerID": "BAC19",
+    "ImageID": "Fx_MagicCircle_LeeJuhee_Ulti02_Clamp",
+    "renderer": "3D",
+    "BlendMode": "additive",
+    "opacity" : 0.2,
+    "PulseSeconds": 2.0,
+    "PulseAmplitude": 0.15,
+    "LayerOrder": 5,
+    "ImageScale": [150, 150],
+   "BasicStagePoint": [1024, 420],
+   "BasicImageAngle": 270
+  }
+   ,
+  {
+    "LayerID": "BAC60",
+    "ImageID": "Fx_MagicCircle_ChaHaeInMM_1",
+    "renderer": "2D",
+    "opacity" : 0.3,
+    "LayerOrder": 10,
+    "ImageScale": [125, 125],
+    "spinStagePoint": [512, 0],
+    "spinImagePoint": [50, 50],
+    "spinSpeed": 60,
+    "spinDirection": "cw"
+  }
+  ,
+  {
+    "LayerID": "BAC61",
+    "ImageID": "Fx_MagicCircle_ChaHaeInMM_1",
+    "renderer": "2D",
+    "opacity" : 0.3,
+    "LayerOrder": 10,
+    "ImageScale": [125, 125],
+    "spinStagePoint": [1536, 0],
+    "spinImagePoint": [50, 50],
+    "spinSpeed": 60,
+    "spinDirection": "ccw"
+  }
 ]

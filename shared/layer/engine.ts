@@ -274,6 +274,23 @@ export async function prepareBasicState(
   const imageCenterStagePercent = stagePointToPercent(imageCenterStage, stageSize);
 
   const rotation = typeof entry.BasicImageAngle === "number" ? entry.BasicImageAngle : 0;
+  const blendMode = entry.BlendMode === "additive" ? "additive" : "normal";
+  const pulseSeconds =
+    typeof entry.PulseSeconds === "number" && entry.PulseSeconds > 0 ? entry.PulseSeconds : undefined;
+  const rawPulseAmplitude =
+    typeof entry.PulseAmplitude === "number" ? entry.PulseAmplitude : undefined;
+  const pulseAmplitude =
+    rawPulseAmplitude !== undefined ? Math.min(1, Math.max(0, rawPulseAmplitude)) : undefined;
+  const rawOpacity =
+    typeof entry.Opacity === "number"
+      ? entry.Opacity
+      : typeof (entry as any).opacity === "number"
+        ? (entry as any).opacity
+        : undefined;
+  const opacity =
+    rawOpacity !== undefined
+      ? Math.min(1, Math.max(0, rawOpacity))
+      : undefined;
 
   return {
     baseData: {
@@ -281,6 +298,10 @@ export async function prepareBasicState(
       ImageID: entry.ImageID,
       imageUrl,
       imagePath: assetPath,
+      blendMode,
+      pulseSeconds,
+      pulseAmplitude,
+      opacity,
       position,
       scale,
       imageMapping,
@@ -475,7 +496,9 @@ export async function prepareLayer(
 
 /** Check if layer uses 2D renderer. */
 export function is2DLayer(entry: LayerConfigEntry): boolean {
-  return entry.renderer === "2D";
+  // Currently both "2D" and "3D" go through the same 2D prep path.
+  // Allow "3D" so Three.js layers are not filtered out.
+  return entry.renderer === "2D" || entry.renderer === "3D";
 }
 
 // Build motion processors for spin and orbit animations.
@@ -533,7 +556,36 @@ export function getProcessorsForEntry(
   entry: LayerConfigEntry,
   context?: ProcessorContext,
 ): LayerProcessor[] {
-  return resolveProcessorsForEntry(entry, context);
+  const processors = resolveProcessorsForEntry(entry, context);
+  const pulse = createPulseProcessor(entry);
+  if (pulse) processors.push(pulse);
+  return processors;
+}
+
+const DEFAULT_PULSE_AMPLITUDE = 0.15;
+
+/** Create a simple opacity pulse processor if configured. */
+function createPulseProcessor(entry: LayerConfigEntry): LayerProcessor | null {
+  const pulseSeconds =
+    typeof entry.PulseSeconds === "number" && entry.PulseSeconds > 0 ? entry.PulseSeconds : null;
+  if (!pulseSeconds) return null;
+  const amplitude =
+    typeof entry.PulseAmplitude === "number"
+      ? Math.min(1, Math.max(0, entry.PulseAmplitude))
+      : DEFAULT_PULSE_AMPLITUDE;
+  const periodMs = pulseSeconds * 1000;
+  return (layer, timestamp) => {
+    if (timestamp === undefined) return layer;
+    const baseOpacity = layer.opacity ?? 1;
+    const pulseAmplitude = layer.pulseAmplitude ?? amplitude;
+    const phase = ((timestamp % periodMs) / periodMs) * Math.PI * 2;
+    const factor = 1 + pulseAmplitude * Math.sin(phase); // oscillates between 1-amp .. 1+amp
+    const opacity = Math.max(0, Math.min(1, baseOpacity * factor));
+    return {
+      ...layer,
+      opacity,
+    };
+  };
 }
 
 /** Run layer data through a pipeline of processors. */

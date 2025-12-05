@@ -331,6 +331,8 @@ async function mountCanvasLayers(
         ? enhancedData.position
         : roundStagePoint(enhancedData.position);
     ctx.translate(position.x, position.y);
+    const alpha = enhancedData.opacity ?? 1;
+    ctx.globalAlpha = alpha;
 
     // Apply rotation around pivot point
     if (rotation !== 0) {
