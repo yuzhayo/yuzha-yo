@@ -485,7 +485,7 @@ export default function CounterScreen({ onBack }: CounterScreenProps) {
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showEffectDemo, setShowEffectDemo] = useState(false);
-  const [stagePosition, setStagePosition] = useState({ x: 1024, y: 1024 });
+  const [stagePosition, setStagePosition] = useState({ x: 1024, y: 1300 });
   const [messageStagePosition, setMessageStagePosition] = useState({ x: 1024, y: 400 });
   const [backStagePosition, setBackStagePosition] = useState({ x: 180, y: 180 });
   const [resetStagePosition, setResetStagePosition] = useState({ x: 280, y: 180 });

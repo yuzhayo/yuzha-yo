@@ -217,22 +217,22 @@ export default function FloatingWindowTemplate({
       setSize((prev) => {
         const maxWidth = Math.max(0, viewportWidth - viewportMargin * 2);
         const maxHeight = Math.max(0, viewportHeight - viewportMargin * 2);
-        return {
+        const nextSize = {
           width: fitDimension(prev.width, minWidth, maxWidth),
           height: fitDimension(prev.height, minHeight, maxHeight),
         };
-      });
-
-      setPosition((prev) => {
-        const clampedX = Math.min(
-          Math.max(prev.x, viewportMargin),
-          Math.max(viewportMargin, viewportWidth - viewportMargin - size.width),
-        );
-        const clampedY = Math.min(
-          Math.max(prev.y, viewportMargin),
-          Math.max(viewportMargin, viewportHeight - viewportMargin - size.height),
-        );
-        return { x: clampedX, y: clampedY };
+        // Clamp position against the freshly clamped size so resize feels natural near edges
+        setPosition((prevPos) => ({
+          x: Math.min(
+            Math.max(prevPos.x, viewportMargin),
+            Math.max(viewportMargin, viewportWidth - viewportMargin - nextSize.width),
+          ),
+          y: Math.min(
+            Math.max(prevPos.y, viewportMargin),
+            Math.max(viewportMargin, viewportHeight - viewportMargin - nextSize.height),
+          ),
+        }));
+        return nextSize;
       });
     };
 

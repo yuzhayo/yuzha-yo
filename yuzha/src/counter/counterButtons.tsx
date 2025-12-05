@@ -84,19 +84,21 @@ function clampToViewport(pos: ScreenResult, size: number): ScreenResult {
 
 function resolveOverlap(items: ScreenResult[], size: number): ScreenResult[] {
   const gap = size + 8;
-  return items.map((pos, index) => {
+  const resolved: ScreenResult[] = [];
+
+  items.forEach((pos) => {
     const adjusted = { ...pos };
-    for (let j = 0; j < index; j += 1) {
-      const prev = items[j];
-      if (!prev) continue;
+    for (const prev of resolved) {
       const overlapX = Math.abs(adjusted.x - prev.x) < size * 0.5;
       const overlapY = Math.abs(adjusted.y - prev.y) < size * 0.5;
       if (overlapX && overlapY) {
         adjusted.y = Math.max(adjusted.y, prev.y + gap);
       }
     }
-    return adjusted;
+    resolved.push(adjusted);
   });
+
+  return resolved;
 }
 
 export function CounterControls({
