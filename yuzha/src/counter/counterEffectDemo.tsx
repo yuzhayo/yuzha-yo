@@ -11,7 +11,6 @@ export type CounterEffectDemoProps = {
 
 export default function CounterEffectDemo({ onClose }: CounterEffectDemoProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isActive, setIsActive] = React.useState(false);
   const [animationType, setAnimationType] = React.useState<
     | "polar"
     | "polarMask"
