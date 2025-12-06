@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import StageCanvas from "@shared/layer/StageCanvas";
 import StageThree from "@shared/layer/StageThree";
 import { getRendererType } from "@shared/utils/RendererDetector";
-import { MainScreenBtnPanel, useMainScreenBtnGesture, MainScreenUpdater } from "./MainScreenUtils";
+import { useMainScreenBtnGesture, MainScreenUpdater } from "./MainScreenUtils";
 
 export type RendererMode = "auto" | "canvas" | "three";
 export type RendererType = "canvas" | "three";
@@ -37,12 +37,6 @@ function MainScreenOverlay({
   return (
     <>
       <div {...gesture.bindTargetProps()} className="absolute inset-0 pointer-events-auto z-20" />
-      <MainScreenBtnPanel
-        open={gesture.open}
-        onToggle={gesture.toggle}
-        effect={{ kind: "fade" }}
-        title="Launcher"
-      />
       <MainScreenUpdater
         visible={gesture.open}
         rendererLabel={rendererLabel}
