@@ -35,11 +35,11 @@
   ,
   {
     "LayerID": "BAC2",
-    "ImageID": "Img_Guild_Rank_List_Activ",
+    "ImageID": "BUBBLE",
     "renderer": "2D",
     "LayerOrder": 20,
-    "ImageScale": [220, 250],
-   "BasicStagePoint": [1024, 1000]
+    "ImageScale": [150,150],
+   "BasicStagePoint": [1024, 420]
   }
   ,
   {
