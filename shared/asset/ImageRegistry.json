@@ -76,12 +76,24 @@
     "path": "shared/asset/Fx_MagicCircle_16_half.png"
   },
   {
+    "id": "Fx_MagicCircle_16_half1",
+    "path": "shared/asset/Fx_MagicCircle_16_half1.png"
+  },
+  {
     "id": "Fx_MagicCircle_ChaHaeInMM_1",
     "path": "shared/asset/Fx_MagicCircle_ChaHaeInMM_1.png"
   },
   {
+    "id": "Fx_MagicCircle_ChaHaeInMM_10",
+    "path": "shared/asset/Fx_MagicCircle_ChaHaeInMM_10.png"
+  },
+  {
     "id": "Fx_MagicCircle_LeeJuhee_Ulti02_Clamp",
     "path": "shared/asset/Fx_MagicCircle_LeeJuhee_Ulti02_Clamp.png"
+  },
+  {
+    "id": "Fx_MagicCircle_LeeJuhee_Ulti02_Clamp1",
+    "path": "shared/asset/Fx_MagicCircle_LeeJuhee_Ulti02_Clamp1.png"
   },
   {
     "id": "GEAR1",
@@ -194,6 +206,10 @@
   {
     "id": "jhqf_btn_1",
     "path": "shared/asset/jhqf_btn_1.png"
+  },
+  {
+    "id": "lobby_cust_44",
+    "path": "shared/asset/lobby_cust_44.png"
   },
   {
     "id": "MAINBG",
