@@ -9,12 +9,18 @@ export type FloatingBorderlessProps = {
   children: ReactNode;
   initialPos?: Position;
   initialSize?: Size;
+  /** Controlled position; if provided, internal position will sync to this. */
+  pos?: Position;
+  /** Controlled size; if provided, internal size will sync to this. */
+  size?: Size;
   minWidth?: number;
   minHeight?: number;
   zIndex?: number;
   onChange?: (pos: Position, size: Size) => void;
   className?: string;
   style?: CSSProperties;
+  /** Delay before drag activates (ms). Useful to avoid accidental drags on tap. */
+  dragDelayMs?: number;
 };
 
 /**
@@ -25,12 +31,15 @@ export default function FloatingBorderless({
   children,
   initialPos = { x: 120, y: 120 },
   initialSize = { width: 240, height: 120 },
+  pos,
+  size: controlledSize,
   minWidth = 80,
   minHeight = 60,
   zIndex = 1000,
   onChange,
   className,
   style,
+  dragDelayMs = 0,
 }: FloatingBorderlessProps) {
   const viewportMargin = 8;
   const [position, setPosition] = useState<Position>(initialPos);
@@ -43,15 +52,41 @@ export default function FloatingBorderless({
     pos: { x: 0, y: 0 },
     size: { width: 0, height: 0 },
   });
+  const dragTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     onChange?.(position, size);
   }, [position, size, onChange]);
 
+  // Sync controlled position/size
+  useEffect(() => {
+    if (pos) {
+      setPosition((prev) => (prev.x === pos.x && prev.y === pos.y ? prev : pos));
+    }
+  }, [pos?.x, pos?.y]);
+
+  useEffect(() => {
+    if (controlledSize) {
+      setSize((prev) =>
+        prev.width === controlledSize.width && prev.height === controlledSize.height
+          ? prev
+          : controlledSize,
+      );
+    }
+  }, [controlledSize?.width, controlledSize?.height]);
+
   const startDrag = (e: React.PointerEvent<HTMLDivElement>) => {
     if ((e.target as HTMLElement).closest(".fb-resize")) return;
-    setIsDragging(true);
-    dragStartRef.current = { x: e.clientX - position.x, y: e.clientY - position.y };
+    const delay = Math.max(0, dragDelayMs);
+    if (delay === 0) {
+      setIsDragging(true);
+      dragStartRef.current = { x: e.clientX - position.x, y: e.clientY - position.y };
+    } else {
+      dragTimerRef.current = window.setTimeout(() => {
+        setIsDragging(true);
+        dragStartRef.current = { x: e.clientX - position.x, y: e.clientY - position.y };
+      }, delay);
+    }
     e.currentTarget.setPointerCapture(e.pointerId);
   };
 
@@ -63,7 +98,13 @@ export default function FloatingBorderless({
     const newY = Math.max(viewportMargin, Math.min(e.clientY - dragStartRef.current.y, maxY));
     setPosition({ x: newX, y: newY });
   };
-  const endDrag = () => setIsDragging(false);
+  const endDrag = () => {
+    if (dragTimerRef.current !== null) {
+      window.clearTimeout(dragTimerRef.current);
+      dragTimerRef.current = null;
+    }
+    setIsDragging(false);
+  };
 
   const startResize = (e: React.PointerEvent<HTMLDivElement>, handle: ResizeHandle) => {
     e.stopPropagation();
