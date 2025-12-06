@@ -1,7 +1,14 @@
 import * as THREE from "three";
-import wave22Texture from "@shared/asset/alpha_noise_256_wave_22.png";
-import wave04Texture from "@shared/asset/alpha_noise_256_wave_04.png";
+import { resolveAssetPath, resolveAssetUrl } from "../layer/engine";
 import polarauraConfig from "./polaraura.config.json";
+
+function getTextureUrl(imageId: string): string {
+  const path = resolveAssetPath(imageId);
+  if (!path) {
+    throw new Error(`[PolarAura] Missing asset for "${imageId}"`);
+  }
+  return resolveAssetUrl(path);
+}
 
 export type PolarAuraOptions = {
   layerCount?: number;
@@ -58,11 +65,11 @@ export function createPolarAura(
     centerSize = mergedConfig.centerSize,
   }: PolarAuraOptions = mergedConfig,
 ): THREE.Mesh[] {
-  const noiseTexture1 = textureLoader.load(wave22Texture);
+  const noiseTexture1 = textureLoader.load(getTextureUrl("alpha_noise_256_wave_22"));
   noiseTexture1.wrapS = THREE.RepeatWrapping;
   noiseTexture1.wrapT = THREE.RepeatWrapping;
 
-  const noiseTexture2 = textureLoader.load(wave04Texture);
+  const noiseTexture2 = textureLoader.load(getTextureUrl("alpha_noise_256_wave_04"));
   noiseTexture2.wrapS = THREE.RepeatWrapping;
   noiseTexture2.wrapT = THREE.RepeatWrapping;
 

@@ -4,6 +4,8 @@ import wave22Texture from "@shared/asset/alpha_noise_256_wave_22.png";
 import wave04Texture from "@shared/asset/alpha_noise_256_wave_04.png";
 import polarMaskTexture from "@shared/asset/Untitled-1.png";
 import { createPolarAura } from "@shared/effect/polaraura";
+import { createStraightRay } from "@shared/effect/straightRay";
+import straightRayConfig from "@shared/effect/straightRay.config.json";
 
 export type CounterEffectDemoProps = {
   onClose?: () => void;
@@ -159,62 +161,13 @@ export default function CounterEffectDemo({ onClose }: CounterEffectDemoProps) {
         layers.push(mesh);
       }
     } else if (animationType === "straight") {
-      // STRAIGHT SMOKE RAY (test skew effect)
-      const layerCount = 3;
-
-      const vertexShader = `
-        varying vec2 vUv;
-        void main() {
-          vUv = uv;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-      `;
-
-      const fragmentShader = `
-        uniform sampler2D uTexture;
-        uniform float uTime;
-        uniform float uOffset;
-        uniform float uOpacity;
-        varying vec2 vUv;
-
-        void main() {
-          vec2 uv = vUv;
-          
-          // Animate upward without stretch
-          uv.y -= uTime * 0.2 + uOffset;
-          
-          // Sample texture normally
-          vec4 noise = texture2D(uTexture, uv);
-          
-          // Fade at tip for natural smoke dissipation
-          float fadeY = smoothstep(0.0, 0.15, vUv.y) * smoothstep(1.0, 0.7, vUv.y);
-          float fadeX = smoothstep(0.0, 0.1, vUv.x) * smoothstep(1.0, 0.9, vUv.x);
-          
-          gl_FragColor = vec4(noise.rgb, noise.a * fadeY * fadeX * uOpacity);
-        }
-      `;
-
-      for (let i = 0; i < layerCount; i++) {
-        const material = new THREE.ShaderMaterial({
-          vertexShader,
-          fragmentShader,
-          uniforms: {
-            uTexture: { value: noiseTexture },
-            uTime: { value: 0 },
-            uOffset: { value: i * 0.33 },
-            uOpacity: { value: 0.5 - i * 0.1 },
-          },
-          transparent: true,
-          blending: THREE.AdditiveBlending,
-          depthWrite: false,
-        });
-
-        const geometry = new THREE.PlaneGeometry(0.6, 1.8);
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.position.z = -i * 0.01;
+      // STRAIGHT SMOKE RAY (shared effect implementation)
+      const rayMeshes = createStraightRay(textureLoader, straightRayConfig);
+      rayMeshes.forEach((mesh, index) => {
+        mesh.position.z = -index * 0.01;
         scene.add(mesh);
         layers.push(mesh);
-      }
+      });
     } else if (animationType === "purpleFire") {
       // PURPLE FIRE - upward flowing with purple gradient
       const layerCount = 5;
