@@ -1,121 +1,204 @@
 import React from "react";
-import { ControlPanel, ImageDropzone } from "./TimestampPanels";
-import { useTimestampState } from "./TimestampState";
+import StageThree from "@shared/layer/StageThree";
+import FloatingBorderless from "@shared/floating/FloatingBorderless";
 
 export type TimestampScreenProps = {
   onBack?: () => void;
 };
 
-export default function TimestampScreen(props: TimestampScreenProps) {
-  const state = useTimestampState();
+type BlockId = "time" | "date" | "location";
+type Align = "left" | "center" | "right";
+
+type BlockState = {
+  id: BlockId;
+  label: string;
+  text: string;
+  fontSize: number;
+  fontWeight: number;
+  color: string;
+  align: Align;
+  pos: { x: number; y: number };
+  size: { width: number; height: number };
+};
+
+const DEFAULT_BLOCKS: BlockState[] = [
+  {
+    id: "time",
+    label: "Time",
+    text: "03:53",
+    fontSize: 42,
+    fontWeight: 700,
+    color: "#f8fafc",
+    align: "left",
+    pos: { x: 40, y: 60 },
+    size: { width: 200, height: 80 },
+  },
+  {
+    id: "date",
+    label: "Date",
+    text: "06/12/2025 · Fri",
+    fontSize: 18,
+    fontWeight: 600,
+    color: "#e2e8f0",
+    align: "left",
+    pos: { x: 40, y: 120 },
+    size: { width: 260, height: 60 },
+  },
+  {
+    id: "location",
+    label: "Location",
+    text: "Jl. Raya Mulyosari Blok B7/A7\nDukuh Sutorejo, Surabaya\nJawa Timur 60113",
+    fontSize: 18,
+    fontWeight: 600,
+    color: "#f8fafc",
+    align: "left",
+    pos: { x: 40, y: 180 },
+    size: { width: 320, height: 140 },
+  },
+];
+
+export default function TimestampScreen({ onBack }: TimestampScreenProps) {
+  const [blocks, setBlocks] = React.useState<BlockState[]>(DEFAULT_BLOCKS);
+  const [selectedId, setSelectedId] = React.useState<BlockId>("time");
+
+  const selected = React.useMemo(
+    () => blocks.find((b) => b.id === selectedId) ?? blocks[0],
+    [blocks, selectedId],
+  );
+
+  const updateBlock = (id: BlockId, patch: Partial<BlockState>) => {
+    setBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, ...patch } : b)));
+  };
+
+  const handlePosSizeChange = (id: BlockId, pos: { x: number; y: number }, size: { width: number; height: number }) => {
+    setBlocks((prev) =>
+      prev.map((b) => (b.id === id ? { ...b, pos: { x: Math.round(pos.x), y: Math.round(pos.y) }, size } : b)),
+    );
+  };
 
   return (
-    <div className="min-h-screen w-screen bg-slate-950 text-white overflow-auto">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-3 py-4 md:px-6">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            {props.onBack && (
-              <button
-                type="button"
-                onClick={props.onBack}
-                className="rounded-xl border border-white/10 bg-slate-800 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-slate-700 active:bg-slate-800"
+    <div className="flex h-screen w-screen flex-col overflow-hidden bg-slate-950 text-white">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-slate-900">
+        <div className="flex items-center gap-2">
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              className="rounded-lg border border-white/10 bg-slate-800 px-3 py-2 text-sm font-medium hover:bg-slate-700"
+            >
+              Back
+            </button>
+          )}
+          <div className="text-sm text-slate-300">Timestamp Preview</div>
+        </div>
+      </div>
+
+      <div className="flex flex-1 flex-col gap-4 p-4 overflow-hidden lg:flex-row">
+        <div className="relative flex-1 min-h-[520px] rounded-xl border border-white/10 bg-slate-900/60 overflow-hidden">
+          <div className="absolute inset-0 pointer-events-none">
+            <StageThree />
+          </div>
+
+          <div className="absolute inset-0">
+            {blocks.map((block) => (
+              <FloatingBorderless
+                key={block.id}
+                initialPos={block.pos}
+                initialSize={block.size}
+                minWidth={80}
+                minHeight={50}
+                zIndex={10}
+                onChange={(pos, size) => handlePosSizeChange(block.id, pos, size)}
+                style={{ pointerEvents: "auto" }}
               >
-                Back
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={state.handleBrowseClick}
-              className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-sky-900/50 transition hover:bg-sky-500 active:bg-sky-600"
-            >
-              Browse
-            </button>
-            <button
-              type="button"
-              onClick={state.handleSave}
-              disabled={!state.photo || state.saving}
-              className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-emerald-900/50 transition hover:bg-emerald-500 active:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-emerald-800/60 disabled:text-white/50"
-            >
-              {state.saving ? "Saving..." : "Save"}
-            </button>
+                <div
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                    setSelectedId(block.id);
+                  }}
+                  className={`h-full w-full rounded-lg border ${
+                    selectedId === block.id ? "border-emerald-400/70" : "border-white/15"
+                  } bg-black/30 backdrop-blur-sm p-2`}
+                  style={{
+                    color: block.color,
+                    fontSize: block.fontSize,
+                    fontWeight: block.fontWeight,
+                    textAlign: block.align,
+                    whiteSpace: "pre-line",
+                  }}
+                >
+                  {block.text}
+                </div>
+              </FloatingBorderless>
+            ))}
           </div>
         </div>
 
-        <div className="grid w-full gap-4 md:grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] md:min-h-0 md:overflow-visible">
-          <div className="min-h-0">
-            <ImageDropzone
-              photo={state.photo}
-              stampSpec={state.stampSpec}
-              activeCenter={state.activeCenter}
-              frameRatio={state.frameRatio}
-              frameBox={state.frameBox}
-              previewRef={state.previewRef}
-              fileInputRef={state.fileInputRef}
-              onBrowse={state.handleBrowseClick}
-              onFileInputChange={state.handleFileInputChange}
-              onDrop={state.handleDrop}
-              onDragOver={state.handleDragOver}
-              onPointerDown={state.handlePointerDown}
-              onPointerMove={state.handlePointerMove}
-              onPointerUp={state.handlePointerUp}
-              onWheel={state.handleWheel}
-              onPreviewResize={state.handlePreviewResize}
-            />
-          </div>
-
-          <div className="min-h-0">
-            <ControlPanel
-              textMode={state.textMode}
-              timeValue={state.timeValue}
-              dateMode={state.dateMode}
-              datePickerValue={state.datePickerValue}
-              dateManual={state.dateManual}
-              timeRandomStart={state.timeRandomStart}
-              timeRandomEnd={state.timeRandomEnd}
-              locationLines={state.locationLines}
-              customText={state.customText}
-              styles={state.styles}
-              positionPreset={state.positionPreset}
-              frameRatioId={state.frameRatioId}
-              customRatio={state.customRatio}
-              zoom={state.zoom}
-              offset={state.imageOffset}
-              offsetLimit={state.offsetLimit}
-              stampLines={state.stampLines}
-              photo={state.photo}
-              saving={state.saving}
-              status={state.status}
-              presets={state.presets}
-              activePreset={state.activePreset}
-              onBrowse={state.handleBrowseClick}
-              onSave={state.handleSave}
-              onTextModeChange={state.setTextMode}
-              onTimeChange={state.setTimeValue}
-              onLocationChange={state.updateLocationLines}
-              onCustomTextChange={state.setCustomText}
-              onStyleChange={(patch) => state.setStyles((prev) => ({ ...prev, ...patch }))}
-              onRandomTime={state.randomizeTime}
-              onRandomTimeRange={state.randomizeTimeInRange}
-              onTimeRangeChange={(patch) => {
-                if (patch.start !== undefined) state.setTimeRandomStart(patch.start);
-                if (patch.end !== undefined) state.setTimeRandomEnd(patch.end);
-              }}
-              onDateModeChange={state.setDateMode}
-              onDatePickerChange={state.setDatePickerValue}
-              onDateManualChange={state.setDateManual}
-              timeFormat={state.timeFormat}
-              onTimeFormatChange={state.setTimeFormat}
-              onSavePreset={(name) => state.savePreset(name)}
-              onLoadPreset={(name) => state.loadPreset(name)}
-              onDeletePreset={(name) => state.deletePreset(name)}
-              onPresetChange={state.handlePresetChange}
-              onRatioChange={state.handleFrameRatioChange}
-              onCustomRatioChange={state.handleCustomRatioChange}
-              onZoomChange={state.handleZoomChange}
-              onOffsetChange={state.handleOffsetChange}
-              onResetView={state.handleResetView}
-            />
-          </div>
+        <div className="w-full lg:w-80 rounded-xl border border-white/10 bg-slate-900/70 p-4 space-y-3">
+          <div className="text-sm font-semibold text-white">Block settings</div>
+          {selected ? (
+            <div className="space-y-3 text-sm">
+              <div className="text-xs text-slate-300">Editing: {selected.label}</div>
+              <label className="space-y-1 block">
+                <span className="text-slate-300">Text</span>
+                <textarea
+                  value={selected.text}
+                  onChange={(e) => updateBlock(selected.id, { text: e.target.value })}
+                  rows={3}
+                  className="w-full rounded bg-slate-800 border border-white/10 px-2 py-1 text-white"
+                />
+              </label>
+              <label className="space-y-1 block">
+                <span className="text-slate-300">Font size ({selected.fontSize}px)</span>
+                <input
+                  type="range"
+                  min={10}
+                  max={72}
+                  value={selected.fontSize}
+                  onChange={(e) => updateBlock(selected.id, { fontSize: Number(e.target.value) })}
+                  className="w-full"
+                />
+              </label>
+              <label className="space-y-1 block">
+                <span className="text-slate-300">Font weight ({selected.fontWeight})</span>
+                <input
+                  type="range"
+                  min={300}
+                  max={900}
+                  step={50}
+                  value={selected.fontWeight}
+                  onChange={(e) => updateBlock(selected.id, { fontWeight: Number(e.target.value) })}
+                  className="w-full"
+                />
+              </label>
+              <label className="space-y-1 block">
+                <span className="text-slate-300">Color</span>
+                <input
+                  type="color"
+                  value={selected.color}
+                  onChange={(e) => updateBlock(selected.id, { color: e.target.value })}
+                  className="h-9 w-full rounded bg-slate-800 border border-white/10"
+                />
+              </label>
+              <label className="space-y-1 block">
+                <span className="text-slate-300">Align</span>
+                <select
+                  value={selected.align}
+                  onChange={(e) => updateBlock(selected.id, { align: e.target.value as Align })}
+                  className="w-full rounded bg-slate-800 border border-white/10 px-2 py-1"
+                >
+                  <option value="left">Left</option>
+                  <option value="center">Center</option>
+                  <option value="right">Right</option>
+                </select>
+              </label>
+              <div className="text-xs text-slate-400">
+                Tip: Drag/resize blocks directly on the preview. Settings update live.
+              </div>
+            </div>
+          ) : (
+            <div className="text-xs text-slate-300">Select a block to edit.</div>
+          )}
         </div>
       </div>
     </div>

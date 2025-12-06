@@ -71,14 +71,14 @@
   ,
   {
     "LayerID": "BAC6",
-    "ImageID": "Img_deco_Level_Round_2",
+    "ImageID": "general_icon_chakan",
     "renderer": "2D",
     "LayerOrder": 10,
-    "ImageScale": [280, 280],
+    "ImageScale": [140, 140],
     "spinStagePoint": [1024, 1300],
     "spinImagePoint": [50, 50],
-    "spinSpeed": 60,
-    "spinDirection": "ccw"
+    "spinSpeed": 80,
+    "spinDirection": "cw"
   }
   ,
   {

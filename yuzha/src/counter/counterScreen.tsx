@@ -499,7 +499,7 @@ function useCounterActions(hapticsEnabled: boolean, soundEnabled: boolean) {
 export default function CounterScreen({ onBack }: CounterScreenProps) {
   const [floatingSize, setFloatingSize] = useState(250);
   const [messageSize, setMessageSize] = useState(240);
-  const [messageFontSize, setMessageFontSize] = useState(48);
+  const [messageFontSize, setMessageFontSize] = useState(90);
   const [messageColor, setMessageColor] = useState("#ffffff");
   const [hapticsEnabled, setHapticsEnabled] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(false);

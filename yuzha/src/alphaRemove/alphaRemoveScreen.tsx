@@ -22,15 +22,16 @@ function processImage(
   const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const t = Math.min(255, Math.max(0, threshold));
   const tNorm = t / 255;
+  const buf = data.data;
 
-  for (let i = 0; i < data.data.length; i += 4) {
-    const r = data.data[i] / 255;
-    const g = data.data[i + 1] / 255;
-    const b = data.data[i + 2] / 255;
+  for (let i = 0; i < buf.length; i += 4) {
+    const r = (buf[i] ?? 0) / 255;
+    const g = (buf[i + 1] ?? 0) / 255;
+    const b = (buf[i + 2] ?? 0) / 255;
     const lum = Math.max(r, g, b);
     let a = lum <= tNorm ? 0 : (lum - tNorm) / (1 - tNorm);
     a = Math.pow(Math.min(1, Math.max(0, a)), curve);
-    data.data[i + 3] = Math.round(a * 255);
+    buf[i + 3] = Math.round(a * 255);
   }
 
   ctx.putImageData(data, 0, 0);
@@ -56,21 +57,23 @@ export default function AlphaRemoveScreen({ onBack }: { onBack?: () => void }) {
     }
     const reader = new FileReader();
     reader.onload = () => {
+      if (typeof reader.result !== "string") return;
       const img = new Image();
       img.onload = () => {
         imgRef.current = img;
         const result = processImage(img, threshold, curve);
         setPreview(result);
       };
-      img.src = reader.result as string;
+      img.src = reader.result;
     };
     reader.readAsDataURL(file);
   }, [file]);
 
   // Reprocess when sliders change and an image is already loaded
   useEffect(() => {
-    if (!imgRef.current) return;
-    const result = processImage(imgRef.current, threshold, curve);
+    const img = imgRef.current;
+    if (!img) return;
+    const result = processImage(img, threshold, curve);
     setPreview(result);
   }, [threshold, curve]);
 
