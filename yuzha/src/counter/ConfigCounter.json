@@ -118,7 +118,7 @@
     "ImageID": "Fx_MagicCircle_LeeJuhee_Ulti02_Clamp",
     "renderer": "3D",
     "BlendMode": "additive",
-    "opacity" : 0.6,
+    "opacity" : 0.3,
     "PulseSeconds": 3.0,
     "PulseAmplitude": 0.25,
     "LayerOrder": 5,

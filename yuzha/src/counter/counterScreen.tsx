@@ -124,6 +124,8 @@ async function mountThreeLayers(
   const texturePromises = layersWithProcessors.map(async (item) => {
     try {
       const texture = await textureLoader.loadAsync(item.data.imageUrl);
+      texture.flipY = false;
+      texture.premultiplyAlpha = false;
       texture.colorSpace = THREE.SRGBColorSpace;
       texture.minFilter = THREE.LinearFilter;
       texture.magFilter = THREE.LinearFilter;
@@ -331,7 +333,7 @@ async function mountThreeRenderer(
   const webglAttributes: WebGLContextAttributes = {
     alpha: true,
     antialias: deviceCap.enableAntialiasing,
-    premultipliedAlpha: false,
+    premultipliedAlpha: true,
     powerPreference: deviceCap.isLowEndDevice ? "low-power" : "default",
   };
 
@@ -351,7 +353,7 @@ async function mountThreeRenderer(
     alpha: true,
     antialias: deviceCap.enableAntialiasing,
     powerPreference: webglAttributes.powerPreference,
-    premultipliedAlpha: false,
+    premultipliedAlpha: true,
   });
   renderer.setPixelRatio(deviceCap.pixelRatio);
   renderer.setSize(pipeline.stageSize, pipeline.stageSize, false);
