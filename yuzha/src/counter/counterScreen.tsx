@@ -328,11 +328,30 @@ async function mountThreeRenderer(
   canvas.width = pipeline.stageSize;
   canvas.height = pipeline.stageSize;
 
-  const renderer = new THREE.WebGLRenderer({
-    canvas,
+  const webglAttributes: WebGLContextAttributes = {
     alpha: true,
     antialias: deviceCap.enableAntialiasing,
+    premultipliedAlpha: false,
     powerPreference: deviceCap.isLowEndDevice ? "low-power" : "default",
+  };
+
+  const webglContext =
+    (canvas.getContext("webgl2", webglAttributes) as WebGL2RenderingContext | null) ??
+    (canvas.getContext("webgl", webglAttributes) as WebGLRenderingContext | null);
+
+  if (webglContext) {
+    // texImage3D in WebGL2 rejects flipY/premultiplied uploads, so clear the flags up front.
+    webglContext.pixelStorei(webglContext.UNPACK_FLIP_Y_WEBGL, 0);
+    webglContext.pixelStorei(webglContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
+  }
+
+  const renderer = new THREE.WebGLRenderer({
+    canvas,
+    context: webglContext ?? undefined,
+    alpha: true,
+    antialias: deviceCap.enableAntialiasing,
+    powerPreference: webglAttributes.powerPreference,
+    premultipliedAlpha: false,
   });
   renderer.setPixelRatio(deviceCap.pixelRatio);
   renderer.setSize(pipeline.stageSize, pipeline.stageSize, false);
