@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@shared/*": ["../shared/*"]
+    },
+    "allowImportingTsExtensions": true,
+    "types": ["vite/client"],
+    "tsBuildInfoFile": "./.tsbuildinfo"
+  },
+  "include": ["src", "env.d.ts", "index.html", "../shared"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}

@@ -1,0 +1,65 @@
+Current State:
+Text Alignment exists: Left/Center/Right buttons in settings (lines 136-153)
+
+This only aligns text WITHIN the floating box
+Does NOT move the position of the floating element
+Position is stored in OverlaySettings.position as {x, y} relative coordinates
+
+Users can manually drag to reposition
+Position is saved/loaded with presets
+What You Want:
+Position Alignment Buttons - to snap floating elements to viewport positions like:
+
+Horizontal: Left, Center, Right (of viewport)
+Vertical: Top, Middle, Bottom (of viewport)
+Proposed Solution:
+Add Position Alignment Controls in each overlay section (Time/Date/Location):
+
+┌─────────────────────────────┐
+│ Time Settings               │
+├─────────────────────────────┤
+│ [Text alignment: L|C|R]     │  ← Existing (text align)
+│                             │
+│ Position in Viewport:       │  ← NEW
+│ [Left] [Center] [Right]     │  ← Horizontal alignment
+│ [Top]  [Middle] [Bottom]    │  ← Vertical alignment
+└─────────────────────────────┘
+Behavior:
+
+Click "Center" → Element moves to horizontal center of viewport
+Click "Bottom" → Element moves to bottom of viewport
+Can combine: "Right + Top" = top-right corner
+After alignment, users can still drag manually
+Works with boundary constraints (stays within viewport)
+
+this is much better! Reuse the existing Align buttons for DUAL purpose:
+
+How It Would Work:
+When clicking "Left":
+
+✅ Text aligns left within the box (current behavior)
+✅ + Element moves to left side of viewport (new behavior)
+When clicking "Center":
+
+✅ Text aligns center within the box
+✅ + Element moves to horizontal center of viewport
+When clicking "Right":
+
+✅ Text aligns right within the box
+✅ + Element moves to right side of viewport
+Benefits:
+🎯 Simpler UI - no extra buttons
+🎯 Intuitive - "Center" means center everything
+🎯 Consistent - text and position match
+Implementation:
+onClick="Left" → 
+  1. textAlign = "left"
+  2. position.x = 20 (left margin)
+
+onClick="Center" → 
+  1. textAlign = "center"
+  2. position.x = (viewport.width - elementWidth) / 2
+
+onClick="Right" → 
+  1. textAlign = "right"  
+  2. position.x = viewport.width - elementWidth - 20

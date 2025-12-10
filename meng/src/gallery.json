@@ -1,0 +1,58 @@
+[
+  {
+    "id": "gallery-1",
+    "url": "https://images.unsplash.com/photo-1665917152889-b170c7b8b5fc?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwxfHxyZXN0YXVyYW50JTIwYW1iaWFuY2V8ZW58MHx8fHwxNzYyMTMyNDE0fDA&ixlib=rb-4.1.0&q=85",
+    "type": "image",
+    "category": "interior",
+    "caption": "Modern restaurant interior with bar seating"
+  },
+  {
+    "id": "gallery-2",
+    "url": "https://images.unsplash.com/photo-1760894492871-217f4e4eafdd?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwyfHxyZXN0YXVyYW50JTIwYW1iaWFuY2V8ZW58MHx8fHwxNzYyMTMyNDE0fDA&ixlib=rb-4.1.0&q=85",
+    "type": "image",
+    "category": "exterior",
+    "caption": "Restaurant exterior at night"
+  },
+  {
+    "id": "gallery-3",
+    "url": "https://images.unsplash.com/photo-1536745511564-a5fa6e596e7b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzd8MHwxfHNlYXJjaHwzfHxzd2ltbWluZyUyMHBvb2x8ZW58MHx8fHwxNzYyMTMyNDE4fDA&ixlib=rb-4.1.0&q=85",
+    "type": "image",
+    "category": "pool",
+    "caption": "Swimming pool with lounge chairs and mountain view"
+  },
+  {
+    "id": "gallery-4",
+    "url": "https://images.unsplash.com/photo-1562016600-ece13e8ba570?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzd8MHwxfHNlYXJjaHw0fHxzd2ltbWluZyUyMHBvb2x8ZW58MHx8fHwxNzYyMTMyNDE4fDA&ixlib=rb-4.1.0&q=85",
+    "type": "image",
+    "category": "pool",
+    "caption": "Crystal clear pool water"
+  },
+  {
+    "id": "gallery-5",
+    "url": "https://images.unsplash.com/photo-1509042239860-f550ce710b93?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzB8MHwxfHNlYXJjaHwyfHxjYWZlfGVufDB8fHx8MTc2MjEzMjQyM3ww&ixlib=rb-4.1.0&q=85",
+    "type": "image",
+    "category": "food",
+    "caption": "Fresh coffee with latte art"
+  },
+  {
+    "id": "gallery-6",
+    "url": "https://images.unsplash.com/photo-1567880905822-56f8e06fe630?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzB8MHwxfHNlYXJjaHwzfHxjYWZlfGVufDB8fHx8MTc2MjEzMjQyM3ww&ixlib=rb-4.1.0&q=85",
+    "type": "image",
+    "category": "interior",
+    "caption": "Cozy cafe interior"
+  },
+  {
+    "id": "gallery-7",
+    "url": "https://images.unsplash.com/photo-1521017432531-fbd92d768814?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzB8MHwxfHNlYXJjaHw0fHxjYWZlfGVufDB8fHx8MTc2MjEzMjQyM3ww&ixlib=rb-4.1.0&q=85",
+    "type": "image",
+    "category": "ambiance",
+    "caption": "Busy cafe atmosphere"
+  },
+  {
+    "id": "gallery-8",
+    "url": "https://images.pexels.com/photos/2193600/pexels-photo-2193600.jpeg",
+    "type": "image",
+    "category": "food",
+    "caption": "Delicious food presentation"
+  }
+]

@@ -1,0 +1,27 @@
+{
+  "name": "app-launcher",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Simple landing screen for the Yuzha template.",
+  "scripts": {
+    "dev": "vite",
+    "dev:3000": "PORT=3000 vite",
+    "dev:5000": "PORT=5000 vite",
+    "build": "tsc --noEmit && vite build",
+    "build:fast": "vite build",
+    "preview": "vite preview",
+    "preview:3000": "PORT=3000 vite preview",
+    "preview:5000": "PORT=5000 vite preview",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint \"src/**/*.{ts,tsx}\" --max-warnings=0",
+    "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "vite": "^7.1.9"
+  }
+}

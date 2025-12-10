@@ -1,0 +1,586 @@
+[
+  {
+    "id": "12needle",
+    "path": "shared/asset/12needle.png"
+  },
+  {
+    "id": "alpha_noise_256_wave_04",
+    "path": "shared/asset/alpha_noise_256_wave_04.png"
+  },
+  {
+    "id": "alpha_noise_256_wave_05",
+    "path": "shared/asset/alpha_noise_256_wave_05.png"
+  },
+  {
+    "id": "alpha_noise_256_wave_11",
+    "path": "shared/asset/alpha_noise_256_wave_11.png"
+  },
+  {
+    "id": "alpha_noise_256_wave_22",
+    "path": "shared/asset/alpha_noise_256_wave_22.png"
+  },
+  {
+    "id": "alpha_noise_256_wave_23_01_01",
+    "path": "shared/asset/alpha_noise_256_wave_23_01_01.png"
+  },
+  {
+    "id": "artifacts_change_pattern1_392x392",
+    "path": "shared/asset/artifacts_change_pattern1_392x392.png"
+  },
+  {
+    "id": "artifacts_change_pattern2_392x392",
+    "path": "shared/asset/artifacts_change_pattern2_392x392.png"
+  },
+  {
+    "id": "artifacts_skill_pattern2_360x360",
+    "path": "shared/asset/artifacts_skill_pattern2_360x360.png"
+  },
+  {
+    "id": "artifacts_skill_pattern4_144x144",
+    "path": "shared/asset/artifacts_skill_pattern4_144x144.png"
+  },
+  {
+    "id": "artifacts_skill_pattern5_144x144",
+    "path": "shared/asset/artifacts_skill_pattern5_144x144.png"
+  },
+  {
+    "id": "BG_ArtifactCraft_Center",
+    "path": "shared/asset/BG_ArtifactCraft_Center.png"
+  },
+  {
+    "id": "bg_bossmon_180x180",
+    "path": "shared/asset/bg_bossmon_180x180.png"
+  },
+  {
+    "id": "bg_character_change_deco_252x100",
+    "path": "shared/asset/bg_character_change_deco_252x100.png"
+  },
+  {
+    "id": "bg_circle_deco1_222x222",
+    "path": "shared/asset/bg_circle_deco1_222x222.png"
+  },
+  {
+    "id": "bg_circle_deco2_512x512",
+    "path": "shared/asset/bg_circle_deco2_512x512.png"
+  },
+  {
+    "id": "bg_circle_deco3_256x256",
+    "path": "shared/asset/bg_circle_deco3_256x256.png"
+  },
+  {
+    "id": "bg_deco_pattern4_245x245",
+    "path": "shared/asset/bg_deco_pattern4_245x245.png"
+  },
+  {
+    "id": "bg_deco_pattern7_166x145",
+    "path": "shared/asset/bg_deco_pattern7_166x145.png"
+  },
+  {
+    "id": "bg_deco_pattern9_284x284",
+    "path": "shared/asset/bg_deco_pattern9_284x284.png"
+  },
+  {
+    "id": "btn_hardmode_hero_transfer_256x49",
+    "path": "shared/asset/btn_hardmode_hero_transfer_256x49.png"
+  },
+  {
+    "id": "btn_interaction_func_276x68",
+    "path": "shared/asset/btn_interaction_func_276x68.png"
+  },
+  {
+    "id": "btnRedo",
+    "path": "shared/asset/btnRedo.png"
+  },
+  {
+    "id": "btnUndo",
+    "path": "shared/asset/btnUndo.png"
+  },
+  {
+    "id": "BUBBLE",
+    "path": "shared/asset/BUBBLE.png"
+  },
+  {
+    "id": "CapsuleMoving_Trail_256x64",
+    "path": "shared/asset/CapsuleMoving_Trail_256x64.png"
+  },
+  {
+    "id": "CLOCKBG",
+    "path": "shared/asset/CLOCKBG.png"
+  },
+  {
+    "id": "CLOCKBG-A",
+    "path": "shared/asset/CLOCKBG-A.png"
+  },
+  {
+    "id": "CLOCKGLOW",
+    "path": "shared/asset/CLOCKGLOW.png"
+  },
+  {
+    "id": "CLOCKGLOW1",
+    "path": "shared/asset/CLOCKGLOW1.png"
+  },
+  {
+    "id": "CLOCKGLOW2",
+    "path": "shared/asset/CLOCKGLOW2.png"
+  },
+  {
+    "id": "diplo1",
+    "path": "shared/asset/diplo1.png"
+  },
+  {
+    "id": "diplo2",
+    "path": "shared/asset/diplo2.png"
+  },
+  {
+    "id": "eff_ui_xingpan09",
+    "path": "shared/asset/eff_ui_xingpan09.png"
+  },
+  {
+    "id": "Enviro_Stars",
+    "path": "shared/asset/Enviro_Stars.png"
+  },
+  {
+    "id": "Enviro_Stars_Big",
+    "path": "shared/asset/Enviro_Stars_Big.png"
+  },
+  {
+    "id": "event_story_bg_frame_1632x672",
+    "path": "shared/asset/event_story_bg_frame_1632x672.png"
+  },
+  {
+    "id": "Fx_MagicCircle_16",
+    "path": "shared/asset/Fx_MagicCircle_16.png"
+  },
+  {
+    "id": "Fx_MagicCircle_16_1",
+    "path": "shared/asset/Fx_MagicCircle_16_1.png"
+  },
+  {
+    "id": "Fx_MagicCircle_16_half",
+    "path": "shared/asset/Fx_MagicCircle_16_half.png"
+  },
+  {
+    "id": "Fx_MagicCircle_16_half1",
+    "path": "shared/asset/Fx_MagicCircle_16_half1.png"
+  },
+  {
+    "id": "Fx_MagicCircle_ChaHaeInMM_1",
+    "path": "shared/asset/Fx_MagicCircle_ChaHaeInMM_1.png"
+  },
+  {
+    "id": "Fx_MagicCircle_ChaHaeInMM_10",
+    "path": "shared/asset/Fx_MagicCircle_ChaHaeInMM_10.png"
+  },
+  {
+    "id": "Fx_MagicCircle_LeeJuhee_Ulti02_Clamp",
+    "path": "shared/asset/Fx_MagicCircle_LeeJuhee_Ulti02_Clamp.png"
+  },
+  {
+    "id": "Fx_MagicCircle_LeeJuhee_Ulti02_Clamp1",
+    "path": "shared/asset/Fx_MagicCircle_LeeJuhee_Ulti02_Clamp1.png"
+  },
+  {
+    "id": "GEAR1",
+    "path": "shared/asset/GEAR1.png"
+  },
+  {
+    "id": "GEAR2",
+    "path": "shared/asset/GEAR2.png"
+  },
+  {
+    "id": "GEAR3",
+    "path": "shared/asset/GEAR3.png"
+  },
+  {
+    "id": "GEARMOON",
+    "path": "shared/asset/GEARMOON.png"
+  },
+  {
+    "id": "general_deco_tab_hw",
+    "path": "shared/asset/general_deco_tab_hw.png"
+  },
+  {
+    "id": "general_icon_back1",
+    "path": "shared/asset/general_icon_back1.png"
+  },
+  {
+    "id": "general_icon_chakan",
+    "path": "shared/asset/general_icon_chakan.png"
+  },
+  {
+    "id": "general_icon_delete",
+    "path": "shared/asset/general_icon_delete.png"
+  },
+  {
+    "id": "general_icon_jiantou1",
+    "path": "shared/asset/general_icon_jiantou1.png"
+  },
+  {
+    "id": "general_icon_shezhi",
+    "path": "shared/asset/general_icon_shezhi.png"
+  },
+  {
+    "id": "general_icon_shuaxin",
+    "path": "shared/asset/general_icon_shuaxin.png"
+  },
+  {
+    "id": "general_icon_sousuo",
+    "path": "shared/asset/general_icon_sousuo.png"
+  },
+  {
+    "id": "general_icon_tanhao",
+    "path": "shared/asset/general_icon_tanhao.png"
+  },
+  {
+    "id": "general_icon_zhankai",
+    "path": "shared/asset/general_icon_zhankai.png"
+  },
+  {
+    "id": "general_tab_wxzt_tk",
+    "path": "shared/asset/general_tab_wxzt_tk.png"
+  },
+  {
+    "id": "general_tab_xzt_tk",
+    "path": "shared/asset/general_tab_xzt_tk.png"
+  },
+  {
+    "id": "H12",
+    "path": "shared/asset/H12.png"
+  },
+  {
+    "id": "H24",
+    "path": "shared/asset/H24.png"
+  },
+  {
+    "id": "Img_CoreEquip_Page_Deco",
+    "path": "shared/asset/Img_CoreEquip_Page_Deco.png"
+  },
+  {
+    "id": "Img_Deco_Enhance_2",
+    "path": "shared/asset/Img_Deco_Enhance_2.png"
+  },
+  {
+    "id": "Img_deco_Level_LineEffect",
+    "path": "shared/asset/Img_deco_Level_LineEffect.png"
+  },
+  {
+    "id": "Img_deco_Level_Round_1",
+    "path": "shared/asset/Img_deco_Level_Round_1.png"
+  },
+  {
+    "id": "Img_deco_Level_Round_2",
+    "path": "shared/asset/Img_deco_Level_Round_2.png"
+  },
+  {
+    "id": "Img_Guild_Rank_List_Active",
+    "path": "shared/asset/Img_Guild_Rank_List_Active.png"
+  },
+  {
+    "id": "Img_Guild_Rank_Title_Deco",
+    "path": "shared/asset/Img_Guild_Rank_Title_Deco.png"
+  },
+  {
+    "id": "Img_List_Defalt",
+    "path": "shared/asset/Img_List_Defalt.png"
+  },
+  {
+    "id": "Img_List_Select",
+    "path": "shared/asset/Img_List_Select.png"
+  },
+  {
+    "id": "jhqf_btn_1",
+    "path": "shared/asset/jhqf_btn_1.png"
+  },
+  {
+    "id": "lobby_cust_44",
+    "path": "shared/asset/lobby_cust_44.png"
+  },
+  {
+    "id": "MAINBG",
+    "path": "shared/asset/MAINBG.png"
+  },
+  {
+    "id": "needle",
+    "path": "shared/asset/needle.png"
+  },
+  {
+    "id": "overflow_glow_01",
+    "path": "shared/asset/overflow_glow_01.png"
+  },
+  {
+    "id": "Prestige_SlotBase",
+    "path": "shared/asset/Prestige_SlotBase.png"
+  },
+  {
+    "id": "Prestige_SlotBase_Off",
+    "path": "shared/asset/Prestige_SlotBase_Off.png"
+  },
+  {
+    "id": "SAMPLE",
+    "path": "shared/asset/SAMPLE.png"
+  },
+  {
+    "id": "SAMPLE (2)",
+    "path": "shared/asset/SAMPLE (2).png"
+  },
+  {
+    "id": "sprite_005",
+    "path": "shared/asset/sprite_005.png"
+  },
+  {
+    "id": "sprite_effect_pc_war_vskill_hud_512x512",
+    "path": "shared/asset/sprite_effect_pc_war_vskill_hud_512x512.png"
+  },
+  {
+    "id": "sprite_img_closeteff_371x371",
+    "path": "shared/asset/sprite_img_closeteff_371x371.png"
+  },
+  {
+    "id": "sprite_img_closeteff_glow_371x371",
+    "path": "shared/asset/sprite_img_closeteff_glow_371x371.png"
+  },
+  {
+    "id": "sprite_img_closeteff_rotate_378x378",
+    "path": "shared/asset/sprite_img_closeteff_rotate_378x378.png"
+  },
+  {
+    "id": "sprite_img_constellation_upgrade_popup_deco01_256x256",
+    "path": "shared/asset/sprite_img_constellation_upgrade_popup_deco01_256x256.png"
+  },
+  {
+    "id": "sprite_img_decoring_fix_318x319",
+    "path": "shared/asset/sprite_img_decoring_fix_318x319.png"
+  },
+  {
+    "id": "sprite_img_decoring_rotate_344x344",
+    "path": "shared/asset/sprite_img_decoring_rotate_344x344.png"
+  },
+  {
+    "id": "sprite_img_decoring_rotate_l1_632x632",
+    "path": "shared/asset/sprite_img_decoring_rotate_l1_632x632.png"
+  },
+  {
+    "id": "sprite_img_decoring_rotate_l2_600x600",
+    "path": "shared/asset/sprite_img_decoring_rotate_l2_600x600.png"
+  },
+  {
+    "id": "sprite_img_emblem_magic09_480x480",
+    "path": "shared/asset/sprite_img_emblem_magic09_480x480.png"
+  },
+  {
+    "id": "sprite_img_eqenhance_efstone_348x348",
+    "path": "shared/asset/sprite_img_eqenhance_efstone_348x348.png"
+  },
+  {
+    "id": "sprite_img_eqenhance_efstone_glow_348x348",
+    "path": "shared/asset/sprite_img_eqenhance_efstone_glow_348x348.png"
+  },
+  {
+    "id": "sprite_img_eqenhance_jewel_348x348",
+    "path": "shared/asset/sprite_img_eqenhance_jewel_348x348.png"
+  },
+  {
+    "id": "sprite_img_eqenhance_jewel_glow_348x348",
+    "path": "shared/asset/sprite_img_eqenhance_jewel_glow_348x348.png"
+  },
+  {
+    "id": "sprite_img_eqenhance_reinforce_348x348",
+    "path": "shared/asset/sprite_img_eqenhance_reinforce_348x348.png"
+  },
+  {
+    "id": "sprite_img_eqenhance_reinforce_glow_348x348",
+    "path": "shared/asset/sprite_img_eqenhance_reinforce_glow_348x348.png"
+  },
+  {
+    "id": "sprite_img_equip_inheritance_460x468",
+    "path": "shared/asset/sprite_img_equip_inheritance_460x468.png"
+  },
+  {
+    "id": "sprite_img_equip_inheritance_magiccircle_01_418x418",
+    "path": "shared/asset/sprite_img_equip_inheritance_magiccircle_01_418x418.png"
+  },
+  {
+    "id": "sprite_img_equip_inheritance_magiccircle_02_512x512",
+    "path": "shared/asset/sprite_img_equip_inheritance_magiccircle_02_512x512.png"
+  },
+  {
+    "id": "sprite_img_equip_inheritance_result_bg_256x256",
+    "path": "shared/asset/sprite_img_equip_inheritance_result_bg_256x256.png"
+  },
+  {
+    "id": "sprite_img_equip_reforge_330x330",
+    "path": "shared/asset/sprite_img_equip_reforge_330x330.png"
+  },
+  {
+    "id": "sprite_img_equip_reforge_glow_330x330",
+    "path": "shared/asset/sprite_img_equip_reforge_glow_330x330.png"
+  },
+  {
+    "id": "sprite_img_magic_half_351x190",
+    "path": "shared/asset/sprite_img_magic_half_351x190.png"
+  },
+  {
+    "id": "sprite_img_manufacture_equip01_300x302",
+    "path": "shared/asset/sprite_img_manufacture_equip01_300x302.png"
+  },
+  {
+    "id": "sprite_img_manufacture_equip02_341x349",
+    "path": "shared/asset/sprite_img_manufacture_equip02_341x349.png"
+  },
+  {
+    "id": "sprite_img_manufacture_jewel02_341x349",
+    "path": "shared/asset/sprite_img_manufacture_jewel02_341x349.png"
+  },
+  {
+    "id": "sprite_img_manufacture_magic01_280x270",
+    "path": "shared/asset/sprite_img_manufacture_magic01_280x270.png"
+  },
+  {
+    "id": "sprite_img_manufacture_stone01_202x222",
+    "path": "shared/asset/sprite_img_manufacture_stone01_202x222.png"
+  },
+  {
+    "id": "sprite_img_pcskill_transcend_500x500",
+    "path": "shared/asset/sprite_img_pcskill_transcend_500x500.png"
+  },
+  {
+    "id": "sprite_img_reforge_bg_popup1_644x460",
+    "path": "shared/asset/sprite_img_reforge_bg_popup1_644x460.png"
+  },
+  {
+    "id": "sprite_img_rune_alchemy_produce1_420x420",
+    "path": "shared/asset/sprite_img_rune_alchemy_produce1_420x420.png"
+  },
+  {
+    "id": "sprite_img_rune_alchemy_produce2_396x396",
+    "path": "shared/asset/sprite_img_rune_alchemy_produce2_396x396.png"
+  },
+  {
+    "id": "sprite_img_rune_alchemy_produce2_glow_390x390",
+    "path": "shared/asset/sprite_img_rune_alchemy_produce2_glow_390x390.png"
+  },
+  {
+    "id": "sprite_img_rune_alchemy_produce3_320x320",
+    "path": "shared/asset/sprite_img_rune_alchemy_produce3_320x320.png"
+  },
+  {
+    "id": "sprite_img_rune_alchemy_produce3_glow_320x320",
+    "path": "shared/asset/sprite_img_rune_alchemy_produce3_glow_320x320.png"
+  },
+  {
+    "id": "sprite_img_rune_alchemy_succession3_304x304",
+    "path": "shared/asset/sprite_img_rune_alchemy_succession3_304x304.png"
+  },
+  {
+    "id": "sprite_img_rune_magic_reinforce1_glow_380x418",
+    "path": "shared/asset/sprite_img_rune_magic_reinforce1_glow_380x418.png"
+  },
+  {
+    "id": "sprite_img_rune_magic_reinforce2_306x428",
+    "path": "shared/asset/sprite_img_rune_magic_reinforce2_306x428.png"
+  },
+  {
+    "id": "sprite_img_rune_magic_reinforce2_bg_337x386",
+    "path": "shared/asset/sprite_img_rune_magic_reinforce2_bg_337x386.png"
+  },
+  {
+    "id": "sprite_img_rune_magic_reinforce2_glow_340x428",
+    "path": "shared/asset/sprite_img_rune_magic_reinforce2_glow_340x428.png"
+  },
+  {
+    "id": "sprite_img_rune_reinforce_magic01_350x390",
+    "path": "shared/asset/sprite_img_rune_reinforce_magic01_350x390.png"
+  },
+  {
+    "id": "sprite_img_rune_reinforce_magic01_glow_360x400",
+    "path": "shared/asset/sprite_img_rune_reinforce_magic01_glow_360x400.png"
+  },
+  {
+    "id": "sprite_img_servantchange_deco1_276x276",
+    "path": "shared/asset/sprite_img_servantchange_deco1_276x276.png"
+  },
+  {
+    "id": "STARBG",
+    "path": "shared/asset/STARBG.png"
+  },
+  {
+    "id": "STARBG9",
+    "path": "shared/asset/STARBG9.png"
+  },
+  {
+    "id": "STARBG9H",
+    "path": "shared/asset/STARBG9H.png"
+  },
+  {
+    "id": "STARBGHOLE1",
+    "path": "shared/asset/STARBGHOLE1.png"
+  },
+  {
+    "id": "SystemMessageBg",
+    "path": "shared/asset/SystemMessageBg.png"
+  },
+  {
+    "id": "SystemMessageBg - Copy",
+    "path": "shared/asset/SystemMessageBg - Copy.png"
+  },
+  {
+    "id": "UI_Clock_HourHand",
+    "path": "shared/asset/UI_Clock_HourHand.png"
+  },
+  {
+    "id": "UI_Clock_MinuteHand",
+    "path": "shared/asset/UI_Clock_MinuteHand.png"
+  },
+  {
+    "id": "UI_ClockIcon_Dusk",
+    "path": "shared/asset/UI_ClockIcon_Dusk.png"
+  },
+  {
+    "id": "UI_ClockIcon_Morning",
+    "path": "shared/asset/UI_ClockIcon_Morning.png"
+  },
+  {
+    "id": "UI_ClockIcon_Night",
+    "path": "shared/asset/UI_ClockIcon_Night.png"
+  },
+  {
+    "id": "UI_ClockIcon_Noon",
+    "path": "shared/asset/UI_ClockIcon_Noon.png"
+  },
+  {
+    "id": "UI_ItemIcon_221",
+    "path": "shared/asset/UI_ItemIcon_221.png"
+  },
+  {
+    "id": "UI_ItemIcon_222",
+    "path": "shared/asset/UI_ItemIcon_222.png"
+  },
+  {
+    "id": "Untitled-1",
+    "path": "shared/asset/Untitled-1.png"
+  },
+  {
+    "id": "utx_ic_card_cost",
+    "path": "shared/asset/utx_ic_card_cost.png"
+  },
+  {
+    "id": "utx_ic_cost_graph",
+    "path": "shared/asset/utx_ic_cost_graph.png"
+  },
+  {
+    "id": "V3_LockIcon",
+    "path": "shared/asset/V3_LockIcon.png"
+  },
+  {
+    "id": "xyq_btn_01",
+    "path": "shared/asset/xyq_btn_01.png"
+  },
+  {
+    "id": "xyq_btn_02",
+    "path": "shared/asset/xyq_btn_02.png"
+  },
+  {
+    "id": "zodiac",
+    "path": "shared/asset/zodiac.png"
+  }
+]

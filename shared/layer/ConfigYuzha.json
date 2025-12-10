@@ -1,0 +1,242 @@
+[
+  {
+    "LayerID": "sample",
+    "ImageID": "SAMPLE",
+    "renderer": "2D",
+    "LayerOrder": 1000,
+    "ImageScale": [200, 200],
+    "BasicStagePoint": [1024, 500],
+    "BasicImagePoint": [50, 50],
+    "BasicImageAngle": 0,
+    "spinSpeed": 0,
+    "spinDirection": "cw",
+    "spinFormat": "24",
+    "spinTimezone": "UTC",
+    "orbitStagePoint": [1024, 1024],
+    "orbitSpeed": 0,
+    "orbitDirection": "cw",
+    "orbitFormat": "24",
+    "orbitTimezone": "UTC"
+  },
+
+  {
+    "LayerID": "BACKGROUND-STAR",
+    "ImageID": "STARBG",
+    "renderer": "2D",
+    "LayerOrder": 50,
+    "ImageScale": [100, 100],
+    "spinStagePoint": [1024, 1024],
+    "spinImagePoint": [50, 50],
+    "spinSpeed": "minute",
+    "spinDirection": "cw"
+  },
+
+  {
+    "LayerID": "GEAR1-0",
+    "ImageID": "GEAR1",
+    "renderer": "2D",
+    "LayerOrder": 350,
+    "ImageScale": [220, 220],
+    "spinStagePoint": [920, 1420],
+    "spinImagePoint": [50, 50],
+    "spinSpeed": 20,
+    "spinDirection": "ccw"
+  },
+
+  {
+    "LayerID": "GEAR1-1",
+    "ImageID": "GEAR1",
+    "renderer": "2D",
+    "LayerOrder": 410,
+    "ImageScale": [100, 100],
+    "spinStagePoint": [950, 1090],
+    "spinImagePoint": [50, 50],
+    "spinSpeed": 50,
+    "spinDirection": "cw"
+  },
+
+  {
+    "LayerID": "GEAR1-2",
+    "ImageID": "GEAR2",
+    "renderer": "2D",
+    "LayerOrder": 410,
+    "ImageScale": [190, 190],
+    "spinStagePoint": [1190, 1200],
+    "spinImagePoint": [50, 50],
+    "spinSpeed": 80,
+    "spinDirection": "ccw"
+  },
+
+  {
+    "LayerID": "GEAR1-MOON-1",
+    "ImageID": "GEARMOON",
+    "renderer": "2D",
+    "LayerOrder": 390,
+    "ImageScale": [80, 80],
+    "spinStagePoint": [1100, 1000],
+    "spinImagePoint": [50, 50],
+    "spinSpeed": "second",
+    "spinDirection": "cw"
+  },
+
+  {
+    "LayerID": "GEAR1-3",
+    "ImageID": "GEAR1",
+    "renderer": "2D",
+    "LayerOrder": 400,
+    "ImageScale": [70, 70],
+    "spinStagePoint": [1190, 1200],
+    "spinImagePoint": [50, 50],
+    "spinSpeed": 50,
+    "spinDirection": "ccw"
+  },
+
+  {
+    "LayerID": "GEAR3-1",
+    "ImageID": "GEAR3",
+    "renderer": "2D",
+    "LayerOrder": 390,
+    "ImageScale": [100, 100],
+    "spinStagePoint": [1120, 880],
+    "spinImagePoint": [50, 50],
+    "spinSpeed": 70,
+    "spinDirection": "ccw"
+  },
+
+  {
+    "LayerID": "GEAR2-1-center",
+    "ImageID": "GEAR2",
+    "renderer": "2D",
+    "LayerOrder": 485,
+    "ImageScale": [100, 100],
+    "spinStagePoint": [1024, 1024],
+    "spinImagePoint": [50, 50],
+    "spinSpeed": 120,
+    "spinDirection": "ccw"
+  },
+
+  {
+    "LayerID": "BACKGROUND-STAR-h",
+    "ImageID": "STARBG9H",
+    "renderer": "2D",
+    "LayerOrder": 700,
+    "ImageScale": [100, 100],
+    "spinStagePoint": [1024, 1024],
+    "spinImagePoint": [50, 50],
+    "spinSpeed": 10,
+    "spinDirection": "cw"
+  },
+
+  {
+    "LayerID": "nviro_Stars_Big",
+    "ImageID": "Enviro_Stars_Big",
+    "renderer": "2D",
+    "LayerOrder": 702,
+    "ImageScale": [100, 100],
+    "BasicStagePoint": [1024, 1024],
+    "BasicImagePoint": [50, 50],
+    "BasicImageAngle": 0,
+    "spinStagePoint": [1024, 1024],
+    "spinImagePoint": [50, 50],
+    "spinSpeed": 30,
+    "spinDirection": "cw"
+  },
+
+  {
+    "LayerID": "Enviro_Stars",
+    "ImageID": "Enviro_Stars",
+    "renderer": "2D",
+    "LayerOrder": 702,
+    "ImageScale": [100, 100],
+    "BasicStagePoint": [1024, 1024],
+    "BasicImagePoint": [50, 50],
+    "BasicImageAngle": 0,
+    "spinStagePoint": [1024, 1024],
+    "spinImagePoint": [50, 50],
+    "spinSpeed": 100,
+    "spinDirection": "cw"
+  },
+
+  {
+    "LayerID": "CLOCKBG",
+    "ImageID": "CLOCKBG-A",
+    "renderer": "2D",
+    "LayerOrder": 751,
+    "ImageScale": [100, 100],
+    "BasicStagePoint": [1024, 1024],
+    "BasicImagePoint": [50, 50],
+    "BasicImageAngle": 0
+  },
+
+  {
+    "LayerID": "CLOCKGLOW",
+    "ImageID": "CLOCKGLOW",
+    "renderer": "2D",
+    "LayerOrder": 750,
+    "ImageScale": [95, 95],
+    "BasicStagePoint": [1024, 1024],
+    "BasicImagePoint": [50, 50],
+    "BasicImageAngle": 0
+  },
+
+  {
+    "LayerID": "Cneedle",
+    "ImageID": "needle",
+    "renderer": "2D",
+    "LayerOrder": 750,
+    "ImageScale": [45, 45],
+    "BasicStagePoint": [1024, 1024],
+    "BasicImagePoint": [50, 50],
+    "BasicImageAngle": 0
+  },
+
+  {
+    "LayerID": "zodiac",
+    "ImageID": "zodiac",
+    "renderer": "2D",
+    "LayerOrder": 701,
+    "ImageScale": [111, 111],
+    "spinStagePoint": [1024, 1024],
+    "spinImagePoint": [50, 50],
+    "spinSpeed": 18,
+    "spinDirection": "ccw",
+    "spinFormat": "12",
+    "spinTimezone": "UTC+7"
+  },
+
+  {
+    "LayerID": "CLOCKGLOW2",
+    "ImageID": "CLOCKGLOW2",
+    "renderer": "2D",
+    "LayerOrder": 750,
+    "ImageScale": [130, 130],
+    "BasicStagePoint": [1024, 1024],
+    "BasicImagePoint": [50, 50],
+    "BasicImageAngle": 0
+  },
+
+  {
+    "LayerID": "C12needele",
+    "ImageID": "CLOCKGLOW1",
+    "renderer": "2D",
+    "LayerOrder": 750,
+    "ImageScale": [85, 85],
+    "BasicStagePoint": [1024, 1024],
+    "BasicImagePoint": [50, 50],
+    "BasicImageAngle": 0
+  },
+
+  {
+    "LayerID": "HOUR-hand",
+    "ImageID": "UI_Clock_HourHand",
+    "renderer": "2D",
+    "LayerOrder": 920,
+    "ImageScale": [104, 104],
+    "spinStagePoint": [1024, 1024],
+    "spinImagePoint": [50, 80],
+    "spinSpeed": "hour",
+    "spinDirection": "cw",
+    "spinFormat": "24",
+    "spinTimezone": "UTC+7"
+  }
+]

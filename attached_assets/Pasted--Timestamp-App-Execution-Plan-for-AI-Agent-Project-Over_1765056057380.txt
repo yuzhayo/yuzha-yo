@@ -1,0 +1,324 @@
+# Timestamp App - Execution Plan for AI Agent
+
+## Project Overview
+
+Building a **photo timestamp app** where users can:
+1. Open an image from their device
+2. Preview it with adjustable aspect ratio
+3. Zoom/pan the image within the preview
+4. Add draggable text overlays (Time, Date, Location) positioned on the image
+5. Save/export the final cropped image with overlays baked in
+
+## Current State
+
+- `yuzha/src/timestamp/timestampScreen.tsx` - Main screen with aspect ratio H:W controls
+- `yuzha/src/timestamp/TimestampHeader.tsx` - Header with Back, H/W inputs, Open, Save buttons
+- `yuzha/src/timestamp/TimestampPreview.tsx` - Preview container (currently shows StageThree animation - needs to be replaced with image display)
+- `shared/floating/FloatingWindowTemplate.tsx` - Draggable window with header/title/close button
+- `shared/floating/FloatingBorderless.tsx` - Chrome-free draggable/resizable container
+
+## Files to Create
+
+### 1. `yuzha/src/timestamp/TimestampSettings.tsx`
+
+**Purpose:** Settings panel for configuring overlay text, fonts, colors
+
+**Implementation:**
+- Use `FloatingWindowTemplate` from `@shared/floating/FloatingWindowTemplate`
+- Follow pattern from `yuzha/src/counter/counterSettings.tsx`
+- Props: `onClose`, plus any settings state handlers
+- Start with empty content, just make it openable/closeable
+
+```tsx
+import FloatingWindowTemplate from "@shared/floating/FloatingWindowTemplate";
+
+export type TimestampSettingsProps = {
+  onClose?: () => void;
+  // Add settings props later: timeFormat, dateFormat, locationText, fontSettings, etc.
+};
+
+export default function TimestampSettings({ onClose }: TimestampSettingsProps) {
+  return (
+    <FloatingWindowTemplate
+      title="Timestamp Settings"
+      initialPos={{ x: 24, y: 80 }}
+      initialSize={{ width: 320, height: 400 }}
+      minWidth={280}
+      minHeight={200}
+      onClose={onClose}
+    >
+      <div className="text-slate-800">
+        {/* Settings content will go here */}
+        <p>Settings panel - content to be added</p>
+      </div>
+    </FloatingWindowTemplate>
+  );
+}
+```
+
+### 2. Modify `shared/floating/FloatingBorderless.tsx`
+
+**Purpose:** Add ability to clamp to a custom bounding rect instead of viewport
+
+**Changes needed:**
+- Add optional prop: `boundingRect?: { x: number; y: number; width: number; height: number }`
+- In drag/resize handlers, use `boundingRect` dimensions instead of `window.innerWidth/Height` when provided
+- In `clampToViewport` effect, use `boundingRect` when provided
+
+**Key areas to modify:**
+- `onDrag` function - change `window.innerWidth/Height` to use boundingRect
+- `onResize` function - same changes
+- `clampToViewport` useEffect - same changes
+
+### 3. `yuzha/src/timestamp/TimestampFloating.tsx`
+
+**Purpose:** Draggable text overlay that stays strictly inside preview bounds
+
+**Implementation:**
+- Wrapper around modified `FloatingBorderless`
+- Receives `boundingRect` from parent (preview dimensions)
+- Displays editable text (time/date/location)
+- Transparent background, just the text
+
+```tsx
+import FloatingBorderless from "@shared/floating/FloatingBorderless";
+
+export type TimestampFloatingProps = {
+  label: string; // "Time" | "Date" | "Location"
+  value: string;
+  onChange?: (value: string) => void;
+  boundingRect: { x: number; y: number; width: number; height: number };
+  initialPos?: { x: number; y: number };
+};
+
+export default function TimestampFloating({
+  label,
+  value,
+  onChange,
+  boundingRect,
+  initialPos = { x: 20, y: 20 },
+}: TimestampFloatingProps) {
+  return (
+    <FloatingBorderless
+      initialPos={initialPos}
+      initialSize={{ width: 200, height: 40 }}
+      minWidth={100}
+      minHeight={30}
+      boundingRect={boundingRect}  // Custom clamping
+      zIndex={1100}
+    >
+      <div className="text-white text-shadow font-semibold px-2 py-1">
+        {value || label}
+      </div>
+    </FloatingBorderless>
+  );
+}
+```
+
+### 4. Modify `yuzha/src/timestamp/TimestampPreview.tsx`
+
+**Purpose:** Replace StageThree with image display + zoom/pan
+
+**Changes:**
+- Remove `StageThree` import and usage
+- Add state/props for: `imageSrc`, `scale`, `translateX`, `translateY`
+- Display loaded image with CSS transforms for zoom/pan
+- Add wheel handler for zoom (centered on cursor)
+- Add pointer drag handler for pan
+- Use `useRef` + `ResizeObserver` to measure preview bounds for floating elements
+
+**Key implementation:**
+```tsx
+// Image container with transforms
+<div
+  style={{
+    transform: `translate(${translateX}px, ${translateY}px) scale(${scale})`,
+    transformOrigin: 'center center',
+  }}
+>
+  <img src={imageSrc} alt="Preview" />
+</div>
+```
+
+### 5. Modify `yuzha/src/timestamp/TimestampHeader.tsx`
+
+**Wire up Open button:**
+- Add `onOpen` prop handler (already exists but not wired)
+- Open button triggers file picker
+
+### 6. Modify `yuzha/src/timestamp/timestampScreen.tsx`
+
+**Main orchestrator - add state and integrate components:**
+
+**New state to add:**
+```tsx
+// Image state
+const [imageSrc, setImageSrc] = useState<string | null>(null);
+const [scale, setScale] = useState(1);
+const [translateX, setTranslateX] = useState(0);
+const [translateY, setTranslateY] = useState(0);
+
+// Settings visibility
+const [showSettings, setShowSettings] = useState(false);
+
+// Overlay text values
+const [timeText, setTimeText] = useState("12:00");
+const [dateText, setDateText] = useState("2025-01-01");
+const [locationText, setLocationText] = useState("Location");
+
+// Preview bounds for clamping floating elements
+const [previewBounds, setPreviewBounds] = useState({ x: 0, y: 0, width: 0, height: 0 });
+```
+
+**File picker handler:**
+```tsx
+const handleOpenFile = () => {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = (e) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setImageSrc(url);
+      setScale(1);
+      setTranslateX(0);
+      setTranslateY(0);
+    }
+  };
+  input.click();
+};
+```
+
+**Integrate components:**
+```tsx
+return (
+  <div className="flex h-screen w-screen flex-col overflow-hidden bg-slate-950 text-white">
+    <TimestampHeader
+      ref={headerRef}
+      onBack={onBack}
+      onOpen={handleOpenFile}
+      onSave={handleSave}
+      // ... other props
+    />
+    <TimestampPreview
+      widthPx={widthPx}
+      heightPx={heightPx}
+      imageSrc={imageSrc}
+      scale={scale}
+      translateX={translateX}
+      translateY={translateY}
+      onScaleChange={setScale}
+      onTranslateChange={(x, y) => { setTranslateX(x); setTranslateY(y); }}
+      onBoundsChange={setPreviewBounds}
+    />
+    
+    {/* Floating overlays - only show when image is loaded */}
+    {imageSrc && (
+      <>
+        <TimestampFloating
+          label="Time"
+          value={timeText}
+          onChange={setTimeText}
+          boundingRect={previewBounds}
+          initialPos={{ x: 20, y: 20 }}
+        />
+        <TimestampFloating
+          label="Date"
+          value={dateText}
+          onChange={setDateText}
+          boundingRect={previewBounds}
+          initialPos={{ x: 20, y: 60 }}
+        />
+        <TimestampFloating
+          label="Location"
+          value={locationText}
+          onChange={setLocationText}
+          boundingRect={previewBounds}
+          initialPos={{ x: 20, y: 100 }}
+        />
+      </>
+    )}
+    
+    {/* Settings panel */}
+    {showSettings && (
+      <TimestampSettings onClose={() => setShowSettings(false)} />
+    )}
+  </div>
+);
+```
+
+### 7. Save/Export Function
+
+**Purpose:** Render preview + overlays to canvas and download
+
+**Implementation in timestampScreen.tsx:**
+```tsx
+const handleSave = async () => {
+  if (!imageSrc) return;
+  
+  // Create offscreen canvas matching preview dimensions
+  const canvas = document.createElement('canvas');
+  canvas.width = widthPx;
+  canvas.height = heightPx;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  
+  // Load and draw image with current transforms
+  const img = new Image();
+  img.src = imageSrc;
+  await new Promise(resolve => { img.onload = resolve; });
+  
+  ctx.save();
+  ctx.translate(canvas.width / 2 + translateX, canvas.height / 2 + translateY);
+  ctx.scale(scale, scale);
+  ctx.drawImage(img, -img.width / 2, -img.height / 2);
+  ctx.restore();
+  
+  // Draw overlay texts at their positions (need to track positions from FloatingBorderless)
+  ctx.font = '24px sans-serif';
+  ctx.fillStyle = 'white';
+  ctx.shadowColor = 'black';
+  ctx.shadowBlur = 4;
+  // Draw each overlay at its relative position within preview...
+  
+  // Download
+  canvas.toBlob((blob) => {
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'timestamp-photo.png';
+    a.click();
+    URL.revokeObjectURL(url);
+  }, 'image/png');
+};
+```
+
+## Execution Order
+
+1. **Task 1:** Create `TimestampSettings.tsx` - simple, establishes pattern
+2. **Task 2:** Modify `FloatingBorderless.tsx` - add `boundingRect` prop for custom clamping
+3. **Task 3:** Create `TimestampFloating.tsx` - uses modified FloatingBorderless
+4. **Task 4:** Modify `TimestampPreview.tsx` - replace StageThree with image display
+5. **Task 5:** Wire up Open button file picker in TimestampScreen
+6. **Task 6:** Add zoom/pan handlers to TimestampPreview
+7. **Task 7:** Integrate all components in TimestampScreen (state, floating overlays, settings)
+8. **Task 8:** Implement Save function with canvas export
+
+## Key Technical Notes
+
+- **Clamping math:** FloatingBorderless currently uses `window.innerWidth/Height`. When `boundingRect` is provided, replace those with `boundingRect.width/height` and offset calculations by `boundingRect.x/y`
+- **Preview bounds measurement:** Use `ResizeObserver` on preview container div, call `getBoundingClientRect()` and pass to floating elements
+- **Zoom/pan:** Store scale (0.1 to 5 range), translateX/Y. Wheel = zoom centered on cursor, pointer drag = pan
+- **Export accuracy:** The overlay positions need to be tracked relative to preview bounds, then converted to canvas coordinates during export
+
+## Existing Patterns to Follow
+
+- `yuzha/src/counter/counterSettings.tsx` - How to use FloatingWindowTemplate
+- `shared/floating/FloatingBorderless.tsx` - Drag/resize implementation to modify
+- `yuzha/src/timestamp/TimestampHeader.tsx` - Already has Open/Save buttons, just need handlers
+
+## Workflow
+
+Project runs with `npm run dev` on port 5000. Workflow name: "Start Game"

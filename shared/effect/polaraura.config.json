@@ -1,0 +1,16 @@
+{
+  "layerCount": 10,
+  "baseScale": 2.0,
+  "scaleStep": 0.25,
+  "baseOpacity": 0.8,
+  "opacityStep": 0.9,
+  "layerColors": [
+    [0.2, 0.7, 1.1],
+    [0.2, 0.55, 0.9],
+    [0.3, 0.8, 1.2],
+    [0.6, 0.9, 1.2]
+  ],
+  "layerSizeBase": 4.5,
+  "layerSizeStep": 0.85,
+  "centerSize": 1
+}

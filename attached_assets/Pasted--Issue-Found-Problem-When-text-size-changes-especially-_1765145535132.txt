@@ -1,0 +1,49 @@
+## Issue Found:
+
+**Problem**: When text size changes (especially with `noWrap={true}` for date), the component measures new width/height and updates size state. BUT FloatingBorderless doesn't re-check boundaries when size changes - only during drag.
+
+**Why Date is affected**: Date text with `noWrap={true}` can become very wide, causing size to grow. If position stays the same, it extends beyond viewport.
+
+## Solution:
+
+Add boundary constraint check when size updates in TimestampFloating:
+Action: file_editor str_replace /app/yuzha/src/timestamp/TimestampFloating.tsx --old-str "    // Measure actual text width
+    useLayoutEffect(() => {
+      if (textRef.current) {
+        const rect = textRef.current.getBoundingClientRect();
+        const newWidth = Math.ceil(rect.width) + 4; // +4 for small buffer
+        const newHeight = Math.ceil(rect.height) + 4;
+        if (newWidth !== measuredWidth || newHeight !== size.height) {
+          setMeasuredWidth(newWidth);
+          setSize({ width: newWidth, height: newHeight });
+        }
+      }
+    }, [value, label, fontFamily, fontSize]);" --new-str "    // Measure actual text width
+    useLayoutEffect(() => {
+      if (textRef.current) {
+        const rect = textRef.current.getBoundingClientRect();
+        const newWidth = Math.ceil(rect.width) + 4; // +4 for small buffer
+        const newHeight = Math.ceil(rect.height) + 4;
+        if (newWidth !== measuredWidth || newHeight !== size.height) {
+          setMeasuredWidth(newWidth);
+          setSize({ width: newWidth, height: newHeight });
+          
+          // Ensure position stays within bounds when size changes
+          const maxX = Math.max(0, boundingRect.width - newWidth);
+          const maxY = Math.max(0, boundingRect.height - newHeight);
+          const currentAbsX = boundingRect.x + relativePos.x;
+          const currentAbsY = boundingRect.y + relativePos.y;
+          
+          const clampedAbsX = Math.max(boundingRect.x, Math.min(currentAbsX, boundingRect.x + maxX));
+          const clampedAbsY = Math.max(boundingRect.y, Math.min(currentAbsY, boundingRect.y + maxY));
+          
+          const clampedRelX = clampedAbsX - boundingRect.x;
+          const clampedRelY = clampedAbsY - boundingRect.y;
+          
+          if (clampedRelX !== relativePos.x || clampedRelY !== relativePos.y) {
+            setRelativePos({ x: clampedRelX, y: clampedRelY });
+          }
+        }
+      }
+    }, [value, label, fontFamily, fontSize, boundingRect, relativePos, measuredWidth, size.height]);"
+Observation: Edit was successful.

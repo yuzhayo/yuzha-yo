@@ -1,0 +1,130 @@
+@import "../../shared/fonts/taimingda.css";
+/* Tailwind entry for Launcher (minimal, global-safe) */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Baseline reset tweaks */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+/* App shell */
+.app-shell {
+  @apply w-screen h-screen overflow-hidden text-neutral-100 select-none;
+}
+
+/* Simple toolbar (optional, used later) */
+.app-toolbar {
+  @apply fixed top-0 inset-x-0 z-50 flex items-center gap-2 px-3 py-2
+         bg-neutral-900/70 backdrop-blur-sm;
+}
+
+.btn {
+  @apply inline-flex items-center gap-1 px-3 py-1.5 rounded
+         bg-neutral-800 hover:bg-neutral-700 active:bg-neutral-600
+         text-sm leading-none;
+}
+
+.badge {
+  @apply text-xs px-2 py-0.5 rounded bg-neutral-800/60;
+}
+@keyframes pulse {
+  0% {
+    transform: none;
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 0.95;
+  }
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* Custom scrollbar for accordion */
+.accordion-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.accordion-scroll::-webkit-scrollbar-track {
+  background: #e5e7eb; /* gray-200 */
+  border-radius: 10px;
+}
+
+.accordion-scroll::-webkit-scrollbar-thumb {
+  background: #3b82f6; /* blue-500 */
+  border-radius: 10px;
+}
+
+.accordion-scroll::-webkit-scrollbar-thumb:hover {
+  background: #2563eb; /* blue-600 */
+}
+
+@keyframes orbit {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Stage DOM renderer keyframes (GPU-driven orbit/spin) */
+@keyframes stage-orbit {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes stage-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+/* Disable long-press callout and selection on UI images (counter screen only) */
+.counter-no-context img {
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+/* Remove outlines/borders/tap highlight for the floating counter button */
+.counter-floating button {
+  outline: none;
+  border: none;
+  background: transparent;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: none;
+}
+
+.counter-floating button:focus-visible {
+  outline: none;
+}
+
+/* Count bump animation */
+@keyframes count-bump-keyframes {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.count-bump {
+  animation: count-bump-keyframes 0.25s ease-out;
+}
