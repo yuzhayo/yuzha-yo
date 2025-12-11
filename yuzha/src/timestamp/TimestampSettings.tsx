@@ -172,7 +172,7 @@ function OverlaySection({
           <label className="block text-xs font-semibold">Pick Date</label>
           <DatePickerYuzha
             value={parsedDate}
-            onChange={handleDatePickerChange}
+            onApply={handleDatePickerChange}
             placeholder="Select date"
             className="h-8 text-xs"
           />

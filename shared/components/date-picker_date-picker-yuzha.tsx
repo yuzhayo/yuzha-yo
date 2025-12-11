@@ -172,7 +172,7 @@ export function DatePickerYuzha({
           {displayText}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent className="w-auto p-0 bg-white" align="start">
         <div className="p-4 w-[280px]">
           <div className="flex items-center justify-between mb-4">
             <Button
