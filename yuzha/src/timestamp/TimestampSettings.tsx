@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import FloatingWindowTemplate from "@shared/floating/FloatingWindowTemplate";
 import Accordion from "@shared/floating/Accordion";
-import { loadPresets, deletePreset, type TimestampPreset } from "./PresetManager";
 import { DatePickerYuzha } from "@shared/components/date-picker_date-picker-yuzha";
 import {
   type OverlaySettings,
@@ -46,8 +45,6 @@ export type TimestampSettingsProps = {
   onTimeAlignmentChange?: (textAlign: TextAlign) => void;
   onDateAlignmentChange?: (textAlign: TextAlign) => void;
   onLocationAlignmentChange?: (textAlign: TextAlign) => void;
-  onSavePreset: (name: string) => void;
-  onLoadPreset: (preset: TimestampPreset) => void;
   onAddImageOverlay?: () => void;
   onClose?: () => void;
 };
@@ -313,16 +310,12 @@ export default function TimestampSettings({
   onTimeAlignmentChange,
   onDateAlignmentChange,
   onLocationAlignmentChange,
-  onSavePreset,
-  onLoadPreset,
   onAddImageOverlay,
   onClose,
 }: TimestampSettingsProps) {
   const [viewport, setViewport] = useState({ width: window.innerWidth, height: window.innerHeight });
-  const [presets, setPresets] = useState<TimestampPreset[]>([]);
-  const [presetName, setPresetName] = useState("");
-  const [selectedPresetId, setSelectedPresetId] = useState<string>("");
   const [rotationInput, setRotationInput] = useState(String(rotation));
+  
   useEffect(() => {
     const handleResize = () => {
       setViewport({ width: window.innerWidth, height: window.innerHeight });
@@ -332,14 +325,8 @@ export default function TimestampSettings({
   }, []);
 
   useEffect(() => {
-    setPresets(loadPresets());
-  }, []);
-
-  useEffect(() => {
     setRotationInput(String(rotation));
   }, [rotation]);
-
-  const refreshPresets = () => setPresets(loadPresets());
 
   const isNarrow = viewport.width < 640;
   const initialPos = isNarrow
@@ -379,25 +366,6 @@ export default function TimestampSettings({
       }
     };
     input.click();
-  };
-
-  const handleSavePreset = () => {
-    if (!presetName.trim()) return;
-    onSavePreset(presetName.trim());
-    setPresetName("");
-    refreshPresets();
-  };
-
-  const handleLoadPreset = () => {
-    const preset = presets.find((p) => p.id === selectedPresetId);
-    if (preset) onLoadPreset(preset);
-  };
-
-  const handleDeletePreset = () => {
-    if (!selectedPresetId) return;
-    deletePreset(selectedPresetId);
-    setSelectedPresetId("");
-    refreshPresets();
   };
 
   const sections = [
@@ -588,64 +556,6 @@ export default function TimestampSettings({
               <p className="mt-1 text-xs text-slate-500">Upload an image to place on your photo</p>
             </div>
           )}
-
-          <div className="border-t border-slate-200 pt-3">
-            <label className="block text-xs font-semibold mb-2">Presets</label>
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={presetName}
-                  onChange={(e) => setPresetName(e.target.value)}
-                  placeholder="Preset name..."
-                  className="flex-1 rounded border border-slate-300 px-2 py-1 text-sm"
-                />
-                <button
-                  type="button"
-                  onClick={handleSavePreset}
-                  disabled={!presetName.trim()}
-                  className="px-3 py-1 text-sm rounded border border-blue-500 bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50"
-                >
-                  Save
-                </button>
-              </div>
-              {presets.length > 0 && (
-                <div className="flex gap-2">
-                  <select
-                    value={selectedPresetId}
-                    onChange={(e) => setSelectedPresetId(e.target.value)}
-                    className="flex-1 rounded border border-slate-300 px-2 py-1 text-sm bg-white"
-                  >
-                    <option value="">Select preset...</option>
-                    {presets.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    onClick={handleLoadPreset}
-                    disabled={!selectedPresetId}
-                    className="px-3 py-1 text-sm rounded border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-50"
-                  >
-                    Load
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleDeletePreset}
-                    disabled={!selectedPresetId}
-                    className="px-3 py-1 text-sm rounded border border-red-300 bg-white text-red-600 hover:bg-red-50 disabled:opacity-50"
-                  >
-                    Del
-                  </button>
-                </div>
-              )}
-              {presets.length === 0 && (
-                <p className="text-xs text-slate-500 italic">No presets saved yet</p>
-              )}
-            </div>
-          </div>
         </div>
       ),
     },

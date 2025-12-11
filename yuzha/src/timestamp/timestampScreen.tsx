@@ -768,6 +768,8 @@ export default function TimestampScreen({ onBack }: TimestampScreenProps) {
         onRedo={handleRedo}
         canUndo={historyIndex > 0}
         canRedo={historyIndex < history.length - 1}
+        onSavePreset={handleSavePreset}
+        onLoadPreset={handleLoadPreset}
       />
       <TimestampPreview
         widthPx={widthPx}
@@ -865,8 +867,6 @@ export default function TimestampScreen({ onBack }: TimestampScreenProps) {
             onTimeAlignmentChange={(align) => handleAlignmentChange("time", align)}
             onDateAlignmentChange={(align) => handleAlignmentChange("date", align)}
             onLocationAlignmentChange={(align) => handleAlignmentChange("location", align)}
-            onSavePreset={handleSavePreset}
-            onLoadPreset={handleLoadPreset}
             onAddImageOverlay={handleAddImageOverlay}
             onClose={handleCloseSettings}
           />
