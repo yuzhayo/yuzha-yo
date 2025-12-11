@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["shared/*"]
+    }
+  },
+  "include": ["shared"],
+  "references": [
+    { "path": "./yuzha" },
+    { "path": "./meng" }
+  ]
+}
