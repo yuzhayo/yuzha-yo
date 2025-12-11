@@ -782,7 +782,7 @@ export default function TimestampScreen({ onBack }: TimestampScreenProps) {
         onBoundsChange={handleBoundsChange}
       />
 
-      {imageSrc && previewBounds.width > 0 && (
+      {previewBounds.width > 0 && (
         <>
           {overlays.map((overlay) => {
             if (overlay.type === "text") {

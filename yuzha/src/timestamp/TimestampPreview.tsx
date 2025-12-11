@@ -1,5 +1,4 @@
 import React, { useRef, useEffect, useCallback } from "react";
-import StageThree from "@shared/layer/StageThree";
 
 export type TimestampPreviewProps = {
   widthPx: number;
@@ -184,7 +183,8 @@ export default function TimestampPreview({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {imageSrc ? (
+        <div className="absolute inset-0 bg-slate-900/30 backdrop-blur-sm pointer-events-none" />
+        {imageSrc && (
           <div
             className="absolute inset-0 flex items-center justify-center"
             style={{
@@ -200,10 +200,6 @@ export default function TimestampPreview({
               style={{ userSelect: "none", pointerEvents: "none" }}
               draggable={false}
             />
-          </div>
-        ) : (
-          <div className="absolute inset-0 pointer-events-none">
-            <StageThree />
           </div>
         )}
       </div>
