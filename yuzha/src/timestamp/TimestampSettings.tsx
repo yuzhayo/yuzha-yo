@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import FloatingWindowTemplate from "@shared/floating/FloatingWindowTemplate";
 import Accordion from "@shared/floating/Accordion";
 import { loadPresets, deletePreset, type TimestampPreset } from "./PresetManager";
+import { DatePickerYuzha } from "@shared/components/date-picker_date-picker-yuzha";
 import {
   type OverlaySettings,
   type TextAlign,
@@ -51,6 +52,63 @@ export type TimestampSettingsProps = {
   onClose?: () => void;
 };
 
+function parseDateFromText(text: string): Date | undefined {
+  if (!text) return undefined;
+  
+  const monthNames: Record<string, number> = {
+    jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+    jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11
+  };
+
+  let match = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (match && match[1] && match[2] && match[3]) {
+    return new Date(parseInt(match[1]), parseInt(match[2]) - 1, parseInt(match[3]));
+  }
+
+  match = text.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (match && match[1] && match[2] && match[3]) {
+    const first = parseInt(match[1]);
+    const second = parseInt(match[2]);
+    const year = parseInt(match[3]);
+    if (first > 12) {
+      return new Date(year, second - 1, first);
+    }
+    return new Date(year, first - 1, second);
+  }
+
+  match = text.match(/^(\w{3})\s+(\d{1,2}),?\s+(\d{4})$/i);
+  if (match && match[1] && match[2] && match[3]) {
+    const monthNum = monthNames[match[1].toLowerCase()];
+    if (monthNum !== undefined) {
+      return new Date(parseInt(match[3]), monthNum, parseInt(match[2]));
+    }
+  }
+
+  match = text.match(/^(\d{1,2})\s+(\w{3})\s+(\d{4})$/i);
+  if (match && match[1] && match[2] && match[3]) {
+    const monthNum = monthNames[match[2].toLowerCase()];
+    if (monthNum !== undefined) {
+      return new Date(parseInt(match[3]), monthNum, parseInt(match[1]));
+    }
+  }
+
+  return undefined;
+}
+
+function detectDateFormat(text: string): string {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return "YYYY-MM-DD";
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(text)) {
+    const parts = text.split("/");
+    const firstPart = parts[0] ?? "01";
+    const first = parseInt(firstPart);
+    if (first > 12) return "DD/MM/YYYY";
+    return "MM/DD/YYYY";
+  }
+  if (/^\w{3}\s+\d{1,2},?\s+\d{4}$/i.test(text)) return "MMM DD, YYYY";
+  if (/^\d{1,2}\s+\w{3}\s+\d{4}$/i.test(text)) return "DD MMM YYYY";
+  return "YYYY-MM-DD";
+}
+
 function OverlaySection({
   label,
   settings,
@@ -73,19 +131,59 @@ function OverlaySection({
 
   const formats = formatType === "time" ? TIME_FORMATS : formatType === "date" ? DATE_FORMATS : [];
 
+  const [currentFormat, setCurrentFormat] = useState(() => 
+    formatType === "date" ? detectDateFormat(settings.text) : "YYYY-MM-DD"
+  );
+
+  const parsedDate = useMemo(() => {
+    if (formatType !== "date") return undefined;
+    return parseDateFromText(settings.text);
+  }, [settings.text, formatType]);
+
   const handleApplyFormat = (format: string) => {
     const now = new Date();
     const formatted = formatType === "time" ? formatTime(now, format) : formatDate(now, format);
+    if (formatType === "date") {
+      setCurrentFormat(format);
+    }
     onChange({ ...settings, text: formatted });
+  };
+
+  const handleDatePickerChange = (date: Date | undefined) => {
+    if (date) {
+      const formatted = formatDate(date, currentFormat);
+      onChange({ ...settings, text: formatted });
+    }
+  };
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newText = e.target.value;
+    onChange({ ...settings, text: newText });
+    if (formatType === "date") {
+      const detected = detectDateFormat(newText);
+      setCurrentFormat(detected);
+    }
   };
 
   return (
     <div className="space-y-3 text-slate-800">
+      {formatType === "date" && (
+        <div className="flex items-center gap-2">
+          <label className="block text-xs font-semibold">Pick Date</label>
+          <DatePickerYuzha
+            value={parsedDate}
+            onChange={handleDatePickerChange}
+            placeholder="Select date"
+            className="h-8 text-xs"
+          />
+        </div>
+      )}
+
       <div>
         <label className="block text-xs font-semibold mb-1">{label} Text</label>
         <textarea
           value={settings.text}
-          onChange={(e) => onChange({ ...settings, text: e.target.value })}
+          onChange={handleTextChange}
           placeholder={label}
           rows={2}
           className="w-full rounded border border-slate-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none resize-none"
@@ -101,7 +199,11 @@ function OverlaySection({
                 key={f.value}
                 type="button"
                 onClick={() => handleApplyFormat(f.value)}
-                className="px-2 py-1 text-xs rounded border border-slate-300 bg-white hover:bg-slate-50"
+                className={`px-2 py-1 text-xs rounded border transition-colors ${
+                  formatType === "date" && currentFormat === f.value
+                    ? "bg-blue-500 text-white border-blue-500"
+                    : "border-slate-300 bg-white hover:bg-slate-50"
+                }`}
               >
                 {f.label}
               </button>
