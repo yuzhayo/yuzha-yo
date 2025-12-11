@@ -71,6 +71,7 @@ export default function TimestampScreen({ onBack }: TimestampScreenProps) {
 
   const [previewBounds, setPreviewBounds] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const [showDebugBounds] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);
   const nextImageIdRef = useRef(1);
 
   const textOverlayRefsMap = useRef<Map<string, TimestampFloatingRef>>(new Map());
@@ -329,11 +330,11 @@ export default function TimestampScreen({ onBack }: TimestampScreenProps) {
   }
 
   const handleOpenSettings = useCallback(() => {
-    settingsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setShowSettings(true);
   }, []);
 
   const handleCloseSettings = useCallback(() => {
-    settingsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setShowSettings(false);
   }, []);
 
   const handleOpenFile = useCallback(() => {
@@ -830,45 +831,47 @@ export default function TimestampScreen({ onBack }: TimestampScreenProps) {
         </>
       )}
 
-      <div ref={settingsRef}>
-        <TimestampSettings
-          textColor={textColor}
-          onTextColorChange={(v) => { setTextColor(v); handleSettingsChange(); }}
-          shadowColor={shadowColor}
-          onShadowColorChange={(v) => { setShadowColor(v); handleSettingsChange(); }}
-          shadowBlur={shadowBlur}
-          onShadowBlurChange={(v) => { setShadowBlur(v); handleSettingsChange(); }}
-          shadowOffsetX={shadowOffsetX}
-          onShadowOffsetXChange={(v) => { setShadowOffsetX(v); handleSettingsChange(); }}
-          shadowOffsetY={shadowOffsetY}
-          onShadowOffsetYChange={(v) => { setShadowOffsetY(v); handleSettingsChange(); }}
-          scale={scale}
-          onScaleChange={(v) => { setScale(v); handleSettingsChange(); }}
-          translateX={translateX}
-          onTranslateXChange={(v) => { setTranslateX(v); handleSettingsChange(); }}
-          translateY={translateY}
-          onTranslateYChange={(v) => { setTranslateY(v); handleSettingsChange(); }}
-          rotation={rotation}
-          onRotationChange={(v) => { setRotation(v); handleSettingsChange(); }}
-          onResetPosition={handleResetPosition}
-          customFonts={customFonts}
-          onAddCustomFont={handleAddCustomFont}
-          timeSettings={toOverlaySettings(timeOverlay)}
-          onTimeSettingsChange={(v) => handleOverlaySettingsChange("time", v)}
-          dateSettings={toOverlaySettings(dateOverlay)}
-          onDateSettingsChange={(v) => handleOverlaySettingsChange("date", v)}
-          locationSettings={toOverlaySettings(locationOverlay)}
-          onLocationSettingsChange={(v) => handleOverlaySettingsChange("location", v)}
-          previewBounds={previewBounds}
-          onTimeAlignmentChange={(align) => handleAlignmentChange("time", align)}
-          onDateAlignmentChange={(align) => handleAlignmentChange("date", align)}
-          onLocationAlignmentChange={(align) => handleAlignmentChange("location", align)}
-          onSavePreset={handleSavePreset}
-          onLoadPreset={handleLoadPreset}
-          onAddImageOverlay={handleAddImageOverlay}
-          onClose={handleCloseSettings}
-        />
-      </div>
+      {showSettings && (
+        <div ref={settingsRef}>
+          <TimestampSettings
+            textColor={textColor}
+            onTextColorChange={(v) => { setTextColor(v); handleSettingsChange(); }}
+            shadowColor={shadowColor}
+            onShadowColorChange={(v) => { setShadowColor(v); handleSettingsChange(); }}
+            shadowBlur={shadowBlur}
+            onShadowBlurChange={(v) => { setShadowBlur(v); handleSettingsChange(); }}
+            shadowOffsetX={shadowOffsetX}
+            onShadowOffsetXChange={(v) => { setShadowOffsetX(v); handleSettingsChange(); }}
+            shadowOffsetY={shadowOffsetY}
+            onShadowOffsetYChange={(v) => { setShadowOffsetY(v); handleSettingsChange(); }}
+            scale={scale}
+            onScaleChange={(v) => { setScale(v); handleSettingsChange(); }}
+            translateX={translateX}
+            onTranslateXChange={(v) => { setTranslateX(v); handleSettingsChange(); }}
+            translateY={translateY}
+            onTranslateYChange={(v) => { setTranslateY(v); handleSettingsChange(); }}
+            rotation={rotation}
+            onRotationChange={(v) => { setRotation(v); handleSettingsChange(); }}
+            onResetPosition={handleResetPosition}
+            customFonts={customFonts}
+            onAddCustomFont={handleAddCustomFont}
+            timeSettings={toOverlaySettings(timeOverlay)}
+            onTimeSettingsChange={(v) => handleOverlaySettingsChange("time", v)}
+            dateSettings={toOverlaySettings(dateOverlay)}
+            onDateSettingsChange={(v) => handleOverlaySettingsChange("date", v)}
+            locationSettings={toOverlaySettings(locationOverlay)}
+            onLocationSettingsChange={(v) => handleOverlaySettingsChange("location", v)}
+            previewBounds={previewBounds}
+            onTimeAlignmentChange={(align) => handleAlignmentChange("time", align)}
+            onDateAlignmentChange={(align) => handleAlignmentChange("date", align)}
+            onLocationAlignmentChange={(align) => handleAlignmentChange("location", align)}
+            onSavePreset={handleSavePreset}
+            onLoadPreset={handleLoadPreset}
+            onAddImageOverlay={handleAddImageOverlay}
+            onClose={handleCloseSettings}
+          />
+        </div>
+      )}
     </div>
   );
 }
