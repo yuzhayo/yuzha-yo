@@ -153,7 +153,7 @@ export function DatePickerYuzha({
   const days = getDaysInMonth(displayMonth.getFullYear(), displayMonth.getMonth())
 
   const displayText = appliedValue 
-    ? format(appliedValue, "MMM d, yyyy") 
+    ? format(appliedValue, "d MMM yyyy") 
     : placeholder
 
   return (
