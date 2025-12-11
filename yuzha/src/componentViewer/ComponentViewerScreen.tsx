@@ -288,18 +288,6 @@ export default function ComponentViewerScreen({ onBack }: ComponentViewerScreenP
           ))}
         </div>
 
-        {onBack && (
-          <div className="p-3 border-t border-slate-700">
-            <button
-              type="button"
-              onClick={onBack}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium transition-colors"
-            >
-              <ChevronLeftIcon className="w-4 h-4" />
-              Back to Main
-            </button>
-          </div>
-        )}
       </div>
 
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -356,6 +344,17 @@ export default function ComponentViewerScreen({ onBack }: ComponentViewerScreenP
                       <ChevronRightIcon className="w-4 h-4" />
                     </button>
                   </div>
+
+                  {onBack && (
+                    <button
+                      type="button"
+                      onClick={onBack}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium transition-colors"
+                    >
+                      <ChevronLeftIcon className="w-4 h-4" />
+                      Back
+                    </button>
+                  )}
                 </div>
               </div>
 
