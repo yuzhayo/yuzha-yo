@@ -15,7 +15,10 @@ import {
 
 export interface DatePickerYuzhaProps {
   value?: Date
+  defaultValue?: Date
   onChange?: (date: Date | undefined) => void
+  onApply?: (date: Date | undefined) => void
+  onCancel?: () => void
   placeholder?: string
   disabled?: boolean
   className?: string
@@ -59,16 +62,32 @@ function isToday(date: Date): boolean {
 }
 
 export function DatePickerYuzha({
-  value,
+  value: controlledValue,
+  defaultValue,
   onChange,
+  onApply,
+  onCancel,
   placeholder = "Select date",
   disabled = false,
   className,
 }: DatePickerYuzhaProps) {
   const [open, setOpen] = React.useState(false)
-  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(value)
+  
+  const [internalValue, setInternalValue] = React.useState<Date | undefined>(
+    controlledValue ?? defaultValue
+  )
+  
+  const appliedValue = controlledValue !== undefined ? controlledValue : internalValue
+  
+  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(appliedValue)
   const [inputValue, setInputValue] = React.useState("")
-  const [displayMonth, setDisplayMonth] = React.useState<Date>(value || new Date())
+  const [displayMonth, setDisplayMonth] = React.useState<Date>(appliedValue || new Date())
+
+  React.useEffect(() => {
+    if (controlledValue !== undefined) {
+      setInternalValue(controlledValue)
+    }
+  }, [controlledValue])
 
   React.useEffect(() => {
     if (selectedDate) {
@@ -79,11 +98,13 @@ export function DatePickerYuzha({
   }, [selectedDate])
 
   React.useEffect(() => {
-    setSelectedDate(value)
-    if (value) {
-      setDisplayMonth(value)
+    if (open) {
+      setSelectedDate(appliedValue)
+      if (appliedValue) {
+        setDisplayMonth(appliedValue)
+      }
     }
-  }, [value])
+  }, [open, appliedValue])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value
@@ -105,12 +126,15 @@ export function DatePickerYuzha({
   }
 
   const handleCancel = () => {
-    setSelectedDate(value)
+    setSelectedDate(appliedValue)
+    onCancel?.()
     setOpen(false)
   }
 
   const handleApply = () => {
+    setInternalValue(selectedDate)
     onChange?.(selectedDate)
+    onApply?.(selectedDate)
     setOpen(false)
   }
 
@@ -128,6 +152,10 @@ export function DatePickerYuzha({
 
   const days = getDaysInMonth(displayMonth.getFullYear(), displayMonth.getMonth())
 
+  const displayText = appliedValue 
+    ? format(appliedValue, "MMM d, yyyy") 
+    : placeholder
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -136,12 +164,12 @@ export function DatePickerYuzha({
           disabled={disabled}
           className={cn(
             "w-[160px] justify-start text-left font-normal gap-2",
-            !value && "text-muted-foreground",
+            !appliedValue && "text-muted-foreground",
             className
           )}
         >
           <CalendarIcon className="h-4 w-4" />
-          {value ? format(value, "MMM d, yyyy") : placeholder}
+          {displayText}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
