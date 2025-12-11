@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, Suspense, Component, type ReactNode } from "react";
-import { CheckIcon, CopyIcon, ChevronLeftIcon, ChevronRightIcon, SearchIcon, AlertCircleIcon, SunIcon, MoonIcon } from "lucide-react";
+import { CheckIcon, CopyIcon, ChevronLeftIcon, ChevronRightIcon, SearchIcon, AlertCircleIcon, SunIcon, MoonIcon, RefreshCwIcon } from "lucide-react";
 import { TooltipProvider } from "@shared/components/ui/tooltip";
 import "./componentViewer.css";
 
@@ -210,7 +210,17 @@ export default function ComponentViewerScreen({ onBack }: ComponentViewerScreenP
     <div className="flex h-screen bg-slate-900">
       <div className="w-72 bg-slate-900 border-r border-slate-700 flex flex-col">
         <div className="p-4 border-b border-slate-700">
-          <h1 className="text-lg font-semibold text-white">Component Viewer</h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-lg font-semibold text-white">Component Viewer</h1>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+              title="Refresh to scan for new components"
+            >
+              <RefreshCwIcon className="w-4 h-4" />
+            </button>
+          </div>
           <p className="text-xs text-slate-400 mt-1">{COMPONENT_FILES.length} components</p>
         </div>
 
