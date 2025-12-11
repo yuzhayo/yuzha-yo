@@ -185,7 +185,10 @@ export function DatePickerYuzha({
             </Button>
           </div>
 
-          <div className="grid grid-cols-7 gap-0 mb-2">
+          <div 
+            style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)" }}
+            className="gap-0 mb-2"
+          >
             {WEEKDAYS.map((day) => (
               <div
                 key={day}
@@ -196,7 +199,10 @@ export function DatePickerYuzha({
             ))}
           </div>
 
-          <div className="grid grid-cols-7 gap-0">
+          <div 
+            style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)" }}
+            className="gap-0"
+          >
             {days.map((date, index) => {
               const isCurrentMonth = date.getMonth() === displayMonth.getMonth()
               const isSelected = isSameDay(selectedDate, date)
