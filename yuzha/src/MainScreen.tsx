@@ -10,6 +10,7 @@ export type RendererType = "canvas" | "three";
 export type MainScreenProps = {
   children?: React.ReactNode;
   onOpenCounterScreen?: () => void;
+  onOpenCounter2Screen?: () => void;
   onOpenTimestampScreen?: () => void;
   onOpenFloatingScreen?: () => void;
   onOpenAlphaRemoveScreen?: () => void;
@@ -21,6 +22,7 @@ function MainScreenOverlay({
   rendererMode,
   onRendererModeChange,
   onOpenCounterScreen,
+  onOpenCounter2Screen,
   onOpenTimestampScreen,
   onOpenFloatingScreen,
   onOpenAlphaRemoveScreen,
@@ -30,6 +32,7 @@ function MainScreenOverlay({
   rendererMode: RendererMode;
   onRendererModeChange: (mode: RendererMode) => void;
   onOpenCounterScreen?: () => void;
+  onOpenCounter2Screen?: () => void;
   onOpenTimestampScreen?: () => void;
   onOpenFloatingScreen?: () => void;
   onOpenAlphaRemoveScreen?: () => void;
@@ -46,6 +49,7 @@ function MainScreenOverlay({
         rendererMode={rendererMode}
         onRendererModeChange={onRendererModeChange}
         onOpenCounterScreen={onOpenCounterScreen}
+        onOpenCounter2Screen={onOpenCounter2Screen}
         onOpenTimestampScreen={onOpenTimestampScreen}
         onOpenFloatingScreen={onOpenFloatingScreen}
         onOpenAlphaRemoveScreen={onOpenAlphaRemoveScreen}
@@ -62,6 +66,7 @@ function MainScreenOverlay({
 export default function MainScreen({
   children,
   onOpenCounterScreen,
+  onOpenCounter2Screen,
   onOpenTimestampScreen,
   onOpenFloatingScreen,
   onOpenAlphaRemoveScreen,
@@ -88,6 +93,7 @@ export default function MainScreen({
           rendererMode={rendererMode}
           onRendererModeChange={setRendererMode}
           onOpenCounterScreen={onOpenCounterScreen}
+          onOpenCounter2Screen={onOpenCounter2Screen}
           onOpenTimestampScreen={onOpenTimestampScreen}
           onOpenFloatingScreen={onOpenFloatingScreen}
           onOpenAlphaRemoveScreen={onOpenAlphaRemoveScreen}

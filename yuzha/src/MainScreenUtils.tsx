@@ -87,6 +87,7 @@ export type MainScreenUpdaterProps = {
   rendererMode?: "auto" | "canvas" | "three";
   onRendererModeChange?: (mode: "auto" | "canvas" | "three") => void;
   onOpenCounterScreen?: () => void;
+  onOpenCounter2Screen?: () => void;
   onOpenTimestampScreen?: () => void;
   onOpenFloatingScreen?: () => void;
   onOpenAlphaRemoveScreen?: () => void;
@@ -378,6 +379,15 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
             className="text-xs px-3 py-2 rounded bg-sky-600/80 hover:bg-sky-500/80 active:bg-sky-600 text-white shadow-sm border border-white/10 text-center whitespace-normal break-words leading-tight"
           >
             Counter
+          </button>
+        )}
+        {props.onOpenCounter2Screen && (
+          <button
+            type="button"
+            onClick={props.onOpenCounter2Screen}
+            className="text-xs px-3 py-2 rounded bg-teal-600/80 hover:bg-teal-500/80 active:bg-teal-600 text-white shadow-sm border border-white/10 text-center whitespace-normal break-words leading-tight"
+          >
+            Counter2
           </button>
         )}
         {props.onOpenTimestampScreen && (

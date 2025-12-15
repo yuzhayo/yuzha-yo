@@ -85,8 +85,7 @@
   {
     "LayerID": "BAC8",
     "ImageID": "general_deco_tab_hw",
-    "renderer": "3D",
-    "BlendMode": "additive",
+    "renderer": "2D",
     "LayerOrder": 10,
     "ImageScale": [500, 500],
     "BasicStagePoint": [1024, 1880],
@@ -95,7 +94,7 @@
   {
     "LayerID": "BAC9",
     "ImageID": "Fx_MagicCircle_16_half",
-    "renderer": "3D",
+    "renderer": "2D",
     "opacity": 1.0,
     "LayerOrder": 5,
     "ImageScale": [120, 120],
@@ -105,8 +104,7 @@
   {
     "LayerID": "BAC19",
     "ImageID": "Fx_MagicCircle_LeeJuhee_Ulti02_Clamp",
-    "renderer": "3D",
-    "BlendMode": "additive",
+    "renderer": "2D",
     "opacity": 0.3,
     "PulseSeconds": 3.0,
     "PulseAmplitude": 0.25,
