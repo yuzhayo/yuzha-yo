@@ -111,16 +111,16 @@ export default function Counter2Screen({ onBack }: Counter2ScreenProps) {
   const [isBumping, setIsBumping] = useState(false);
   const bumpTimeoutRef = React.useRef<number | undefined>(undefined);
 
-  const [floatingSize] = useState(250);
-  const [messageSize] = useState(240);
-  const [messageFontSize] = useState(90);
-  const [messageColor] = useState("#ffffff");
+  const [floatingSize, setFloatingSize] = useState(250);
+  const [messageSize, setMessageSize] = useState(240);
+  const [messageFontSize, setMessageFontSize] = useState(90);
+  const [messageColor, setMessageColor] = useState("#ffffff");
 
-  const [hapticsEnabled] = useState(true);
-  const [soundEnabled] = useState(false);
+  const [hapticsEnabled, setHapticsEnabled] = useState(true);
+  const [soundEnabled, setSoundEnabled] = useState(false);
 
-  const [buttonStagePosition] = useState({ x: 1024, y: 1300 });
-  const [messageStagePosition] = useState({ x: 1024, y: 400 });
+  const [buttonStagePosition, setButtonStagePosition] = useState({ x: 1024, y: 1300 });
+  const [messageStagePosition, setMessageStagePosition] = useState({ x: 1024, y: 400 });
 
   const [transform, setTransform] = useState<StageTransform>(() =>
     typeof window !== "undefined"
@@ -305,7 +305,21 @@ export default function Counter2Screen({ onBack }: Counter2ScreenProps) {
       </Counter2CountDisplay>
 
       {showSettings && (
-        <Counter2Settings onClose={handleToggleSettings} />
+        <Counter2Settings
+          onClose={handleToggleSettings}
+          hapticsEnabled={hapticsEnabled}
+          onHapticsToggle={setHapticsEnabled}
+          soundEnabled={soundEnabled}
+          onSoundToggle={setSoundEnabled}
+          floatingSize={floatingSize}
+          onFloatingSizeChange={setFloatingSize}
+          messageSize={messageSize}
+          onMessageSizeChange={setMessageSize}
+          messageFontSize={messageFontSize}
+          onMessageFontSizeChange={setMessageFontSize}
+          messageColor={messageColor}
+          onMessageColorChange={setMessageColor}
+        />
       )}
 
       {showFloating && (
