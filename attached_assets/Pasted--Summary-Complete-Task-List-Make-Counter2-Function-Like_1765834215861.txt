@@ -1,0 +1,981 @@
+
+ Summary: ## Complete Task List: Make Counter2 Function Like Counter
+
+### **CONTEXT**
+- Project: Yuzha counter app at `/app/yuzha/src/`
+- Goal: Add counter functionality to Counter2 (keep existing rendering)
+- Counter2 uses shared/layer rendering (already optimal)
+- Need to add: Interactive button + count display + counter logic
+
+---
+
+## **PHASE 1: CREATE NEW COMPONENT FILES**
+
+### **Task 1.1: Create counter2FloatingButton.tsx**
+**File:** `/app/yuzha/src/counter2/counter2FloatingButton.tsx`
+
+**Action:** Copy from `/app/yuzha/src/counter/counterFloating.tsx` and modify:
+1. View source file: `/app/yuzha/src/counter/counterFloating.tsx`
+2. Copy entire content
+3. Create new file: `/app/yuzha/src/counter2/counter2FloatingButton.tsx`
+4. Paste content
+5. Rename exports:
+   - `CounterFloating` → `Counter2FloatingButton`
+   - `CounterFloatingProps` → `Counter2FloatingButtonProps`
+6. Keep all imports and logic identical
+7. This component handles the tappable counter button
+
+---
+
+### **Task 1.2: Create counter2CountDisplay.tsx**
+**File:** `/app/yuzha/src/counter2/counter2CountDisplay.tsx`
+
+**Action:** Copy from `/app/yuzha/src/counter/counterFloatingMessage.tsx` and modify:
+1. View source file: `/app/yuzha/src/counter/counterFloatingMessage.tsx`
+2. Copy entire content
+3. Create new file: `/app/yuzha/src/counter2/counter2CountDisplay.tsx`
+4. Paste content
+5. Rename exports:
+   - `CounterFloatingMessage` → `Counter2CountDisplay`
+   - `CounterFloatingMessageProps` → `Counter2CountDisplayProps`
+6. Keep all imports including Three.js, requireAssetUrl, createPolarAura
+7. This component displays the count number with effects
+
+---
+
+## **PHASE 2: ADD COUNTER STATE & LOGIC**
+
+### **Task 2.1: Update counter2Screen.tsx - Import Dependencies**
+**File:** `/app/yuzha/src/counter2/counter2Screen.tsx`
+
+**Action:** Add these imports at the top (after existing imports):
+```typescript
+import Counter2FloatingButton from "./counter2FloatingButton";
+import Counter2CountDisplay from "./counter2CountDisplay";
+import { 
+  computeCoverTransform, 
+  stageToViewportCoords,
+  type StageTransform 
+} from "@shared/layer";
+```
+
+---
+
+### **Task 2.2: Add State Management Hook**
+**Location:** Inside `Counter2Screen` function, after `const [showFloating, setShowFloating] = useState(false);`
+
+**Action:** Add this complete state block:
+```typescript
+// Counter state
+const [count, setCount] = useState(0);
+const [isBumping, setIsBumping] = useState(false);
+const bumpTimeoutRef = React.useRef<number | undefined>(undefined);
+
+// UI state
+const [floatingSize, setFloatingSize] = useState(250);
+const [messageSize, setMessageSize] = useState(240);
+const [messageFontSize, setMessageFontSize] = useState(90);
+const [messageColor, setMessageColor] = useState("#ffffff");
+
+// Feature toggles
+const [hapticsEnabled, setHapticsEnabled] = useState(true);
+const [soundEnabled, setSoundEnabled] = useState(false);
+
+// Positions (stage coordinates)
+const [buttonStagePosition, setButtonStagePosition] = useState({ x: 1024, y: 1300 });
+const [messageStagePosition, setMessageStagePosition] = useState({ x: 1024, y: 400 });
+
+// Transform for positioning
+const [transform, setTransform] = useState<StageTransform>(() =>
+  typeof window !== "undefined"
+    ? computeCoverTransform(window.innerWidth, window.innerHeight)
+    : { scale: 1, offsetX: 0, offsetY: 0, width: 2048, height: 2048 }
+);
+```
+
+---
+
+### **Task 2.3: Add Counter Logic Functions**
+**Location:** After state declarations, before `deviceCapability` useMemo
+
+**Action:** Add these functions:
+```typescript
+// Load count from localStorage on mount
+React.useEffect(() => {
+  const saved = window.localStorage.getItem("counter2/count/v1");
+  if (saved !== null) {
+    const parsed = Number(saved);
+    if (!Number.isNaN(parsed)) {
+      setCount(parsed);
+    }
+  }
+  return () => {
+    if (bumpTimeoutRef.current !== undefined) {
+      clearTimeout(bumpTimeoutRef.current);
+    }
+  };
+}, []);
+
+// Handle window resize for transform
+React.useEffect(() => {
+  const handleResize = () => {
+    setTransform(computeCoverTransform(window.innerWidth, window.innerHeight));
+  };
+  handleResize();
+  window.addEventListener("resize", handleResize);
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
+
+// Helper: Convert stage position to screen position
+const toScreenPosition = React.useCallback(
+  (stagePos: { x: number; y: number }, size: number) => {
+    const { x, y } = stageToViewportCoords(stagePos.x, stagePos.y, transform);
+    const half = size / 2;
+    const margin = 8;
+    const maxX = Math.max(margin, window.innerWidth - size - margin);
+    const maxY = Math.max(margin, window.innerHeight - size - margin);
+    return {
+      x: Math.min(maxX, Math.max(margin, x - half)),
+      y: Math.min(maxY, Math.max(margin, y - half)),
+    };
+  },
+  [transform]
+);
+
+// Increment counter
+const increment = React.useCallback(() => {
+  setCount((prev) => {
+    const next = prev + 1;
+    window.localStorage.setItem("counter2/count/v1", String(next));
+    return next;
+  });
+
+  // Bump animation
+  setIsBumping(true);
+  if (bumpTimeoutRef.current !== undefined) {
+    clearTimeout(bumpTimeoutRef.current);
+  }
+  bumpTimeoutRef.current = window.setTimeout(() => setIsBumping(false), 250);
+
+  // Haptic feedback
+  if (hapticsEnabled && "vibrate" in navigator) {
+    navigator.vibrate(20);
+  }
+
+  // Sound feedback
+  if (soundEnabled) {
+    const audio = new Audio("/sound/dice.wav");
+    audio.volume = 0.2;
+    audio.play().catch(() => {});
+  }
+}, [hapticsEnabled, soundEnabled]);
+
+// Reset counter
+const reset = React.useCallback(() => {
+  setCount(0);
+  window.localStorage.setItem("counter2/count/v1", "0");
+  
+  // Feedback
+  if (hapticsEnabled && "vibrate" in navigator) {
+    navigator.vibrate(20);
+  }
+  if (soundEnabled) {
+    const audio = new Audio("/sound/dice.wav");
+    audio.volume = 0.2;
+    audio.play().catch(() => {});
+  }
+}, [hapticsEnabled, soundEnabled]);
+
+// Calculate screen positions
+const buttonScreenPosition = React.useMemo(
+  () => toScreenPosition(buttonStagePosition, floatingSize),
+  [buttonStagePosition, floatingSize, toScreenPosition]
+);
+
+const messageScreenPosition = React.useMemo(
+  () => toScreenPosition(messageStagePosition, messageSize),
+  [messageStagePosition, messageSize, toScreenPosition]
+);
+```
+
+---
+
+## **PHASE 3: UPDATE UI COMPONENTS**
+
+### **Task 3.1: Add Reset Button to counter2Buttons.tsx**
+**File:** `/app/yuzha/src/counter2/counter2Buttons.tsx`
+
+**Action:** 
+1. Update `Counter2ControlsProps` type to add `onReset`:
+```typescript
+type Counter2ControlsProps = {
+  onToggleSettings?: () => void;
+  onToggleFloating?: () => void;
+  onReset?: () => void; // ADD THIS LINE
+};
+```
+
+2. Update function signature:
+```typescript
+export function Counter2Controls({
+  onToggleSettings,
+  onToggleFloating,
+  onReset, // ADD THIS LINE
+}: Counter2ControlsProps) {
+```
+
+3. Add reset button in JSX (before the info button):
+```typescript
+return (
+  <div className="absolute bottom-4 right-4 z-50 flex flex-col gap-2">
+    {/* ADD THIS RESET BUTTON */}
+    {onReset && (
+      <button
+        type="button"
+        onClick={onReset}
+        className="p-3 bg-orange-600/80 hover:bg-orange-500/80 text-white rounded-full shadow-lg transition-colors"
+        title="Reset Counter"
+      >
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+          />
+        </svg>
+      </button>
+    )}
+    
+    {/* EXISTING INFO BUTTON */}
+    <button
+      type="button"
+      onClick={onToggleFloating}
+      className="p-3 bg-teal-600/80 hover:bg-teal-500/80 text-white rounded-full shadow-lg transition-colors"
+      title="Info"
+    >
+      {/* ... existing info icon ... */}
+    </button>
+
+    {/* EXISTING SETTINGS BUTTON */}
+    <button
+      type="button"
+      onClick={onToggleSettings}
+      className="p-3 bg-slate-700/80 hover:bg-slate-600/80 text-white rounded-full shadow-lg transition-colors"
+      title="Settings"
+    >
+      {/* ... existing settings icon ... */}
+    </button>
+  </div>
+);
+```
+
+---
+
+### **Task 3.2: Update counter2Screen.tsx - Add Components to JSX**
+**File:** `/app/yuzha/src/counter2/counter2Screen.tsx`
+
+**Location:** In the return statement, after `<Counter2Controls ... />` and before the closing `</div>`
+
+**Action:** Add these components:
+```typescript
+{/* Floating counter button */}
+<Counter2FloatingButton
+  size={floatingSize}
+  screenPosition={buttonScreenPosition}
+  onActivate={increment}
+/>
+
+{/* Count display */}
+<Counter2CountDisplay
+  size={messageSize}
+  screenPosition={messageScreenPosition}
+>
+  <div
+    className={`flex w-full items-center justify-center text-white drop-shadow ${
+      isBumping ? "count-bump" : ""
+    }`}
+    style={{
+      fontFamily: "Taimingda, sans-serif",
+      fontSize: messageFontSize,
+      color: messageColor,
+      WebkitTextStroke: "1px rgba(0,0,0,0.6)",
+      textShadow: "0 0 5px rgba(0,0,0,0.8)",
+    }}
+  >
+    {count}
+  </div>
+</Counter2CountDisplay>
+```
+
+---
+
+### **Task 3.3: Update Counter2Controls Component Call**
+**File:** `/app/yuzha/src/counter2/counter2Screen.tsx`
+
+**Location:** Find the `<Counter2Controls` component call
+
+**Action:** Add `onReset={reset}` prop:
+```typescript
+<Counter2Controls
+  onToggleSettings={handleToggleSettings}
+  onToggleFloating={handleToggleFloating}
+  onReset={reset}  {/* ADD THIS LINE */}
+/>
+```
+
+---
+
+## **PHASE 4: ADD CSS ANIMATION**
+
+### **Task 4.1: Add Bump Animation CSS**
+**File:** `/app/yuzha/src/counter2/counter2Screen.tsx` OR global CSS file
+
+**Action:** Add this CSS class (if using styled-jsx, add in component; otherwise add to global CSS):
+
+**Option A - Add style tag in component:**
+```typescript
+// Add this before the return statement
+const styles = `
+  @keyframes count-bump {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+  }
+  .count-bump {
+    animation: count-bump 0.25s ease-out;
+  }
+`;
+```
+
+**Option B - Check if it exists in:** `/app/yuzha/src/counter/counterScreen.tsx` area or global CSS, and ensure counter2 can access it.
+
+---
+
+## **PHASE 5: VERIFY ASSETS**
+
+### **Task 5.1: Verify Required Assets Exist**
+**Action:** Check these files/assets are accessible:
+
+1. **Prestige button images:**
+   - Check: `requireAssetUrl("Prestige_SlotBase_Off")` works
+   - Check: `requireAssetUrl("Prestige_SlotBase")` works
+   - Check: `requireAssetUrl("overflow_glow_01")` works
+
+2. **Message background:**
+   - Check: `requireAssetUrl("SystemMessageBg")` works
+
+3. **Sound file:**
+   - Check: `/public/sound/dice.wav` exists (or `/sound/dice.wav`)
+
+4. **Shared effects:**
+   - Check: `@shared/effect/polaraura` can be imported
+
+**If any asset is missing:** Counter/Counter2 shares assets, so they should exist. If not, either mock them or copy from counter folder.
+
+---
+
+## **PHASE 6: TESTING**
+
+### **Task 6.1: Start Development Server**
+```bash
+sudo supervisorctl status
+# Ensure yuzha is running on port 3000
+```
+
+### **Task 6.2: Manual Testing Checklist**
+Navigate to Counter2 screen and test:
+
+1. **Counter Button:**
+   - [ ] Button is visible
+   - [ ] Button responds to click
+   - [ ] Glow animation on press
+   - [ ] Count increments by 1
+
+2. **Count Display:**
+   - [ ] Number is visible
+   - [ ] Number updates when button clicked
+   - [ ] Bump animation plays
+   - [ ] Background effects render
+
+3. **Reset Button:**
+   - [ ] Orange reset button visible (bottom-right)
+   - [ ] Clicking resets count to 0
+   - [ ] Feedback works (haptic/sound if enabled)
+
+4. **Persistence:**
+   - [ ] Increment counter to 10
+   - [ ] Refresh page
+   - [ ] Count still shows 10
+
+5. **Settings:**
+   - [ ] Toggle haptics on/off
+   - [ ] Toggle sound on/off
+   - [ ] Test that toggling affects feedback
+
+6. **Responsive:**
+   - [ ] Resize window
+   - [ ] Components stay within viewport
+   - [ ] Button/display positions update
+
+---
+
+## **PHASE 7: CLEANUP & DOCUMENTATION**
+
+### **Task 7.1: Update counter2/index.ts**
+**File:** `/app/yuzha/src/counter2/index.ts`
+
+**Action:** Add exports for new components:
+```typescript
+export { default as Counter2Screen } from "./counter2Screen";
+export { default as Counter2FloatingButton } from "./counter2FloatingButton";
+export { default as Counter2CountDisplay } from "./counter2CountDisplay";
+export { default as Counter2Floating } from "./counter2Floating";
+export { default as Counter2Settings } from "./counter2Settings";
+export { Counter2Controls } from "./counter2Buttons";
+```
+
+---
+
+## **COMPLETION CHECKLIST**
+
+**Files Created (2):**
+- [ ] `/app/yuzha/src/counter2/counter2FloatingButton.tsx`
+- [ ] `/app/yuzha/src/counter2/counter2CountDisplay.tsx`
+
+**Files Modified (3):**
+- [ ] `/app/yuzha/src/counter2/counter2Screen.tsx` (imports, state, logic, JSX)
+- [ ] `/app/yuzha/src/counter2/counter2Buttons.tsx` (add reset button)
+- [ ] `/app/yuzha/src/counter2/index.ts` (exports)
+
+**Features Working:**
+- [ ] Tappable counter button increments count
+- [ ] Count displays with animation
+- [ ] Reset button works
+- [ ] LocalStorage persistence works
+- [ ] Haptic feedback works (on mobile)
+- [ ] Sound feedback works (if enabled)
+- [ ] Responsive positioning on resize
+
+**Result:** Counter2 now has full counter functionality identical to Counter, but uses the superior shared/layer rendering system.
+
+---
+
+## **TROUBLESHOOTING**
+
+**If button doesn't appear:**
+- Check asset paths in console
+- Verify imports are correct
+- Check z-index conflicts
+
+**If count doesn't persist:**
+- Check localStorage key: "counter2/count/v1"
+- Check browser console for errors
+
+**If positioning is wrong:**
+- Verify `computeCoverTransform` is imported
+- Check `toScreenPosition` function is called correctly
+
+**If sound doesn't work:**
+- Check `/sound/dice.wav` path
+- Try clicking multiple times (browsers block audio without interaction)
+
+---
+
+**END OF TASK LIST**
+Action: finish
+Observation: 
+ Summary: ## Complete Task List: Make Counter2 Function Like Counter
+
+### **CONTEXT**
+- Project: Yuzha counter app at `/app/yuzha/src/`
+- Goal: Add counter functionality to Counter2 (keep existing rendering)
+- Counter2 uses shared/layer rendering (already optimal)
+- Need to add: Interactive button + count display + counter logic
+
+---
+
+## **PHASE 1: CREATE NEW COMPONENT FILES**
+
+### **Task 1.1: Create counter2FloatingButton.tsx**
+**File:** `/app/yuzha/src/counter2/counter2FloatingButton.tsx`
+
+**Action:** Copy from `/app/yuzha/src/counter/counterFloating.tsx` and modify:
+1. View source file: `/app/yuzha/src/counter/counterFloating.tsx`
+2. Copy entire content
+3. Create new file: `/app/yuzha/src/counter2/counter2FloatingButton.tsx`
+4. Paste content
+5. Rename exports:
+   - `CounterFloating` → `Counter2FloatingButton`
+   - `CounterFloatingProps` → `Counter2FloatingButtonProps`
+6. Keep all imports and logic identical
+7. This component handles the tappable counter button
+
+---
+
+### **Task 1.2: Create counter2CountDisplay.tsx**
+**File:** `/app/yuzha/src/counter2/counter2CountDisplay.tsx`
+
+**Action:** Copy from `/app/yuzha/src/counter/counterFloatingMessage.tsx` and modify:
+1. View source file: `/app/yuzha/src/counter/counterFloatingMessage.tsx`
+2. Copy entire content
+3. Create new file: `/app/yuzha/src/counter2/counter2CountDisplay.tsx`
+4. Paste content
+5. Rename exports:
+   - `CounterFloatingMessage` → `Counter2CountDisplay`
+   - `CounterFloatingMessageProps` → `Counter2CountDisplayProps`
+6. Keep all imports including Three.js, requireAssetUrl, createPolarAura
+7. This component displays the count number with effects
+
+---
+
+## **PHASE 2: ADD COUNTER STATE & LOGIC**
+
+### **Task 2.1: Update counter2Screen.tsx - Import Dependencies**
+**File:** `/app/yuzha/src/counter2/counter2Screen.tsx`
+
+**Action:** Add these imports at the top (after existing imports):
+```typescript
+import Counter2FloatingButton from "./counter2FloatingButton";
+import Counter2CountDisplay from "./counter2CountDisplay";
+import { 
+  computeCoverTransform, 
+  stageToViewportCoords,
+  type StageTransform 
+} from "@shared/layer";
+```
+
+---
+
+### **Task 2.2: Add State Management Hook**
+**Location:** Inside `Counter2Screen` function, after `const [showFloating, setShowFloating] = useState(false);`
+
+**Action:** Add this complete state block:
+```typescript
+// Counter state
+const [count, setCount] = useState(0);
+const [isBumping, setIsBumping] = useState(false);
+const bumpTimeoutRef = React.useRef<number | undefined>(undefined);
+
+// UI state
+const [floatingSize, setFloatingSize] = useState(250);
+const [messageSize, setMessageSize] = useState(240);
+const [messageFontSize, setMessageFontSize] = useState(90);
+const [messageColor, setMessageColor] = useState("#ffffff");
+
+// Feature toggles
+const [hapticsEnabled, setHapticsEnabled] = useState(true);
+const [soundEnabled, setSoundEnabled] = useState(false);
+
+// Positions (stage coordinates)
+const [buttonStagePosition, setButtonStagePosition] = useState({ x: 1024, y: 1300 });
+const [messageStagePosition, setMessageStagePosition] = useState({ x: 1024, y: 400 });
+
+// Transform for positioning
+const [transform, setTransform] = useState<StageTransform>(() =>
+  typeof window !== "undefined"
+    ? computeCoverTransform(window.innerWidth, window.innerHeight)
+    : { scale: 1, offsetX: 0, offsetY: 0, width: 2048, height: 2048 }
+);
+```
+
+---
+
+### **Task 2.3: Add Counter Logic Functions**
+**Location:** After state declarations, before `deviceCapability` useMemo
+
+**Action:** Add these functions:
+```typescript
+// Load count from localStorage on mount
+React.useEffect(() => {
+  const saved = window.localStorage.getItem("counter2/count/v1");
+  if (saved !== null) {
+    const parsed = Number(saved);
+    if (!Number.isNaN(parsed)) {
+      setCount(parsed);
+    }
+  }
+  return () => {
+    if (bumpTimeoutRef.current !== undefined) {
+      clearTimeout(bumpTimeoutRef.current);
+    }
+  };
+}, []);
+
+// Handle window resize for transform
+React.useEffect(() => {
+  const handleResize = () => {
+    setTransform(computeCoverTransform(window.innerWidth, window.innerHeight));
+  };
+  handleResize();
+  window.addEventListener("resize", handleResize);
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
+
+// Helper: Convert stage position to screen position
+const toScreenPosition = React.useCallback(
+  (stagePos: { x: number; y: number }, size: number) => {
+    const { x, y } = stageToViewportCoords(stagePos.x, stagePos.y, transform);
+    const half = size / 2;
+    const margin = 8;
+    const maxX = Math.max(margin, window.innerWidth - size - margin);
+    const maxY = Math.max(margin, window.innerHeight - size - margin);
+    return {
+      x: Math.min(maxX, Math.max(margin, x - half)),
+      y: Math.min(maxY, Math.max(margin, y - half)),
+    };
+  },
+  [transform]
+);
+
+// Increment counter
+const increment = React.useCallback(() => {
+  setCount((prev) => {
+    const next = prev + 1;
+    window.localStorage.setItem("counter2/count/v1", String(next));
+    return next;
+  });
+
+  // Bump animation
+  setIsBumping(true);
+  if (bumpTimeoutRef.current !== undefined) {
+    clearTimeout(bumpTimeoutRef.current);
+  }
+  bumpTimeoutRef.current = window.setTimeout(() => setIsBumping(false), 250);
+
+  // Haptic feedback
+  if (hapticsEnabled && "vibrate" in navigator) {
+    navigator.vibrate(20);
+  }
+
+  // Sound feedback
+  if (soundEnabled) {
+    const audio = new Audio("/sound/dice.wav");
+    audio.volume = 0.2;
+    audio.play().catch(() => {});
+  }
+}, [hapticsEnabled, soundEnabled]);
+
+// Reset counter
+const reset = React.useCallback(() => {
+  setCount(0);
+  window.localStorage.setItem("counter2/count/v1", "0");
+  
+  // Feedback
+  if (hapticsEnabled && "vibrate" in navigator) {
+    navigator.vibrate(20);
+  }
+  if (soundEnabled) {
+    const audio = new Audio("/sound/dice.wav");
+    audio.volume = 0.2;
+    audio.play().catch(() => {});
+  }
+}, [hapticsEnabled, soundEnabled]);
+
+// Calculate screen positions
+const buttonScreenPosition = React.useMemo(
+  () => toScreenPosition(buttonStagePosition, floatingSize),
+  [buttonStagePosition, floatingSize, toScreenPosition]
+);
+
+const messageScreenPosition = React.useMemo(
+  () => toScreenPosition(messageStagePosition, messageSize),
+  [messageStagePosition, messageSize, toScreenPosition]
+);
+```
+
+---
+
+## **PHASE 3: UPDATE UI COMPONENTS**
+
+### **Task 3.1: Add Reset Button to counter2Buttons.tsx**
+**File:** `/app/yuzha/src/counter2/counter2Buttons.tsx`
+
+**Action:** 
+1. Update `Counter2ControlsProps` type to add `onReset`:
+```typescript
+type Counter2ControlsProps = {
+  onToggleSettings?: () => void;
+  onToggleFloating?: () => void;
+  onReset?: () => void; // ADD THIS LINE
+};
+```
+
+2. Update function signature:
+```typescript
+export function Counter2Controls({
+  onToggleSettings,
+  onToggleFloating,
+  onReset, // ADD THIS LINE
+}: Counter2ControlsProps) {
+```
+
+3. Add reset button in JSX (before the info button):
+```typescript
+return (
+  <div className="absolute bottom-4 right-4 z-50 flex flex-col gap-2">
+    {/* ADD THIS RESET BUTTON */}
+    {onReset && (
+      <button
+        type="button"
+        onClick={onReset}
+        className="p-3 bg-orange-600/80 hover:bg-orange-500/80 text-white rounded-full shadow-lg transition-colors"
+        title="Reset Counter"
+      >
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+          />
+        </svg>
+      </button>
+    )}
+    
+    {/* EXISTING INFO BUTTON */}
+    <button
+      type="button"
+      onClick={onToggleFloating}
+      className="p-3 bg-teal-600/80 hover:bg-teal-500/80 text-white rounded-full shadow-lg transition-colors"
+      title="Info"
+    >
+      {/* ... existing info icon ... */}
+    </button>
+
+    {/* EXISTING SETTINGS BUTTON */}
+    <button
+      type="button"
+      onClick={onToggleSettings}
+      className="p-3 bg-slate-700/80 hover:bg-slate-600/80 text-white rounded-full shadow-lg transition-colors"
+      title="Settings"
+    >
+      {/* ... existing settings icon ... */}
+    </button>
+  </div>
+);
+```
+
+---
+
+### **Task 3.2: Update counter2Screen.tsx - Add Components to JSX**
+**File:** `/app/yuzha/src/counter2/counter2Screen.tsx`
+
+**Location:** In the return statement, after `<Counter2Controls ... />` and before the closing `</div>`
+
+**Action:** Add these components:
+```typescript
+{/* Floating counter button */}
+<Counter2FloatingButton
+  size={floatingSize}
+  screenPosition={buttonScreenPosition}
+  onActivate={increment}
+/>
+
+{/* Count display */}
+<Counter2CountDisplay
+  size={messageSize}
+  screenPosition={messageScreenPosition}
+>
+  <div
+    className={`flex w-full items-center justify-center text-white drop-shadow ${
+      isBumping ? "count-bump" : ""
+    }`}
+    style={{
+      fontFamily: "Taimingda, sans-serif",
+      fontSize: messageFontSize,
+      color: messageColor,
+      WebkitTextStroke: "1px rgba(0,0,0,0.6)",
+      textShadow: "0 0 5px rgba(0,0,0,0.8)",
+    }}
+  >
+    {count}
+  </div>
+</Counter2CountDisplay>
+```
+
+---
+
+### **Task 3.3: Update Counter2Controls Component Call**
+**File:** `/app/yuzha/src/counter2/counter2Screen.tsx`
+
+**Location:** Find the `<Counter2Controls` component call
+
+**Action:** Add `onReset={reset}` prop:
+```typescript
+<Counter2Controls
+  onToggleSettings={handleToggleSettings}
+  onToggleFloating={handleToggleFloating}
+  onReset={reset}  {/* ADD THIS LINE */}
+/>
+```
+
+---
+
+## **PHASE 4: ADD CSS ANIMATION**
+
+### **Task 4.1: Add Bump Animation CSS**
+**File:** `/app/yuzha/src/counter2/counter2Screen.tsx` OR global CSS file
+
+**Action:** Add this CSS class (if using styled-jsx, add in component; otherwise add to global CSS):
+
+**Option A - Add style tag in component:**
+```typescript
+// Add this before the return statement
+const styles = `
+  @keyframes count-bump {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+  }
+  .count-bump {
+    animation: count-bump 0.25s ease-out;
+  }
+`;
+```
+
+**Option B - Check if it exists in:** `/app/yuzha/src/counter/counterScreen.tsx` area or global CSS, and ensure counter2 can access it.
+
+---
+
+## **PHASE 5: VERIFY ASSETS**
+
+### **Task 5.1: Verify Required Assets Exist**
+**Action:** Check these files/assets are accessible:
+
+1. **Prestige button images:**
+   - Check: `requireAssetUrl("Prestige_SlotBase_Off")` works
+   - Check: `requireAssetUrl("Prestige_SlotBase")` works
+   - Check: `requireAssetUrl("overflow_glow_01")` works
+
+2. **Message background:**
+   - Check: `requireAssetUrl("SystemMessageBg")` works
+
+3. **Sound file:**
+   - Check: `/public/sound/dice.wav` exists (or `/sound/dice.wav`)
+
+4. **Shared effects:**
+   - Check: `@shared/effect/polaraura` can be imported
+
+**If any asset is missing:** Counter/Counter2 shares assets, so they should exist. If not, either mock them or copy from counter folder.
+
+---
+
+## **PHASE 6: TESTING**
+
+### **Task 6.1: Start Development Server**
+```bash
+sudo supervisorctl status
+# Ensure yuzha is running on port 3000
+```
+
+### **Task 6.2: Manual Testing Checklist**
+Navigate to Counter2 screen and test:
+
+1. **Counter Button:**
+   - [ ] Button is visible
+   - [ ] Button responds to click
+   - [ ] Glow animation on press
+   - [ ] Count increments by 1
+
+2. **Count Display:**
+   - [ ] Number is visible
+   - [ ] Number updates when button clicked
+   - [ ] Bump animation plays
+   - [ ] Background effects render
+
+3. **Reset Button:**
+   - [ ] Orange reset button visible (bottom-right)
+   - [ ] Clicking resets count to 0
+   - [ ] Feedback works (haptic/sound if enabled)
+
+4. **Persistence:**
+   - [ ] Increment counter to 10
+   - [ ] Refresh page
+   - [ ] Count still shows 10
+
+5. **Settings:**
+   - [ ] Toggle haptics on/off
+   - [ ] Toggle sound on/off
+   - [ ] Test that toggling affects feedback
+
+6. **Responsive:**
+   - [ ] Resize window
+   - [ ] Components stay within viewport
+   - [ ] Button/display positions update
+
+---
+
+## **PHASE 7: CLEANUP & DOCUMENTATION**
+
+### **Task 7.1: Update counter2/index.ts**
+**File:** `/app/yuzha/src/counter2/index.ts`
+
+**Action:** Add exports for new components:
+```typescript
+export { default as Counter2Screen } from "./counter2Screen";
+export { default as Counter2FloatingButton } from "./counter2FloatingButton";
+export { default as Counter2CountDisplay } from "./counter2CountDisplay";
+export { default as Counter2Floating } from "./counter2Floating";
+export { default as Counter2Settings } from "./counter2Settings";
+export { Counter2Controls } from "./counter2Buttons";
+```
+
+---
+
+## **COMPLETION CHECKLIST**
+
+**Files Created (2):**
+- [ ] `/app/yuzha/src/counter2/counter2FloatingButton.tsx`
+- [ ] `/app/yuzha/src/counter2/counter2CountDisplay.tsx`
+
+**Files Modified (3):**
+- [ ] `/app/yuzha/src/counter2/counter2Screen.tsx` (imports, state, logic, JSX)
+- [ ] `/app/yuzha/src/counter2/counter2Buttons.tsx` (add reset button)
+- [ ] `/app/yuzha/src/counter2/index.ts` (exports)
+
+**Features Working:**
+- [ ] Tappable counter button increments count
+- [ ] Count displays with animation
+- [ ] Reset button works
+- [ ] LocalStorage persistence works
+- [ ] Haptic feedback works (on mobile)
+- [ ] Sound feedback works (if enabled)
+- [ ] Responsive positioning on resize
+
+**Result:** Counter2 now has full counter functionality identical to Counter, but uses the superior shared/layer rendering system.
+
+---
+
+## **TROUBLESHOOTING**
+
+**If button doesn't appear:**
+- Check asset paths in console
+- Verify imports are correct
+- Check z-index conflicts
+
+**If count doesn't persist:**
+- Check localStorage key: "counter2/count/v1"
+- Check browser console for errors
+
+**If positioning is wrong:**
+- Verify `computeCoverTransform` is imported
+- Check `toScreenPosition` function is called correctly
+
+**If sound doesn't work:**
+- Check `/sound/dice.wav` path
+- Try clicking multiple times (browsers block audio without interaction)
+
+---
+
+**END OF TASK LIST**
