@@ -24,7 +24,7 @@ import CounterFloating from "./counterFloating";
 import CounterFloatingMessage from "./counterFloatingMessage";
 import CounterSettings from "./counterSettings";
 import { CounterControls } from "./counterButtons";
-import CounterEffectDemo from "./counterEffectDemo";
+import CounterEffectDemo from "@shared/effect/counterEffectDemo";
 
 if (import.meta.hot) {
   import.meta.hot.accept();

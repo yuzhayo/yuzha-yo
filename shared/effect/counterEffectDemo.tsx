@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useMemo } from "react";
 import * as THREE from "three";
-import { requireAssetUrl } from "@shared/asset/assetResolver";
-import { createPolarAura } from "@shared/effect/polaraura";
-import { createStraightRay } from "@shared/effect/straightRay";
-import straightRayConfig from "@shared/effect/straightRay.config.json";
+import { requireAssetUrl } from "../asset/assetResolver";
+import { createPolarAura } from "./polaraura";
+import { createStraightRay } from "./straightRay";
+import straightRayConfig from "./straightRay.config.json";
 
 const wave22TextureUrl = requireAssetUrl("alpha_noise_256_wave_22");
 const wave04TextureUrl = requireAssetUrl("alpha_noise_256_wave_04");
@@ -539,7 +539,7 @@ export default function CounterEffectDemo({ onClose }: CounterEffectDemoProps) {
                 : "bg-slate-700 text-slate-300 hover:bg-slate-600"
             }`}
           >
-            🔥 Purple Fire
+            Purple Fire
           </button>
           <button
             type="button"
@@ -550,7 +550,7 @@ export default function CounterEffectDemo({ onClose }: CounterEffectDemoProps) {
                 : "bg-slate-700 text-slate-300 hover:bg-slate-600"
             }`}
           >
-            💥 Orange Burst
+            Orange Burst
           </button>
           <button
             type="button"
@@ -561,7 +561,7 @@ export default function CounterEffectDemo({ onClose }: CounterEffectDemoProps) {
                 : "bg-slate-700 text-slate-300 hover:bg-slate-600"
             }`}
           >
-            ✨ Aura Blast
+            Aura Blast
           </button>
           <button
             type="button"
@@ -572,7 +572,7 @@ export default function CounterEffectDemo({ onClose }: CounterEffectDemoProps) {
                 : "bg-slate-700 text-slate-300 hover:bg-slate-600"
             }`}
           >
-            💨 Smoke Stack
+            Smoke Stack
           </button>
           <button
             type="button"
@@ -583,7 +583,7 @@ export default function CounterEffectDemo({ onClose }: CounterEffectDemoProps) {
                 : "bg-slate-700 text-slate-300 hover:bg-slate-600"
             }`}
           >
-            🌀 Smoke Radial
+            Smoke Radial
           </button>
         </div>
       </div>
