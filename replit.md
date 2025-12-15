@@ -112,6 +112,32 @@ Core animation logic is driven by a Layer System where JSON configurations defin
 - `yuzha/src/timestamp/TimestampSettings.tsx` - Settings panel, preset UI
 - `yuzha/src/timestamp/PresetManager.ts` - Preset storage, V1/V2/V3 migration
 
+### Counter2 Optimized Screen (Dec 2025) - COMPLETED
+
+**Objective:** Create an optimized counter screen using the shared/layer architecture for better performance on low-end devices.
+
+**Design Choices:**
+
+1. **Separate Implementation:** Created `counter2` folder instead of refactoring original `counter` to minimize risk
+2. **Canvas2D Only:** Uses `StageCanvas` exclusively for maximum compatibility and performance
+3. **Custom Pipeline:** Implements `createCounter2Pipeline()` with custom config loading from `ConfigCounter2.json`
+4. **Device Detection:** Uses `DeviceCapability` with `performanceLevel` and `isLowEndDevice` for device classification
+
+**Key Files:**
+
+- `yuzha/src/counter2/counter2Screen.tsx` - Main screen with custom pipeline loader
+- `yuzha/src/counter2/counter2Floating.tsx` - Floating panel UI
+- `yuzha/src/counter2/counter2Settings.tsx` - Settings panel
+- `yuzha/src/counter2/counter2Buttons.tsx` - Control buttons
+- `shared/layer/ConfigCounter2.json` - Layer configuration (all 2D layers)
+
+**Architecture Notes:**
+
+- `StageCanvas` accepts `loadPipeline` prop for custom configurations
+- `PreparedLayer` format: `{ entry, data, processors, metadata }`
+- All layers use `renderer: "2D"` for consistent Canvas2D rendering
+- Navigation integrated through `MainScreenUtils.tsx`, `MainScreen.tsx`, and `App.tsx`
+
 ### Layer Module Simplification Refactoring (Nov 2025)
 
 **Objective:** Consolidate duplicate code in the `shared/layer/` module to establish clear single sources of truth and improve maintainability.
