@@ -1,0 +1,142 @@
+[
+  {
+    "LayerID": "BACKGROUND-STAR",
+    "ImageID": "Img_deco_Level_Round_1",
+    "renderer": "2D",
+    "LayerOrder": 50,
+    "ImageScale": [300, 300],
+    "spinStagePoint": [1024, 1300],
+    "spinImagePoint": [50, 50],
+    "spinSpeed": "second",
+    "spinDirection": "cw"
+  },
+  {
+    "LayerID": "BACKG",
+    "ImageID": "Img_deco_Level_Round_1",
+    "renderer": "2D",
+    "LayerOrder": 50,
+    "ImageScale": [350, 350],
+    "spinStagePoint": [1024, 1300],
+    "spinImagePoint": [50, 50],
+    "spinSpeed": 50,
+    "spinDirection": "ccw"
+  },
+  {
+    "LayerID": "BAC1",
+    "ImageID": "Img_Guild_Rank_Title_Deco",
+    "renderer": "2D",
+    "opacity": 0.2,
+    "LayerOrder": 10,
+    "ImageScale": [280, 280],
+    "BasicStagePoint": [1024, 850]
+  },
+  {
+    "LayerID": "BAC2",
+    "ImageID": "BUBBLE",
+    "renderer": "2D",
+    "LayerOrder": 20,
+    "ImageScale": [150, 150],
+    "BasicStagePoint": [1024, 420]
+  },
+  {
+    "LayerID": "BAC3",
+    "ImageID": "Img_Deco_Enhance_2",
+    "renderer": "2D",
+    "LayerOrder": 50,
+    "ImageScale": [165, 165],
+    "BasicStagePoint": [1024, 1300]
+  },
+  {
+    "LayerID": "BAC4",
+    "ImageID": "Img_deco_Level_LineEffect",
+    "renderer": "2D",
+    "LayerOrder": 45,
+    "ImageScale": [150, 150],
+    "BasicStagePoint": [1024, 1300]
+  },
+  {
+    "LayerID": "BAC5",
+    "ImageID": "Img_CoreEquip_Page_Deco",
+    "renderer": "2D",
+    "LayerOrder": 60,
+    "ImageScale": [100, 100],
+    "BasicStagePoint": [1024, 1300]
+  },
+  {
+    "LayerID": "BAC6",
+    "ImageID": "general_icon_chakan",
+    "renderer": "2D",
+    "LayerOrder": 10,
+    "ImageScale": [140, 140],
+    "spinStagePoint": [1024, 1300],
+    "spinImagePoint": [50, 50],
+    "spinSpeed": 80,
+    "spinDirection": "cw"
+  },
+  {
+    "LayerID": "BAC7",
+    "ImageID": "general_deco_tab_hw",
+    "renderer": "2D",
+    "LayerOrder": 10,
+    "ImageScale": [500, 500],
+    "BasicStagePoint": [1024, 180],
+    "BasicImageAngle": 180
+  },
+  {
+    "LayerID": "BAC8",
+    "ImageID": "general_deco_tab_hw",
+    "renderer": "3D",
+    "BlendMode": "additive",
+    "LayerOrder": 10,
+    "ImageScale": [500, 500],
+    "BasicStagePoint": [1024, 1880],
+    "BasicImageAngle": 0
+  },
+  {
+    "LayerID": "BAC9",
+    "ImageID": "Fx_MagicCircle_16_half",
+    "renderer": "3D",
+    "opacity": 1.0,
+    "LayerOrder": 5,
+    "ImageScale": [120, 120],
+    "BasicStagePoint": [1024, 1300],
+    "BasicImageAngle": 45
+  },
+  {
+    "LayerID": "BAC19",
+    "ImageID": "Fx_MagicCircle_LeeJuhee_Ulti02_Clamp",
+    "renderer": "3D",
+    "BlendMode": "additive",
+    "opacity": 0.3,
+    "PulseSeconds": 3.0,
+    "PulseAmplitude": 0.25,
+    "LayerOrder": 5,
+    "ImageScale": [150, 150],
+    "BasicStagePoint": [1024, 420],
+    "BasicImageAngle": 270
+  },
+  {
+    "LayerID": "BAC60",
+    "ImageID": "Fx_MagicCircle_ChaHaeInMM_1",
+    "renderer": "2D",
+    "opacity": 0.6,
+    "LayerOrder": 10,
+    "ImageScale": [125, 125],
+    "spinStagePoint": [412, 0],
+    "spinImagePoint": [50, 50],
+    "spinSpeed": 60,
+    "spinDirection": "cw"
+  },
+  {
+    "LayerID": "BAC61",
+    "ImageID": "Fx_MagicCircle_ChaHaeInMM_1",
+    "renderer": "2D",
+    "opacity": 0.6,
+    "LayerOrder": 10,
+    "ImageScale": [125, 125],
+    "spinStagePoint": [1636, 0],
+    "spinImagePoint": [50, 50],
+    "spinSpeed": 60,
+    "spinDirection": "ccw"
+  }
+]
