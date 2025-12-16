@@ -9,7 +9,8 @@
   },
   "workspaces": [
     "yuzha",
-    "meng"
+    "meng",
+    "counter2"
   ],
   "scripts": {
     "dev": "concurrently -k -n yuzha,meng \"npm run dev:yuzha\" \"npm run dev:meng\"",
@@ -51,7 +52,10 @@
     "build:meng": "npm run build --workspace meng",
     "lint:meng": "npm run lint --workspace meng",
     "typecheck:meng": "npm run typecheck --workspace meng",
-    "preview:meng": "npm run preview --workspace meng"
+    "preview:meng": "npm run preview --workspace meng",
+    "dev:counter2": "npm run dev --workspace counter2",
+    "build:counter2": "npm run build --workspace counter2",
+    "preview:counter2": "npm run preview --workspace counter2"
   },
   "devDependencies": {
     "@tailwindcss/aspect-ratio": "^0.4.2",

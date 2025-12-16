@@ -256,10 +256,16 @@ export default function Counter2Screen({ onBack }: Counter2ScreenProps) {
       <div className="absolute top-3 left-3 z-50">
         <button
           type="button"
-          onClick={onBack}
+          onClick={() => {
+            if (onBack) {
+              onBack();
+            } else {
+              window.location.href = "/";
+            }
+          }}
           className="px-4 py-2 text-sm font-medium text-white bg-slate-800/80 hover:bg-slate-700/80 rounded-lg shadow-lg border border-slate-700/50 backdrop-blur-sm transition-colors"
         >
-          Back
+          {onBack ? "Back" : "Home"}
         </button>
       </div>
 

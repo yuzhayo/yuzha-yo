@@ -1,0 +1,778 @@
+## End-to-End Task List: Counter2 Enhancement & Workspace Separation
+
+### 📋 CONTEXT FOR NEW AGENT
+
+**Project:** Yuzha multi-tool application (React + Vite + TypeScript)  
+**Current Setup:** Monorepo with workspaces (yuzha, meng)  
+**Tech Stack:** React 18, TypeScript, Tailwind CSS, Canvas2D/Three.js rendering  
+**Service Manager:** Supervisor (running on port 3000)  
+**Current Structure:**
+```
+/app/
+├── yuzha/          (main workspace - port 3000)
+├── meng/           (secondary workspace - port 3001)
+├── shared/         (shared utilities and components)
+├── package.json    (root workspace config)
+└── yuzha.conf      (supervisor config - DO NOT MODIFY)
+```
+
+**Goal:** Enhance Counter2 settings, then separate it into independent workspace while keeping it accessible from yuzha mainscreen.
+
+---
+
+## 🎯 PHASE 1: CLEANUP FAKE SETTINGS
+
+### Task 1.1: Analyze Counter2 Settings Component
+**File:** `/app/yuzha/src/counter2/counter2Settings.tsx`
+
+**Action:**
+1. View the file completely
+2. Identify these non-functional settings (they exist but do nothing):
+   - Lines ~34-36: `lowEndMode`, `showDebug`, `fpsLimit` (local state only, never used)
+   - Lines ~159-219: UI sections for "Low-End Mode", "Show Debug Info", "FPS Limit"
+
+### Task 1.2: Remove Non-Functional Settings
+**File:** `/app/yuzha/src/counter2/counter2Settings.tsx`
+
+**Remove:**
+1. State declarations (around lines 34-36):
+   ```typescript
+   const [lowEndMode, setLowEndMode] = useState(false);
+   const [showDebug, setShowDebug] = useState(false);
+   const [fpsLimit, setFpsLimit] = useState<30 | 60>(60);
+   ```
+
+2. The entire "Renderer Settings" section (around lines 159-219):
+   - The section header: `<div className="text-xs text-slate-400 uppercase tracking-wider mb-2 mt-6">Renderer Settings</div>`
+   - "Low-End Mode" toggle block
+   - "Show Debug Info" toggle block  
+   - "FPS Limit" selection block
+
+**Keep:**
+- All functional settings: Haptics, Sound, Button Size, Display Size, Font Size, Text Color
+- The modal structure and styling
+- All working props and handlers
+
+### Task 1.3: Verify Counter2 Screen Compatibility
+**File:** `/app/yuzha/src/counter2/counter2Screen.tsx`
+
+**Action:**
+1. Confirm it doesn't expect removed settings as props
+2. Verify automatic device detection is still working (line ~131: `getDeviceCapability()`)
+3. No changes needed here - just verification
+
+---
+
+## 🎯 PHASE 2: ADD POSITION CONTROLS
+
+### Task 2.1: Study Counter Settings Implementation
+**Reference File:** `/app/yuzha/src/counter/counterSettings.tsx`
+
+**Study these sections:**
+1. Lines 4-26: Props structure with position controls
+2. Lines 69-76: `handlePositionChange` helper function
+3. Lines 83-115: `renderPositionInputs` reusable component
+4. Lines 151, 168, 220-226: How position inputs are rendered
+
+**Key Pattern to Copy:**
+```typescript
+position: { x: number; y: number };
+onPositionChange: (value: { x: number; y: number }) => void;
+```
+
+### Task 2.2: Add Position Props to Counter2Settings
+**File:** `/app/yuzha/src/counter2/counter2Settings.tsx`
+
+**Add to `Counter2SettingsProps` type (after line ~17):**
+```typescript
+floatingPosition?: { x: number; y: number };
+onFloatingPositionChange?: (pos: { x: number; y: number }) => void;
+messagePosition?: { x: number; y: number };
+onMessagePositionChange?: (pos: { x: number; y: number }) => void;
+```
+
+**Add to function parameters (after line ~32):**
+```typescript
+floatingPosition = { x: 1024, y: 1300 },
+onFloatingPositionChange,
+messagePosition = { x: 1024, y: 400 },
+onMessagePositionChange,
+```
+
+### Task 2.3: Add Position Control Helpers
+**File:** `/app/yuzha/src/counter2/counter2Settings.tsx`
+
+**Add inside component (after line ~36, before return statement):**
+```typescript
+const clampStage = (value: number) => Math.min(2048, Math.max(0, value));
+
+const handlePositionChange =
+  (setter: ((value: { x: number; y: number }) => void) | undefined, current: { x: number; y: number }) =>
+  (axis: "x" | "y") =>
+  (event: React.ChangeEvent<HTMLInputElement>) => {
+    const next = Number(event.target.value);
+    if (Number.isNaN(next) || !setter) return;
+    setter({ ...current, [axis]: clampStage(next) });
+  };
+
+const renderPositionInputs = (
+  label: string,
+  value: { x: number; y: number },
+  setter: ((val: { x: number; y: number }) => void) | undefined,
+) => (
+  <div className="p-3 bg-slate-800/50 rounded-xl border border-slate-700/30">
+    <h3 className="text-sm font-medium text-slate-200 mb-2">{label}</h3>
+    <p className="text-xs text-slate-400 mb-2">Stage coordinates (0-2048)</p>
+    <div className="grid grid-cols-2 gap-2">
+      <label className="flex items-center gap-2 text-xs text-slate-300">
+        <span className="w-4 text-right">X</span>
+        <input
+          type="number"
+          min={0}
+          max={2048}
+          value={value.x}
+          onChange={handlePositionChange(setter, value)("x")}
+          className="flex-1 px-2 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:border-teal-500 focus:outline-none"
+        />
+      </label>
+      <label className="flex items-center gap-2 text-xs text-slate-300">
+        <span className="w-4 text-right">Y</span>
+        <input
+          type="number"
+          min={0}
+          max={2048}
+          value={value.y}
+          onChange={handlePositionChange(setter, value)("y")}
+          className="flex-1 px-2 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:border-teal-500 focus:outline-none"
+        />
+      </label>
+    </div>
+  </div>
+);
+```
+
+### Task 2.4: Add Position Controls to UI
+**File:** `/app/yuzha/src/counter2/counter2Settings.tsx`
+
+**Add in the JSX (after the "Text Color" section, before closing div):**
+```typescript
+<div className="text-xs text-slate-400 uppercase tracking-wider mb-2 mt-6">Position Controls</div>
+
+{renderPositionInputs("Button Position", floatingPosition, onFloatingPositionChange)}
+
+{renderPositionInputs("Display Position", messagePosition, onMessagePositionChange)}
+```
+
+### Task 2.5: Wire Position State in Counter2Screen
+**File:** `/app/yuzha/src/counter2/counter2Screen.tsx`
+
+**Find existing position state (around lines 122-123):**
+```typescript
+const [buttonStagePosition, setButtonStagePosition] = useState({ x: 1024, y: 1300 });
+const [messageStagePosition, setMessageStagePosition] = useState({ x: 1024, y: 400 });
+```
+
+**Update Counter2Settings component call (around line 307-322) to include:**
+```typescript
+<Counter2Settings
+  onClose={handleToggleSettings}
+  hapticsEnabled={hapticsEnabled}
+  onHapticsToggle={setHapticsEnabled}
+  soundEnabled={soundEnabled}
+  onSoundToggle={setSoundEnabled}
+  floatingSize={floatingSize}
+  onFloatingSizeChange={setFloatingSize}
+  messageSize={messageSize}
+  onMessageSizeChange={setMessageSize}
+  messageFontSize={messageFontSize}
+  onMessageFontSizeChange={setMessageFontSize}
+  messageColor={messageColor}
+  onMessageColorChange={setMessageColor}
+  floatingPosition={buttonStagePosition}
+  onFloatingPositionChange={setButtonStagePosition}
+  messagePosition={messageStagePosition}
+  onMessagePositionChange={setMessageStagePosition}
+/>
+```
+
+### Task 2.6: Test Phase 2
+**Actions:**
+1. Check if services are running: `sudo supervisorctl status`
+2. If not, restart: `sudo supervisorctl restart all`
+3. Open yuzha mainscreen → Counter2
+4. Open settings modal
+5. Verify position controls appear with X/Y inputs
+6. Change values and verify button/display move accordingly
+7. Check browser console for errors
+
+---
+
+## 🎯 PHASE 3: CREATE SEPARATE WORKSPACE
+
+### Task 3.1: Create Counter2 Workspace Structure
+**Actions:**
+```bash
+# Create workspace directory
+mkdir -p /app/counter2/src
+
+# Create necessary config files (follow exact paths)
+```
+
+**Files to create:**
+
+**3.1.1: `/app/counter2/package.json`**
+```json
+{
+  "name": "counter2-app",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 3002 --host",
+    "dev:3002": "vite --port 3002",
+    "build": "tsc && vite build",
+    "preview": "vite preview --port 3002",
+    "preview:3002": "vite preview --port 3002"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.7",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "typescript": "^5.6.3",
+    "vite": "^7.0.4"
+  }
+}
+```
+
+**3.1.2: `/app/counter2/vite.config.ts`**
+```typescript
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "path";
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      "@shared": path.resolve(__dirname, "../shared"),
+    },
+  },
+  server: {
+    port: 3002,
+    host: true,
+    strictPort: true,
+  },
+  build: {
+    outDir: "dist",
+    sourcemap: true,
+  },
+});
+```
+
+**3.1.3: `/app/counter2/tsconfig.json`**
+```json
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["../shared/*"]
+    }
+  },
+  "include": ["src", "../shared"],
+  "references": []
+}
+```
+
+**3.1.4: `/app/counter2/index.html`**
+```html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Counter2</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+```
+
+**3.1.5: `/app/counter2/postcss.config.ts`**
+```typescript
+import tailwindcss from "tailwindcss";
+import autoprefixer from "autoprefixer";
+
+export default {
+  plugins: [tailwindcss, autoprefixer],
+};
+```
+
+**3.1.6: `/app/counter2/tailwind.config.ts`**
+```typescript
+import type { Config } from "tailwindcss";
+
+export default {
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}", "../shared/**/*.{js,ts,jsx,tsx}"],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+} satisfies Config;
+```
+
+### Task 3.2: Copy Counter2 Source Files
+**Actions:**
+```bash
+# Copy all counter2 files from yuzha to new workspace
+cp -r /app/yuzha/src/counter2/* /app/counter2/src/
+
+# Copy shared layer config
+cp /app/shared/layer/ConfigCounter2.json /app/counter2/src/ 2>/dev/null || echo "ConfigCounter2.json not found in shared/layer, check location"
+```
+
+### Task 3.3: Create Counter2 Entry Point
+**File:** `/app/counter2/src/main.tsx`
+
+```typescript
+import React from "react";
+import ReactDOM from "react-dom/client";
+import Counter2Screen from "./counter2Screen";
+import "./index.css";
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <Counter2Screen />
+  </React.StrictMode>
+);
+```
+
+**File:** `/app/counter2/src/index.css`
+
+```css
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+```
+
+### Task 3.4: Update Counter2Screen for Standalone
+**File:** `/app/counter2/src/counter2Screen.tsx`
+
+**Find the import for ConfigCounter2.json (around line 26):**
+```typescript
+import rawConfig from "@shared/layer/ConfigCounter2.json";
+```
+
+**If ConfigCounter2.json doesn't exist in shared/layer, change to:**
+```typescript
+import rawConfig from "./ConfigCounter2.json";
+```
+
+**Find the Back button section (around lines 256-264):**
+```typescript
+<div className="absolute top-3 left-3 z-50">
+  <button
+    type="button"
+    onClick={onBack}
+    className="px-4 py-2 text-sm font-medium text-white bg-slate-800/80 hover:bg-slate-700/80 rounded-lg shadow-lg border border-slate-700/50 backdrop-blur-sm transition-colors"
+  >
+    Back
+  </button>
+</div>
+```
+
+**Make onBack optional and add home functionality:**
+```typescript
+<div className="absolute top-3 left-3 z-50">
+  <button
+    type="button"
+    onClick={() => {
+      if (onBack) {
+        onBack();
+      } else {
+        window.location.href = "/";
+      }
+    }}
+    className="px-4 py-2 text-sm font-medium text-white bg-slate-800/80 hover:bg-slate-700/80 rounded-lg shadow-lg border border-slate-700/50 backdrop-blur-sm transition-colors"
+  >
+    {onBack ? "Back" : "Home"}
+  </button>
+</div>
+```
+
+### Task 3.5: Update Root package.json Workspaces
+**File:** `/app/package.json`
+
+**Find "workspaces" array (around line 10-13):**
+```json
+"workspaces": [
+  "yuzha",
+  "meng"
+],
+```
+
+**Change to:**
+```json
+"workspaces": [
+  "yuzha",
+  "meng",
+  "counter2"
+],
+```
+
+**Add counter2 scripts in "scripts" section (after line 54):**
+```json
+"dev:counter2": "npm run dev --workspace counter2",
+"build:counter2": "npm run build --workspace counter2",
+"preview:counter2": "npm run preview --workspace counter2"
+```
+
+### Task 3.6: Create Counter2 Supervisor Config
+**File:** `/app/counter2.conf`
+
+```ini
+[program:counter2]
+command=npm run dev:counter2
+directory=/app
+autostart=false
+autorestart=true
+stderr_logfile=/var/log/supervisor/counter2.err.log
+stdout_logfile=/var/log/supervisor/counter2.out.log
+stopsignal=TERM
+stopwaitsecs=30
+stopasgroup=true
+killasgroup=true
+environment=NODE_ENV="development"
+```
+
+**Note:** Set `autostart=false` so it only runs when user wants to test standalone mode.
+
+### Task 3.7: Install Counter2 Dependencies
+**Actions:**
+```bash
+cd /app
+npm install
+```
+
+### Task 3.8: Update Yuzha to Link to Counter2
+**File:** `/app/yuzha/src/App.tsx`
+
+**Find where counter2Screen is imported and used. Update the navigation to:**
+
+```typescript
+// If using state-based navigation, add URL option:
+const handleOpenCounter2 = () => {
+  // Check if running in standalone counter2 environment
+  if (window.location.port === "3002") {
+    setCurrentScreen("counter2"); // Local navigation
+  } else {
+    // Offer choice: open locally or in new tab
+    setCurrentScreen("counter2"); // For now keep local, can change later
+  }
+};
+```
+
+**Add helper text in MainScreenUtils Counter2 button (optional):**
+```typescript
+// In /app/yuzha/src/MainScreenUtils.tsx around line 384-392
+{props.onOpenCounter2Screen && (
+  <button
+    type="button"
+    onClick={props.onOpenCounter2Screen}
+    onContextMenu={(e) => {
+      e.preventDefault();
+      window.open("http://localhost:3002", "_blank");
+    }}
+    className="text-xs px-3 py-2 rounded bg-teal-600/80 hover:bg-teal-500/80 active:bg-teal-600 text-white shadow-sm border border-white/10 text-center whitespace-normal break-words leading-tight"
+    title="Click: Open locally | Right-click: Open in new tab (port 3002)"
+  >
+    Counter2
+  </button>
+)}
+```
+
+---
+
+## 🎯 PHASE 4: TESTING & VERIFICATION
+
+### Task 4.1: Test Counter2 Within Yuzha
+**Actions:**
+```bash
+# Ensure yuzha is running
+sudo supervisorctl status
+
+# Should show: yuzha RUNNING
+
+# Open browser to http://localhost:3000
+# Long press on screen → Counter2 button
+# Verify:
+# - Counter2 loads
+# - Settings open
+# - Position controls work
+# - Button and display respond to position changes
+# - No console errors
+```
+
+### Task 4.2: Test Counter2 Standalone
+**Actions:**
+```bash
+# Start counter2 service
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start counter2
+
+# Check status
+sudo supervisorctl status counter2
+# Should show: counter2 RUNNING
+
+# Check logs
+tail -n 50 /var/log/supervisor/counter2.out.log
+
+# Should show Vite dev server on port 3002
+
+# Test in browser
+curl -I http://localhost:3002
+# Should return HTTP 200
+
+# Open browser to http://localhost:3002
+# Verify:
+# - Counter2 loads independently
+# - All features work
+# - Settings work
+# - No "Back" button or shows "Home"
+# - No console errors
+```
+
+### Task 4.3: Test Right-Click Navigation (if implemented)
+**Actions:**
+```bash
+# In yuzha (localhost:3000)
+# Right-click Counter2 button
+# Verify new tab opens to localhost:3002
+```
+
+### Task 4.4: Verify No Breaking Changes
+**Actions:**
+```bash
+# Test other yuzha features still work:
+# - Counter (original)
+# - Timestamp
+# - Alpha Remover
+# - Component Viewer
+# - Renderer switching
+
+# Check no import errors
+# Check no missing dependencies
+```
+
+### Task 4.5: Performance Check
+**Actions:**
+```bash
+# Open Counter2 standalone (port 3002)
+# Open DevTools → Performance tab
+# Interact with counter (tap 20 times)
+# Check:
+# - No memory leaks
+# - Smooth animations
+# - FPS stable (check "Rendering" → "Frame Rendering Stats")
+
+# Test on low-end device if possible
+```
+
+---
+
+## 🎯 PHASE 5: DOCUMENTATION
+
+### Task 5.1: Update README
+**File:** `/app/README.md` (if exists) or create `/app/counter2/README.md`
+
+```markdown
+# Counter2 - Standalone Workspace
+
+Optimized counter application with Canvas2D rendering and automatic device detection.
+
+## Features
+- Tap counting with haptic feedback
+- Customizable button/display size and position
+- Stage-based coordinate system (2048×2048)
+- Automatic low-end device optimization
+- Persistent count storage
+
+## Development
+
+### Run within Yuzha (integrated)
+Counter2 is accessible from the main yuzha launcher.
+
+### Run standalone
+\`\`\`bash
+npm run dev:counter2
+# Access at http://localhost:3002
+\`\`\`
+
+### Build
+\`\`\`bash
+npm run build:counter2
+\`\`\`
+
+## Deployment
+Counter2 can be deployed independently from yuzha workspace.
+
+Standalone URL: Port 3002
+Integrated: Available via yuzha mainscreen
+```
+
+### Task 5.2: Document Changes
+Create `/app/COUNTER2_MIGRATION.md`:
+
+```markdown
+# Counter2 Workspace Migration
+
+## Changes Made
+
+### Phase 1: Cleanup (Completed)
+- Removed non-functional renderer settings from Counter2Settings
+- Removed: Low-End Mode, Show Debug Info, FPS Limit toggles
+- Kept: All functional settings and automatic device detection
+
+### Phase 2: Position Controls (Completed)
+- Added X/Y position controls for:
+  - Floating button position
+  - Display message position
+- Stage coordinates: 0-2048 range
+- Matches Counter feature parity (except demo effects)
+
+### Phase 3: Workspace Separation (Completed)
+- Created independent counter2 workspace
+- Runs on port 3002
+- Maintains integration with yuzha mainscreen
+- Can be deployed separately
+
+## File Structure
+\`\`\`
+/app/
+├── counter2/              (NEW - standalone workspace)
+│   ├── src/
+│   │   ├── main.tsx
+│   │   ├── index.css
+│   │   ├── counter2Screen.tsx
+│   │   ├── counter2Settings.tsx
+│   │   ├── counter2Floating.tsx
+│   │   ├── counter2FloatingButton.tsx
+│   │   ├── counter2Buttons.tsx
+│   │   └── counter2CountDisplay.tsx
+│   ├── package.json
+│   ├── vite.config.ts
+│   ├── tsconfig.json
+│   └── index.html
+└── yuzha/                 (MODIFIED - links to counter2)
+    └── src/
+        └── MainScreenUtils.tsx (updated navigation)
+```
+
+## Testing Checklist
+- [ ] Counter2 works within yuzha
+- [ ] Counter2 works standalone (port 3002)
+- [ ] Position controls functional
+- [ ] Settings persist correctly
+- [ ] No console errors
+- [ ] Other yuzha features unaffected
+```
+
+---
+
+## 📊 COMPLETION CHECKLIST
+
+**Phase 1: Cleanup**
+- [ ] Removed fake Low-End Mode setting
+- [ ] Removed fake Show Debug Info setting
+- [ ] Removed fake FPS Limit setting
+- [ ] Verified Counter2 still works
+- [ ] No console errors
+
+**Phase 2: Position Controls**
+- [ ] Added position props to Counter2Settings
+- [ ] Implemented position control helpers
+- [ ] Added position input UI components
+- [ ] Wired position state in Counter2Screen
+- [ ] Tested position controls work
+
+**Phase 3: Workspace Separation**
+- [ ] Created `/app/counter2/` directory
+- [ ] Created all config files (package.json, vite.config.ts, tsconfig.json, etc.)
+- [ ] Copied source files from yuzha
+- [ ] Created main.tsx entry point
+- [ ] Updated root package.json workspaces
+- [ ] Installed dependencies
+- [ ] Updated Counter2Screen for standalone
+- [ ] Created counter2.conf supervisor config
+
+**Phase 4: Testing**
+- [ ] Counter2 works in yuzha (port 3000)
+- [ ] Counter2 works standalone (port 3002)
+- [ ] Position controls functional
+- [ ] Settings save correctly
+- [ ] Navigation works (right-click optional)
+- [ ] No breaking changes to other features
+- [ ] Performance acceptable
+
+**Phase 5: Documentation**
+- [ ] Created/updated README
+- [ ] Documented migration changes
+- [ ] Added usage instructions
+
+---
+
+## 🚨 CRITICAL NOTES FOR EXECUTING AGENT
+
+1. **DO NOT modify `/app/yuzha.conf`** - It controls the main service
+2. **DO NOT change ports in existing .env files** - They are production-configured
+3. **Always use `npm` not `yarn`** - This project uses npm workspaces
+4. **Test after each phase** - Don't proceed if something breaks
+5. **Check supervisor logs** if services fail:
+   ```bash
+   tail -n 100 /var/log/supervisor/counter2.err.log
+   tail -n 100 /var/log/supervisor/yuzha.err.log
+   ```
+6. **Use `view_bulk`** tool to view multiple files at once for efficiency
+7. **Shared folder** (`/app/shared/`) is used by all workspaces - DO NOT break it
+8. **If ConfigCounter2.json is missing**, check `/app/shared/layer/` or copy from yuzha
+
+---
+
+## 🎬 EXECUTION ORDER (DO NOT SKIP STEPS)
+
+1. Phase 1 → Test → Proceed
+2. Phase 2 → Test → Proceed  
+3. Phase 3 → Test → Proceed
+4. Phase 4 → Full Testing
+5. Phase 5 → Documentation
+6. Report completion with summary
+
+**Estimated Time:** 45-60 minutes  
+**Risk Level:** Medium (workspace changes)  
+**Rollback:** Keep `/app/yuzha/src/counter2/` backup before Phase 3
