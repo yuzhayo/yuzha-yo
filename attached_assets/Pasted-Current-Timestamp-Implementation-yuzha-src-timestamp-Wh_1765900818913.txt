@@ -1,0 +1,86 @@
+Current Timestamp Implementation (yuzha/src/timestamp)
+What exists:
+
+Overlay system: Text overlays (time, date, location) + Image overlays
+Positioning: Drag-and-drop with collision detection
+Styling: Font family, size, color, shadow, alignment
+Presets: Save/load functionality
+Export: Canvas-based image rendering
+What Timemark Has That's Missing
+Feature	Timemark	Current
+Watermark Templates	15+ pre-built (Clock In, Work Report, Construction, etc.)	Only basic time/date/location
+Theme System	Background color, alpha, width/height scale	Only text styling
+Grouped Layout	Items stacked vertically with background panel	Individual floating items
+More Fields	Weather, Altitude, Compass, Lat/Long, Map, Notes, Tags	Just time/date/location
+Custom Fonts	11 built-in fonts (BebasDaka, PTMono, etc.)	Upload only
+Logo Support	Position, scale, alpha, gravity	Image overlay exists
+Integration Plan
+Copy Timemark fonts to yuzha/public/fonts/
+Create template system - Convert Timemark JSON templates to React-compatible presets
+Add theme/background panel - Semi-transparent background behind watermark group
+Add more overlay types - Weather, Altitude, Compass, Lat/Long, Notes
+Build template selector UI - Grid of template previews to quick-select
+Update types.ts - Extend overlay types to support new fields
+
+Full Comparison: Current Timestamp vs Timemark
+Current Timestamp Customization (FULLY CONTROLLABLE)
+Feature	Control Type	Settings Location
+Position (x, y)	Drag & drop + Settings sliders	Each overlay individually
+Font Family	Dropdown per overlay	TimestampSettings
+Font Size	Slider (12-72px) per overlay	TimestampSettings
+Text Alignment	Left/Center/Right buttons	TimestampSettings
+Text Color	Color picker (global)	General Settings
+Shadow Color	Color picker (global)	General Settings
+Shadow Blur	Slider (0-20px)	General Settings
+Shadow Offset X/Y	Sliders (-10 to 10px)	General Settings
+Shadow Enable/Disable	Checkbox per overlay	Each overlay section
+Custom Fonts	Upload TTF/OTF/WOFF	General Settings
+Image Overlays	Add/Delete/Resize/Position	Drag handles + delete button
+Image Scale	Drag resize handles	Direct manipulation
+Presets	Save/Load/Delete	Header menu
+Timemark Template Structure
+Property	Type	Description
+items[].switchStatus	boolean	Show/hide each field
+items[].content	string	Custom text content
+items[].style	number	Display style variant (130, 132, etc.)
+items[].editType	number	0=auto, 2=editable, 3=custom, 4=location, 6=special
+items[].userCustom	boolean	User can customize
+items[].hourFormat	number	12h/24h for time
+items[].tempUnits	number	C/F for weather
+theme.color	string	Background color (#FFC233)
+theme.alpha	string	Background opacity (0-1)
+theme.textColor	string	Text color (#FFFFFF)
+theme.fontScale	string	Font size multiplier
+theme.sizeScale	string	Overall size multiplier
+theme.widthScale	string	Width multiplier
+logo.url	string	Logo image URL
+logo.alpha	string	Logo opacity
+logo.scale	string	Logo size
+logo.gravity	number	Logo position (0=corner)
+What Timemark Has That Current Timestamp Lacks
+Theme/Background Panel - Semi-transparent colored background behind watermark group
+More Field Types - Weather, Altitude, Compass, Lat/Long, Map, Tags, Business Card, Notes
+Field Visibility Toggle - Show/hide each field individually from settings
+Style Variants - Different display styles for same field (e.g., time style 130 vs 132)
+Built-in Fonts - 11 pre-loaded fonts
+Pre-built Templates - 15+ ready-to-use layouts
+What Current Timestamp Has That Timemark Templates Lack
+Free-form Positioning - Each element independently draggable (Timemark uses vertical stacking)
+Collision Detection - Prevents overlapping
+Per-overlay Shadow Toggle - Enable/disable shadow per element
+Image Overlay Resize - Drag corners to resize
+Integration Strategy for Full Customization
+To keep current timestamp's full control while adding Timemark features:
+
+Keep existing overlay system - Don't replace, extend it
+Add new overlay types to types.ts:
+Weather, Altitude, Compass, LatLong, Notes, Tags, Map
+Add theme/background settings:
+Background color, alpha, border radius
+Add field visibility toggles in settings
+Add built-in fonts from Timemark
+Add template presets that populate overlays with Timemark-style defaults
+Each new field remains independently:
+Positionable (drag)
+Stylable (font, size, color, shadow)
+Toggleable (show/hide)
