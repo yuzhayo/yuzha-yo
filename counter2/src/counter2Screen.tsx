@@ -260,7 +260,7 @@ export default function Counter2Screen({ onBack }: Counter2ScreenProps) {
             if (onBack) {
               onBack();
             } else {
-              window.location.href = "/";
+              window.location.href = "http://localhost:3000";
             }
           }}
           className="px-4 py-2 text-sm font-medium text-white bg-slate-800/80 hover:bg-slate-700/80 rounded-lg shadow-lg border border-slate-700/50 backdrop-blur-sm transition-colors"

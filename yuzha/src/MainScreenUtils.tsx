@@ -385,7 +385,12 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
           <button
             type="button"
             onClick={props.onOpenCounter2Screen}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              window.open("http://localhost:3002", "_blank");
+            }}
             className="text-xs px-3 py-2 rounded bg-teal-600/80 hover:bg-teal-500/80 active:bg-teal-600 text-white shadow-sm border border-white/10 text-center whitespace-normal break-words leading-tight"
+            title="Click: Open locally | Right-click: Open in new tab (port 3002)"
           >
             Counter2
           </button>
