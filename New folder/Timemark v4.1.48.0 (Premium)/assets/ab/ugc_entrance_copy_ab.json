@@ -1,0 +1,57 @@
+[{
+    "group": 0,
+    "privateTop": true,
+    "shareTitle": "i_share_template1",
+    "firstTitle": "i_share_private",
+    "firstContent": "i_share_private_content",
+    "secondTitle": "i_share_public",
+    "secondContent": "i_share_public_content"
+}, {
+    "group": 1,
+    "privateTop": false,
+    "shareTitle": "i_share_template1",
+    "firstTitle": "i_share_public",
+    "firstContent": "i_share_public_content",
+    "secondTitle": "i_share_private",
+    "secondContent": "i_share_private_content"
+}, {
+    "group": 2,
+    "privateTop": true,
+    "shareTitle": "i_share_with",
+    "firstTitle": "i_coworkers",
+    "firstContent": "i_share_private_content",
+    "secondTitle": "i_timemark_community",
+    "secondContent": "i_share_public_content"
+}, {
+    "group": 3,
+    "privateTop": false,
+    "shareTitle": "i_share_with",
+    "firstTitle": "i_timemark_community",
+    "firstContent": "i_share_public_content",
+    "secondTitle": "i_coworkers",
+    "secondContent": "i_share_private_content"
+}, {
+    "group": 4,
+    "privateTop": true,
+    "shareTitle": "i_watermark_access",
+    "firstTitle": "i_ristricted",
+    "firstContent": "i_share_private_content",
+    "secondTitle": "i_everyone",
+    "secondContent": "i_share_public_content"
+}, {
+    "group": 5,
+    "privateTop": false,
+    "shareTitle": "i_watermark_access",
+    "firstTitle": "i_everyone",
+    "firstContent": "i_share_public_content",
+    "secondTitle": "i_ristricted",
+    "secondContent": "i_share_private_content"
+},{
+    "group": 6,
+    "privateTop": false,
+    "shareTitle": "i_watermark_access",
+    "firstTitle": "i_everyone",
+    "firstContent": "i_share_public_content",
+    "secondTitle": "i_share_private",
+    "secondContent": "i_share_private_content"
+}]
