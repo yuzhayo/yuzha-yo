@@ -112,6 +112,56 @@ Core animation logic is driven by a Layer System where JSON configurations defin
 - `yuzha/src/timestamp/TimestampSettings.tsx` - Settings panel, preset UI
 - `yuzha/src/timestamp/PresetManager.ts` - Preset storage, V1/V2/V3 migration
 
+### Counter2 Workspace Separation (Dec 2025) - COMPLETED
+
+**Objective:** Enhance Counter2 settings and separate it into an independent workspace while keeping it accessible from yuzha mainscreen.
+
+**Changes Implemented:**
+
+1. **Phase 1 - Settings Cleanup:**
+   - Removed non-functional settings: `lowEndMode`, `showDebug`, `fpsLimit`
+   - These were local state variables that had no effect on the actual renderer
+
+2. **Phase 2 - Position Controls:**
+   - Added `floatingPosition` and `messagePosition` props to Counter2Settings
+   - Implemented X/Y input controls with stage coordinates (0-2048)
+   - Wired position state in Counter2Screen to the settings
+
+3. **Phase 3 - Workspace Separation:**
+   - Created independent `counter2/` workspace at root level
+   - Runs on port 3002 as standalone application
+   - Shares code via `@shared` alias pointing to `../shared`
+   - Updated root `package.json` workspaces array
+   - Added `dev:counter2`, `build:counter2`, `preview:counter2` scripts
+
+**Workspace Structure:**
+```
+/counter2/
+├── src/
+│   ├── main.tsx           - Entry point
+│   ├── index.css          - Tailwind imports
+│   ├── counter2Screen.tsx - Main screen (standalone mode)
+│   └── ...other components
+├── package.json
+├── vite.config.ts
+├── tsconfig.json
+├── tailwind.config.ts
+├── postcss.config.ts
+└── index.html
+```
+
+**Standalone Mode:**
+- Back button shows "Home" when `onBack` prop is undefined
+- Redirects to "/" when clicked in standalone mode
+- All features work identically to integrated mode
+
+**Key Files:**
+
+- `yuzha/src/counter2/` - Integrated version (still functional)
+- `counter2/` - Standalone workspace
+- `COUNTER2_MIGRATION.md` - Migration documentation
+- `counter2/README.md` - Workspace documentation
+
 ### Counter2 Optimized Screen (Dec 2025) - COMPLETED
 
 **Objective:** Create an optimized counter screen using the shared/layer architecture for better performance on low-end devices.
