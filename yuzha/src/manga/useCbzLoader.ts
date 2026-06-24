@@ -73,7 +73,7 @@ export function useCbzLoader() {
         setResult({ status: "loading", progress: 80 });
 
         const urls = imageEntries.map(([name, data]) => {
-          const blob = new Blob([data], { type: getMime(name) });
+          const blob = new Blob([data.buffer as ArrayBuffer], { type: getMime(name) });
           return URL.createObjectURL(blob);
         });
 
