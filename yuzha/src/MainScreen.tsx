@@ -15,6 +15,7 @@ export type MainScreenProps = {
   onOpenFloatingScreen?: () => void;
   onOpenAlphaRemoveScreen?: () => void;
   onOpenComponentViewer?: () => void;
+  onOpenMangaScreen?: () => void;
 };
 
 function MainScreenOverlay({
@@ -27,6 +28,7 @@ function MainScreenOverlay({
   onOpenFloatingScreen,
   onOpenAlphaRemoveScreen,
   onOpenComponentViewer,
+  onOpenMangaScreen,
 }: {
   rendererLabel: string;
   rendererMode: RendererMode;
@@ -37,6 +39,7 @@ function MainScreenOverlay({
   onOpenFloatingScreen?: () => void;
   onOpenAlphaRemoveScreen?: () => void;
   onOpenComponentViewer?: () => void;
+  onOpenMangaScreen?: () => void;
 }) {
   const gesture = useMainScreenBtnGesture();
 
@@ -54,6 +57,7 @@ function MainScreenOverlay({
         onOpenFloatingScreen={onOpenFloatingScreen}
         onOpenAlphaRemoveScreen={onOpenAlphaRemoveScreen}
         onOpenComponentViewer={onOpenComponentViewer}
+        onOpenMangaScreen={onOpenMangaScreen}
       />
     </>
   );
@@ -71,6 +75,7 @@ export default function MainScreen({
   onOpenFloatingScreen,
   onOpenAlphaRemoveScreen,
   onOpenComponentViewer,
+  onOpenMangaScreen,
 }: MainScreenProps) {
   const autoDetectedRenderer = useMemo(() => getRendererType(), []);
   const [rendererMode, setRendererMode] = useState<RendererMode>("auto");
@@ -98,6 +103,7 @@ export default function MainScreen({
           onOpenFloatingScreen={onOpenFloatingScreen}
           onOpenAlphaRemoveScreen={onOpenAlphaRemoveScreen}
           onOpenComponentViewer={onOpenComponentViewer}
+          onOpenMangaScreen={onOpenMangaScreen}
         />
       )}
     </div>

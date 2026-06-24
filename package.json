@@ -10,7 +10,8 @@
   "workspaces": [
     "yuzha",
     "meng",
-    "counter2"
+    "counter2",
+    "manga"
   ],
   "scripts": {
     "dev": "concurrently -k -n yuzha,meng,counter2 \"npm run dev:yuzha\" \"npm run dev:meng\" \"npm run dev:counter2\"",
@@ -55,7 +56,10 @@
     "preview:meng": "npm run preview --workspace meng",
     "dev:counter2": "npm run dev --workspace counter2",
     "build:counter2": "npm run build --workspace counter2",
-    "preview:counter2": "npm run preview --workspace counter2"
+    "preview:counter2": "npm run preview --workspace counter2",
+    "dev:manga": "npm run dev --workspace manga",
+    "build:manga": "npm run build --workspace manga",
+    "preview:manga": "npm run preview --workspace manga"
   },
   "devDependencies": {
     "@tailwindcss/aspect-ratio": "^0.4.2",

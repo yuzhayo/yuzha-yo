@@ -92,6 +92,7 @@ export type MainScreenUpdaterProps = {
   onOpenFloatingScreen?: () => void;
   onOpenAlphaRemoveScreen?: () => void;
   onOpenComponentViewer?: () => void;
+  onOpenMangaScreen?: () => void;
   rendererLabel?: string;
 };
 
@@ -429,6 +430,15 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
             className="text-xs px-3 py-2 rounded bg-cyan-600/80 hover:bg-cyan-500/80 active:bg-cyan-600 text-white shadow-sm border border-white/10 text-center whitespace-normal break-words leading-tight"
           >
             Components
+          </button>
+        )}
+        {props.onOpenMangaScreen && (
+          <button
+            type="button"
+            onClick={props.onOpenMangaScreen}
+            className="text-xs px-3 py-2 rounded bg-purple-600/80 hover:bg-purple-500/80 active:bg-purple-600 text-white shadow-sm border border-white/10 text-center whitespace-normal break-words leading-tight"
+          >
+            Manga Reader
           </button>
         )}
       </div>

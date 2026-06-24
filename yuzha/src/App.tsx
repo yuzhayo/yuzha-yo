@@ -6,8 +6,9 @@ import TimestampScreen from "./timestamp/timestampScreen";
 import FloatingScreen from "@shared/floating/FloatingScreen";
 import AlphaRemoveScreen from "./alphaRemove/alphaRemoveScreen";
 import ComponentViewerScreen from "./componentViewer/ComponentViewerScreen";
+import MangaReaderScreen from "./manga/MangaReaderScreen";
 
-type AppView = "main" | "counter" | "counter2" | "timestamp" | "floating" | "alphaRemove" | "componentViewer";
+type AppView = "main" | "counter" | "counter2" | "timestamp" | "floating" | "alphaRemove" | "componentViewer" | "manga";
 
 export default function App() {
   const [view, setView] = React.useState<AppView>("main");
@@ -18,6 +19,7 @@ export default function App() {
   const handleOpenFloating = React.useCallback(() => setView("floating"), []);
   const handleOpenAlphaRemove = React.useCallback(() => setView("alphaRemove"), []);
   const handleOpenComponentViewer = React.useCallback(() => setView("componentViewer"), []);
+  const handleOpenManga = React.useCallback(() => setView("manga"), []);
   const handleReturnToMain = React.useCallback(() => setView("main"), []);
 
   if (view === "counter") {
@@ -43,6 +45,10 @@ export default function App() {
     return <ComponentViewerScreen onBack={handleReturnToMain} />;
   }
 
+  if (view === "manga") {
+    return <MangaReaderScreen onBack={handleReturnToMain} />;
+  }
+
   return (
     <MainScreen
       onOpenCounterScreen={handleOpenCounter}
@@ -51,6 +57,7 @@ export default function App() {
       onOpenFloatingScreen={handleOpenFloating}
       onOpenAlphaRemoveScreen={handleOpenAlphaRemove}
       onOpenComponentViewer={handleOpenComponentViewer}
+      onOpenMangaScreen={handleOpenManga}
     />
   );
 }
