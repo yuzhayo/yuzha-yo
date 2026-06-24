@@ -6,6 +6,7 @@ packages = ["unzip"]
 
 [agent]
 expertMode = true
+stack = "GAMESTACK_JS"
 
 [[ports]]
 localPort = 3000
@@ -33,19 +34,19 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Start Game"
+args = "Start application"
 
 [[workflows.workflow]]
-name = "Start Game"
+name = "Start application"
 author = "agent"
-
-[workflows.workflow.metadata]
-outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run dev"
+args = "npm run dev:yuzha"
 waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [deployment]
 deploymentTarget = "autoscale"
