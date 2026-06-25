@@ -14,7 +14,7 @@
     "manga"
   ],
   "scripts": {
-    "dev": "concurrently -k -n yuzha,meng,counter2 \"npm run dev:yuzha\" \"npm run dev:meng\" \"npm run dev:counter2\"",
+    "dev": "npm run dev:yuzha",
     "dev:3000": "npm run dev:3000 --workspace yuzha",
     "dev:5000": "npm run dev:5000 --workspace yuzha",
     "dev:debug": "DEBUG=vite:* npm run dev --workspace yuzha",
@@ -72,10 +72,8 @@
     "@typescript-eslint/eslint-plugin": "^8.44.0",
     "@typescript-eslint/parser": "^8.44.0",
     "@vitejs/plugin-react": "^4.3.1",
-    "@vitest/coverage-v8": "^3.2.4",
     "autoprefixer": "^10.4.20",
     "baseline-browser-mapping": "^2.8.29",
-    "concurrently": "^8.2.2",
     "cross-env": "^10.0.0",
     "eslint": "^9.35.0",
     "globals": "^16.4.0",
@@ -89,8 +87,7 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.6.3",
     "vite": "^7.0.4",
-    "vite-plugin-compression": "^0.5.1",
-    "vitest": "^3.2.4"
+    "vite-plugin-compression": "^0.5.1"
   },
   "dependencies": {
     "@eslint/js": "^9.36.0",
