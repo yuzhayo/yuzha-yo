@@ -297,12 +297,33 @@ See `MANGA_PHASE4_PLAN.md`.
 
 ## Replit Migration Notes (Jun 2026)
 
-This project was migrated from another environment to Replit. Key changes made during migration:
+This project was migrated from another environment to Replit. If the app shows a **blank preview** after a fresh setup, follow this checklist.
 
-- **Blocked packages removed** from root `package.json`: `vitest`, `@vitest/coverage-v8`, `concurrently` — these depend on packages blocked by Replit's security policy. Do NOT re-add them.
-- **Workflow:** `Start application` runs `npm run dev:yuzha` on port 5000.
-- **Three.js → Canvas 2D fallback:** Added `onError` prop to `shared/layer/StageThree.tsx` and fallback logic in `yuzha/src/MainScreen.tsx` so WebGL failures automatically switch to Canvas 2D renderer (important for headless/AI screenshot environments).
-- **`concurrently` was removed** — the `dev:all` script no longer works. Each workspace must be started individually.
+### Problem 1 — App shows blank screen / `npm install` fails
+
+**Cause:** Replit's security policy blocks certain npm packages at the network level. When these packages are in `package.json`, `npm install` either silently skips them or fails, which can leave the dev server unable to start and the preview pane blank.
+
+**Packages that are blocked and must NOT be in `package.json`:**
+- `concurrently` — blocked because it depends on `shell-quote` which Replit blocks
+- `vitest` — blocked by Replit's security policy
+- `@vitest/coverage-v8` — blocked by Replit's security policy
+
+**Fix applied:** All three were removed from the root `package.json`. Do NOT re-add them. If you need to run multiple workspaces in parallel, start them in separate workflow commands instead of using `concurrently`.
+
+### Problem 2 — Preview pane shows blank / Three.js WebGL error
+
+**Cause:** Three.js WebGL renderer can fail silently in some environments (headless browsers, Replit preview iframe). The original code had no fallback, so a WebGL failure produced a blank screen with no error message.
+
+**Fix applied:**
+- Added `onError` prop to `shared/layer/StageThree.tsx` so WebGL errors are caught and surfaced
+- Added fallback logic in `yuzha/src/MainScreen.tsx`: if Three.js fails, the app automatically switches to the Canvas 2D renderer
+- The Canvas 2D renderer is fully featured and identical in animation output; it is the safe fallback
+
+### Normal Setup
+
+- **Workflow:** `Start application` → runs `npm run dev:yuzha` → app on port 5000
+- `dev:all` script no longer exists (required `concurrently`)
+- Each workspace (`yuzha/`, `counter2/`, etc.) must be started individually if needed
 
 ---
 
