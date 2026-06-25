@@ -1,4 +1,5 @@
 import React from "react";
+import FloatingWindowTemplate from "@shared/floating/FloatingWindowTemplate";
 
 type Counter2SettingsProps = {
   onClose?: () => void;
@@ -67,7 +68,7 @@ export default function Counter2Settings({
     value: { x: number; y: number },
     setter: ((val: { x: number; y: number }) => void) | undefined,
   ) => (
-    <div className="p-3 bg-slate-800/50 rounded-xl border border-slate-700/30">
+    <div className="p-3 bg-slate-800/70 rounded-xl border border-slate-700/50">
       <h3 className="text-sm font-medium text-slate-200 mb-1">{label}</h3>
       <p className="text-xs text-slate-400 mb-2">Stage coords (0–2048)</p>
       <div className="grid grid-cols-2 gap-2">
@@ -103,7 +104,7 @@ export default function Counter2Settings({
     checked: boolean,
     onChange: (() => void) | undefined,
   ) => (
-    <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl border border-slate-700/30">
+    <div className="flex items-center justify-between p-3 bg-slate-800/70 rounded-xl border border-slate-700/50">
       <div>
         <h3 className="text-sm font-medium text-slate-200">{label}</h3>
         <p className="text-xs text-slate-400 mt-0.5">{desc}</p>
@@ -121,103 +122,89 @@ export default function Counter2Settings({
   );
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="relative w-[90%] max-w-md bg-slate-900/95 border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between px-4 py-3 bg-slate-800/50 border-b border-slate-700/50 shrink-0">
-          <h2 className="text-lg font-semibold text-white">Counter2 Settings</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+    <FloatingWindowTemplate
+      title="Counter2 Settings"
+      initialPos={{ x: 24, y: 24 }}
+      initialSize={{ width: 420, height: 560 }}
+      minWidth={360}
+      minHeight={400}
+      onClose={onClose}
+    >
+      {/* Dark theme wrapper — fills template's white content area */}
+      <div
+        className="space-y-4"
+        style={{ margin: -16, padding: 16, minHeight: "100%", background: "#0f172a" }}
+      >
+        <p className="text-xs text-slate-400 uppercase tracking-wider">Feedback</p>
+
+        {renderToggle("Haptic Feedback", "Vibrate on tap", hapticsEnabled, () => onHapticsToggle?.(!hapticsEnabled))}
+        {renderToggle("Sound Effects", "Play sound on tap", soundEnabled, () => onSoundToggle?.(!soundEnabled))}
+
+        <p className="text-xs text-slate-400 uppercase tracking-wider pt-2">Display</p>
+
+        <div className="p-3 bg-slate-800/70 rounded-xl border border-slate-700/50">
+          <h3 className="text-sm font-medium text-slate-200 mb-2">Button Size</h3>
+          <input
+            type="range"
+            min={200}
+            max={900}
+            step={10}
+            value={floatingSize}
+            onChange={(e) => onFloatingSizeChange?.(Number(e.target.value))}
+            className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+          />
+          <div className="text-xs text-slate-400 mt-1 text-right">{floatingSize}px</div>
         </div>
 
-        <div className="p-4 space-y-4 overflow-y-auto flex-1">
-          <p className="text-xs text-slate-400 uppercase tracking-wider">Feedback</p>
-
-          {renderToggle("Haptic Feedback", "Vibrate on tap", hapticsEnabled, () => onHapticsToggle?.(!hapticsEnabled))}
-          {renderToggle("Sound Effects", "Play sound on tap", soundEnabled, () => onSoundToggle?.(!soundEnabled))}
-
-          <p className="text-xs text-slate-400 uppercase tracking-wider pt-2">Display</p>
-
-          <div className="p-3 bg-slate-800/50 rounded-xl border border-slate-700/30">
-            <h3 className="text-sm font-medium text-slate-200 mb-2">Button Size</h3>
-            <input
-              type="range"
-              min={200}
-              max={900}
-              step={10}
-              value={floatingSize}
-              onChange={(e) => onFloatingSizeChange?.(Number(e.target.value))}
-              className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
-            />
-            <div className="text-xs text-slate-400 mt-1 text-right">{floatingSize}px</div>
-          </div>
-
-          <div className="p-3 bg-slate-800/50 rounded-xl border border-slate-700/30">
-            <h3 className="text-sm font-medium text-slate-200 mb-2">Display Size</h3>
-            <input
-              type="range"
-              min={200}
-              max={900}
-              step={10}
-              value={messageSize}
-              onChange={(e) => onMessageSizeChange?.(Number(e.target.value))}
-              className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
-            />
-            <div className="text-xs text-slate-400 mt-1 text-right">{messageSize}px</div>
-          </div>
-
-          <div className="p-3 bg-slate-800/50 rounded-xl border border-slate-700/30">
-            <h3 className="text-sm font-medium text-slate-200 mb-2">Font Size</h3>
-            <input
-              type="range"
-              min={16}
-              max={120}
-              step={2}
-              value={messageFontSize}
-              onChange={(e) => onMessageFontSizeChange?.(Number(e.target.value))}
-              className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
-            />
-            <div className="text-xs text-slate-400 mt-1 text-right">{messageFontSize}px</div>
-          </div>
-
-          <div className="p-3 bg-slate-800/50 rounded-xl border border-slate-700/30">
-            <h3 className="text-sm font-medium text-slate-200 mb-2">Text Color</h3>
-            <div className="flex items-center gap-3">
-              <input
-                type="color"
-                value={messageColor}
-                onChange={(e) => onMessageColorChange?.(e.target.value)}
-                className="w-10 h-10 rounded-lg border border-slate-600 cursor-pointer"
-              />
-              <span className="text-sm text-slate-300">{messageColor}</span>
-            </div>
-          </div>
-
-          <p className="text-xs text-slate-400 uppercase tracking-wider pt-2">Position (stage 0–2048)</p>
-
-          {renderPositionInputs("Button Position", floatingPosition, onFloatingPositionChange)}
-          {renderPositionInputs("Display Position", messagePosition, onMessagePositionChange)}
-          {renderPositionInputs("Back Button", backPosition, onBackPositionChange)}
-          {renderPositionInputs("Reset Button", resetPosition, onResetPositionChange)}
-          {renderPositionInputs("Settings Button", settingsPosition, onSettingsPositionChange)}
+        <div className="p-3 bg-slate-800/70 rounded-xl border border-slate-700/50">
+          <h3 className="text-sm font-medium text-slate-200 mb-2">Display Size</h3>
+          <input
+            type="range"
+            min={200}
+            max={900}
+            step={10}
+            value={messageSize}
+            onChange={(e) => onMessageSizeChange?.(Number(e.target.value))}
+            className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+          />
+          <div className="text-xs text-slate-400 mt-1 text-right">{messageSize}px</div>
         </div>
 
-        <div className="px-4 py-3 bg-slate-800/30 border-t border-slate-700/50 flex justify-end gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-white bg-teal-600/80 hover:bg-teal-500/80 rounded-lg transition-colors"
-          >
-            Done
-          </button>
+        <div className="p-3 bg-slate-800/70 rounded-xl border border-slate-700/50">
+          <h3 className="text-sm font-medium text-slate-200 mb-2">Font Size</h3>
+          <input
+            type="range"
+            min={16}
+            max={120}
+            step={2}
+            value={messageFontSize}
+            onChange={(e) => onMessageFontSizeChange?.(Number(e.target.value))}
+            className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+          />
+          <div className="text-xs text-slate-400 mt-1 text-right">{messageFontSize}px</div>
         </div>
+
+        <div className="p-3 bg-slate-800/70 rounded-xl border border-slate-700/50">
+          <h3 className="text-sm font-medium text-slate-200 mb-2">Text Color</h3>
+          <div className="flex items-center gap-3">
+            <input
+              type="color"
+              value={messageColor}
+              onChange={(e) => onMessageColorChange?.(e.target.value)}
+              className="w-10 h-10 rounded-lg border border-slate-600 cursor-pointer"
+            />
+            <span className="text-sm text-slate-300">{messageColor}</span>
+          </div>
+        </div>
+
+        <p className="text-xs text-slate-400 uppercase tracking-wider pt-2">Position (stage 0–2048)</p>
+
+        {renderPositionInputs("Button Position", floatingPosition, onFloatingPositionChange)}
+        {renderPositionInputs("Display Position", messagePosition, onMessagePositionChange)}
+        {renderPositionInputs("Back Button", backPosition, onBackPositionChange)}
+        {renderPositionInputs("Reset Button", resetPosition, onResetPositionChange)}
+        {renderPositionInputs("Settings Button", settingsPosition, onSettingsPositionChange)}
       </div>
-    </div>
+    </FloatingWindowTemplate>
   );
 }
