@@ -4,28 +4,57 @@ type Counter2ControlsProps = {
   onToggleSettings?: () => void;
   onToggleFloating?: () => void;
   onReset?: () => void;
+  onBack?: () => void;
+  backScreenPosition?: { x: number; y: number };
+  resetScreenPosition?: { x: number; y: number };
+  settingsScreenPosition?: { x: number; y: number };
 };
 
 export function Counter2Controls({
   onToggleSettings,
   onToggleFloating,
   onReset,
+  onBack,
+  backScreenPosition,
+  resetScreenPosition,
+  settingsScreenPosition,
 }: Counter2ControlsProps) {
+  const btnBase =
+    "p-3 text-white rounded-full shadow-lg transition-colors";
+
   return (
-    <div className="absolute bottom-4 right-4 z-50 flex flex-col gap-2">
+    <>
+      {onBack && (
+        <button
+          type="button"
+          onClick={onBack}
+          className={`fixed z-50 ${btnBase} bg-slate-700/80 hover:bg-slate-600/80`}
+          title="Back"
+          style={
+            backScreenPosition
+              ? { left: backScreenPosition.x, top: backScreenPosition.y }
+              : { left: 12, top: 12 }
+          }
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+      )}
+
       {onReset && (
         <button
           type="button"
           onClick={onReset}
-          className="p-3 bg-orange-600/80 hover:bg-orange-500/80 text-white rounded-full shadow-lg transition-colors"
+          className={`fixed z-50 ${btnBase} bg-orange-600/80 hover:bg-orange-500/80`}
           title="Reset Counter"
+          style={
+            resetScreenPosition
+              ? { left: resetScreenPosition.x, top: resetScreenPosition.y }
+              : { right: 12, bottom: 76, left: "auto", top: "auto" }
+          }
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -39,15 +68,11 @@ export function Counter2Controls({
       <button
         type="button"
         onClick={onToggleFloating}
-        className="p-3 bg-teal-600/80 hover:bg-teal-500/80 text-white rounded-full shadow-lg transition-colors"
+        className={`fixed z-50 ${btnBase} bg-teal-600/80 hover:bg-teal-500/80`}
         title="Info"
+        style={{ right: 12, bottom: 76 }}
       >
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -60,15 +85,15 @@ export function Counter2Controls({
       <button
         type="button"
         onClick={onToggleSettings}
-        className="p-3 bg-slate-700/80 hover:bg-slate-600/80 text-white rounded-full shadow-lg transition-colors"
+        className={`fixed z-50 ${btnBase} bg-slate-700/80 hover:bg-slate-600/80`}
         title="Settings"
+        style={
+          settingsScreenPosition
+            ? { left: settingsScreenPosition.x, top: settingsScreenPosition.y }
+            : { right: 12, bottom: 12 }
+        }
       >
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -83,6 +108,6 @@ export function Counter2Controls({
           />
         </svg>
       </button>
-    </div>
+    </>
   );
 }

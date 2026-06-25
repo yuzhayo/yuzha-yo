@@ -16,7 +16,8 @@ type ComponentInfo = {
   path: string;
 };
 
-const componentModules = import.meta.glob("../../../shared/components/*.tsx", { eager: false }) as Record<string, () => Promise<{ default: React.ComponentType; title?: string }>>;
+// Path fixed for standalone: componentViewer/src/ is 2 levels from project root
+const componentModules = import.meta.glob("../../shared/components/*.tsx", { eager: false }) as Record<string, () => Promise<{ default: React.ComponentType; title?: string }>>;
 
 function parseComponentInfo(path: string): ComponentInfo {
   const fileName = path.split("/").pop() || "";
@@ -115,7 +116,7 @@ function DynamicComponent({ path, name }: { path: string; name: string }) {
     setLoadedComponent(null);
     setError(false);
     setComponentTitle(null);
-    
+
     const loader = componentModules[path];
     if (loader) {
       loader()
@@ -132,6 +133,8 @@ function DynamicComponent({ path, name }: { path: string; name: string }) {
       setError(true);
     }
   }, [path]);
+
+  void componentTitle;
 
   if (error) {
     return <ErrorFallback name={name} />;
@@ -265,7 +268,7 @@ export default function ComponentViewerScreen({ onBack }: ComponentViewerScreenP
                 {cat.replace(/-/g, " ")}
                 <span className="float-right text-slate-500">{components.length}</span>
               </button>
-              
+
               {selectedCategory === cat && (
                 <div className="bg-slate-950">
                   {components.map((comp) => (
@@ -287,7 +290,6 @@ export default function ComponentViewerScreen({ onBack }: ComponentViewerScreenP
             </div>
           ))}
         </div>
-
       </div>
 
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -303,7 +305,7 @@ export default function ComponentViewerScreen({ onBack }: ComponentViewerScreenP
                     {selectedComponent.category.replace(/-/g, " ")}
                   </p>
                 </div>
-                
+
                 <div className="flex items-center gap-3">
                   <button
                     type="button"

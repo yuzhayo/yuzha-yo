@@ -1,24 +1,25 @@
 {
-  "name": "counter2-app",
+  "name": "component-viewer-app",
   "private": true,
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port 3002 --host",
-    "dev:3002": "vite --port 3002",
+    "dev": "vite --port 3005 --host",
     "build": "tsc && vite build",
-    "preview": "vite preview --port 3002",
-    "preview:3002": "vite preview --port 3002"
+    "preview": "vite preview --port 3005"
   },
   "dependencies": {
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.556.0",
+    "@radix-ui/react-tooltip": "^1.2.8",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "three": "^0.180.0"
+    "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.7",
     "@types/react-dom": "^18.3.0",
-    "@types/three": "^0.180.0",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",

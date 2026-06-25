@@ -11,7 +11,9 @@
     "yuzha",
     "meng",
     "counter2",
-    "manga"
+    "manga",
+    "alphaRemove",
+    "componentViewer"
   ],
   "scripts": {
     "dev": "npm run dev:yuzha",
@@ -59,7 +61,11 @@
     "preview:counter2": "npm run preview --workspace counter2",
     "dev:manga": "npm run dev --workspace manga",
     "build:manga": "npm run build --workspace manga",
-    "preview:manga": "npm run preview --workspace manga"
+    "preview:manga": "npm run preview --workspace manga",
+    "dev:alphaRemove": "npm run dev --workspace alphaRemove",
+    "build:alphaRemove": "npm run build --workspace alphaRemove",
+    "dev:componentViewer": "npm run dev --workspace componentViewer",
+    "build:componentViewer": "npm run build --workspace componentViewer"
   },
   "devDependencies": {
     "@tailwindcss/aspect-ratio": "^0.4.2",

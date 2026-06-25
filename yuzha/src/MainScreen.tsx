@@ -9,12 +9,8 @@ export type RendererType = "canvas" | "three";
 
 export type MainScreenProps = {
   children?: React.ReactNode;
-  onOpenCounterScreen?: () => void;
-  onOpenCounter2Screen?: () => void;
   onOpenTimestampScreen?: () => void;
   onOpenFloatingScreen?: () => void;
-  onOpenAlphaRemoveScreen?: () => void;
-  onOpenComponentViewer?: () => void;
   onOpenMangaScreen?: () => void;
 };
 
@@ -22,23 +18,15 @@ function MainScreenOverlay({
   rendererLabel,
   rendererMode,
   onRendererModeChange,
-  onOpenCounterScreen,
-  onOpenCounter2Screen,
   onOpenTimestampScreen,
   onOpenFloatingScreen,
-  onOpenAlphaRemoveScreen,
-  onOpenComponentViewer,
   onOpenMangaScreen,
 }: {
   rendererLabel: string;
   rendererMode: RendererMode;
   onRendererModeChange: (mode: RendererMode) => void;
-  onOpenCounterScreen?: () => void;
-  onOpenCounter2Screen?: () => void;
   onOpenTimestampScreen?: () => void;
   onOpenFloatingScreen?: () => void;
-  onOpenAlphaRemoveScreen?: () => void;
-  onOpenComponentViewer?: () => void;
   onOpenMangaScreen?: () => void;
 }) {
   const gesture = useMainScreenBtnGesture();
@@ -51,12 +39,8 @@ function MainScreenOverlay({
         rendererLabel={rendererLabel}
         rendererMode={rendererMode}
         onRendererModeChange={onRendererModeChange}
-        onOpenCounterScreen={onOpenCounterScreen}
-        onOpenCounter2Screen={onOpenCounter2Screen}
         onOpenTimestampScreen={onOpenTimestampScreen}
         onOpenFloatingScreen={onOpenFloatingScreen}
-        onOpenAlphaRemoveScreen={onOpenAlphaRemoveScreen}
-        onOpenComponentViewer={onOpenComponentViewer}
         onOpenMangaScreen={onOpenMangaScreen}
       />
     </>
@@ -65,16 +49,11 @@ function MainScreenOverlay({
 
 /**
  * MainScreen with MainScreenUtils attached
- * Testing if overlay components break stage centering
  */
 export default function MainScreen({
   children,
-  onOpenCounterScreen,
-  onOpenCounter2Screen,
   onOpenTimestampScreen,
   onOpenFloatingScreen,
-  onOpenAlphaRemoveScreen,
-  onOpenComponentViewer,
   onOpenMangaScreen,
 }: MainScreenProps) {
   const autoDetectedRenderer = useMemo(() => getRendererType(), []);
@@ -103,12 +82,8 @@ export default function MainScreen({
           rendererLabel={rendererLabel}
           rendererMode={rendererMode}
           onRendererModeChange={setRendererMode}
-          onOpenCounterScreen={onOpenCounterScreen}
-          onOpenCounter2Screen={onOpenCounter2Screen}
           onOpenTimestampScreen={onOpenTimestampScreen}
           onOpenFloatingScreen={onOpenFloatingScreen}
-          onOpenAlphaRemoveScreen={onOpenAlphaRemoveScreen}
-          onOpenComponentViewer={onOpenComponentViewer}
           onOpenMangaScreen={onOpenMangaScreen}
         />
       )}

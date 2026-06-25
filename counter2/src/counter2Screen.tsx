@@ -121,6 +121,9 @@ export default function Counter2Screen({ onBack }: Counter2ScreenProps) {
 
   const [buttonStagePosition, setButtonStagePosition] = useState({ x: 1024, y: 1300 });
   const [messageStagePosition, setMessageStagePosition] = useState({ x: 1024, y: 400 });
+  const [backStagePosition, setBackStagePosition] = useState({ x: 180, y: 180 });
+  const [resetStagePosition, setResetStagePosition] = useState({ x: 280, y: 180 });
+  const [settingsStagePosition, setSettingsStagePosition] = useState({ x: 380, y: 180 });
 
   const [transform, setTransform] = useState<StageTransform>(() =>
     typeof window !== "undefined"
@@ -213,6 +216,8 @@ export default function Counter2Screen({ onBack }: Counter2ScreenProps) {
     }
   }, [hapticsEnabled, soundEnabled]);
 
+  const CTRL_SIZE = 44;
+
   const buttonScreenPosition = React.useMemo(
     () => toScreenPosition(buttonStagePosition, floatingSize),
     [buttonStagePosition, floatingSize, toScreenPosition]
@@ -221,6 +226,21 @@ export default function Counter2Screen({ onBack }: Counter2ScreenProps) {
   const messageScreenPosition = React.useMemo(
     () => toScreenPosition(messageStagePosition, messageSize),
     [messageStagePosition, messageSize, toScreenPosition]
+  );
+
+  const backScreenPosition = React.useMemo(
+    () => toScreenPosition(backStagePosition, CTRL_SIZE),
+    [backStagePosition, toScreenPosition]
+  );
+
+  const resetScreenPosition = React.useMemo(
+    () => toScreenPosition(resetStagePosition, CTRL_SIZE),
+    [resetStagePosition, toScreenPosition]
+  );
+
+  const settingsScreenPosition = React.useMemo(
+    () => toScreenPosition(settingsStagePosition, CTRL_SIZE),
+    [settingsStagePosition, toScreenPosition]
   );
 
   const handleToggleSettings = useCallback(() => {
@@ -253,35 +273,14 @@ export default function Counter2Screen({ onBack }: Counter2ScreenProps) {
 
       <StageCanvas loadPipeline={loadPipeline} />
 
-      <div className="absolute top-3 left-3 z-50">
-        <button
-          type="button"
-          onClick={() => {
-            if (onBack) {
-              onBack();
-            } else {
-              window.location.href = "http://localhost:3000";
-            }
-          }}
-          className="px-4 py-2 text-sm font-medium text-white bg-slate-800/80 hover:bg-slate-700/80 rounded-lg shadow-lg border border-slate-700/50 backdrop-blur-sm transition-colors"
-        >
-          {onBack ? "Back" : "Home"}
-        </button>
-      </div>
-
-      <div className="absolute top-3 right-3 z-50 flex flex-col gap-2 items-end">
-        <div className="px-3 py-1 text-xs text-white/80 bg-black/60 rounded border border-white/10">
-          {rendererLabel}
-        </div>
-        <div className="px-2 py-1 text-[10px] text-teal-400/80 bg-teal-900/30 rounded border border-teal-700/30">
-          Using shared/layer pipeline
-        </div>
-      </div>
-
       <Counter2Controls
+        onBack={onBack}
         onToggleSettings={handleToggleSettings}
         onToggleFloating={handleToggleFloating}
         onReset={reset}
+        backScreenPosition={backScreenPosition}
+        resetScreenPosition={resetScreenPosition}
+        settingsScreenPosition={settingsScreenPosition}
       />
 
       <Counter2FloatingButton
@@ -329,6 +328,12 @@ export default function Counter2Screen({ onBack }: Counter2ScreenProps) {
           onFloatingPositionChange={setButtonStagePosition}
           messagePosition={messageStagePosition}
           onMessagePositionChange={setMessageStagePosition}
+          backPosition={backStagePosition}
+          onBackPositionChange={setBackStagePosition}
+          resetPosition={resetStagePosition}
+          onResetPositionChange={setResetStagePosition}
+          settingsPosition={settingsStagePosition}
+          onSettingsPositionChange={setSettingsStagePosition}
         />
       )}
 

@@ -1,24 +1,20 @@
 {
-  "name": "counter2-app",
+  "name": "alpha-remove-app",
   "private": true,
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port 3002 --host",
-    "dev:3002": "vite --port 3002",
+    "dev": "vite --port 3004 --host",
     "build": "tsc && vite build",
-    "preview": "vite preview --port 3002",
-    "preview:3002": "vite preview --port 3002"
+    "preview": "vite preview --port 3004"
   },
   "dependencies": {
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "three": "^0.180.0"
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@types/react": "^18.3.7",
     "@types/react-dom": "^18.3.0",
-    "@types/three": "^0.180.0",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",

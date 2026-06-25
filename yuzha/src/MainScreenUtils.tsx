@@ -86,12 +86,8 @@ export type MainScreenUpdaterProps = {
   visible: boolean;
   rendererMode?: "auto" | "canvas" | "three";
   onRendererModeChange?: (mode: "auto" | "canvas" | "three") => void;
-  onOpenCounterScreen?: () => void;
-  onOpenCounter2Screen?: () => void;
   onOpenTimestampScreen?: () => void;
   onOpenFloatingScreen?: () => void;
-  onOpenAlphaRemoveScreen?: () => void;
-  onOpenComponentViewer?: () => void;
   onOpenMangaScreen?: () => void;
   rendererLabel?: string;
 };
@@ -107,6 +103,16 @@ export type MainScreenBtnGestureAreaProps = {
 // ===================================================================
 // 🟢 BLOCK 3: UTILITY FUNCTIONS
 // ===================================================================
+
+function getStandaloneUrl(port: number): string {
+  const { protocol, hostname } = window.location;
+  // Replit dev domain pattern: xxxx--5000.replit.dev → xxxx--3002.replit.dev
+  if (hostname.includes("--")) {
+    return `${protocol}//${hostname.replace(/--\d+\./, `--${port}.`)}`;
+  }
+  // Local development fallback
+  return `http://localhost:${port}`;
+}
 
 async function clearCachesAndReload() {
   // Run cleanup operations in parallel for better performance
@@ -373,29 +379,14 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
         >
           Update
         </button>
-        {props.onOpenCounterScreen && (
-          <button
-            type="button"
-            onClick={props.onOpenCounterScreen}
-            className="text-xs px-3 py-2 rounded bg-sky-600/80 hover:bg-sky-500/80 active:bg-sky-600 text-white shadow-sm border border-white/10 text-center whitespace-normal break-words leading-tight"
-          >
-            Counter
-          </button>
-        )}
-        {props.onOpenCounter2Screen && (
-          <button
-            type="button"
-            onClick={props.onOpenCounter2Screen}
-            onContextMenu={(e) => {
-              e.preventDefault();
-              window.open("http://localhost:3002", "_blank");
-            }}
-            className="text-xs px-3 py-2 rounded bg-teal-600/80 hover:bg-teal-500/80 active:bg-teal-600 text-white shadow-sm border border-white/10 text-center whitespace-normal break-words leading-tight"
-            title="Click: Open locally | Right-click: Open in new tab (port 3002)"
-          >
-            Counter2
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => window.open(getStandaloneUrl(3002), "_blank")}
+          className="text-xs px-3 py-2 rounded bg-teal-600/80 hover:bg-teal-500/80 active:bg-teal-600 text-white shadow-sm border border-white/10 text-center whitespace-normal break-words leading-tight"
+          title="Open Counter2 standalone (port 3002)"
+        >
+          Counter2 ↗
+        </button>
         {props.onOpenTimestampScreen && (
           <button
             type="button"
@@ -414,24 +405,22 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
             Floating Window
           </button>
         )}
-        {props.onOpenAlphaRemoveScreen && (
-          <button
-            type="button"
-            onClick={props.onOpenAlphaRemoveScreen}
-            className="text-xs px-3 py-2 rounded bg-orange-600/80 hover:bg-orange-500/80 active:bg-orange-600 text-white shadow-sm border border-white/10 text-center whitespace-normal break-words leading-tight"
-          >
-            Alpha Remover
-          </button>
-        )}
-        {props.onOpenComponentViewer && (
-          <button
-            type="button"
-            onClick={props.onOpenComponentViewer}
-            className="text-xs px-3 py-2 rounded bg-cyan-600/80 hover:bg-cyan-500/80 active:bg-cyan-600 text-white shadow-sm border border-white/10 text-center whitespace-normal break-words leading-tight"
-          >
-            Components
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => window.open(getStandaloneUrl(3004), "_blank")}
+          className="text-xs px-3 py-2 rounded bg-orange-600/80 hover:bg-orange-500/80 active:bg-orange-600 text-white shadow-sm border border-white/10 text-center whitespace-normal break-words leading-tight"
+          title="Open Alpha Remover standalone (port 3004)"
+        >
+          Alpha Remover ↗
+        </button>
+        <button
+          type="button"
+          onClick={() => window.open(getStandaloneUrl(3005), "_blank")}
+          className="text-xs px-3 py-2 rounded bg-cyan-600/80 hover:bg-cyan-500/80 active:bg-cyan-600 text-white shadow-sm border border-white/10 text-center whitespace-normal break-words leading-tight"
+          title="Open Component Viewer standalone (port 3005)"
+        >
+          Components ↗
+        </button>
         {props.onOpenMangaScreen && (
           <button
             type="button"
