@@ -3,15 +3,25 @@ import { useCbzLoader } from "./useCbzLoader";
 import { useReaderState } from "./useReaderState";
 import { useKeyboardNav } from "./useKeyboardNav";
 import { useFolderScanner } from "./useFolderScanner";
+import { useMangaDexSearch } from "./useMangaDexSearch";
 import { saveHistory, loadHistory, getHistoryEntry, deleteHistoryEntry } from "./useReadingHistory";
+import { getChapterPages, getChapterLabel, getMangaTitle } from "./mangaDexApi";
 import MangaHome from "./MangaHome";
 import MangaLibrary from "./MangaLibrary";
+import MangaDexSearch from "./MangaDexSearch";
+import MangaDexDetail from "./MangaDexDetail";
 import MangaReader from "./MangaReader";
 import MangaToolbar from "./MangaToolbar";
 import MangaControls from "./MangaControls";
-import type { HistoryEntry, ScannedSeries, ScannedChapter } from "./types";
+import type {
+  HistoryEntry,
+  ScannedSeries,
+  ScannedChapter,
+  MangaDexManga,
+  MangaDexChapter,
+} from "./types";
 
-type View = "home" | "library" | "reader";
+type View = "home" | "library" | "search" | "detail" | "reader";
 
 type Props = {
   onBack?: () => void;
@@ -21,14 +31,20 @@ export default function MangaReaderScreen({ onBack }: Props) {
   const [view, setView] = useState<View>("home");
   const [activeSeries, setActiveSeries] = useState<ScannedSeries | null>(null);
   const [activeChapter, setActiveChapter] = useState<ScannedChapter | null>(null);
+  const [activeManga, setActiveManga] = useState<MangaDexManga | null>(null);
   const [activeHistoryKey, setActiveHistoryKey] = useState<string | null>(null);
+  const [activeSource, setActiveSource] = useState<"file" | "folder" | "mangadex">("file");
   const [history, setHistory] = useState<HistoryEntry[]>(() => loadHistory());
+  const [onlineError, setOnlineError] = useState<string | null>(null);
 
   // Folder scanner
   const { state: folderState, scanFolder } = useFolderScanner();
 
+  // MangaDex search
+  const { state: searchState, query: searchQuery, setQuery: setSearchQuery, clearSearch } = useMangaDexSearch();
+
   // CBZ loader
-  const { result, loadFile, reset: resetLoader } = useCbzLoader();
+  const { result, loadFile, loadUrls, reset: resetLoader } = useCbzLoader();
   const isReady = result.status === "ready";
   const pages = isReady ? result.pages : [];
 
@@ -48,7 +64,6 @@ export default function MangaReaderScreen({ onBack }: Props) {
     toggleRtl,
   } = useReaderState(pages.length);
 
-  // Keyboard nav (only in reader view)
   useKeyboardNav({
     onNext: goNext,
     onPrev: goPrev,
@@ -59,10 +74,9 @@ export default function MangaReaderScreen({ onBack }: Props) {
     enabled: view === "reader" && isReady,
   });
 
-  // Pending page restore — set before pages load, applied once pages are ready
+  // Pending page restore
   const pendingPageRestoreRef = useRef<number | null>(null);
 
-  // Apply pending page restore once pages become available
   useEffect(() => {
     if (pages.length > 0 && pendingPageRestoreRef.current !== null) {
       goToPage(pendingPageRestoreRef.current);
@@ -77,25 +91,31 @@ export default function MangaReaderScreen({ onBack }: Props) {
     if (currentPage === prevPageRef.current) return;
     prevPageRef.current = currentPage;
 
-    const displayTitle =
-      activeChapter?.name ?? (isReady ? result.fileName.replace(/\.cbz$/i, "") : "");
+    let displayTitle = "";
+    if (activeSource === "mangadex" && activeManga) {
+      displayTitle = result.status === "ready" ? result.fileName : getMangaTitle(activeManga);
+    } else if (activeChapter) {
+      displayTitle = activeChapter.name;
+    } else if (result.status === "ready") {
+      displayTitle = result.fileName.replace(/\.cbz$/i, "");
+    }
     if (!displayTitle) return;
 
     const entry: HistoryEntry = {
       key: activeHistoryKey,
       displayTitle,
-      seriesName: activeSeries?.name,
+      seriesName: activeSource === "mangadex" ? activeManga?.attributes.title["en"] ?? getMangaTitle(activeManga!) : activeSeries?.name,
       page: currentPage,
       totalPages: pages.length,
       lastRead: Date.now(),
-      source: activeChapter ? "folder" : "file",
+      source: activeSource,
     };
 
     saveHistory(entry);
     setHistory(loadHistory());
   }, [currentPage, view, activeHistoryKey, pages.length]);
 
-  // Refresh history when returning to home view
+  // Refresh history on return to home
   useEffect(() => {
     if (view === "home") {
       setHistory(loadHistory());
@@ -103,26 +123,24 @@ export default function MangaReaderScreen({ onBack }: Props) {
     }
   }, [view]);
 
-  // Open a file via drag-drop / file picker
+  // ── OPEN FUNCTIONS ───────────────────────────────────────────────────────────
+
   const openFile = useCallback(
     (file: File) => {
       const key = `file::${file.name}`;
       setActiveSeries(null);
       setActiveChapter(null);
+      setActiveManga(null);
       setActiveHistoryKey(key);
-
+      setActiveSource("file");
       const hist = getHistoryEntry(key);
-      if (hist && hist.page > 0) {
-        pendingPageRestoreRef.current = hist.page;
-      }
-
+      if (hist && hist.page > 0) pendingPageRestoreRef.current = hist.page;
       loadFile(file);
       setView("reader");
     },
     [loadFile],
   );
 
-  // Open a chapter from folder scan
   const openChapter = useCallback(
     async (series: ScannedSeries, chapter: ScannedChapter) => {
       let file: File;
@@ -132,28 +150,74 @@ export default function MangaReaderScreen({ onBack }: Props) {
         alert("File not found. Please re-scan your manga folder.");
         return;
       }
-
       const key = `folder::${series.name}::${chapter.fileName}`;
       setActiveSeries(series);
       setActiveChapter(chapter);
+      setActiveManga(null);
       setActiveHistoryKey(key);
-
+      setActiveSource("folder");
       const hist = getHistoryEntry(key);
-      if (hist && hist.page > 0) {
-        pendingPageRestoreRef.current = hist.page;
-      }
-
+      if (hist && hist.page > 0) pendingPageRestoreRef.current = hist.page;
       loadFile(file);
       setView("reader");
     },
     [loadFile],
   );
 
-  // Continue reading from history
+  const openOnlineChapter = useCallback(
+    async (manga: MangaDexManga, chapter: MangaDexChapter) => {
+      const key = `mangadex::${chapter.id}`;
+      const label = getChapterLabel(chapter);
+      setActiveManga(manga);
+      setActiveSeries(null);
+      setActiveChapter(null);
+      setActiveHistoryKey(key);
+      setActiveSource("mangadex");
+      setOnlineError(null);
+
+      const hist = getHistoryEntry(key);
+      if (hist && hist.page > 0) pendingPageRestoreRef.current = hist.page;
+
+      setView("reader");
+
+      try {
+        const urls = await getChapterPages(chapter.id);
+        loadUrls(urls, label);
+      } catch (err) {
+        setOnlineError(
+          err instanceof Error ? err.message : "Failed to load chapter. Please try again.",
+        );
+        resetLoader();
+      }
+    },
+    [loadUrls, resetLoader],
+  );
+
+  // Resume from history
   const handleContinueReading = useCallback(
     (entry: HistoryEntry) => {
-      if (entry.source === "folder") {
-        // Try to find the chapter in the current folder scan
+      if (entry.source === "mangadex") {
+        // Re-fetch pages using the chapterId stored in the key
+        const chapterId = entry.key.split("::")[1] ?? "";
+        if (!chapterId) return;
+        const key = `mangadex::${chapterId}`;
+        setActiveManga(null); // no full manga object — just resume
+        setActiveSeries(null);
+        setActiveChapter(null);
+        setActiveHistoryKey(key);
+        setActiveSource("mangadex");
+        setOnlineError(null);
+        pendingPageRestoreRef.current = entry.page;
+        setView("reader");
+        getChapterPages(chapterId)
+          .then((urls) => loadUrls(urls, entry.displayTitle))
+          .catch((err) => {
+            setOnlineError(
+              err instanceof Error ? err.message : "Failed to load chapter. Please try again.",
+            );
+            resetLoader();
+          });
+      } else if (entry.source === "folder") {
         if (folderState.status === "ready") {
           const seriesName = entry.seriesName ?? "__root__";
           const chapterFileName = entry.key.split("::")[2] ?? "";
@@ -164,53 +228,93 @@ export default function MangaReaderScreen({ onBack }: Props) {
             return;
           }
         }
-        // Folder not scanned or chapter not found
         alert(
-          "Scan your manga folder first to continue this chapter.\n\nClick \"Open Folder\" and select the same folder.",
+          'Scan your manga folder first to continue this chapter.\n\nClick "Open Folder" and select the same folder.',
         );
       } else {
-        // Drag-drop file source — need user to re-open the file
         alert(
           `To continue reading "${entry.displayTitle}", drag-drop or open that .cbz file again. Your progress (page ${entry.page + 1}) is saved.`,
         );
       }
     },
-    [folderState, openChapter],
+    [folderState, openChapter, loadUrls, resetLoader],
   );
 
-  // Back navigation from reader
+  // Back from reader
   const handleReaderBack = useCallback(() => {
-    // Final history save with current page
     if (activeHistoryKey && pages.length > 0) {
-      const displayTitle =
-        activeChapter?.name ?? (isReady ? result.fileName.replace(/\.cbz$/i, "") : "");
+      let displayTitle = "";
+      if (activeSource === "mangadex" && activeManga) {
+        displayTitle = result.status === "ready" ? result.fileName : getMangaTitle(activeManga);
+      } else if (activeChapter) {
+        displayTitle = activeChapter.name;
+      } else if (result.status === "ready") {
+        displayTitle = result.fileName.replace(/\.cbz$/i, "");
+      }
       if (displayTitle) {
         saveHistory({
           key: activeHistoryKey,
           displayTitle,
-          seriesName: activeSeries?.name,
+          seriesName:
+            activeSource === "mangadex"
+              ? activeManga?.attributes.title["en"] ?? (activeManga ? getMangaTitle(activeManga) : undefined)
+              : activeSeries?.name,
           page: currentPage,
           totalPages: pages.length,
           lastRead: Date.now(),
-          source: activeChapter ? "folder" : "file",
+          source: activeSource,
         });
       }
     }
     resetLoader();
-    // Return to library view if came from a folder series, otherwise home
-    if (activeChapter && activeSeries) {
+    setOnlineError(null);
+    if (activeSource === "folder" && activeChapter && activeSeries) {
       setView("library");
+    } else if (activeSource === "mangadex" && activeManga) {
+      setView("detail");
     } else {
       setView("home");
     }
-  }, [activeHistoryKey, pages.length, currentPage, activeChapter, activeSeries, resetLoader, isReady, result]);
+  }, [activeHistoryKey, pages.length, currentPage, activeChapter, activeSeries, activeManga, activeSource, resetLoader, result]);
 
   const handleDeleteHistory = useCallback((key: string) => {
     deleteHistoryEntry(key);
     setHistory(loadHistory());
   }, []);
 
-  // ── RENDER ──────────────────────────────────────────────────────────────────
+  const handleSearch = useCallback(
+    (q: string) => {
+      setSearchQuery(q);
+      setView("search");
+    },
+    [setSearchQuery],
+  );
+
+  // ── RENDER ───────────────────────────────────────────────────────────────────
+
+  if (view === "search") {
+    return (
+      <MangaDexSearch
+        state={searchState}
+        query={searchQuery}
+        onSelectManga={(manga) => {
+          setActiveManga(manga);
+          setView("detail");
+        }}
+        onBack={() => setView("home")}
+      />
+    );
+  }
+
+  if (view === "detail" && activeManga) {
+    return (
+      <MangaDexDetail
+        manga={activeManga}
+        onBack={() => setView("search")}
+        onReadChapter={openOnlineChapter}
+      />
+    );
+  }
 
   if (view === "library" && activeSeries) {
     return (
@@ -223,11 +327,18 @@ export default function MangaReaderScreen({ onBack }: Props) {
   }
 
   if (view === "reader" && isReady) {
+    const toolbarFileName =
+      result.status === "ready" ? result.fileName : "";
+    const toolbarSeriesName =
+      activeSource === "mangadex"
+        ? (activeManga ? getMangaTitle(activeManga) : undefined)
+        : activeSeries?.name;
+
     return (
       <div className="w-screen h-screen overflow-hidden bg-neutral-950">
         <MangaToolbar
-          fileName={result.fileName}
-          seriesName={activeSeries?.name}
+          fileName={toolbarFileName}
+          seriesName={toolbarSeriesName}
           currentPage={currentPage}
           totalPages={pages.length}
           onBack={handleReaderBack}
@@ -262,33 +373,41 @@ export default function MangaReaderScreen({ onBack }: Props) {
     );
   }
 
-  // Loading state while in reader view (CBZ extracting)
-  if (view === "reader" && result.status === "loading") {
+  // Loading state (CBZ extracting or online chapter fetching)
+  if (view === "reader" && (result.status === "loading" || result.status === "idle")) {
     return (
       <div className="flex flex-col items-center justify-center w-screen h-screen bg-neutral-950 text-white gap-4">
         <span className="text-4xl">📖</span>
-        <p className="text-neutral-400 text-sm">Extracting pages…</p>
-        <div className="w-64 bg-neutral-800 rounded-full h-1.5">
-          <div
-            className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
-            style={{ width: `${result.progress}%` }}
-          />
-        </div>
-        <p className="text-neutral-600 text-xs tabular-nums">{result.progress}%</p>
+        <p className="text-neutral-400 text-sm">
+          {activeSource === "mangadex" ? "Loading chapter…" : "Extracting pages…"}
+        </p>
+        {result.status === "loading" && (
+          <>
+            <div className="w-64 bg-neutral-800 rounded-full h-1.5">
+              <div
+                className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
+                style={{ width: `${result.progress}%` }}
+              />
+            </div>
+            <p className="text-neutral-600 text-xs tabular-nums">{result.progress}%</p>
+          </>
+        )}
       </div>
     );
   }
 
   // Error state
-  if (view === "reader" && result.status === "error") {
+  if (view === "reader" && (result.status === "error" || onlineError)) {
+    const msg = onlineError ?? (result.status === "error" ? result.message : "Unknown error");
     return (
       <div className="flex flex-col items-center justify-center w-screen h-screen bg-neutral-950 text-white gap-4">
         <span className="text-4xl">⚠️</span>
-        <p className="text-red-400 text-sm max-w-xs text-center">{result.message}</p>
+        <p className="text-red-400 text-sm max-w-xs text-center">{msg}</p>
         <button
           type="button"
           onClick={() => {
             resetLoader();
+            setOnlineError(null);
             setView("home");
           }}
           className="px-4 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-sm text-white transition-colors"
@@ -313,6 +432,7 @@ export default function MangaReaderScreen({ onBack }: Props) {
         setView("library");
       }}
       onDeleteHistory={handleDeleteHistory}
+      onSearch={handleSearch}
       isLoadingFile={false}
       fileError={null}
     />

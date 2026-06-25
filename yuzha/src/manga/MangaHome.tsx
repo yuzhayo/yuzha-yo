@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import type { HistoryEntry, ScannedSeries, ScannedChapter } from "./types";
 import type { FolderScanState } from "./useFolderScanner";
 import { isFolderScanSupported } from "./useFolderScanner";
@@ -12,6 +12,7 @@ type Props = {
   onContinueReading: (entry: HistoryEntry) => void;
   onOpenSeries: (series: ScannedSeries) => void;
   onDeleteHistory: (key: string) => void;
+  onSearch: (query: string) => void;
   isLoadingFile: boolean;
   fileError: string | null;
 };
@@ -39,6 +40,7 @@ function HistoryCard({
   onDelete: () => void;
 }) {
   const isDone = entry.page >= entry.totalPages - 1 && entry.totalPages > 0;
+  const icon = entry.source === "mangadex" ? "🌐" : "📖";
   return (
     <div className="relative flex-shrink-0 w-36 bg-neutral-800 rounded-xl p-3 cursor-pointer hover:bg-neutral-700 active:bg-neutral-600 transition-colors border border-neutral-700">
       <button
@@ -59,7 +61,7 @@ function HistoryCard({
         tabIndex={0}
         onKeyDown={(e) => e.key === "Enter" && onContinue()}
       >
-        <div className="text-4xl text-center py-2">📖</div>
+        <div className="text-4xl text-center py-2">{icon}</div>
         {entry.seriesName && (
           <p className="text-[10px] text-blue-400 truncate">{entry.seriesName}</p>
         )}
@@ -93,9 +95,7 @@ function SeriesCard({
       onClick={onClick}
       className="flex flex-col bg-neutral-800 rounded-xl overflow-hidden hover:bg-neutral-700 active:bg-neutral-600 transition-colors border border-neutral-700 text-left"
     >
-      <div className="flex items-center justify-center h-28 bg-neutral-900 text-5xl">
-        📚
-      </div>
+      <div className="flex items-center justify-center h-28 bg-neutral-900 text-5xl">📚</div>
       <div className="p-2.5">
         <p className="text-sm text-white font-medium truncate">{series.name}</p>
         <p className="text-xs text-neutral-400 mt-0.5">
@@ -122,11 +122,13 @@ export default function MangaHome({
   onContinueReading,
   onOpenSeries,
   onDeleteHistory,
+  onSearch,
   isLoadingFile,
   fileError,
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [dragging, setDragging] = React.useState(false);
+  const [dragging, setDragging] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleFile = useCallback(
     (file: File) => {
@@ -147,6 +149,15 @@ export default function MangaHome({
       if (file) handleFile(file);
     },
     [handleFile],
+  );
+
+  const handleSearchSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      const q = searchQuery.trim();
+      if (q.length >= 2) onSearch(q);
+    },
+    [searchQuery, onSearch],
   );
 
   const folderSupported = isFolderScanSupported();
@@ -181,14 +192,33 @@ export default function MangaHome({
         <h1 className="text-xl font-bold">📚 Manga Reader</h1>
       </div>
 
-      <div className="flex flex-col gap-6 px-4 pb-8 flex-1">
+      <div className="flex flex-col gap-5 px-4 pb-8 flex-1">
+        {/* Search bar */}
+        <form onSubmit={handleSearchSubmit} className="flex gap-2">
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search MangaDex…"
+            className="flex-1 bg-neutral-800 border border-neutral-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-neutral-500 outline-none focus:border-blue-500 transition-colors"
+          />
+          <button
+            type="submit"
+            disabled={searchQuery.trim().length < 2}
+            className="px-4 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
+          >
+            🔍
+          </button>
+        </form>
+        <p className="text-[10px] text-neutral-600 -mt-3">Powered by MangaDex</p>
+
         {/* Continue Reading */}
         {history.length > 0 && (
           <section>
             <h2 className="text-sm font-semibold text-neutral-400 uppercase tracking-wider mb-3">
               Continue Reading
             </h2>
-            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
+            <div className="flex gap-3 overflow-x-auto pb-2">
               {history.slice(0, 10).map((entry) => (
                 <HistoryCard
                   key={entry.key}
@@ -210,11 +240,7 @@ export default function MangaHome({
               disabled={folderState.status === "scanning"}
               className="flex items-center gap-2 px-4 py-3 rounded-xl bg-purple-700 hover:bg-purple-600 active:bg-purple-800 disabled:opacity-50 transition-colors font-medium text-sm"
             >
-              {folderState.status === "scanning" ? (
-                <>⏳ Scanning…</>
-              ) : (
-                <>📂 Open Folder</>
-              )}
+              {folderState.status === "scanning" ? <>⏳ Scanning…</> : <>📂 Open Folder</>}
             </button>
           )}
           <button
@@ -238,19 +264,14 @@ export default function MangaHome({
           />
         </section>
 
-        {/* Loading progress */}
-        {isLoadingFile && (
-          <div className="text-sm text-neutral-400">Extracting pages…</div>
-        )}
+        {isLoadingFile && <div className="text-sm text-neutral-400">Extracting pages…</div>}
 
-        {/* File error */}
         {fileError && (
           <div className="bg-red-900/30 border border-red-700/50 rounded-xl px-4 py-3 text-sm text-red-300">
             {fileError}
           </div>
         )}
 
-        {/* Folder error */}
         {folderState.status === "error" && (
           <div className="bg-red-900/30 border border-red-700/50 rounded-xl px-4 py-3 text-sm text-red-300">
             {folderState.message}
@@ -279,26 +300,23 @@ export default function MangaHome({
         )}
 
         {folderState.status === "ready" && folderState.series.length === 0 && (
-          <div className="text-sm text-neutral-500 py-4">
-            No .cbz files found in that folder.
-          </div>
+          <div className="text-sm text-neutral-500 py-4">No .cbz files found in that folder.</div>
         )}
 
-        {/* Empty state hint */}
         {history.length === 0 && folderState.status === "idle" && (
-          <div className="flex flex-col items-center justify-center flex-1 py-16 text-center gap-3">
+          <div className="flex flex-col items-center justify-center flex-1 py-12 text-center gap-3">
             <span className="text-6xl">📖</span>
             <p className="text-neutral-400 text-sm max-w-xs">
-              Open a folder to browse your manga collection, or drop a{" "}
-              <code className="bg-neutral-800 px-1 rounded text-blue-300">.cbz</code> file
-              anywhere on this page.
+              Search MangaDex above, open a folder, or drop a{" "}
+              <code className="bg-neutral-800 px-1 rounded text-blue-300">.cbz</code> file anywhere
+              on this page.
             </p>
           </div>
         )}
       </div>
 
       <p className="text-center text-xs text-neutral-700 pb-3">
-        Files are processed locally — nothing is uploaded
+        Local files are processed locally — nothing is uploaded
       </p>
     </div>
   );

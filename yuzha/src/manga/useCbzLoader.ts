@@ -32,7 +32,10 @@ export function useCbzLoader() {
 
   const revokePreviousUrls = () => {
     for (const url of blobUrlsRef.current) {
-      URL.revokeObjectURL(url);
+      // Only revoke blob: URLs — CDN URLs (https://) must not be passed to revokeObjectURL
+      if (url.startsWith("blob:")) {
+        URL.revokeObjectURL(url);
+      }
     }
     blobUrlsRef.current = [];
   };
@@ -89,10 +92,18 @@ export function useCbzLoader() {
     reader.readAsArrayBuffer(file);
   }, []);
 
+  // Load pre-fetched URLs directly (for MangaDex online chapters)
+  const loadUrls = useCallback((urls: string[], title: string) => {
+    revokePreviousUrls();
+    // CDN URLs are not tracked for revocation — they are not blob: URLs
+    blobUrlsRef.current = urls;
+    setResult({ status: "ready", pages: urls, fileName: title });
+  }, []);
+
   const reset = useCallback(() => {
     revokePreviousUrls();
     setResult({ status: "idle" });
   }, []);
 
-  return { result, loadFile, reset };
+  return { result, loadFile, loadUrls, reset };
 }
