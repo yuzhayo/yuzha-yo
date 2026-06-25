@@ -8,7 +8,7 @@ const ZOOM_STEP = 0.25;
 export function useReaderState(totalPages: number) {
   const [currentPage, setCurrentPage] = useState(0);
   const [zoom, setZoom] = useState(1.0);
-  const [mode, setMode] = useState<ReadingMode>("single");
+  const [mode, setMode] = useState<ReadingMode>("webtoon");
   const [rtl, setRtl] = useState(false);
 
   const goNext = useCallback(() => {

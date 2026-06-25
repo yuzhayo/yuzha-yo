@@ -242,6 +242,27 @@ export default function MangaReaderScreen({ onBack }: Props) {
     [folderState, openChapter, loadUrls, resetLoader],
   );
 
+  // Chapter navigation (folder mode only)
+  const chapterIndex =
+    activeSeries && activeChapter
+      ? activeSeries.chapters.findIndex((c) => c.fileName === activeChapter.fileName)
+      : -1;
+
+  const prevChapterEntry =
+    chapterIndex > 0 && activeSeries ? activeSeries.chapters[chapterIndex - 1] : null;
+  const nextChapterEntry =
+    chapterIndex >= 0 && activeSeries && chapterIndex < activeSeries.chapters.length - 1
+      ? activeSeries.chapters[chapterIndex + 1]
+      : null;
+
+  const handlePrevChapter = useCallback(() => {
+    if (prevChapterEntry && activeSeries) openChapter(activeSeries, prevChapterEntry);
+  }, [prevChapterEntry, activeSeries, openChapter]);
+
+  const handleNextChapter = useCallback(() => {
+    if (nextChapterEntry && activeSeries) openChapter(activeSeries, nextChapterEntry);
+  }, [nextChapterEntry, activeSeries, openChapter]);
+
   // Back from reader
   const handleReaderBack = useCallback(() => {
     if (activeHistoryKey && pages.length > 0) {
@@ -370,6 +391,10 @@ export default function MangaReaderScreen({ onBack }: Props) {
           onResetZoom={resetZoom}
           onToggleMode={toggleMode}
           onToggleRtl={toggleRtl}
+          onPrevChapter={prevChapterEntry ? handlePrevChapter : undefined}
+          onNextChapter={nextChapterEntry ? handleNextChapter : undefined}
+          prevChapterLabel={prevChapterEntry?.name}
+          nextChapterLabel={nextChapterEntry?.name}
         />
       </div>
     );
