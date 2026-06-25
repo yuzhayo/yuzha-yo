@@ -104,7 +104,9 @@ export default function MangaReaderScreen({ onBack }: Props) {
     const entry: HistoryEntry = {
       key: activeHistoryKey,
       displayTitle,
-      seriesName: activeSource === "mangadex" ? activeManga?.attributes.title["en"] ?? getMangaTitle(activeManga!) : activeSeries?.name,
+      seriesName: activeSource === "mangadex"
+        ? (activeManga ? (activeManga.attributes.title["en"] ?? getMangaTitle(activeManga)) : undefined)
+        : activeSeries?.name,
       page: currentPage,
       totalPages: pages.length,
       lastRead: Date.now(),
