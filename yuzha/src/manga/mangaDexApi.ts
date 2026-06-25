@@ -1,12 +1,9 @@
 import type { MangaDexManga, MangaDexChapter, MangaDexPageData } from "./types";
 
-const BASE = "https://api.mangadex.org";
-const HEADERS: Record<string, string> = {
-  "User-Agent": "YuzhaMangaReader/1.0",
-};
+const BASE = "/api/mangadex";
 
 async function apiFetch<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, { headers: HEADERS });
+  const res = await fetch(`${BASE}${path}`);
   if (res.status === 429) {
     throw new Error("Rate limited — please wait a moment and try again.");
   }

@@ -68,6 +68,13 @@ export default defineConfig({
     port: PORT,
     strictPort: true,
     allowedHosts: true,
+    proxy: {
+      "/api/mangadex": {
+        target: "https://api.mangadex.org",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/mangadex/, ""),
+      },
+    },
     fs: {
       allow: [resolveFromConfig("."), resolveFromConfig("../shared")],
     },
