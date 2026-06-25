@@ -17,15 +17,15 @@ async function apiFetch<T>(path: string): Promise<T> {
 }
 
 export async function searchManga(query: string): Promise<MangaDexManga[]> {
-  const params = new URLSearchParams({
-    title: query,
-    limit: "20",
-    "contentRating[]": "safe",
-  });
-  params.append("contentRating[]", "suggestive");
-  params.append("includes[]", "cover_art");
+  const qs = [
+    `title=${encodeURIComponent(query)}`,
+    `limit=20`,
+    `contentRating[]=safe`,
+    `contentRating[]=suggestive`,
+    `includes[]=cover_art`,
+  ].join("&");
 
-  const data = await apiFetch<{ data: MangaDexManga[] }>(`/manga?${params.toString()}`);
+  const data = await apiFetch<{ data: MangaDexManga[] }>(`/manga?${qs}`);
   return data.data;
 }
 
@@ -33,15 +33,16 @@ export async function getMangaChapters(
   mangaId: string,
   lang = "en",
 ): Promise<MangaDexChapter[]> {
-  const params = new URLSearchParams({
-    limit: "100",
-    "order[chapter]": "desc",
-  });
-  params.append("translatedLanguage[]", lang);
-  params.append("includes[]", "scanlation_group");
+  const parts = [
+    `limit=100`,
+    `order[chapter]=desc`,
+    `includes[]=scanlation_group`,
+  ];
+  if (lang) parts.push(`translatedLanguage[]=${encodeURIComponent(lang)}`);
+  const qs = parts.join("&");
 
   const data = await apiFetch<{ data: MangaDexChapter[] }>(
-    `/manga/${mangaId}/feed?${params.toString()}`,
+    `/manga/${mangaId}/feed?${qs}`,
   );
   return data.data;
 }
