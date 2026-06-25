@@ -237,6 +237,75 @@ Core animation logic is driven by a Layer System where JSON configurations defin
 - ✅ Zero runtime errors in browser console
 - ✅ Production build compatibility ensured via static asset manifest
 
+## Manga Reader Feature — Development Status
+
+The Manga Reader is a full-screen reading app accessible from the Yuzha main screen. All active development lives in `yuzha/src/manga/`. The standalone `manga/` workspace at the project root only has the base Phase 0 files and is not actively developed.
+
+**Plan files:** `MANGA_READER_PLAN.md`, `MANGA_PHASE1_PLAN.md`, `MANGA_PHASE1_DONE.md`, `MANGA_PHASE2_PLAN.md`, `MANGA_PHASE3_PLAN.md`, `MANGA_PHASE4_PLAN.md`
+
+### Phase 1 — Reading History + Folder Scanner — COMPLETED
+
+All files in `yuzha/src/manga/`:
+- `useReadingHistory.ts` — localStorage history (save/load/delete), keyed by `source::identifier`
+- `useFolderScanner.ts` — File System Access API folder scan, groups CBZ files into series
+- `MangaHome.tsx` — home screen: search bar, continue reading, folder library, drag-drop CBZ
+- `MangaLibrary.tsx` — chapter list for a scanned series
+
+### Phase 2 — MangaDex Online Search & Browse — COMPLETED
+
+Vite proxy already configured in `yuzha/vite.config.ts`:
+- `/api/mangadex` → `https://api.mangadex.org`
+- `/api/mangadex-cdn` → `https://uploads.mangadex.org`
+
+Files added:
+- `mangaDexApi.ts` — full API layer: `searchManga`, `getMangaChapters`, `getChapterPages`, `getCoverUrl`, helpers
+- `useMangaDexSearch.ts` — 500ms debounce search hook with idle/searching/ready/error states
+- `MangaDexSearch.tsx` — search results screen with loading skeletons, status/genre badges
+- `MangaDexDetail.tsx` — manga detail page: cover, description, language selector, chapter list, read-progress badges
+- `useCbzLoader.ts` — extended with `loadUrls(urls, title)` for loading online chapter image URLs directly
+- `types.ts` — extended with `MangaDexManga`, `MangaDexChapter`, `MangaDexPageData`
+- `MangaReaderScreen.tsx` — orchestrator updated for 5 views: home → search → detail → reader (loading/error states)
+
+### Phase 2 Additions (Jun 2026)
+
+- **Chapter navigation buttons** — `‹ Ch` and `Ch ›` buttons in the bottom control bar for folder/series reading. Computed from `activeSeries.chapters` + `activeChapter` in `MangaReaderScreen.tsx`. `Ch ›` turns **green** on the last page as a visual end-of-chapter cue.
+- **Webtoon as default** — `useReaderState.ts` now defaults to `"webtoon"` mode instead of `"single"`.
+
+### Phase 3 — Offline Download (IndexedDB) — NOT STARTED
+
+See `MANGA_PHASE3_PLAN.md`. The disabled `⬇` download button in `MangaDexDetail.tsx` is a placeholder for this phase.
+
+### Phase 4 — Polish & Quality of Life — NOT STARTED
+
+See `MANGA_PHASE4_PLAN.md`.
+
+### Key Manga Files
+
+| File | Purpose |
+|---|---|
+| `yuzha/src/manga/MangaReaderScreen.tsx` | Main orchestrator — all view routing and state |
+| `yuzha/src/manga/MangaHome.tsx` | Home screen with search bar + library |
+| `yuzha/src/manga/MangaDexSearch.tsx` | Online search results |
+| `yuzha/src/manga/MangaDexDetail.tsx` | Manga detail + chapter list |
+| `yuzha/src/manga/mangaDexApi.ts` | MangaDex API layer (proxied) |
+| `yuzha/src/manga/useCbzLoader.ts` | CBZ extractor + `loadUrls` for online chapters |
+| `yuzha/src/manga/useReaderState.ts` | Page, zoom, mode (default: webtoon), RTL state |
+| `yuzha/src/manga/MangaControls.tsx` | Bottom bar: page nav, chapter nav, zoom, mode |
+| `yuzha/src/manga/MangaToolbar.tsx` | Top bar: back button, file name, page counter |
+
+---
+
+## Replit Migration Notes (Jun 2026)
+
+This project was migrated from another environment to Replit. Key changes made during migration:
+
+- **Blocked packages removed** from root `package.json`: `vitest`, `@vitest/coverage-v8`, `concurrently` — these depend on packages blocked by Replit's security policy. Do NOT re-add them.
+- **Workflow:** `Start application` runs `npm run dev:yuzha` on port 5000.
+- **Three.js → Canvas 2D fallback:** Added `onError` prop to `shared/layer/StageThree.tsx` and fallback logic in `yuzha/src/MainScreen.tsx` so WebGL failures automatically switch to Canvas 2D renderer (important for headless/AI screenshot environments).
+- **`concurrently` was removed** — the `dev:all` script no longer works. Each workspace must be started individually.
+
+---
+
 ## External Dependencies
 
 - **React 18:** Frontend UI library.
