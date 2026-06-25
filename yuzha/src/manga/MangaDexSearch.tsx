@@ -103,9 +103,9 @@ function MangaResultCard({
 
 export default function MangaDexSearch({ state, query, onSelectManga, onBack }: Props) {
   return (
-    <div className="flex flex-col w-screen min-h-screen bg-neutral-950 text-white">
+    <div className="flex flex-col w-screen h-screen overflow-hidden bg-neutral-950 text-white">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-neutral-800">
+      <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-neutral-800 shrink-0">
         <button
           type="button"
           onClick={onBack}
@@ -122,7 +122,7 @@ export default function MangaDexSearch({ state, query, onSelectManga, onBack }: 
         )}
       </div>
 
-      <div className="flex flex-col gap-2 px-4 py-4 overflow-y-auto">
+      <div className="flex flex-col gap-2 px-4 py-4 overflow-y-auto flex-1">
         {/* Error */}
         {state.status === "error" && (
           <div className="bg-red-900/30 border border-red-700/50 rounded-xl px-4 py-3 text-sm text-red-300">

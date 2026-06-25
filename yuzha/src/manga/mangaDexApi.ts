@@ -49,10 +49,11 @@ export async function getChapterPages(
   dataSaver = false,
 ): Promise<string[]> {
   const data = await apiFetch<MangaDexPageData>(`/at-home/server/${chapterId}`);
-  const { baseUrl, chapter } = data;
+  const { chapter } = data;
   const filenames = dataSaver ? chapter.dataSaver : chapter.data;
   const quality = dataSaver ? "data-saver" : "data";
-  return filenames.map((f) => `${baseUrl}/${quality}/${chapter.hash}/${f}`);
+  // Use proxied CDN path to avoid cross-origin image blocking
+  return filenames.map((f) => `/api/mangadex-cdn/${quality}/${chapter.hash}/${f}`);
 }
 
 export function getCoverUrl(

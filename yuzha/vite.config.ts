@@ -74,6 +74,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/mangadex/, ""),
       },
+      "/api/mangadex-cdn": {
+        target: "https://uploads.mangadex.org",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/mangadex-cdn/, ""),
+      },
     },
     fs: {
       allow: [resolveFromConfig("."), resolveFromConfig("../shared")],
