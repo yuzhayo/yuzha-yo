@@ -18,6 +18,12 @@ type Counter2SettingsProps = {
   onFloatingPositionChange?: (pos: { x: number; y: number }) => void;
   messagePosition?: { x: number; y: number };
   onMessagePositionChange?: (pos: { x: number; y: number }) => void;
+  backPosition?: { x: number; y: number };
+  onBackPositionChange?: (pos: { x: number; y: number }) => void;
+  resetPosition?: { x: number; y: number };
+  onResetPositionChange?: (pos: { x: number; y: number }) => void;
+  settingsPosition?: { x: number; y: number };
+  onSettingsPositionChange?: (pos: { x: number; y: number }) => void;
 };
 
 export default function Counter2Settings({
@@ -38,6 +44,12 @@ export default function Counter2Settings({
   onFloatingPositionChange,
   messagePosition = { x: 1024, y: 400 },
   onMessagePositionChange,
+  backPosition = { x: 180, y: 180 },
+  onBackPositionChange,
+  resetPosition = { x: 280, y: 180 },
+  onResetPositionChange,
+  settingsPosition = { x: 380, y: 180 },
+  onSettingsPositionChange,
 }: Counter2SettingsProps) {
   const clampStage = (value: number) => Math.min(2048, Math.max(0, value));
 
@@ -56,8 +68,8 @@ export default function Counter2Settings({
     setter: ((val: { x: number; y: number }) => void) | undefined,
   ) => (
     <div className="p-3 bg-slate-800/50 rounded-xl border border-slate-700/30">
-      <h3 className="text-sm font-medium text-slate-200 mb-2">{label}</h3>
-      <p className="text-xs text-slate-400 mb-2">Stage coordinates (0-2048)</p>
+      <h3 className="text-sm font-medium text-slate-200 mb-1">{label}</h3>
+      <p className="text-xs text-slate-400 mb-2">Stage coords (0–2048)</p>
       <div className="grid grid-cols-2 gap-2">
         <label className="flex items-center gap-2 text-xs text-slate-300">
           <span className="w-4 text-right">X</span>
@@ -85,81 +97,60 @@ export default function Counter2Settings({
     </div>
   );
 
+  const renderToggle = (
+    label: string,
+    desc: string,
+    checked: boolean,
+    onChange: (() => void) | undefined,
+  ) => (
+    <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl border border-slate-700/30">
+      <div>
+        <h3 className="text-sm font-medium text-slate-200">{label}</h3>
+        <p className="text-xs text-slate-400 mt-0.5">{desc}</p>
+      </div>
+      <button
+        type="button"
+        onClick={onChange}
+        className={`relative w-11 h-6 rounded-full transition-colors ${checked ? "bg-teal-600" : "bg-slate-600"}`}
+      >
+        <span
+          className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${checked ? "translate-x-5" : "translate-x-0"}`}
+        />
+      </button>
+    </div>
+  );
+
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="relative w-[90%] max-w-md bg-slate-900/95 border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between px-4 py-3 bg-slate-800/50 border-b border-slate-700/50">
+      <div className="relative w-[90%] max-w-md bg-slate-900/95 border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between px-4 py-3 bg-slate-800/50 border-b border-slate-700/50 shrink-0">
           <h2 className="text-lg font-semibold text-white">Counter2 Settings</h2>
           <button
             type="button"
             onClick={onClose}
             className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        <div className="p-4 space-y-4">
-          <div className="text-xs text-slate-400 uppercase tracking-wider mb-2">Counter Settings</div>
+        <div className="p-4 space-y-4 overflow-y-auto flex-1">
+          <p className="text-xs text-slate-400 uppercase tracking-wider">Feedback</p>
 
-          <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl border border-slate-700/30">
-            <div>
-              <h3 className="text-sm font-medium text-slate-200">Haptic Feedback</h3>
-              <p className="text-xs text-slate-400 mt-0.5">Vibrate on tap</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => onHapticsToggle?.(!hapticsEnabled)}
-              className={`relative w-11 h-6 rounded-full transition-colors ${
-                hapticsEnabled ? "bg-teal-600" : "bg-slate-600"
-              }`}
-            >
-              <span
-                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-                  hapticsEnabled ? "translate-x-5" : "translate-x-0"
-                }`}
-              />
-            </button>
-          </div>
+          {renderToggle("Haptic Feedback", "Vibrate on tap", hapticsEnabled, () => onHapticsToggle?.(!hapticsEnabled))}
+          {renderToggle("Sound Effects", "Play sound on tap", soundEnabled, () => onSoundToggle?.(!soundEnabled))}
 
-          <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl border border-slate-700/30">
-            <div>
-              <h3 className="text-sm font-medium text-slate-200">Sound Effects</h3>
-              <p className="text-xs text-slate-400 mt-0.5">Play sound on tap</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => onSoundToggle?.(!soundEnabled)}
-              className={`relative w-11 h-6 rounded-full transition-colors ${
-                soundEnabled ? "bg-teal-600" : "bg-slate-600"
-              }`}
-            >
-              <span
-                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-                  soundEnabled ? "translate-x-5" : "translate-x-0"
-                }`}
-              />
-            </button>
-          </div>
+          <p className="text-xs text-slate-400 uppercase tracking-wider pt-2">Display</p>
 
           <div className="p-3 bg-slate-800/50 rounded-xl border border-slate-700/30">
             <h3 className="text-sm font-medium text-slate-200 mb-2">Button Size</h3>
             <input
               type="range"
-              min="150"
-              max="400"
+              min={200}
+              max={900}
+              step={10}
               value={floatingSize}
               onChange={(e) => onFloatingSizeChange?.(Number(e.target.value))}
               className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
@@ -171,8 +162,9 @@ export default function Counter2Settings({
             <h3 className="text-sm font-medium text-slate-200 mb-2">Display Size</h3>
             <input
               type="range"
-              min="150"
-              max="400"
+              min={200}
+              max={900}
+              step={10}
               value={messageSize}
               onChange={(e) => onMessageSizeChange?.(Number(e.target.value))}
               className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
@@ -184,8 +176,9 @@ export default function Counter2Settings({
             <h3 className="text-sm font-medium text-slate-200 mb-2">Font Size</h3>
             <input
               type="range"
-              min="40"
-              max="150"
+              min={16}
+              max={120}
+              step={2}
               value={messageFontSize}
               onChange={(e) => onMessageFontSizeChange?.(Number(e.target.value))}
               className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
@@ -206,14 +199,16 @@ export default function Counter2Settings({
             </div>
           </div>
 
-          <div className="text-xs text-slate-400 uppercase tracking-wider mb-2 mt-6">Position Controls</div>
+          <p className="text-xs text-slate-400 uppercase tracking-wider pt-2">Position (stage 0–2048)</p>
 
           {renderPositionInputs("Button Position", floatingPosition, onFloatingPositionChange)}
-
           {renderPositionInputs("Display Position", messagePosition, onMessagePositionChange)}
+          {renderPositionInputs("Back Button", backPosition, onBackPositionChange)}
+          {renderPositionInputs("Reset Button", resetPosition, onResetPositionChange)}
+          {renderPositionInputs("Settings Button", settingsPosition, onSettingsPositionChange)}
         </div>
 
-        <div className="px-4 py-3 bg-slate-800/30 border-t border-slate-700/50 flex justify-end gap-2">
+        <div className="px-4 py-3 bg-slate-800/30 border-t border-slate-700/50 flex justify-end gap-2 shrink-0">
           <button
             type="button"
             onClick={onClose}
