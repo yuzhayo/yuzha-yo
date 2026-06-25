@@ -517,7 +517,11 @@ async function mountThreeRenderer(
  *
  * USAGE: Just render <StageThree /> and it handles everything
  */
-function StageThree() {
+type StageThreeProps = {
+  onError?: () => void;
+};
+
+function StageThree({ onError }: StageThreeProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -537,13 +541,14 @@ function StageThree() {
       cleanup = await mountThreeRenderer(container, canvas, pipeline);
     })().catch((error) => {
       console.error("[StageThree] Failed to initialize Three.js stage", error);
+      if (active) onError?.();
     });
 
     return () => {
       active = false;
       cleanup?.();
     };
-  }, []);
+  }, [onError]);
 
   return (
     <div ref={containerRef} className="absolute inset-0 z-0 pointer-events-none">

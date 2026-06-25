@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import StageCanvas from "@shared/layer/StageCanvas";
 import StageThree from "@shared/layer/StageThree";
 import { getRendererType } from "@shared/utils/RendererDetector";
@@ -79,9 +79,15 @@ export default function MainScreen({
 }: MainScreenProps) {
   const autoDetectedRenderer = useMemo(() => getRendererType(), []);
   const [rendererMode, setRendererMode] = useState<RendererMode>("auto");
+  const [threeJsFailed, setThreeJsFailed] = useState(false);
+
+  const handleThreeJsError = useCallback(() => {
+    console.warn("[MainScreen] Three.js failed, falling back to Canvas renderer");
+    setThreeJsFailed(true);
+  }, []);
 
   const activeRenderer: RendererType =
-    rendererMode === "auto" ? autoDetectedRenderer : rendererMode;
+    threeJsFailed ? "canvas" : rendererMode === "auto" ? autoDetectedRenderer : rendererMode;
 
   const rendererLabel = React.useMemo(() => {
     const baseLabel = activeRenderer === "three" ? "Three.js WebGL Renderer" : "Canvas 2D Renderer";
@@ -91,7 +97,7 @@ export default function MainScreen({
 
   return (
     <div className="relative w-screen h-screen overflow-hidden">
-      {activeRenderer === "three" ? <StageThree /> : <StageCanvas />}
+      {activeRenderer === "three" ? <StageThree onError={handleThreeJsError} /> : <StageCanvas />}
       {children ?? (
         <MainScreenOverlay
           rendererLabel={rendererLabel}
