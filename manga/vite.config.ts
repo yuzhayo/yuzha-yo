@@ -22,6 +22,18 @@ export default defineConfig({
     fs: {
       allow: [path.resolve(__dirname, "."), path.resolve(__dirname, "../shared")],
     },
+    proxy: {
+      "/api/mangadex": {
+        target: "https://api.mangadex.org",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/mangadex/, ""),
+      },
+      "/api/mangadex-cdn": {
+        target: "https://uploads.mangadex.org",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/mangadex-cdn/, ""),
+      },
+    },
   },
   preview: {
     host: "0.0.0.0",

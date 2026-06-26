@@ -2,6 +2,7 @@ import React, { useState } from "react";
 
 type Props = {
   fileName: string;
+  seriesName?: string;
   currentPage: number;
   totalPages: number;
   onBack: () => void;
@@ -10,6 +11,7 @@ type Props = {
 
 export default function MangaToolbar({
   fileName,
+  seriesName,
   currentPage,
   totalPages,
   onBack,
@@ -41,9 +43,19 @@ export default function MangaToolbar({
         ← Back
       </button>
 
-      <span className="flex-1 truncate text-sm text-neutral-400 min-w-0" title={displayName}>
-        {displayName}
-      </span>
+      <div className="flex-1 flex flex-col min-w-0 justify-center">
+        {seriesName && (
+          <span className="text-[10px] text-blue-400 truncate leading-tight">
+            {seriesName}
+          </span>
+        )}
+        <span
+          className="text-sm text-neutral-400 truncate leading-tight"
+          title={displayName}
+        >
+          {displayName}
+        </span>
+      </div>
 
       {editing ? (
         <input

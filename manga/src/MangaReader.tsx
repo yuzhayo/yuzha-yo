@@ -80,7 +80,6 @@ export default function MangaReader({
   const paddingTop = `${TOOLBAR_HEIGHT}px`;
   const paddingBottom = `${CONTROLS_HEIGHT}px`;
 
-  // ── Single Page Mode ───────────────────────────────────────────────
   if (mode === "single") {
     const src = pages[currentPage];
 
@@ -119,8 +118,6 @@ export default function MangaReader({
             draggable={false}
           />
         )}
-
-        {/* Left / Right tap zone hints */}
         <div className="absolute inset-y-0 left-0 w-1/3 flex items-center justify-start pl-3 opacity-0 hover:opacity-100 transition-opacity pointer-events-none">
           <span className="text-white/20 text-3xl">{rtl ? "›" : "‹"}</span>
         </div>
@@ -131,7 +128,6 @@ export default function MangaReader({
     );
   }
 
-  // ── Webtoon Mode (vertical scroll) ────────────────────────────────
   return (
     <div
       className="fixed inset-0 overflow-y-auto overflow-x-hidden bg-neutral-950"

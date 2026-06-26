@@ -32,7 +32,10 @@ export function useCbzLoader() {
 
   const revokePreviousUrls = () => {
     for (const url of blobUrlsRef.current) {
-      URL.revokeObjectURL(url);
+      // Only revoke blob: URLs — CDN URLs (https://) must not be passed to revokeObjectURL
+      if (url.startsWith("blob:")) {
+        URL.revokeObjectURL(url);
+      }
     }
     blobUrlsRef.current = [];
   };
@@ -59,7 +62,10 @@ export function useCbzLoader() {
         }
 
         const imageEntries = Object.entries(files)
-          .filter(([name]) => isImageFile(name) && !name.startsWith("__MACOSX") && !name.startsWith("."))
+          .filter(
+            ([name]) =>
+              isImageFile(name) && !name.startsWith("__MACOSX") && !name.startsWith("."),
+          )
           .sort(([a], [b]) => naturalSort(a, b));
 
         if (imageEntries.length === 0) {
@@ -70,7 +76,7 @@ export function useCbzLoader() {
         setResult({ status: "loading", progress: 80 });
 
         const urls = imageEntries.map(([name, data]) => {
-          const blob = new Blob([data], { type: getMime(name) });
+          const blob = new Blob([data.buffer as ArrayBuffer], { type: getMime(name) });
           return URL.createObjectURL(blob);
         });
 
@@ -86,10 +92,18 @@ export function useCbzLoader() {
     reader.readAsArrayBuffer(file);
   }, []);
 
+  // Load pre-fetched URLs directly (for MangaDex online chapters)
+  const loadUrls = useCallback((urls: string[], title: string) => {
+    revokePreviousUrls();
+    // CDN URLs are not tracked for revocation — they are not blob: URLs
+    blobUrlsRef.current = urls;
+    setResult({ status: "ready", pages: urls, fileName: title });
+  }, []);
+
   const reset = useCallback(() => {
     revokePreviousUrls();
     setResult({ status: "idle" });
   }, []);
 
-  return { result, loadFile, reset };
+  return { result, loadFile, loadUrls, reset };
 }

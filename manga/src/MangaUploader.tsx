@@ -63,7 +63,8 @@ export default function MangaUploader({ onFile, isLoading, progress, error }: Pr
         <div className="text-center px-4">
           <p className="text-sm text-neutral-300">
             Drag & drop a{" "}
-            <code className="bg-neutral-800 px-1.5 py-0.5 rounded text-blue-300">.cbz</code> file here
+            <code className="bg-neutral-800 px-1.5 py-0.5 rounded text-blue-300">.cbz</code> file
+            here
           </p>
           <p className="text-xs text-neutral-500 mt-1">or click to browse</p>
         </div>
