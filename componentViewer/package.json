@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite --port 3005 --host",
     "build": "tsc && vite build",
-    "preview": "vite preview --port 3005"
+    "preview": "vite preview --port 3005",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",

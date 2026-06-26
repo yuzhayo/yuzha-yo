@@ -5,10 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port 3002 --host",
-    "dev:3002": "vite --port 3002",
     "build": "tsc && vite build",
     "preview": "vite preview --port 3002",
-    "preview:3002": "vite preview --port 3002"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "react": "^18.3.1",

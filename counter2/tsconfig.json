@@ -3,6 +3,7 @@
   "compilerOptions": {
     "composite": true,
     "baseUrl": ".",
+    "types": ["vite/client"],
     "paths": {
       "@shared/*": ["../shared/*"]
     }
