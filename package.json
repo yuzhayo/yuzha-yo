@@ -73,8 +73,12 @@
 
     "dev:manga": "npm run dev --workspace manga",
     "build:manga": "npm run build --workspace manga",
-    "preview:manga": "npm run preview --workspace manga",
+    "dist:manga": "npm run dist --workspace manga",
+    "dist:manga:win": "npm run dist:win --workspace manga",
+    "dist:manga:mac": "npm run dist:mac --workspace manga",
+    "dist:manga:linux": "npm run dist:linux --workspace manga",
     "typecheck:manga": "npm run typecheck --workspace manga",
+    "preview:manga": "npm run preview --workspace manga",
 
     "dev:alphaRemove": "npm run dev --workspace alphaRemove",
     "build:alphaRemove": "npm run build --workspace alphaRemove",
