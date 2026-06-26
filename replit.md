@@ -1,343 +1,143 @@
 # Yuzha Animation Framework
 
-## Overview
-
-The Yuzha Animation Framework is a modern TypeScript-based animation framework that generates animated visual outputs using a JSON-based "Layer System." Built as a monorepo with React, Vite, Three.js (WebGL), and Canvas 2D, it features an intelligent dual-renderer system. The project aims to provide a robust and performant solution for creating complex animations with clear architecture and efficient rendering.
-
 ## User Preferences
 
-Communication: Simple, everyday language
+- Communication: Simple, everyday language
 
-## System Architecture
+---
 
-The framework utilizes a dual-renderer system, defaulting to Three.js WebGL for production and falling back to Canvas 2D for AI agents or screenshot generation, with automatic headless browser detection. Both renderers share identical animation patterns and operate on a fixed 2048x2048 coordinate system that dynamically scales.
+## What This Project Is
 
-Core animation logic is driven by a Layer System where JSON configurations define layers processed by a pipeline (e.g., `Spin Processor`) before rendering. The configuration separates layer identity from feature-specific groups. Performance is optimized through pipeline caching, pre-calculated math constants, static layer buffering, and lazy calculations. Debugging is supported by an Image Mapping Debug visualization system with configurable visual helpers. The system uses an extended coordinate system supporting negative and >100% percent values for advanced animation capabilities.
+A TypeScript monorepo with multiple apps built on React + Vite. The main app (`yuzha/`) is an animation framework that uses a JSON-driven "Layer System" to render animated visuals via Three.js (WebGL) or Canvas 2D as a fallback.
 
-**Key Technical Implementations & Design Choices:**
+**Workspaces:**
+- `yuzha/` — Main app, runs on port 5000. This is the primary workspace.
+- `shared/` — Shared logic, components, and assets used by all workspaces.
+- `counter2/` — Standalone counter app (port 3002).
+- `manga/` — Electron-based manga reader (not used on Replit; Electron is incompatible).
+- `meng/`, `alphaRemove/`, `componentViewer/` — Other standalone tools.
 
-- **Monorepo Structure:** `yuzha/` for the main application and `shared/` for common logic.
-- **Rendering:** Three.js (WebGL) for high-performance; Canvas 2D as fallback.
-- **Coordinate System:** Stage2048 system (2048x2048 pixels) for consistent scaling, `normalizePercent()` for extended range.
-- **Layer System:** JSON config drives `LayerCore` with extensible processors for transformations and animations, consolidated under `shared/layer/`.
-- **Configuration:** `ConfigYuzha.json` defines layer properties and animation parameters in a flat structure, with `transformConfig` for conditional overrides and clock alias normalization.
-- **Performance:** Pipeline caching, pre-calculated constants, `StaticLayerBuffer`, image dimension/mapping caches, lazy calculations, and `React.memo`.
-- **Debugging:** `ImageMappingDebugConfig` for visual helpers across renderers.
-- **TypeScript:** Strict type checking with Vite for compilation.
+**Tech stack:** React 18, TypeScript, Vite 7, Three.js, Tailwind CSS, Radix UI.
 
-## Recent Architecture Changes
+No external auth. No paid API integrations. No database.
 
-### Timestamp Overlay System Refactoring (Dec 2025) - COMPLETED
+---
 
-**Objective:** Transform hardcoded 3-section text overlay system into a dynamic, expandable overlay system supporting unlimited text and image overlays.
+## Replit Setup — What to Do on First Import
 
-**Phase 1 - Dynamic Overlay Array Architecture:**
+This is a step-by-step record of what was done to get this project running on Replit. Follow these exactly if setting up from scratch.
 
-1. **Type System Redesign:**
-   - Created `BaseOverlay`, `TextOverlay`, `ImageOverlay` discriminated union types
-   - Unified overlay structure with `id`, `type`, `position`, and type-specific fields
-   - Location: `yuzha/src/timestamp/types.ts`
+### Step 1 — Install dependencies
 
-2. **State Management Consolidation:**
-   - Replaced 3 separate useState hooks with single `overlays: Overlay[]` array
-   - Map-based ref management: `useRef<Map<string, TimestampFloatingRef>>`
-   - Added `syncOverlayPositionsFromRefs()` for position synchronization
-   - Location: `yuzha/src/timestamp/timestampScreen.tsx`
+Run from the project root:
 
-**Phase 2 - Collision Detection:**
-
-1. **AABB Collision Utilities:**
-   - `checkAABBCollision()` - Tests if two bounding boxes overlap
-   - `resolveCollision()` - Uses previous position to determine minimal axis correction
-   - Location: `yuzha/src/timestamp/types.ts`
-
-2. **Block Behavior:**
-   - Overlays cannot overlap; dragging into another overlay pushes it back
-   - Visual feedback: red outline during collision state
-   - Collision checks happen in real-time during drag events
-
-**Phase 3 - Image Overlay Support:**
-
-1. **ImageFloating Component:**
-   - Created `yuzha/src/timestamp/ImageFloating.tsx`
-   - Supports drag and resize with corner handles
-   - Separate ref management: `imageOverlayRefsMap` for image overlays
-   - Interface: `ImageFloatingRef` with `getRelativePosition`, `setRelativePosition`, `getSize`
-
-2. **Image Lifecycle:**
-   - `addImageOverlay(src, width, height)` - Creates new image overlay with auto-scaling
-   - `deleteImageOverlay(id)` - Removes image overlay and cleans up refs
-   - `nextImageId` uses functional updates to prevent ID reuse after deletions
-
-3. **Canvas Export:**
-   - `handleSave()` awaits all image loads via Promise.all before drawing
-   - Images render correctly in exported PNG
-
-**Phase 4 - V3 Preset Migration:**
-
-1. **TimestampPresetV3 Format:**
-   - Stores full `overlays: Overlay[]` array including image overlays
-   - Replaces separate `time`, `date`, `location` fields from V2
-
-2. **Automatic Migration:**
-   - `migrateV2toV3()` converts V2 presets to V3 on load
-   - Chain migration: V1 → V2 → V3 for legacy presets
-   - Location: `yuzha/src/timestamp/PresetManager.ts`
-
-3. **Save/Load Updates:**
-   - `handleSavePreset()` saves complete overlays array with synced positions
-   - `handleLoadPreset()` restores all overlays including images, resets `nextImageId`
-
-**Architecture Principles:**
-
-- `overlays` state = Single source of truth for overlay data
-- Refs store real-time drag positions; sync to state before saves/history
-- `getCurrentState()` always fetches fresh positions from refs
-- `DEFAULT_OVERLAYS` defines the 3 permanent sections (time, date, location)
-- Collision resolution uses previous position for stable "block" behavior
-- Image overlay IDs use functional state updates to prevent reuse
-- Blob URLs are revoked on delete/preset load to prevent memory leaks
-
-**Known Limitations:**
-
-- Image overlays use blob: URLs which are session-only; saved presets store the URL but images will not persist across browser sessions
-- For persistent images, a future enhancement could convert to base64 or server storage
-
-**Key Files:**
-
-- `yuzha/src/timestamp/types.ts` - Type definitions, collision utilities
-- `yuzha/src/timestamp/timestampScreen.tsx` - Main component, state management
-- `yuzha/src/timestamp/TimestampFloating.tsx` - Text overlay component
-- `yuzha/src/timestamp/ImageFloating.tsx` - Image overlay component
-- `yuzha/src/timestamp/TimestampSettings.tsx` - Settings panel, preset UI
-- `yuzha/src/timestamp/PresetManager.ts` - Preset storage, V1/V2/V3 migration
-
-### Counter2 Workspace Separation (Dec 2025) - COMPLETED
-
-**Objective:** Enhance Counter2 settings and separate it into an independent workspace while keeping it accessible from yuzha mainscreen.
-
-**Changes Implemented:**
-
-1. **Phase 1 - Settings Cleanup:**
-   - Removed non-functional settings: `lowEndMode`, `showDebug`, `fpsLimit`
-   - These were local state variables that had no effect on the actual renderer
-
-2. **Phase 2 - Position Controls:**
-   - Added `floatingPosition` and `messagePosition` props to Counter2Settings
-   - Implemented X/Y input controls with stage coordinates (0-2048)
-   - Wired position state in Counter2Screen to the settings
-
-3. **Phase 3 - Workspace Separation:**
-   - Created independent `counter2/` workspace at root level
-   - Runs on port 3002 as standalone application
-   - Shares code via `@shared` alias pointing to `../shared`
-   - Updated root `package.json` workspaces array
-   - Added `dev:counter2`, `build:counter2`, `preview:counter2` scripts
-
-**Workspace Structure:**
-
-```
-/counter2/
-├── src/
-│   ├── main.tsx           - Entry point
-│   ├── index.css          - Tailwind imports
-│   ├── counter2Screen.tsx - Main screen (standalone mode)
-│   └── ...other components
-├── package.json
-├── vite.config.ts
-├── tsconfig.json
-├── tailwind.config.ts
-├── postcss.config.ts
-└── index.html
+```bash
+npm install
+npm install --workspaces
 ```
 
-**Standalone Mode:**
+The root `node_modules/.bin/` contains the shared `vite` binary used by all workspaces. The workspace `node_modules` folders do NOT have their own copies. This is normal for npm workspaces — everything is hoisted to the root.
 
-- Back button shows "Home" when `onBack` prop is undefined
-- Redirects to "/" when clicked in standalone mode
-- All features work identically to integrated mode
+### Step 2 — Configure the workflow
 
-**Key Files:**
+Use the `configureWorkflow` tool (via `code_execution`) to set up the main workflow:
 
-- `yuzha/src/counter2/` - Integrated version (still functional)
-- `counter2/` - Standalone workspace
-- `COUNTER2_MIGRATION.md` - Migration documentation
-- `counter2/README.md` - Workspace documentation
+```javascript
+await configureWorkflow({
+    name: "Start application",
+    command: "npm run dev:yuzha",
+    waitForPort: 5000,
+    outputType: "webview"
+});
+```
 
-### Counter2 Optimized Screen (Dec 2025) - COMPLETED
+- `outputType: "webview"` is required for port 5000.
+- The command `npm run dev:yuzha` delegates to `npm run dev --workspace yuzha`, which runs `vite` from the root `node_modules/.bin/`.
 
-**Objective:** Create an optimized counter screen using the shared/layer architecture for better performance on low-end devices.
+### Step 3 — Verify it works
 
-**Design Choices:**
+Check logs with `refresh_all_logs`. You should see:
 
-1. **Separate Implementation:** Created `counter2` folder instead of refactoring original `counter` to minimize risk
-2. **Canvas2D Only:** Uses `StageCanvas` exclusively for maximum compatibility and performance
-3. **Custom Pipeline:** Implements `createCounter2Pipeline()` with custom config loading from `ConfigCounter2.json`
-4. **Device Detection:** Uses `DeviceCapability` with `performanceLevel` and `isLowEndDevice` for device classification
+```
+VITE v7.x.x  ready in NNN ms
+➜  Local:   http://localhost:5000/
+```
 
-**Key Files:**
+Take a screenshot with `screenshot({ type: "app_preview", path: "/", port: 5000 })`. The app should show the Yuzha main screen (a stellar/clock-style animation hub).
 
-- `yuzha/src/counter2/counter2Screen.tsx` - Main screen with custom pipeline loader
-- `yuzha/src/counter2/counter2Floating.tsx` - Floating panel UI
-- `yuzha/src/counter2/counter2Settings.tsx` - Settings panel
-- `yuzha/src/counter2/counter2Buttons.tsx` - Control buttons
-- `shared/layer/ConfigCounter2.json` - Layer configuration (all 2D layers)
+### Known Blocked Packages (do NOT add these back)
 
-**Architecture Notes:**
+Replit's security policy blocks these — they will silently fail or break `npm install`:
 
-- `StageCanvas` accepts `loadPipeline` prop for custom configurations
-- `PreparedLayer` format: `{ entry, data, processors, metadata }`
-- All layers use `renderer: "2D"` for consistent Canvas2D rendering
-- Navigation integrated through `MainScreenUtils.tsx`, `MainScreen.tsx`, and `App.tsx`
+- `concurrently` — blocked (depends on `shell-quote` which is blocked)
+- `vitest` — blocked
+- `@vitest/coverage-v8` — blocked
 
-### Layer Module Simplification Refactoring (Nov 2025)
+They were already removed from `package.json` before migration. If they reappear, remove them again.
 
-**Objective:** Consolidate duplicate code in the `shared/layer/` module to establish clear single sources of truth and improve maintainability.
+### WebGL / Blank Screen Behavior
 
-**Changes Implemented:**
+Three.js WebGL may fail in headless/preview environments. The app already handles this: it auto-detects a headless browser and falls back to Canvas 2D rendering. This is normal — Canvas 2D output is identical to WebGL output.
 
-1. **Asset Path Case Sensitivity Fix:**
-   - Renamed `shared/Asset/` → `shared/asset/` for Linux/production compatibility
-   - Updated all references in `engine.ts` and `ImageRegistry.json`
+---
 
-2. **Configuration Consolidation:**
-   - **Before:** Duplicate config loading in `Config.ts` and `model.ts`
-   - **After:** `model.ts` is the single source for types and config loading
-   - Deleted: `shared/layer/Config.ts`
-   - All imports now use barrel exports from `index.ts` → `model.ts`
+## Architecture Notes
 
-3. **Math/Clock Function Consolidation:**
-   - **Before:** Clock/time functions split between `clockTime.ts` and `math.ts`
-   - **After:** `math.ts` is the single source for all pure calculation functions
-   - Deleted: `shared/layer/clockTime.ts`
-   - Consolidated: `resolveClockSpeed`, `calculateRotationDegrees`, timezone parsing, etc.
+### Dual Renderer
 
-4. **Asset Loading Production Fix:**
-   - **Critical Issue:** Dynamic `new URL()` construction prevented Vite from bundling assets in production
-   - **Solution:** Implemented static asset manifest using `import.meta.glob('../asset/*.{png,jpg,...}', { eager: true, query: '?url', import: 'default' })`
-   - **Result:** Vite can now statically analyze and bundle all assets for production builds
+- **Three.js (WebGL):** Default for real browsers.
+- **Canvas 2D:** Auto-fallback for AI agents, screenshots, headless environments.
+- Detection lives in `shared/layer/engine.ts` and `yuzha/src/MainScreen.tsx`.
 
-5. **Barrel Export Cleanup:**
-   - Updated `shared/layer/index.ts` to export from `model.ts` and `math.ts`
-   - Fixed all import paths in `StageSystem.ts`, `engine.ts` to use barrel exports
-   - Removed unused imports and fixed ESLint violations
+### Layer System
 
-**Architecture Principles for Future AI Agents:**
+- Layers are defined in `shared/layer/ConfigYuzha.json` (and `ConfigCounter2.json` for counter2).
+- `model.ts` — single source of truth for types + config loading.
+- `math.ts` — single source of truth for all pure math/clock functions.
+- `engine.ts` — runtime that reads from `model.ts` and `math.ts`.
+- `index.ts` — barrel export.
+- Asset loading uses `import.meta.glob` (required for Vite static analysis in production builds — do not use dynamic `new URL()` for assets).
 
-- `model.ts` = Single source of truth for types, constants, and configuration loading
-- `math.ts` = Single source of truth for pure calculation functions (no side effects)
-- `engine.ts` = Runtime execution layer that imports from `model.ts` and `math.ts`
-- `index.ts` = Barrel export that re-exports from the above modules
-- Asset loading MUST use `import.meta.glob` for Vite static analysis (critical for production builds)
+### Coordinate System
 
-**Validation:**
+All layout uses a 2048×2048 stage (`Stage2048`) that scales dynamically to the actual screen size.
 
-- ✅ TypeScript typecheck passes
-- ✅ ESLint passes (max-warnings=0)
-- ✅ Prettier formatting verified
-- ✅ All 19 layers load successfully in dev mode
-- ✅ Zero runtime errors in browser console
-- ✅ Production build compatibility ensured via static asset manifest
+### Vite Aliases
 
-## Manga Reader Feature — Development Status
+Every workspace maps:
+- `@` → its own `src/`
+- `@shared` → `../shared/`
 
-The Manga Reader is a full-screen reading app accessible from the Yuzha main screen. All active development lives in `yuzha/src/manga/`. The standalone `manga/` workspace at the project root only has the base Phase 0 files and is not actively developed.
+### MangaDex Proxy (Yuzha only)
 
-**Plan files:** `MANGA_READER_PLAN.md`, `MANGA_PHASE1_PLAN.md`, `MANGA_PHASE1_DONE.md`, `MANGA_PHASE2_PLAN.md`, `MANGA_PHASE3_PLAN.md`, `MANGA_PHASE4_PLAN.md`
-
-### Phase 1 — Reading History + Folder Scanner — COMPLETED
-
-All files in `yuzha/src/manga/`:
-
-- `useReadingHistory.ts` — localStorage history (save/load/delete), keyed by `source::identifier`
-- `useFolderScanner.ts` — File System Access API folder scan, groups CBZ files into series
-- `MangaHome.tsx` — home screen: search bar, continue reading, folder library, drag-drop CBZ
-- `MangaLibrary.tsx` — chapter list for a scanned series
-
-### Phase 2 — MangaDex Online Search & Browse — COMPLETED
-
-Vite proxy already configured in `yuzha/vite.config.ts`:
-
+`yuzha/vite.config.ts` proxies:
 - `/api/mangadex` → `https://api.mangadex.org`
 - `/api/mangadex-cdn` → `https://uploads.mangadex.org`
 
-Files added:
+---
 
-- `mangaDexApi.ts` — full API layer: `searchManga`, `getMangaChapters`, `getChapterPages`, `getCoverUrl`, helpers
-- `useMangaDexSearch.ts` — 500ms debounce search hook with idle/searching/ready/error states
-- `MangaDexSearch.tsx` — search results screen with loading skeletons, status/genre badges
-- `MangaDexDetail.tsx` — manga detail page: cover, description, language selector, chapter list, read-progress badges
-- `useCbzLoader.ts` — extended with `loadUrls(urls, title)` for loading online chapter image URLs directly
-- `types.ts` — extended with `MangaDexManga`, `MangaDexChapter`, `MangaDexPageData`
-- `MangaReaderScreen.tsx` — orchestrator updated for 5 views: home → search → detail → reader (loading/error states)
+## Key Files
 
-### Phase 2 Additions (Jun 2026)
-
-- **Chapter navigation buttons** — `‹ Ch` and `Ch ›` buttons in the bottom control bar for folder/series reading. Computed from `activeSeries.chapters` + `activeChapter` in `MangaReaderScreen.tsx`. `Ch ›` turns **green** on the last page as a visual end-of-chapter cue.
-- **Webtoon as default** — `useReaderState.ts` now defaults to `"webtoon"` mode instead of `"single"`.
-
-### Phase 3 — Offline Download (IndexedDB) — NOT STARTED
-
-See `MANGA_PHASE3_PLAN.md`. The disabled `⬇` download button in `MangaDexDetail.tsx` is a placeholder for this phase.
-
-### Phase 4 — Polish & Quality of Life — NOT STARTED
-
-See `MANGA_PHASE4_PLAN.md`.
-
-### Key Manga Files
-
-| File                                    | Purpose                                        |
-| --------------------------------------- | ---------------------------------------------- |
-| `yuzha/src/manga/MangaReaderScreen.tsx` | Main orchestrator — all view routing and state |
-| `yuzha/src/manga/MangaHome.tsx`         | Home screen with search bar + library          |
-| `yuzha/src/manga/MangaDexSearch.tsx`    | Online search results                          |
-| `yuzha/src/manga/MangaDexDetail.tsx`    | Manga detail + chapter list                    |
-| `yuzha/src/manga/mangaDexApi.ts`        | MangaDex API layer (proxied)                   |
-| `yuzha/src/manga/useCbzLoader.ts`       | CBZ extractor + `loadUrls` for online chapters |
-| `yuzha/src/manga/useReaderState.ts`     | Page, zoom, mode (default: webtoon), RTL state |
-| `yuzha/src/manga/MangaControls.tsx`     | Bottom bar: page nav, chapter nav, zoom, mode  |
-| `yuzha/src/manga/MangaToolbar.tsx`      | Top bar: back button, file name, page counter  |
+| File | Purpose |
+|---|---|
+| `yuzha/src/App.tsx` | Root app, screen routing |
+| `yuzha/src/MainScreen.tsx` | Main hub screen, renderer fallback logic |
+| `yuzha/vite.config.ts` | Vite config, port, aliases, proxy |
+| `shared/layer/model.ts` | Layer types + config loading |
+| `shared/layer/math.ts` | All math/clock calculations |
+| `shared/layer/engine.ts` | Runtime layer execution |
+| `shared/layer/index.ts` | Barrel exports |
+| `yuzha/src/manga/MangaReaderScreen.tsx` | Manga reader orchestrator |
+| `yuzha/src/timestamp/timestampScreen.tsx` | Timestamp overlay screen |
 
 ---
 
-## Replit Migration Notes (Jun 2026)
+## Scripts Reference
 
-This project was migrated from another environment to Replit. If the app shows a **blank preview** after a fresh setup, follow this checklist.
-
-### Problem 1 — App shows blank screen / `npm install` fails
-
-**Cause:** Replit's security policy blocks certain npm packages at the network level. When these packages are in `package.json`, `npm install` either silently skips them or fails, which can leave the dev server unable to start and the preview pane blank.
-
-**Packages that are blocked and must NOT be in `package.json`:**
-
-- `concurrently` — blocked because it depends on `shell-quote` which Replit blocks
-- `vitest` — blocked by Replit's security policy
-- `@vitest/coverage-v8` — blocked by Replit's security policy
-
-**Fix applied:** All three were removed from the root `package.json`. Do NOT re-add them. If you need to run multiple workspaces in parallel, start them in separate workflow commands instead of using `concurrently`.
-
-### Problem 2 — Preview pane shows blank / Three.js WebGL error
-
-**Cause:** Three.js WebGL renderer can fail silently in some environments (headless browsers, Replit preview iframe). The original code had no fallback, so a WebGL failure produced a blank screen with no error message.
-
-**Fix applied:**
-
-- Added `onError` prop to `shared/layer/StageThree.tsx` so WebGL errors are caught and surfaced
-- Added fallback logic in `yuzha/src/MainScreen.tsx`: if Three.js fails, the app automatically switches to the Canvas 2D renderer
-- The Canvas 2D renderer is fully featured and identical in animation output; it is the safe fallback
-
-### Normal Setup
-
-- **Workflow:** `Start application` → runs `npm run dev:yuzha` → app on port 5000
-- `dev:all` script no longer exists (required `concurrently`)
-- Each workspace (`yuzha/`, `counter2/`, etc.) must be started individually if needed
-
----
-
-## External Dependencies
-
-- **React 18:** Frontend UI library.
-- **TypeScript:** Programming language.
-- **Vite 7:** Build tool and development server.
-- **Three.js:** WebGL 3D library.
-- **Tailwind CSS:** Utility-first CSS framework.
+```bash
+npm run dev:yuzha       # Start main app on port 5000
+npm run build:yuzha     # Production build of main app
+npm run dev:counter2    # Start counter2 on port 3002
+npm run typecheck:yuzha # TypeScript check for yuzha
+npm run lint            # ESLint (max-warnings=0)
+```
