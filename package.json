@@ -20,7 +20,6 @@
     "build": "npm run build:yuzha",
     "preview": "npm run preview:yuzha",
     "start": "npm run preview:yuzha",
-
     "typecheck": "npm run typecheck:yuzha && tsc --noEmit --project tsconfig.base.json",
     "typecheck:shared": "tsc --noEmit --project tsconfig.base.json",
     "lint": "eslint \"yuzha/**/*.{ts,tsx}\" \"shared/**/*.{ts,tsx}\" --cache --no-error-on-unmatched-pattern --max-warnings=0",
@@ -33,7 +32,6 @@
     "test:watch": "vitest --passWithNoTests",
     "test:cov": "vitest run --passWithNoTests --coverage",
     "ci:verify": "npm run lint && npm run typecheck && npm run test && npm run build",
-
     "clean": "rimraf \"yuzha/dist\" \"yuzha/node_modules/.vite\" --glob \"**/.tsbuildinfo\"",
     "clean:cache": "rimraf \"node_modules/.vite\" \"yuzha/node_modules/.vite\" --glob \"**/.tsbuildinfo\"",
     "clean:all": "rimraf \"node_modules\" \"yuzha/node_modules\" \"yuzha/dist\" --glob \"**/.tsbuildinfo\"",
@@ -43,7 +41,6 @@
     "dev:l": "npm run typecheck && npm run lint && npm run format:fix",
     "dev:shared": "npm run typecheck:shared && npm run lint:shared && npm run test:shared",
     "dev:shared:fix": "npm run typecheck:shared && npm run lint:shared:fix && npm run format:fix && npm run test:shared",
-
     "dev:yuzha": "npm run dev --workspace yuzha",
     "dev:3000": "npm run dev:3000 --workspace yuzha",
     "dev:5000": "npm run dev:5000 --workspace yuzha",
@@ -59,18 +56,15 @@
     "typecheck:yuzha": "npm run typecheck --workspace yuzha",
     "lint:yuzha": "npm run lint --workspace yuzha",
     "lint:yuzha:fix": "npm run lint:fix --workspace yuzha",
-
     "dev:meng": "npm run dev --workspace meng",
     "build:meng": "npm run build --workspace meng",
     "preview:meng": "npm run preview --workspace meng",
     "typecheck:meng": "npm run typecheck --workspace meng",
     "lint:meng": "npm run lint --workspace meng",
-
     "dev:counter2": "npm run dev --workspace counter2",
     "build:counter2": "npm run build --workspace counter2",
     "preview:counter2": "npm run preview --workspace counter2",
     "typecheck:counter2": "npm run typecheck --workspace counter2",
-
     "dev:manga": "npm run dev --workspace manga",
     "build:manga": "npm run build --workspace manga",
     "dist:manga": "npm run dist --workspace manga",
@@ -79,12 +73,10 @@
     "dist:manga:linux": "npm run dist:linux --workspace manga",
     "typecheck:manga": "npm run typecheck --workspace manga",
     "preview:manga": "npm run preview --workspace manga",
-
     "dev:alphaRemove": "npm run dev --workspace alphaRemove",
     "build:alphaRemove": "npm run build --workspace alphaRemove",
     "preview:alphaRemove": "npm run preview --workspace alphaRemove",
     "typecheck:alphaRemove": "npm run typecheck --workspace alphaRemove",
-
     "dev:componentViewer": "npm run dev --workspace componentViewer",
     "build:componentViewer": "npm run build --workspace componentViewer",
     "preview:componentViewer": "npm run preview --workspace componentViewer",
@@ -104,6 +96,7 @@
     "autoprefixer": "^10.4.20",
     "baseline-browser-mapping": "^2.8.29",
     "cross-env": "^10.0.0",
+    "electron": "^42.5.0",
     "eslint": "^9.35.0",
     "globals": "^16.4.0",
     "jiti": "^2.6.1",
@@ -116,7 +109,6 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.6.3",
     "vite": "^7.0.4",
-    "electron": "^42.0.0",
     "vite-plugin-compression": "^0.5.1"
   },
   "dependencies": {
