@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { Direction, Phase, Chapter } from "../types";
 import JobCard from "./JobCard";
 

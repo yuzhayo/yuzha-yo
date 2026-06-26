@@ -1,5 +1,5 @@
-import React, { useCallback, useRef, useState } from "react";
-import type { HistoryEntry, ScannedSeries, ScannedChapter } from "../types";
+import { useCallback, useRef, useState } from "react";
+import type { HistoryEntry, ScannedSeries } from "../types";
 import type { FolderScanState } from "./useFolderScanner";
 import { isFolderScanSupported } from "./useFolderScanner";
 

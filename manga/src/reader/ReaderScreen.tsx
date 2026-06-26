@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useCbzLoader } from "./useCbzLoader";
 import { useReaderState } from "./useReaderState";
 import { useKeyboardNav } from "./useKeyboardNav";

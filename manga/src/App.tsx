@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import ReaderScreen from "./reader/ReaderScreen";
 import DownloaderApp from "./downloader/DownloaderApp";
 
