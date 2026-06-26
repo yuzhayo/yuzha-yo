@@ -3,14 +3,29 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "main": "out/main/index.js",
   "scripts": {
-    "dev": "vite --port 3003 --host",
-    "build": "tsc && vite build",
-    "preview": "vite preview --port 3003",
-    "typecheck": "tsc --noEmit"
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "dist": "npm run build && electron-builder",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:mac": "npm run build && electron-builder --mac",
+    "dist:linux": "npm run build && electron-builder --linux",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+    "preview": "electron-vite preview"
+  },
+  "build": {
+    "appId": "com.yuzha.manga",
+    "productName": "Manga Reader",
+    "directories": { "output": "release" },
+    "files": ["out/**/*", "!out/**/*.map"],
+    "win": { "target": "nsis", "icon": "assets/icon.ico" },
+    "mac": { "target": "dmg", "icon": "assets/icon.icns" },
+    "linux": { "target": "AppImage", "icon": "assets/icon.png" }
   },
   "dependencies": {
     "fflate": "^0.8.2",
+    "jszip": "^3.10.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
@@ -19,9 +34,11 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.20",
+    "electron": "^42.0.0",
+    "electron-builder": "^25.0.0",
+    "electron-vite": "^5.0.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5.6.3",
-    "vite": "^7.0.4"
+    "typescript": "^5.6.3"
   }
 }
