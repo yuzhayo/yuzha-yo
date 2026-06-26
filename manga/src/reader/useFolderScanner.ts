@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import type { ScannedSeries, ScannedChapter } from "./types";
+import type { ScannedSeries, ScannedChapter } from "../types";
 import { loadHistory } from "./useReadingHistory";
 
 function naturalSort(a: string, b: string): number {
@@ -27,7 +27,7 @@ export function useFolderScanner() {
     if (!isFolderScanSupported()) {
       setState({
         status: "error",
-        message: "Folder scanning is not supported in this browser. Use Chrome or Edge.",
+        message: "Folder scanning is not supported in this environment.",
       });
       return;
     }

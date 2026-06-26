@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from "react";
-import type { HistoryEntry, ScannedSeries, ScannedChapter } from "./types";
+import type { HistoryEntry, ScannedSeries, ScannedChapter } from "../types";
 import type { FolderScanState } from "./useFolderScanner";
 import { isFolderScanSupported } from "./useFolderScanner";
 
@@ -12,7 +12,6 @@ type Props = {
   onContinueReading: (entry: HistoryEntry) => void;
   onOpenSeries: (series: ScannedSeries) => void;
   onDeleteHistory: (key: string) => void;
-  onSearch: (query: string) => void;
   isLoadingFile: boolean;
   fileError: string | null;
 };
@@ -40,7 +39,7 @@ function HistoryCard({
   onDelete: () => void;
 }) {
   const isDone = entry.page >= entry.totalPages - 1 && entry.totalPages > 0;
-  const icon = entry.source === "mangadex" ? "🌐" : "📖";
+  const icon = entry.source === "folder" ? "📂" : "📖";
   return (
     <div className="relative flex-shrink-0 w-36 bg-neutral-800 rounded-xl p-3 cursor-pointer hover:bg-neutral-700 active:bg-neutral-600 transition-colors border border-neutral-700">
       <button
@@ -116,13 +115,11 @@ export default function MangaHome({
   onContinueReading,
   onOpenSeries,
   onDeleteHistory,
-  onSearch,
   isLoadingFile,
   fileError,
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
 
   const handleFile = useCallback(
     (file: File) => {
@@ -145,20 +142,11 @@ export default function MangaHome({
     [handleFile],
   );
 
-  const handleSearchSubmit = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
-      const q = searchQuery.trim();
-      if (q.length >= 2) onSearch(q);
-    },
-    [searchQuery, onSearch],
-  );
-
   const folderSupported = isFolderScanSupported();
 
   return (
     <div
-      className="flex flex-col w-screen min-h-screen bg-neutral-950 text-white"
+      className="flex flex-col w-screen h-full bg-neutral-950 text-white"
       onDragOver={(e) => {
         e.preventDefault();
         setDragging(true);
@@ -187,25 +175,6 @@ export default function MangaHome({
       </div>
 
       <div className="flex flex-col gap-5 px-4 pb-8 flex-1">
-        {/* Search bar */}
-        <form onSubmit={handleSearchSubmit} className="flex gap-2">
-          <input
-            type="search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search MangaDex…"
-            className="flex-1 bg-neutral-800 border border-neutral-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-neutral-500 outline-none focus:border-blue-500 transition-colors"
-          />
-          <button
-            type="submit"
-            disabled={searchQuery.trim().length < 2}
-            className="px-4 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
-          >
-            🔍
-          </button>
-        </form>
-        <p className="text-[10px] text-neutral-600 -mt-3">Powered by MangaDex</p>
-
         {/* Continue Reading */}
         {history.length > 0 && (
           <section>
@@ -301,7 +270,7 @@ export default function MangaHome({
           <div className="flex flex-col items-center justify-center flex-1 py-12 text-center gap-3">
             <span className="text-6xl">📖</span>
             <p className="text-neutral-400 text-sm max-w-xs">
-              Search MangaDex above, open a folder, or drop a{" "}
+              Open a folder to scan your library, or drop a{" "}
               <code className="bg-neutral-800 px-1 rounded text-blue-300">.cbz</code> file anywhere
               on this page.
             </p>

@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import type { ReadingMode } from "./types";
+import type { ReadingMode } from "../types";
 
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 4.0;

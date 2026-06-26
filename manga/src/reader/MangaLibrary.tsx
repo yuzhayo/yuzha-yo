@@ -1,5 +1,5 @@
 import React from "react";
-import type { ScannedSeries, ScannedChapter } from "./types";
+import type { ScannedSeries, ScannedChapter } from "../types";
 
 type Props = {
   series: ScannedSeries;

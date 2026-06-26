@@ -1,5 +1,5 @@
 import React, { useRef, useCallback } from "react";
-import type { ReadingMode } from "./types";
+import type { ReadingMode } from "../types";
 
 type Props = {
   pages: string[];

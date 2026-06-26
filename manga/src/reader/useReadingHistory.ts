@@ -1,4 +1,4 @@
-import type { HistoryEntry } from "./types";
+import type { HistoryEntry } from "../types";
 
 const STORAGE_KEY = "manga_history_v1";
 const MAX_ENTRIES = 50;
@@ -7,7 +7,8 @@ function loadAll(): HistoryEntry[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
-    return JSON.parse(raw) as HistoryEntry[];
+    const parsed = JSON.parse(raw) as HistoryEntry[];
+    return parsed.filter((e) => e.source === "file" || e.source === "folder");
   } catch {
     return [];
   }
