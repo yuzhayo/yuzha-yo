@@ -286,7 +286,7 @@ function createMainWindow() {
     backgroundColor: "#0f0f1a",
     titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "default",
     webPreferences: {
-      preload: path.join(__dirname$1, "../preload/index.js"),
+      preload: path.join(__dirname$1, "../preload/index.mjs"),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false
