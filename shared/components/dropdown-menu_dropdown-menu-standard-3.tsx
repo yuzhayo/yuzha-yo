@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  ClipboardPaste,
-  Copy,
-  FileText,
-  Menu,
-  Scissors,
-  Search,
-  Trash2,
-} from "lucide-react";
+import { ClipboardPaste, Copy, FileText, Menu, Scissors, Search, Trash2 } from "lucide-react";
 
 import { Button } from "@shared/components/ui/button";
 import {

@@ -1,16 +1,16 @@
-export type TimemarkEditType = 
-  | 0  // Auto-generated (Time, Weather, Altitude, Compass, Lat/Long, Map)
-  | 2  // Editable preset text (Title, Tags, Business Card, Styled Note)
-  | 3  // Custom user input (Notes, Project, Area, custom fields)
-  | 4  // Location-based (Address)
+export type TimemarkEditType =
+  | 0 // Auto-generated (Time, Weather, Altitude, Compass, Lat/Long, Map)
+  | 2 // Editable preset text (Title, Tags, Business Card, Styled Note)
+  | 3 // Custom user input (Notes, Project, Area, custom fields)
+  | 4 // Location-based (Address)
   | 6; // Special (Time with specific format, Map interactive)
 
-export type TimemarkHourFormat = 
-  | 0  // 24-hour format
+export type TimemarkHourFormat =
+  | 0 // 24-hour format
   | 1; // 12-hour format
 
-export type TimemarkTempUnits = 
-  | 0  // Celsius
+export type TimemarkTempUnits =
+  | 0 // Celsius
   | 1; // Fahrenheit
 
 export interface BusinessCardItem {
@@ -143,7 +143,7 @@ export const TIMEMARK_FONTS = [
   "XiaoHeiNumber",
 ] as const;
 
-export type TimemarkFontName = typeof TIMEMARK_FONTS[number];
+export type TimemarkFontName = (typeof TIMEMARK_FONTS)[number];
 
 export const TIMEMARK_LOGOS = [
   "amazon_logo.png",
@@ -156,7 +156,7 @@ export const TIMEMARK_LOGOS = [
   "ups_logo.png",
 ] as const;
 
-export type TimemarkLogoName = typeof TIMEMARK_LOGOS[number];
+export type TimemarkLogoName = (typeof TIMEMARK_LOGOS)[number];
 
 export function parseTimemarkTemplate(wrapper: TimemarkTemplateWrapper): TimemarkTemplate {
   const parsed = JSON.parse(wrapper.watermarkContent);
@@ -169,11 +169,11 @@ export function parseTimemarkTemplates(wrappers: TimemarkTemplateWrapper[]): Tim
 
 /**
  * Generates a random alphanumeric photo verification code.
- * 
+ *
  * WARNING: This function uses Math.random() which is NOT cryptographically secure.
  * Do NOT use this for security-critical tamper-proof verification.
  * For production security needs, use crypto.getRandomValues() instead.
- * 
+ *
  * @param length - Length of the code (default: 14)
  * @returns Random uppercase alphanumeric string
  */
@@ -187,9 +187,9 @@ export function generatePhotoCode(length: number = 14): string {
 }
 
 export function getVisibleItems(template: TimemarkTemplate): TimemarkItem[] {
-  return template.items.filter(item => item.switchStatus);
+  return template.items.filter((item) => item.switchStatus);
 }
 
 export function getItemById(template: TimemarkTemplate, id: number): TimemarkItem | undefined {
-  return template.items.find(item => item.id === id);
+  return template.items.find((item) => item.id === id);
 }

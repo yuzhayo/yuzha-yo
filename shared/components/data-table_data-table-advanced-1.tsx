@@ -102,9 +102,7 @@ const columns: ColumnDef<Project>[] = [
   {
     accessorKey: "name",
     header: "Name",
-    cell: ({ row }) => (
-      <div className="font-medium">{row.getValue("name")}</div>
-    ),
+    cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
   },
   {
     accessorKey: "status",
@@ -133,10 +131,7 @@ const Example = () => {
                   <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                      : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
               </TableRow>
@@ -149,10 +144,7 @@ const Example = () => {
                   <TableRow>
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
                     ))}
                   </TableRow>
@@ -162,16 +154,9 @@ const Example = () => {
                         <div className="rounded-md bg-muted/50 p-4">
                           <div className="space-y-2">
                             {row.original.tasks.map((task) => (
-                              <div
-                                className="flex items-center gap-4 text-sm"
-                                key={task.id}
-                              >
-                                <div className="flex-1 font-medium">
-                                  {task.name}
-                                </div>
-                                <div className="text-muted-foreground">
-                                  {task.assignee}
-                                </div>
+                              <div className="flex items-center gap-4 text-sm" key={task.id}>
+                                <div className="flex-1 font-medium">{task.name}</div>
+                                <div className="text-muted-foreground">{task.assignee}</div>
                                 <div>{task.status}</div>
                               </div>
                             ))}
@@ -184,10 +169,7 @@ const Example = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  className="h-24 text-center"
-                  colSpan={columns.length}
-                >
+                <TableCell className="h-24 text-center" colSpan={columns.length}>
                   No results.
                 </TableCell>
               </TableRow>

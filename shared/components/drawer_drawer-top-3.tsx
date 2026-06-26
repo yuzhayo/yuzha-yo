@@ -3,12 +3,7 @@
 import { AlertCircle, X } from "lucide-react";
 
 import { Button } from "@shared/components/ui/button";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerTrigger,
-} from "@shared/components/ui/drawer";
+import { Drawer, DrawerClose, DrawerContent, DrawerTrigger } from "@shared/components/ui/drawer";
 
 export const title = "Top Drawer Notification Banner";
 
@@ -27,8 +22,7 @@ const Example = () => (
                 System Update Available
               </h4>
               <p className="text-blue-700 text-sm dark:text-blue-300">
-                A new version is available. Update now to get the latest
-                features.
+                A new version is available. Update now to get the latest features.
               </p>
             </div>
           </div>

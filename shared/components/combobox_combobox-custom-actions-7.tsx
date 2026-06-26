@@ -14,11 +14,7 @@ import {
   CommandItem,
   CommandList,
 } from "@shared/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@shared/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@shared/components/ui/popover";
 
 export const title = "Clear/Reset Button";
 
@@ -41,9 +37,7 @@ const Example = () => {
           role="combobox"
           variant="outline"
         >
-          {value
-            ? themes.find((theme) => theme.value === value)?.label
-            : "Select theme..."}
+          {value ? themes.find((theme) => theme.value === value)?.label : "Select theme..."}
           <div className="ml-2 flex items-center gap-1">
             {value && (
               <button
@@ -79,7 +73,7 @@ const Example = () => {
                   <Check
                     className={cn(
                       "mr-2 size-4",
-                      value === theme.value ? "opacity-100" : "opacity-0"
+                      value === theme.value ? "opacity-100" : "opacity-0",
                     )}
                   />
                   {theme.label}

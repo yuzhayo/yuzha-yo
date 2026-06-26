@@ -24,9 +24,7 @@ const Example = () => {
     <Card className="w-full max-w-md">
       <CardHeader>
         <CardTitle>Login to your account</CardTitle>
-        <CardDescription>
-          Enter your email below to login to your account
-        </CardDescription>
+        <CardDescription>Enter your email below to login to your account</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">

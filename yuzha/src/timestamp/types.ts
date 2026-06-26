@@ -211,7 +211,20 @@ export function formatDate(date: Date, format: string): string {
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
   const day = date.getDate();
-  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const monthNames = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
 
   switch (format) {
     case "YYYY-MM-DD":
@@ -260,20 +273,15 @@ export type OverlayBounds = {
 
 export function checkAABBCollision(
   a: { x: number; y: number; width: number; height: number },
-  b: { x: number; y: number; width: number; height: number }
+  b: { x: number; y: number; width: number; height: number },
 ): boolean {
-  return (
-    a.x < b.x + b.width &&
-    a.x + a.width > b.x &&
-    a.y < b.y + b.height &&
-    a.y + a.height > b.y
-  );
+  return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
 }
 
 export function resolveCollision(
   moving: { x: number; y: number; width: number; height: number },
   obstacle: { x: number; y: number; width: number; height: number },
-  prevPos: { x: number; y: number }
+  prevPos: { x: number; y: number },
 ): { x: number; y: number } {
   const deltaX = moving.x - prevPos.x;
   const deltaY = moving.y - prevPos.y;
@@ -283,13 +291,9 @@ export function resolveCollision(
   const overlapTop = moving.y + moving.height - obstacle.y;
   const overlapBottom = obstacle.y + obstacle.height - moving.y;
 
-  const resolvedX = deltaX > 0
-    ? obstacle.x - moving.width
-    : obstacle.x + obstacle.width;
+  const resolvedX = deltaX > 0 ? obstacle.x - moving.width : obstacle.x + obstacle.width;
 
-  const resolvedY = deltaY > 0
-    ? obstacle.y - moving.height
-    : obstacle.y + obstacle.height;
+  const resolvedY = deltaY > 0 ? obstacle.y - moving.height : obstacle.y + obstacle.height;
 
   const minOverlapX = Math.min(overlapLeft, overlapRight);
   const minOverlapY = Math.min(overlapTop, overlapBottom);
@@ -305,16 +309,16 @@ export function resolveAllCollisions(
   moving: { x: number; y: number; width: number; height: number },
   obstacles: OverlayBounds[],
   prevPos: { x: number; y: number },
-  maxIterations: number = 10
+  maxIterations: number = 10,
 ): { x: number; y: number; hasCollision: boolean } {
   let currentPos = { x: moving.x, y: moving.y };
   let referencePos = { x: prevPos.x, y: prevPos.y };
   let hasCollision = false;
-  
+
   for (let iteration = 0; iteration < maxIterations; iteration++) {
     let collisionFound = false;
     const posBeforeIteration = { x: currentPos.x, y: currentPos.y };
-    
+
     for (const obstacle of obstacles) {
       const currentBounds = {
         x: currentPos.x,
@@ -322,7 +326,7 @@ export function resolveAllCollisions(
         width: moving.width,
         height: moving.height,
       };
-      
+
       if (checkAABBCollision(currentBounds, obstacle)) {
         collisionFound = true;
         hasCollision = true;
@@ -330,19 +334,19 @@ export function resolveAllCollisions(
         currentPos = resolved;
       }
     }
-    
+
     if (collisionFound) {
       referencePos = { x: currentPos.x, y: currentPos.y };
     }
-    
+
     if (!collisionFound) {
       break;
     }
-    
+
     if (currentPos.x === posBeforeIteration.x && currentPos.y === posBeforeIteration.y) {
       break;
     }
   }
-  
+
   return { ...currentPos, hasCollision };
 }

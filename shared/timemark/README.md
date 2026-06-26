@@ -16,16 +16,16 @@ shared/timemark/
 
 ## Fonts (11)
 
-| Font | Style |
-|------|-------|
-| BebasDaka | Display, condensed |
-| BigShouldersText-Medium | Display |
-| Handlee-Regular | Handwriting |
-| Montserrat-Black | Sans-serif, bold |
-| PTMono-Bold / Regular | Monospace |
-| RobotoCondensed-Bold/Medium/Regular | Condensed sans |
-| TypoDigitDemo | Digital/LCD style |
-| XiaoHeiNumber | Numeric display |
+| Font                                | Style              |
+| ----------------------------------- | ------------------ |
+| BebasDaka                           | Display, condensed |
+| BigShouldersText-Medium             | Display            |
+| Handlee-Regular                     | Handwriting        |
+| Montserrat-Black                    | Sans-serif, bold   |
+| PTMono-Bold / Regular               | Monospace          |
+| RobotoCondensed-Bold/Medium/Regular | Condensed sans     |
+| TypoDigitDemo                       | Digital/LCD style  |
+| XiaoHeiNumber                       | Numeric display    |
 
 ## Templates
 
@@ -33,6 +33,7 @@ shared/timemark/
 - `supported_watermarks_template_global.json` - Extended templates
 
 ### Template Names
+
 - Time&Location
 - Clock in
 - Custom Text
@@ -52,6 +53,7 @@ shared/timemark/
 ## Logos (8)
 
 Express delivery service logos:
+
 - Amazon, DHL, DoorDash, FedEx, Grubhub, Instacart, UberEats, UPS
 
 ## Examples (3)
@@ -61,13 +63,13 @@ Reference images showing actual Timemark output layouts.
 ## Usage
 
 ```typescript
-import { 
-  TimemarkTemplate, 
+import {
+  TimemarkTemplate,
   TimemarkItem,
   TIMEMARK_ITEM_IDS,
   TIMEMARK_FONTS,
   generatePhotoCode,
-  parseTimemarkTemplate
+  parseTimemarkTemplate,
 } from "shared/timemark/types";
 
 // Generate a photo verification code
@@ -79,21 +81,21 @@ const template = parseTimemarkTemplate(wrapper);
 
 ## Item IDs Reference
 
-| ID | Field |
-|----|-------|
-| 1 | Time |
-| 2 | Address |
-| 3 | Lat/Long |
-| 4 | Weather |
-| 5 | Altitude |
-| 6 | Compass |
-| 11 | Title |
-| 12 | Notes |
-| 210 | Map |
-| 550 | Company |
+| ID  | Field         |
+| --- | ------------- |
+| 1   | Time          |
+| 2   | Address       |
+| 3   | Lat/Long      |
+| 4   | Weather       |
+| 5   | Altitude      |
+| 6   | Compass       |
+| 11  | Title         |
+| 12  | Notes         |
+| 210 | Map           |
+| 550 | Company       |
 | 620 | Business Card |
-| 630 | Tags |
-| 640 | Photo Code |
+| 630 | Tags          |
+| 640 | Photo Code    |
 
 ## Theme Colors
 

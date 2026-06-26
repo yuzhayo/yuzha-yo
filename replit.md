@@ -135,6 +135,7 @@ Core animation logic is driven by a Layer System where JSON configurations defin
    - Added `dev:counter2`, `build:counter2`, `preview:counter2` scripts
 
 **Workspace Structure:**
+
 ```
 /counter2/
 ├── src/
@@ -151,6 +152,7 @@ Core animation logic is driven by a Layer System where JSON configurations defin
 ```
 
 **Standalone Mode:**
+
 - Back button shows "Home" when `onBack` prop is undefined
 - Redirects to "/" when clicked in standalone mode
 - All features work identically to integrated mode
@@ -246,6 +248,7 @@ The Manga Reader is a full-screen reading app accessible from the Yuzha main scr
 ### Phase 1 — Reading History + Folder Scanner — COMPLETED
 
 All files in `yuzha/src/manga/`:
+
 - `useReadingHistory.ts` — localStorage history (save/load/delete), keyed by `source::identifier`
 - `useFolderScanner.ts` — File System Access API folder scan, groups CBZ files into series
 - `MangaHome.tsx` — home screen: search bar, continue reading, folder library, drag-drop CBZ
@@ -254,10 +257,12 @@ All files in `yuzha/src/manga/`:
 ### Phase 2 — MangaDex Online Search & Browse — COMPLETED
 
 Vite proxy already configured in `yuzha/vite.config.ts`:
+
 - `/api/mangadex` → `https://api.mangadex.org`
 - `/api/mangadex-cdn` → `https://uploads.mangadex.org`
 
 Files added:
+
 - `mangaDexApi.ts` — full API layer: `searchManga`, `getMangaChapters`, `getChapterPages`, `getCoverUrl`, helpers
 - `useMangaDexSearch.ts` — 500ms debounce search hook with idle/searching/ready/error states
 - `MangaDexSearch.tsx` — search results screen with loading skeletons, status/genre badges
@@ -281,17 +286,17 @@ See `MANGA_PHASE4_PLAN.md`.
 
 ### Key Manga Files
 
-| File | Purpose |
-|---|---|
+| File                                    | Purpose                                        |
+| --------------------------------------- | ---------------------------------------------- |
 | `yuzha/src/manga/MangaReaderScreen.tsx` | Main orchestrator — all view routing and state |
-| `yuzha/src/manga/MangaHome.tsx` | Home screen with search bar + library |
-| `yuzha/src/manga/MangaDexSearch.tsx` | Online search results |
-| `yuzha/src/manga/MangaDexDetail.tsx` | Manga detail + chapter list |
-| `yuzha/src/manga/mangaDexApi.ts` | MangaDex API layer (proxied) |
-| `yuzha/src/manga/useCbzLoader.ts` | CBZ extractor + `loadUrls` for online chapters |
-| `yuzha/src/manga/useReaderState.ts` | Page, zoom, mode (default: webtoon), RTL state |
-| `yuzha/src/manga/MangaControls.tsx` | Bottom bar: page nav, chapter nav, zoom, mode |
-| `yuzha/src/manga/MangaToolbar.tsx` | Top bar: back button, file name, page counter |
+| `yuzha/src/manga/MangaHome.tsx`         | Home screen with search bar + library          |
+| `yuzha/src/manga/MangaDexSearch.tsx`    | Online search results                          |
+| `yuzha/src/manga/MangaDexDetail.tsx`    | Manga detail + chapter list                    |
+| `yuzha/src/manga/mangaDexApi.ts`        | MangaDex API layer (proxied)                   |
+| `yuzha/src/manga/useCbzLoader.ts`       | CBZ extractor + `loadUrls` for online chapters |
+| `yuzha/src/manga/useReaderState.ts`     | Page, zoom, mode (default: webtoon), RTL state |
+| `yuzha/src/manga/MangaControls.tsx`     | Bottom bar: page nav, chapter nav, zoom, mode  |
+| `yuzha/src/manga/MangaToolbar.tsx`      | Top bar: back button, file name, page counter  |
 
 ---
 
@@ -304,6 +309,7 @@ This project was migrated from another environment to Replit. If the app shows a
 **Cause:** Replit's security policy blocks certain npm packages at the network level. When these packages are in `package.json`, `npm install` either silently skips them or fails, which can leave the dev server unable to start and the preview pane blank.
 
 **Packages that are blocked and must NOT be in `package.json`:**
+
 - `concurrently` — blocked because it depends on `shell-quote` which Replit blocks
 - `vitest` — blocked by Replit's security policy
 - `@vitest/coverage-v8` — blocked by Replit's security policy
@@ -315,6 +321,7 @@ This project was migrated from another environment to Replit. If the app shows a
 **Cause:** Three.js WebGL renderer can fail silently in some environments (headless browsers, Replit preview iframe). The original code had no fallback, so a WebGL failure produced a blank screen with no error message.
 
 **Fix applied:**
+
 - Added `onError` prop to `shared/layer/StageThree.tsx` so WebGL errors are caught and surfaced
 - Added fallback logic in `yuzha/src/MainScreen.tsx`: if Three.js fails, the app automatically switches to the Canvas 2D renderer
 - The Canvas 2D renderer is fully featured and identical in animation output; it is the safe fallback

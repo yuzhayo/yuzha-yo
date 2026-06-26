@@ -6,11 +6,7 @@ type ImageDataResult = {
   height: number;
 };
 
-function processImage(
-  img: HTMLImageElement,
-  threshold: number,
-  curve: number,
-): ImageDataResult {
+function processImage(img: HTMLImageElement, threshold: number, curve: number): ImageDataResult {
   const canvas = document.createElement("canvas");
   canvas.width = img.naturalWidth;
   canvas.height = img.naturalHeight;
@@ -142,11 +138,13 @@ export default function AlphaRemoveScreen({ onBack }: { onBack?: () => void }) {
             />
           </div>
 
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Curve (edge hardness) — {curve.toFixed(2)}</label>
-              <input
-                type="range"
-                min={1}
+          <div className="space-y-1">
+            <label className="text-sm font-medium">
+              Curve (edge hardness) — {curve.toFixed(2)}
+            </label>
+            <input
+              type="range"
+              min={1}
               max={3}
               step={0.05}
               value={curve}
@@ -198,8 +196,8 @@ export default function AlphaRemoveScreen({ onBack }: { onBack?: () => void }) {
           )}
 
           <p className="text-xs text-slate-300">
-            Tip: Increase threshold to remove more fringe; increase curve to sharpen the edge. This runs entirely
-            in the browser—no upload.
+            Tip: Increase threshold to remove more fringe; increase curve to sharpen the edge. This
+            runs entirely in the browser—no upload.
           </p>
         </div>
 

@@ -19,8 +19,7 @@ export function Counter2Controls({
   resetScreenPosition,
   settingsScreenPosition,
 }: Counter2ControlsProps) {
-  const btnBase =
-    "p-3 text-white rounded-full shadow-lg transition-colors";
+  const btnBase = "p-3 text-white rounded-full shadow-lg transition-colors";
 
   return (
     <>
@@ -37,7 +36,12 @@ export function Counter2Controls({
           }
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
         </button>
       )}

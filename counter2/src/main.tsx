@@ -6,5 +6,5 @@ import "./index.css";
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <Counter2Screen />
-  </React.StrictMode>
+  </React.StrictMode>,
 );

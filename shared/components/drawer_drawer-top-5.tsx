@@ -21,10 +21,7 @@ const Example = () => (
       <div className="space-y-4 p-4">
         <div className="relative">
           <Command className="-translate-y-1/2 absolute top-1/2 left-3 h-5 w-5 text-muted-foreground" />
-          <Input
-            className="h-12 pl-10 text-base"
-            placeholder="Type a command or search..."
-          />
+          <Input className="h-12 pl-10 text-base" placeholder="Type a command or search..." />
         </div>
         <div className="space-y-1">
           <Button className="w-full justify-between" size="sm" variant="ghost">

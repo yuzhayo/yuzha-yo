@@ -5,8 +5,8 @@ import { loadPresets, deletePreset, type TimestampPreset } from "./PresetManager
 const lobbyBack = requireAssetUrl("lobby_cust_44");
 const diplo = requireAssetUrl("diplo1");
 const diplo2 = requireAssetUrl("diplo2");
-const btnUndo = requireAssetUrl("btnUndo");
-const btnRedo = requireAssetUrl("btnRedo");
+const _btnUndo = requireAssetUrl("btnUndo");
+const _btnRedo = requireAssetUrl("btnRedo");
 
 export type TimestampHeaderProps = {
   onBack?: () => void;
@@ -55,7 +55,7 @@ const TimestampHeader = forwardRef<HTMLDivElement, TimestampHeaderProps>(
       onSavePreset,
       onLoadPreset,
     },
-    ref
+    ref,
   ) => {
     const [presets, setPresets] = useState<TimestampPreset[]>([]);
     const [presetName, setPresetName] = useState("");
@@ -186,9 +186,7 @@ const TimestampHeader = forwardRef<HTMLDivElement, TimestampHeaderProps>(
                   className="w-full bg-transparent text-center font-semibold text-white outline-none placeholder:text-white/70 border-none focus:ring-0"
                   style={{ fontFamily: "Taimingda, sans-serif" }}
                   value={hInput}
-                  onChange={(e) =>
-                    onHInputChange(e.target.value.replace(/[^0-9]/g, ""))
-                  }
+                  onChange={(e) => onHInputChange(e.target.value.replace(/[^0-9]/g, ""))}
                   onBlur={onHInputBlur}
                 />
               </div>
@@ -238,9 +236,7 @@ const TimestampHeader = forwardRef<HTMLDivElement, TimestampHeaderProps>(
                   className="w-full bg-transparent text-center font-semibold text-white outline-none placeholder:text-white/70 border-none focus:ring-0"
                   style={{ fontFamily: "Taimingda, sans-serif" }}
                   value={wInput}
-                  onChange={(e) =>
-                    onWInputChange(e.target.value.replace(/[^0-9]/g, ""))
-                  }
+                  onChange={(e) => onWInputChange(e.target.value.replace(/[^0-9]/g, ""))}
                   onBlur={onWInputBlur}
                 />
               </div>
@@ -413,7 +409,7 @@ const TimestampHeader = forwardRef<HTMLDivElement, TimestampHeaderProps>(
         </div>
       </div>
     );
-  }
+  },
 );
 
 TimestampHeader.displayName = "TimestampHeader";

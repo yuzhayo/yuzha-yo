@@ -14,11 +14,7 @@ import {
   CommandItem,
   CommandList,
 } from "@shared/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@shared/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@shared/components/ui/popover";
 
 export const title = "With Clear All Functionality";
 
@@ -32,10 +28,7 @@ const colors = [
 
 const Example = () => {
   const [open, setOpen] = useState(false);
-  const [selectedValues, setSelectedValues] = useState<string[]>([
-    "red",
-    "blue",
-  ]);
+  const [selectedValues, setSelectedValues] = useState<string[]>(["red", "blue"]);
 
   return (
     <Popover onOpenChange={setOpen} open={open}>
@@ -79,7 +72,7 @@ const Example = () => {
                     setSelectedValues(
                       selectedValues.includes(currentValue)
                         ? selectedValues.filter((v) => v !== currentValue)
-                        : [...selectedValues, currentValue]
+                        : [...selectedValues, currentValue],
                     );
                   }}
                   value={color.value}
@@ -87,9 +80,7 @@ const Example = () => {
                   <Check
                     className={cn(
                       "mr-2 size-4",
-                      selectedValues.includes(color.value)
-                        ? "opacity-100"
-                        : "opacity-0"
+                      selectedValues.includes(color.value) ? "opacity-100" : "opacity-0",
                     )}
                   />
                   {color.label}

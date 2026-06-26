@@ -94,10 +94,16 @@ export default function FloatingBorderless({
       isSyncingFromParentRef.current = false;
       return;
     }
-    
-    const posChanged = prevPosRef.current === null || prevPosRef.current.x !== position.x || prevPosRef.current.y !== position.y;
-    const sizeChanged = prevSizeRef.current === null || prevSizeRef.current.width !== size.width || prevSizeRef.current.height !== size.height;
-    
+
+    const posChanged =
+      prevPosRef.current === null ||
+      prevPosRef.current.x !== position.x ||
+      prevPosRef.current.y !== position.y;
+    const sizeChanged =
+      prevSizeRef.current === null ||
+      prevSizeRef.current.width !== size.width ||
+      prevSizeRef.current.height !== size.height;
+
     if (posChanged || sizeChanged) {
       prevPosRef.current = { ...position };
       prevSizeRef.current = { ...size };
@@ -244,17 +250,23 @@ export default function FloatingBorderless({
     const clampToBounds = () => {
       const bounds = getBounds();
       const currentSize = sizeRef.current;
-      
+
       setSize((prev) => {
         const newW = Math.min(Math.max(prev.width, minWidth), Math.max(0, bounds.maxWidth));
         const newH = Math.min(Math.max(prev.height, minHeight), Math.max(0, bounds.maxHeight));
         if (prev.width === newW && prev.height === newH) return prev;
         return { width: newW, height: newH };
       });
-      
+
       setPosition((prev) => {
-        const newX = Math.min(Math.max(prev.x, bounds.minX), Math.max(bounds.minX, bounds.minX + bounds.maxWidth - currentSize.width));
-        const newY = Math.min(Math.max(prev.y, bounds.minY), Math.max(bounds.minY, bounds.minY + bounds.maxHeight - currentSize.height));
+        const newX = Math.min(
+          Math.max(prev.x, bounds.minX),
+          Math.max(bounds.minX, bounds.minX + bounds.maxWidth - currentSize.width),
+        );
+        const newY = Math.min(
+          Math.max(prev.y, bounds.minY),
+          Math.max(bounds.minY, bounds.minY + bounds.maxHeight - currentSize.height),
+        );
         if (prev.x === newX && prev.y === newY) return prev;
         return { x: newX, y: newY };
       });
@@ -272,10 +284,26 @@ export default function FloatingBorderless({
     { h: "s", style: { bottom: 0, left: 0, right: 0, height: edgeSize }, cursor: "ns-resize" },
     { h: "e", style: { right: 0, top: 0, bottom: 0, width: edgeSize }, cursor: "ew-resize" },
     { h: "w", style: { left: 0, top: 0, bottom: 0, width: edgeSize }, cursor: "ew-resize" },
-    { h: "ne", style: { top: 0, right: 0, width: handleSize, height: handleSize }, cursor: "nesw-resize" },
-    { h: "nw", style: { top: 0, left: 0, width: handleSize, height: handleSize }, cursor: "nwse-resize" },
-    { h: "se", style: { bottom: 0, right: 0, width: handleSize, height: handleSize }, cursor: "nwse-resize" },
-    { h: "sw", style: { bottom: 0, left: 0, width: handleSize, height: handleSize }, cursor: "nesw-resize" },
+    {
+      h: "ne",
+      style: { top: 0, right: 0, width: handleSize, height: handleSize },
+      cursor: "nesw-resize",
+    },
+    {
+      h: "nw",
+      style: { top: 0, left: 0, width: handleSize, height: handleSize },
+      cursor: "nwse-resize",
+    },
+    {
+      h: "se",
+      style: { bottom: 0, right: 0, width: handleSize, height: handleSize },
+      cursor: "nwse-resize",
+    },
+    {
+      h: "sw",
+      style: { bottom: 0, left: 0, width: handleSize, height: handleSize },
+      cursor: "nesw-resize",
+    },
   ];
 
   const containerStyle: CSSProperties = {
@@ -300,14 +328,15 @@ export default function FloatingBorderless({
         onPointerDown={startDrag}
       >
         {children}
-        {!disableResize && handles.map(({ h, style: s, cursor }) => (
-          <div
-            key={h}
-            className="fb-resize"
-            style={{ ...baseHandleStyle, ...s, cursor }}
-            onPointerDown={(e) => startResize(e, h)}
-          />
-        ))}
+        {!disableResize &&
+          handles.map(({ h, style: s, cursor }) => (
+            <div
+              key={h}
+              className="fb-resize"
+              style={{ ...baseHandleStyle, ...s, cursor }}
+              onPointerDown={(e) => startResize(e, h)}
+            />
+          ))}
       </div>
     </div>
   );

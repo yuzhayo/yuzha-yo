@@ -76,7 +76,7 @@ export default function Accordion({
         onToggle?.(id, willBeOpen);
       }
     },
-    [openIds, isControlled, allowMultiple, onToggle]
+    [openIds, isControlled, allowMultiple, onToggle],
   );
 
   const containerClass = className ?? "space-y-2";
@@ -88,8 +88,7 @@ export default function Accordion({
         const headerId = `accordion-header-${section.id}`;
         const contentId = `accordion-content-${section.id}`;
 
-        const sectionClass =
-          sectionClassName ?? "border border-slate-300 rounded overflow-hidden";
+        const sectionClass = sectionClassName ?? "border border-slate-300 rounded overflow-hidden";
         const headerClass =
           headerClassName ??
           "w-full flex items-center justify-between px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-sm transition-colors";

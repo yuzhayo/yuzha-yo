@@ -55,10 +55,7 @@ const Example = () => (
       </TableHeader>
       <TableBody>
         {transactions.map((transaction, index) => (
-          <TableRow
-            className={index % 2 === 0 ? "bg-muted/50" : ""}
-            key={transaction.id}
-          >
+          <TableRow className={index % 2 === 0 ? "bg-muted/50" : ""} key={transaction.id}>
             <TableCell className="font-medium">{transaction.id}</TableCell>
             <TableCell>{transaction.description}</TableCell>
             <TableCell>{transaction.date}</TableCell>

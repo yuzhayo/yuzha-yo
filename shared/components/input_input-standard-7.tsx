@@ -10,12 +10,7 @@ const Example = () => (
     <Label className="w-24 text-right" htmlFor="age">
       Age
     </Label>
-    <Input
-      className="flex-1 bg-background"
-      id="age"
-      placeholder="25"
-      type="number"
-    />
+    <Input className="flex-1 bg-background" id="age" placeholder="25" type="number" />
   </div>
 );
 

@@ -18,9 +18,7 @@ function StatusBadge({ status }: { status: MangaDexManga["attributes"]["status"]
     cancelled: { label: "Cancelled", cls: "bg-red-900/60 text-red-400" },
   };
   const { label, cls } = map[status] ?? { label: status, cls: "bg-neutral-700 text-neutral-300" };
-  return (
-    <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${cls}`}>{label}</span>
-  );
+  return <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${cls}`}>{label}</span>;
 }
 
 function RatingBadge({ rating }: { rating: MangaDexManga["attributes"]["contentRating"] }) {
@@ -39,13 +37,7 @@ function RatingBadge({ rating }: { rating: MangaDexManga["attributes"]["contentR
   );
 }
 
-function MangaResultCard({
-  manga,
-  onClick,
-}: {
-  manga: MangaDexManga;
-  onClick: () => void;
-}) {
+function MangaResultCard({ manga, onClick }: { manga: MangaDexManga; onClick: () => void }) {
   const title = getMangaTitle(manga);
   const coverUrl = getCoverUrl(manga, 256);
   const genres = getGenreTags(manga).slice(0, 3);
@@ -61,12 +53,7 @@ function MangaResultCard({
     >
       <div className="flex-shrink-0 w-16 h-24 rounded-lg overflow-hidden bg-neutral-700">
         {coverUrl ? (
-          <img
-            src={coverUrl}
-            alt={title}
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
+          <img src={coverUrl} alt={title} className="w-full h-full object-cover" loading="lazy" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-2xl">📚</div>
         )}
@@ -141,11 +128,7 @@ export default function MangaDexSearch({ state, query, onSelectManga, onBack }: 
 
         {state.status === "ready" &&
           state.results.map((manga) => (
-            <MangaResultCard
-              key={manga.id}
-              manga={manga}
-              onClick={() => onSelectManga(manga)}
-            />
+            <MangaResultCard key={manga.id} manga={manga} onClick={() => onSelectManga(manga)} />
           ))}
 
         {/* Idle / searching placeholders */}
@@ -169,9 +152,7 @@ export default function MangaDexSearch({ state, query, onSelectManga, onBack }: 
         )}
       </div>
 
-      <p className="text-center text-xs text-neutral-700 pb-3">
-        Results powered by MangaDex
-      </p>
+      <p className="text-center text-xs text-neutral-700 pb-3">Results powered by MangaDex</p>
     </div>
   );
 }

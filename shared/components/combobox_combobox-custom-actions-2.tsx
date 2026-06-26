@@ -15,11 +15,7 @@ import {
   CommandList,
   CommandSeparator,
 } from "@shared/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@shared/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@shared/components/ui/popover";
 
 export const title = "With Footer Actions";
 
@@ -66,7 +62,7 @@ const Example = () => {
                   <Check
                     className={cn(
                       "mr-2 size-4",
-                      value === workspace.value ? "opacity-100" : "opacity-0"
+                      value === workspace.value ? "opacity-100" : "opacity-0",
                     )}
                   />
                   {workspace.label}

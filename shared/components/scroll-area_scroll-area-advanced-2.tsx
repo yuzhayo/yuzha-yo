@@ -13,7 +13,7 @@ const Example = () => {
       id: i + 1,
       title: `Item ${i + 1}`,
       description: `This is the description for item ${i + 1}`,
-    }))
+    })),
   );
 
   const loadMore = () => {
@@ -35,9 +35,7 @@ const Example = () => {
               key={item.id}
             >
               <h3 className="font-semibold text-sm">{item.title}</h3>
-              <p className="mt-1 text-muted-foreground text-sm">
-                {item.description}
-              </p>
+              <p className="mt-1 text-muted-foreground text-sm">{item.description}</p>
             </div>
           ))}
           <Button className="w-full" onClick={loadMore} variant="outline">
@@ -45,9 +43,7 @@ const Example = () => {
           </Button>
         </div>
       </ScrollArea>
-      <p className="text-center text-muted-foreground text-sm">
-        Showing {items.length} items
-      </p>
+      <p className="text-center text-muted-foreground text-sm">Showing {items.length} items</p>
     </div>
   );
 };

@@ -157,7 +157,9 @@ export default function MangaDexDetail({ manga, onBack, onReadChapter }: Props) 
         {/* Description */}
         {description && (
           <div className="px-4 pb-4">
-            <p className={`text-xs text-neutral-400 leading-relaxed ${!descExpanded ? "line-clamp-3" : ""}`}>
+            <p
+              className={`text-xs text-neutral-400 leading-relaxed ${!descExpanded ? "line-clamp-3" : ""}`}
+            >
               {description}
             </p>
             {description.length > 200 && (

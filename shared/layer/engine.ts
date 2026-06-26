@@ -276,7 +276,9 @@ export async function prepareBasicState(
   const rotation = typeof entry.BasicImageAngle === "number" ? entry.BasicImageAngle : 0;
   const blendMode = entry.BlendMode === "additive" ? "additive" : "normal";
   const pulseSeconds =
-    typeof entry.PulseSeconds === "number" && entry.PulseSeconds > 0 ? entry.PulseSeconds : undefined;
+    typeof entry.PulseSeconds === "number" && entry.PulseSeconds > 0
+      ? entry.PulseSeconds
+      : undefined;
   const rawPulseAmplitude =
     typeof entry.PulseAmplitude === "number" ? entry.PulseAmplitude : undefined;
   const pulseAmplitude =
@@ -287,10 +289,7 @@ export async function prepareBasicState(
       : typeof (entry as any).opacity === "number"
         ? (entry as any).opacity
         : undefined;
-  const opacity =
-    rawOpacity !== undefined
-      ? Math.min(1, Math.max(0, rawOpacity))
-      : undefined;
+  const opacity = rawOpacity !== undefined ? Math.min(1, Math.max(0, rawOpacity)) : undefined;
 
   return {
     baseData: {

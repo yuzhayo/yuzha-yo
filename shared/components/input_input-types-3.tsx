@@ -32,12 +32,7 @@ const Example = () => {
           type="number"
           value={value}
         />
-        <Button
-          onClick={() => setValue(value + 1)}
-          size="icon"
-          type="button"
-          variant="outline"
-        >
+        <Button onClick={() => setValue(value + 1)} size="icon" type="button" variant="outline">
           <Plus className="h-4 w-4" />
         </Button>
       </div>

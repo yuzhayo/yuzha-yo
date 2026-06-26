@@ -45,14 +45,9 @@ export default function MangaToolbar({
 
       <div className="flex-1 flex flex-col min-w-0 justify-center">
         {seriesName && (
-          <span className="text-[10px] text-blue-400 truncate leading-tight">
-            {seriesName}
-          </span>
+          <span className="text-[10px] text-blue-400 truncate leading-tight">{seriesName}</span>
         )}
-        <span
-          className="text-sm text-neutral-400 truncate leading-tight"
-          title={displayName}
-        >
+        <span className="text-sm text-neutral-400 truncate leading-tight" title={displayName}>
           {displayName}
         </span>
       </div>

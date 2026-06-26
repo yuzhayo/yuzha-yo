@@ -46,7 +46,9 @@ async function createCounter2Pipeline(): Promise<StagePipeline> {
         try {
           const layer = await prepareLayer(entry, STAGE_SIZE);
           if (!layer) {
-            console.warn(`[Counter2] Skipping layer "${entry.LayerID}" - prepareLayer returned null`);
+            console.warn(
+              `[Counter2] Skipping layer "${entry.LayerID}" - prepareLayer returned null`,
+            );
             return null;
           }
 
@@ -90,7 +92,7 @@ async function createCounter2Pipeline(): Promise<StagePipeline> {
           console.error(`[Counter2] Failed to prepare layer "${entry.LayerID}"`, error);
           return null;
         }
-      })
+      }),
     )
   ).filter((layer): layer is PreparedLayer => layer !== null);
 
@@ -128,7 +130,7 @@ export default function Counter2Screen({ onBack }: Counter2ScreenProps) {
   const [transform, setTransform] = useState<StageTransform>(() =>
     typeof window !== "undefined"
       ? computeCoverTransform(window.innerWidth, window.innerHeight)
-      : { scale: 1, offsetX: 0, offsetY: 0, width: 2048, height: 2048 }
+      : { scale: 1, offsetX: 0, offsetY: 0, width: 2048, height: 2048 },
   );
 
   const deviceCapability = useMemo(() => getDeviceCapability(), []);
@@ -175,7 +177,7 @@ export default function Counter2Screen({ onBack }: Counter2ScreenProps) {
         y: Math.min(maxY, Math.max(margin, y - half)),
       };
     },
-    [transform]
+    [transform],
   );
 
   const increment = React.useCallback(() => {
@@ -220,27 +222,27 @@ export default function Counter2Screen({ onBack }: Counter2ScreenProps) {
 
   const buttonScreenPosition = React.useMemo(
     () => toScreenPosition(buttonStagePosition, floatingSize),
-    [buttonStagePosition, floatingSize, toScreenPosition]
+    [buttonStagePosition, floatingSize, toScreenPosition],
   );
 
   const messageScreenPosition = React.useMemo(
     () => toScreenPosition(messageStagePosition, messageSize),
-    [messageStagePosition, messageSize, toScreenPosition]
+    [messageStagePosition, messageSize, toScreenPosition],
   );
 
   const backScreenPosition = React.useMemo(
     () => toScreenPosition(backStagePosition, CTRL_SIZE),
-    [backStagePosition, toScreenPosition]
+    [backStagePosition, toScreenPosition],
   );
 
   const resetScreenPosition = React.useMemo(
     () => toScreenPosition(resetStagePosition, CTRL_SIZE),
-    [resetStagePosition, toScreenPosition]
+    [resetStagePosition, toScreenPosition],
   );
 
   const settingsScreenPosition = React.useMemo(
     () => toScreenPosition(settingsStagePosition, CTRL_SIZE),
-    [settingsStagePosition, toScreenPosition]
+    [settingsStagePosition, toScreenPosition],
   );
 
   const handleToggleSettings = useCallback(() => {
@@ -289,10 +291,7 @@ export default function Counter2Screen({ onBack }: Counter2ScreenProps) {
         onActivate={increment}
       />
 
-      <Counter2CountDisplay
-        size={messageSize}
-        screenPosition={messageScreenPosition}
-      >
+      <Counter2CountDisplay size={messageSize} screenPosition={messageScreenPosition}>
         <div
           className={`flex w-full items-center justify-center text-white drop-shadow ${
             isBumping ? "count-bump" : ""
@@ -337,9 +336,7 @@ export default function Counter2Screen({ onBack }: Counter2ScreenProps) {
         />
       )}
 
-      {showFloating && (
-        <Counter2Floating onClose={handleToggleFloating} />
-      )}
+      {showFloating && <Counter2Floating onClose={handleToggleFloating} />}
     </div>
   );
 }

@@ -53,9 +53,7 @@ export default function MangaLibrary({ series, onBack, onOpenChapter }: Props) {
             className="flex items-center justify-between px-4 py-3.5 hover:bg-neutral-800 active:bg-neutral-700 transition-colors text-left w-full"
           >
             <div className="flex flex-col gap-0.5 min-w-0">
-              <span className="text-sm text-white font-medium truncate">
-                {chapter.name}
-              </span>
+              <span className="text-sm text-white font-medium truncate">{chapter.name}</span>
               {chapter.historyEntry && (
                 <div className="w-32 bg-neutral-700 rounded-full h-1 mt-1">
                   <div

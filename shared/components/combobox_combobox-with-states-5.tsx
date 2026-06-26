@@ -14,11 +14,7 @@ import {
   CommandItem,
   CommandList,
 } from "@shared/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@shared/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@shared/components/ui/popover";
 
 export const title = "With Validation Feedback";
 
@@ -35,10 +31,7 @@ const Example = () => {
         <PopoverTrigger asChild>
           <Button
             aria-expanded={open}
-            className={cn(
-              "w-[200px] justify-between",
-              error && "border-destructive",
-            )}
+            className={cn("w-[200px] justify-between", error && "border-destructive")}
             role="combobox"
             variant="outline"
           >

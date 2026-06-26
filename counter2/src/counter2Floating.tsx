@@ -15,12 +15,7 @@ export default function Counter2Floating({ onClose }: Counter2FloatingProps) {
             onClick={onClose}
             className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -35,9 +30,8 @@ export default function Counter2Floating({ onClose }: Counter2FloatingProps) {
           <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700/30">
             <h3 className="text-sm font-medium text-slate-300 mb-2">Optimized Renderer</h3>
             <p className="text-sm text-slate-400">
-              Counter2 uses the shared/layer system for optimized rendering.
-              It automatically switches between Three.js (GPU) and Canvas2D (CPU)
-              based on device capability.
+              Counter2 uses the shared/layer system for optimized rendering. It automatically
+              switches between Three.js (GPU) and Canvas2D (CPU) based on device capability.
             </p>
           </div>
 

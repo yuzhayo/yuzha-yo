@@ -55,7 +55,10 @@ export default function Counter2Settings({
   const clampStage = (value: number) => Math.min(2048, Math.max(0, value));
 
   const handlePositionChange =
-    (setter: ((value: { x: number; y: number }) => void) | undefined, current: { x: number; y: number }) =>
+    (
+      setter: ((value: { x: number; y: number }) => void) | undefined,
+      current: { x: number; y: number },
+    ) =>
     (axis: "x" | "y") =>
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const next = Number(event.target.value);
@@ -137,8 +140,12 @@ export default function Counter2Settings({
       >
         <p className="text-xs text-slate-400 uppercase tracking-wider">Feedback</p>
 
-        {renderToggle("Haptic Feedback", "Vibrate on tap", hapticsEnabled, () => onHapticsToggle?.(!hapticsEnabled))}
-        {renderToggle("Sound Effects", "Play sound on tap", soundEnabled, () => onSoundToggle?.(!soundEnabled))}
+        {renderToggle("Haptic Feedback", "Vibrate on tap", hapticsEnabled, () =>
+          onHapticsToggle?.(!hapticsEnabled),
+        )}
+        {renderToggle("Sound Effects", "Play sound on tap", soundEnabled, () =>
+          onSoundToggle?.(!soundEnabled),
+        )}
 
         <p className="text-xs text-slate-400 uppercase tracking-wider pt-2">Display</p>
 
@@ -197,7 +204,9 @@ export default function Counter2Settings({
           </div>
         </div>
 
-        <p className="text-xs text-slate-400 uppercase tracking-wider pt-2">Position (stage 0–2048)</p>
+        <p className="text-xs text-slate-400 uppercase tracking-wider pt-2">
+          Position (stage 0–2048)
+        </p>
 
         {renderPositionInputs("Button Position", floatingPosition, onFloatingPositionChange)}
         {renderPositionInputs("Display Position", messagePosition, onMessagePositionChange)}

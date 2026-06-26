@@ -77,13 +77,7 @@ function HistoryCard({
   );
 }
 
-function SeriesCard({
-  series,
-  onClick,
-}: {
-  series: ScannedSeries;
-  onClick: () => void;
-}) {
+function SeriesCard({ series, onClick }: { series: ScannedSeries; onClick: () => void }) {
   const readCount = series.chapters.filter(
     (c) => c.historyEntry && c.historyEntry.page >= c.historyEntry.totalPages - 1,
   ).length;

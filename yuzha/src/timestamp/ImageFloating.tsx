@@ -1,4 +1,11 @@
-import React, { forwardRef, useImperativeHandle, useRef, useState, useEffect, useCallback } from "react";
+import React, {
+  forwardRef,
+  useImperativeHandle,
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import FloatingBorderless from "@shared/floating/FloatingBorderless";
 import type { BoundingRect } from "@shared/floating/FloatingBorderless";
 import type { OverlayBounds } from "./types";
@@ -39,7 +46,7 @@ const ImageFloating = forwardRef<ImageFloatingRef, ImageFloatingProps>(
       onDelete,
       showDebugBounds = false,
     },
-    ref
+    ref,
   ) => {
     const [relativePos, setRelativePos] = useState(initialRelativePos);
     const [size, setSize] = useState(initialSize);
@@ -51,13 +58,16 @@ const ImageFloating = forwardRef<ImageFloatingRef, ImageFloatingProps>(
       prevRelativePosRef.current = relativePos;
     }, [relativePos]);
 
-    const getBounds = useCallback((): OverlayBounds => ({
-      id,
-      x: relativePos.x,
-      y: relativePos.y,
-      width: size.width,
-      height: size.height,
-    }), [id, relativePos, size]);
+    const getBounds = useCallback(
+      (): OverlayBounds => ({
+        id,
+        x: relativePos.x,
+        y: relativePos.y,
+        width: size.width,
+        height: size.height,
+      }),
+      [id, relativePos, size],
+    );
 
     useImperativeHandle(ref, () => ({
       getRelativePosition: () => relativePos,
@@ -67,55 +77,69 @@ const ImageFloating = forwardRef<ImageFloatingRef, ImageFloatingProps>(
       getBounds,
     }));
 
-    const handleChange = useCallback((absPos: { x: number; y: number }, newSize: { width: number; height: number }) => {
-      let newRelativeX = absPos.x - boundingRect.x;
-      let newRelativeY = absPos.y - boundingRect.y;
+    const handleChange = useCallback(
+      (absPos: { x: number; y: number }, newSize: { width: number; height: number }) => {
+        let newRelativeX = absPos.x - boundingRect.x;
+        let newRelativeY = absPos.y - boundingRect.y;
 
-      const sizeChanged = newSize.width !== size.width || newSize.height !== size.height;
-      if (sizeChanged) {
-        setSize(newSize);
-        onSizeChange?.(newSize);
-      }
+        const sizeChanged = newSize.width !== size.width || newSize.height !== size.height;
+        if (sizeChanged) {
+          setSize(newSize);
+          onSizeChange?.(newSize);
+        }
 
-      const myBounds = {
-        x: newRelativeX,
-        y: newRelativeY,
-        width: newSize.width,
-        height: newSize.height,
-      };
+        const myBounds = {
+          x: newRelativeX,
+          y: newRelativeY,
+          width: newSize.width,
+          height: newSize.height,
+        };
 
-      const result = resolveAllCollisions(myBounds, otherOverlayBounds, prevRelativePosRef.current);
-      newRelativeX = result.x;
-      newRelativeY = result.y;
+        const result = resolveAllCollisions(
+          myBounds,
+          otherOverlayBounds,
+          prevRelativePosRef.current,
+        );
+        newRelativeX = result.x;
+        newRelativeY = result.y;
 
-      if (result.hasCollision) {
-        otherOverlayBounds.forEach((other) => {
-          if (checkAABBCollision({ x: newRelativeX, y: newRelativeY, width: newSize.width, height: newSize.height }, other)) {
-            onCollision?.(other.id);
-          }
-        });
-      }
+        if (result.hasCollision) {
+          otherOverlayBounds.forEach((other) => {
+            if (
+              checkAABBCollision(
+                { x: newRelativeX, y: newRelativeY, width: newSize.width, height: newSize.height },
+                other,
+              )
+            ) {
+              onCollision?.(other.id);
+            }
+          });
+        }
 
-      const maxX = Math.max(0, boundingRect.width - newSize.width);
-      const maxY = Math.max(0, boundingRect.height - newSize.height);
-      newRelativeX = Math.max(0, Math.min(newRelativeX, maxX));
-      newRelativeY = Math.max(0, Math.min(newRelativeY, maxY));
+        const maxX = Math.max(0, boundingRect.width - newSize.width);
+        const maxY = Math.max(0, boundingRect.height - newSize.height);
+        newRelativeX = Math.max(0, Math.min(newRelativeX, maxX));
+        newRelativeY = Math.max(0, Math.min(newRelativeY, maxY));
 
-      const finalBounds = {
-        x: newRelativeX,
-        y: newRelativeY,
-        width: newSize.width,
-        height: newSize.height,
-      };
-      const stillColliding = otherOverlayBounds.some((other) => checkAABBCollision(finalBounds, other));
-      if (stillColliding) {
-        newRelativeX = prevRelativePosRef.current.x;
-        newRelativeY = prevRelativePosRef.current.y;
-      }
+        const finalBounds = {
+          x: newRelativeX,
+          y: newRelativeY,
+          width: newSize.width,
+          height: newSize.height,
+        };
+        const stillColliding = otherOverlayBounds.some((other) =>
+          checkAABBCollision(finalBounds, other),
+        );
+        if (stillColliding) {
+          newRelativeX = prevRelativePosRef.current.x;
+          newRelativeY = prevRelativePosRef.current.y;
+        }
 
-      setIsColliding(result.hasCollision || stillColliding);
-      setRelativePos({ x: newRelativeX, y: newRelativeY });
-    }, [boundingRect, size, otherOverlayBounds, onCollision, onSizeChange]);
+        setIsColliding(result.hasCollision || stillColliding);
+        setRelativePos({ x: newRelativeX, y: newRelativeY });
+      },
+      [boundingRect, size, otherOverlayBounds, onCollision, onSizeChange],
+    );
 
     const absolutePos = {
       x: boundingRect.x + relativePos.x,
@@ -127,15 +151,19 @@ const ImageFloating = forwardRef<ImageFloatingRef, ImageFloatingProps>(
       width: "100%",
       height: "100%",
       transition: "outline 0.15s ease-out",
-      ...(isColliding ? {
-        outline: "2px solid rgba(255, 100, 100, 0.8)",
-        outlineOffset: "-2px",
-        borderRadius: "2px",
-      } : {}),
-      ...(showDebugBounds && !isColliding ? {
-        outline: "1px dashed rgba(0, 255, 255, 0.6)",
-        outlineOffset: "0px",
-      } : {}),
+      ...(isColliding
+        ? {
+            outline: "2px solid rgba(255, 100, 100, 0.8)",
+            outlineOffset: "-2px",
+            borderRadius: "2px",
+          }
+        : {}),
+      ...(showDebugBounds && !isColliding
+        ? {
+            outline: "1px dashed rgba(0, 255, 255, 0.6)",
+            outlineOffset: "0px",
+          }
+        : {}),
     };
 
     const imageStyle: React.CSSProperties = {
@@ -197,7 +225,7 @@ const ImageFloating = forwardRef<ImageFloatingRef, ImageFloatingProps>(
         </div>
       </FloatingBorderless>
     );
-  }
+  },
 );
 
 ImageFloating.displayName = "ImageFloating";

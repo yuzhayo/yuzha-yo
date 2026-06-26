@@ -41,7 +41,12 @@ export default function MangaReaderScreen({ onBack }: Props) {
   const { state: folderState, scanFolder } = useFolderScanner();
 
   // MangaDex search
-  const { state: searchState, query: searchQuery, setQuery: setSearchQuery, clearSearch } = useMangaDexSearch();
+  const {
+    state: searchState,
+    query: searchQuery,
+    setQuery: setSearchQuery,
+    clearSearch,
+  } = useMangaDexSearch();
 
   // CBZ loader
   const { result, loadFile, loadUrls, reset: resetLoader } = useCbzLoader();
@@ -104,9 +109,12 @@ export default function MangaReaderScreen({ onBack }: Props) {
     const entry: HistoryEntry = {
       key: activeHistoryKey,
       displayTitle,
-      seriesName: activeSource === "mangadex"
-        ? (activeManga ? (activeManga.attributes.title["en"] ?? getMangaTitle(activeManga)) : undefined)
-        : activeSeries?.name,
+      seriesName:
+        activeSource === "mangadex"
+          ? activeManga
+            ? (activeManga.attributes.title["en"] ?? getMangaTitle(activeManga))
+            : undefined
+          : activeSeries?.name,
       page: currentPage,
       totalPages: pages.length,
       lastRead: Date.now(),
@@ -280,7 +288,8 @@ export default function MangaReaderScreen({ onBack }: Props) {
           displayTitle,
           seriesName:
             activeSource === "mangadex"
-              ? activeManga?.attributes.title["en"] ?? (activeManga ? getMangaTitle(activeManga) : undefined)
+              ? (activeManga?.attributes.title["en"] ??
+                (activeManga ? getMangaTitle(activeManga) : undefined))
               : activeSeries?.name,
           page: currentPage,
           totalPages: pages.length,
@@ -298,7 +307,17 @@ export default function MangaReaderScreen({ onBack }: Props) {
     } else {
       setView("home");
     }
-  }, [activeHistoryKey, pages.length, currentPage, activeChapter, activeSeries, activeManga, activeSource, resetLoader, result]);
+  }, [
+    activeHistoryKey,
+    pages.length,
+    currentPage,
+    activeChapter,
+    activeSeries,
+    activeManga,
+    activeSource,
+    resetLoader,
+    result,
+  ]);
 
   const handleDeleteHistory = useCallback((key: string) => {
     deleteHistoryEntry(key);
@@ -350,11 +369,12 @@ export default function MangaReaderScreen({ onBack }: Props) {
   }
 
   if (view === "reader" && isReady) {
-    const toolbarFileName =
-      result.status === "ready" ? result.fileName : "";
+    const toolbarFileName = result.status === "ready" ? result.fileName : "";
     const toolbarSeriesName =
       activeSource === "mangadex"
-        ? (activeManga ? getMangaTitle(activeManga) : undefined)
+        ? activeManga
+          ? getMangaTitle(activeManga)
+          : undefined
         : activeSeries?.name;
 
     return (

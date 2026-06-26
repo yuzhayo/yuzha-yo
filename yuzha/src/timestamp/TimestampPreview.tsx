@@ -71,7 +71,7 @@ export default function TimestampPreview({
       const newScale = Math.max(0.1, Math.min(5, scale * delta));
       onScaleChange(newScale);
     },
-    [imageSrc, scale, onScaleChange]
+    [imageSrc, scale, onScaleChange],
   );
 
   const handlePointerDown = useCallback(
@@ -82,7 +82,7 @@ export default function TimestampPreview({
       translateStart.current = { x: translateX, y: translateY };
       (e.target as HTMLElement).setPointerCapture(e.pointerId);
     },
-    [imageSrc, translateX, translateY]
+    [imageSrc, translateX, translateY],
   );
 
   const handlePointerMove = useCallback(
@@ -92,7 +92,7 @@ export default function TimestampPreview({
       const deltaY = e.clientY - panStart.current.y;
       onTranslateChange(translateStart.current.x + deltaX, translateStart.current.y + deltaY);
     },
-    [imageSrc, onTranslateChange]
+    [imageSrc, onTranslateChange],
   );
 
   const handlePointerUp = useCallback(() => {
@@ -135,7 +135,7 @@ export default function TimestampPreview({
         initialPinchScale.current = scale;
       }
     },
-    [imageSrc, scale, onScaleChange, onTranslateChange]
+    [imageSrc, scale, onScaleChange, onTranslateChange],
   );
 
   const handleTouchMove = useCallback(
@@ -153,7 +153,7 @@ export default function TimestampPreview({
         }
       }
     },
-    [imageSrc, onScaleChange]
+    [imageSrc, onScaleChange],
   );
 
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {

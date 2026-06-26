@@ -1,8 +1,8 @@
-import * as React from "react"
-import { cn } from "@shared/lib/utils"
+import * as React from "react";
+import { cn } from "@shared/lib/utils";
 
 interface ButtonGroupProps extends React.HTMLAttributes<HTMLDivElement> {
-  orientation?: "horizontal" | "vertical"
+  orientation?: "horizontal" | "vertical";
 }
 
 const ButtonGroup = React.forwardRef<HTMLDivElement, ButtonGroupProps>(
@@ -16,13 +16,13 @@ const ButtonGroup = React.forwardRef<HTMLDivElement, ButtonGroupProps>(
           orientation === "horizontal"
             ? "[&>*:not(:first-child)]:rounded-l-none [&>*:not(:last-child)]:rounded-r-none [&>*:not(:first-child)]:-ml-px"
             : "flex-col [&>*:not(:first-child)]:rounded-t-none [&>*:not(:last-child)]:rounded-b-none [&>*:not(:first-child)]:-mt-px",
-          className
+          className,
         )}
         {...props}
       />
-    )
-  }
-)
-ButtonGroup.displayName = "ButtonGroup"
+    );
+  },
+);
+ButtonGroup.displayName = "ButtonGroup";
 
-export { ButtonGroup }
+export { ButtonGroup };

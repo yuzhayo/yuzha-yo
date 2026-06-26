@@ -17,12 +17,10 @@ const Example = () => (
           <Badge className="mb-3" variant="secondary">
             Featured
           </Badge>
-          <h3 className="mb-2 font-semibold text-lg">
-            Building Modern Web Apps
-          </h3>
+          <h3 className="mb-2 font-semibold text-lg">Building Modern Web Apps</h3>
           <p className="mb-4 text-muted-foreground text-sm">
-            Learn how to build modern web applications with the latest
-            technologies and best practices.
+            Learn how to build modern web applications with the latest technologies and best
+            practices.
           </p>
           <Button size="sm" variant="outline">
             Learn More
@@ -34,8 +32,7 @@ const Example = () => (
           </Badge>
           <h3 className="mb-2 font-semibold text-lg">Advanced TypeScript</h3>
           <p className="mb-4 text-muted-foreground text-sm">
-            Master advanced TypeScript concepts and patterns for building robust
-            applications.
+            Master advanced TypeScript concepts and patterns for building robust applications.
           </p>
           <Button size="sm" variant="outline">
             Learn More
@@ -49,8 +46,7 @@ const Example = () => (
           <Badge className="mb-3">Popular</Badge>
           <h3 className="mb-2 font-semibold text-lg">React Best Practices</h3>
           <p className="mb-4 text-muted-foreground text-sm">
-            Discover the most popular patterns and practices used by React
-            developers worldwide.
+            Discover the most popular patterns and practices used by React developers worldwide.
           </p>
           <Button size="sm" variant="outline">
             Learn More
@@ -60,8 +56,7 @@ const Example = () => (
           <Badge className="mb-3">Popular</Badge>
           <h3 className="mb-2 font-semibold text-lg">API Design Principles</h3>
           <p className="mb-4 text-muted-foreground text-sm">
-            Learn how to design clean, maintainable, and scalable APIs that
-            developers love.
+            Learn how to design clean, maintainable, and scalable APIs that developers love.
           </p>
           <Button size="sm" variant="outline">
             Learn More
@@ -77,8 +72,7 @@ const Example = () => (
           </Badge>
           <h3 className="mb-2 font-semibold text-lg">Next.js 15 Features</h3>
           <p className="mb-4 text-muted-foreground text-sm">
-            Explore the latest features and improvements in Next.js 15 and how
-            to use them.
+            Explore the latest features and improvements in Next.js 15 and how to use them.
           </p>
           <Button size="sm" variant="outline">
             Learn More
@@ -90,8 +84,7 @@ const Example = () => (
           </Badge>
           <h3 className="mb-2 font-semibold text-lg">Tailwind CSS Updates</h3>
           <p className="mb-4 text-muted-foreground text-sm">
-            Learn about the newest additions to Tailwind CSS and how they can
-            improve your workflow.
+            Learn about the newest additions to Tailwind CSS and how they can improve your workflow.
           </p>
           <Button size="sm" variant="outline">
             Learn More

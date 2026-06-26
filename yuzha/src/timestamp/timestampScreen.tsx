@@ -5,7 +5,17 @@ import TimestampFloating, { type TimestampFloatingRef } from "./TimestampFloatin
 import ImageFloating, { type ImageFloatingRef } from "./ImageFloating";
 import TimestampSettings from "./TimestampSettings";
 import { addPreset, type TimestampPreset } from "./PresetManager";
-import { type Overlay, type TextOverlay, type ImageOverlay, type TextAlign, DEFAULT_STATE, DEFAULT_OVERLAYS, checkAABBCollision, resolveAllCollisions, type OverlayBounds } from "./types";
+import {
+  type Overlay,
+  type TextOverlay,
+  type ImageOverlay,
+  type TextAlign,
+  DEFAULT_STATE,
+  DEFAULT_OVERLAYS,
+  checkAABBCollision,
+  resolveAllCollisions,
+  type OverlayBounds,
+} from "./types";
 
 export type TimestampScreenProps = {
   onBack?: () => void;
@@ -65,9 +75,7 @@ export default function TimestampScreen({ onBack }: TimestampScreenProps) {
 
   const [customFonts, setCustomFonts] = useState<string[]>([]);
 
-  const [overlays, setOverlays] = useState<Overlay[]>(() =>
-    DEFAULT_OVERLAYS.map(cloneOverlay)
-  );
+  const [overlays, setOverlays] = useState<Overlay[]>(() => DEFAULT_OVERLAYS.map(cloneOverlay));
 
   const [previewBounds, setPreviewBounds] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const [showDebugBounds] = useState(true);
@@ -124,7 +132,12 @@ export default function TimestampScreen({ onBack }: TimestampScreenProps) {
         const ref = getImageOverlayRef(overlay.id);
         if (ref) {
           const size = ref.getSize();
-          return { ...overlay, position: ref.getRelativePosition(), width: size.width, height: size.height };
+          return {
+            ...overlay,
+            position: ref.getRelativePosition(),
+            width: size.width,
+            height: size.height,
+          };
         }
       }
       return overlay;
@@ -143,51 +156,71 @@ export default function TimestampScreen({ onBack }: TimestampScreenProps) {
       customFonts: [...customFonts],
       overlays: updatedOverlays,
     };
-  }, [scale, translateX, translateY, rotation, textColor, shadowColor, shadowBlur, shadowOffsetX, shadowOffsetY, customFonts, overlays, getOverlayRef, getImageOverlayRef]);
+  }, [
+    scale,
+    translateX,
+    translateY,
+    rotation,
+    textColor,
+    shadowColor,
+    shadowBlur,
+    shadowOffsetX,
+    shadowOffsetY,
+    customFonts,
+    overlays,
+    getOverlayRef,
+    getImageOverlayRef,
+  ]);
 
-  const pushHistory = useCallback((overrides?: Partial<HistoryEntry>) => {
-    if (isUndoRedoRef.current) {
-      isUndoRedoRef.current = false;
-      return;
-    }
-    const current = getCurrentState();
-    const stateToSave = overrides ? { ...current, ...overrides } : current;
-    setHistory((prev) => {
-      const newHistory = prev.slice(0, historyIndex + 1);
-      newHistory.push(cloneState(stateToSave));
-      if (newHistory.length > 50) newHistory.shift();
-      return newHistory;
-    });
-    setHistoryIndex((prev) => Math.min(prev + 1, 49));
-  }, [getCurrentState, historyIndex]);
-
-  const applyState = useCallback((entry: HistoryEntry) => {
-    isUndoRedoRef.current = true;
-    setScale(entry.scale);
-    setTranslateX(entry.translateX);
-    setTranslateY(entry.translateY);
-    setRotation(entry.rotation);
-    setTextColor(entry.textColor);
-    setShadowColor(entry.shadowColor);
-    setShadowBlur(entry.shadowBlur);
-    setShadowOffsetX(entry.shadowOffsetX);
-    setShadowOffsetY(entry.shadowOffsetY);
-    setCustomFonts([...entry.customFonts]);
-    setOverlays(entry.overlays.map(cloneOverlay));
-
-    entry.overlays.forEach((overlay) => {
-      if (overlay.type === "text") {
-        const ref = getOverlayRef(overlay.id);
-        ref?.setRelativePosition(overlay.position);
-      } else if (overlay.type === "image") {
-        const ref = getImageOverlayRef(overlay.id);
-        if (ref) {
-          ref.setRelativePosition(overlay.position);
-          ref.setSize({ width: overlay.width, height: overlay.height });
-        }
+  const pushHistory = useCallback(
+    (overrides?: Partial<HistoryEntry>) => {
+      if (isUndoRedoRef.current) {
+        isUndoRedoRef.current = false;
+        return;
       }
-    });
-  }, [getOverlayRef, getImageOverlayRef]);
+      const current = getCurrentState();
+      const stateToSave = overrides ? { ...current, ...overrides } : current;
+      setHistory((prev) => {
+        const newHistory = prev.slice(0, historyIndex + 1);
+        newHistory.push(cloneState(stateToSave));
+        if (newHistory.length > 50) newHistory.shift();
+        return newHistory;
+      });
+      setHistoryIndex((prev) => Math.min(prev + 1, 49));
+    },
+    [getCurrentState, historyIndex],
+  );
+
+  const applyState = useCallback(
+    (entry: HistoryEntry) => {
+      isUndoRedoRef.current = true;
+      setScale(entry.scale);
+      setTranslateX(entry.translateX);
+      setTranslateY(entry.translateY);
+      setRotation(entry.rotation);
+      setTextColor(entry.textColor);
+      setShadowColor(entry.shadowColor);
+      setShadowBlur(entry.shadowBlur);
+      setShadowOffsetX(entry.shadowOffsetX);
+      setShadowOffsetY(entry.shadowOffsetY);
+      setCustomFonts([...entry.customFonts]);
+      setOverlays(entry.overlays.map(cloneOverlay));
+
+      entry.overlays.forEach((overlay) => {
+        if (overlay.type === "text") {
+          const ref = getOverlayRef(overlay.id);
+          ref?.setRelativePosition(overlay.position);
+        } else if (overlay.type === "image") {
+          const ref = getImageOverlayRef(overlay.id);
+          if (ref) {
+            ref.setRelativePosition(overlay.position);
+            ref.setSize({ width: overlay.width, height: overlay.height });
+          }
+        }
+      });
+    },
+    [getOverlayRef, getImageOverlayRef],
+  );
 
   const handleUndo = useCallback(() => {
     if (historyIndex > 0) {
@@ -233,10 +266,10 @@ export default function TimestampScreen({ onBack }: TimestampScreenProps) {
 
   useEffect(() => {
     if (!imageSrc || previewBounds.width === 0) return;
-    
+
     const timeoutId = setTimeout(() => {
       const maxGlobalIterations = 10;
-      
+
       for (let globalIteration = 0; globalIteration < maxGlobalIterations; globalIteration++) {
         const allBounds: OverlayBounds[] = [];
         overlays.forEach((o) => {
@@ -245,15 +278,15 @@ export default function TimestampScreen({ onBack }: TimestampScreenProps) {
             allBounds.push({ ...bounds });
           }
         });
-        
+
         if (allBounds.length < 2) return;
-        
+
         let anyCollisionResolved = false;
-        
+
         for (let i = 0; i < allBounds.length; i++) {
           const current = allBounds[i]!;
           const others = allBounds.filter((_, idx) => idx !== i);
-          
+
           const hasCollision = others.some((other) => checkAABBCollision(current, other));
           if (hasCollision) {
             const result = resolveAllCollisions(current, others, { x: current.x, y: current.y });
@@ -262,7 +295,7 @@ export default function TimestampScreen({ onBack }: TimestampScreenProps) {
               const maxY = Math.max(0, previewBounds.height - current.height);
               const clampedX = Math.max(0, Math.min(result.x, maxX));
               const clampedY = Math.max(0, Math.min(result.y, maxY));
-              
+
               const textRef = textOverlayRefsMap.current.get(current.id);
               if (textRef) {
                 textRef.setRelativePosition({ x: clampedX, y: clampedY });
@@ -271,20 +304,20 @@ export default function TimestampScreen({ onBack }: TimestampScreenProps) {
               if (imageRef) {
                 imageRef.setRelativePosition({ x: clampedX, y: clampedY });
               }
-              
+
               current.x = clampedX;
               current.y = clampedY;
               anyCollisionResolved = true;
             }
           }
         }
-        
+
         if (!anyCollisionResolved) {
           break;
         }
       }
     }, 100);
-    
+
     return () => clearTimeout(timeoutId);
   }, [imageSrc, previewBounds, overlays, getAnyOverlayBounds]);
 
@@ -361,9 +394,12 @@ export default function TimestampScreen({ onBack }: TimestampScreenProps) {
     setTranslateY(y);
   }, []);
 
-  const handleBoundsChange = useCallback((bounds: { x: number; y: number; width: number; height: number }) => {
-    setPreviewBounds(bounds);
-  }, []);
+  const handleBoundsChange = useCallback(
+    (bounds: { x: number; y: number; width: number; height: number }) => {
+      setPreviewBounds(bounds);
+    },
+    [],
+  );
 
   const handleResetPosition = useCallback(() => {
     setTranslateX(0);
@@ -371,49 +407,58 @@ export default function TimestampScreen({ onBack }: TimestampScreenProps) {
     pushHistory();
   }, [pushHistory]);
 
-  const handleAddCustomFont = useCallback((fontName: string, fontDataUrl: string) => {
-    const fontFace = new FontFace(fontName, `url(${fontDataUrl})`);
-    fontFace.load().then((loaded) => {
-      (document.fonts as unknown as { add: (font: FontFace) => void }).add(loaded);
-      setCustomFonts((prev) => (prev.includes(fontName) ? prev : [...prev, fontName]));
+  const handleAddCustomFont = useCallback(
+    (fontName: string, fontDataUrl: string) => {
+      const fontFace = new FontFace(fontName, `url(${fontDataUrl})`);
+      fontFace.load().then((loaded) => {
+        (document.fonts as unknown as { add: (font: FontFace) => void }).add(loaded);
+        setCustomFonts((prev) => (prev.includes(fontName) ? prev : [...prev, fontName]));
+        pushHistory();
+      });
+    },
+    [pushHistory],
+  );
+
+  const addImageOverlay = useCallback(
+    (imageSrcUrl: string, width: number, height: number) => {
+      const id = `image-${nextImageIdRef.current}`;
+      const maxWidth = Math.min(width, previewBounds.width * 0.5);
+      const scaleRatio = maxWidth / width;
+      const scaledWidth = width * scaleRatio;
+      const scaledHeight = height * scaleRatio;
+
+      const newOverlay: ImageOverlay = {
+        id,
+        type: "image",
+        label: `Image ${nextImageIdRef.current}`,
+        src: imageSrcUrl,
+        position: { x: 20, y: 20 },
+        width: scaledWidth,
+        height: scaledHeight,
+        isPermanent: false,
+      };
+
+      nextImageIdRef.current += 1;
+      setOverlays((prevOverlays) => [...prevOverlays, newOverlay]);
       pushHistory();
-    });
-  }, [pushHistory]);
+    },
+    [previewBounds.width, pushHistory],
+  );
 
-  const addImageOverlay = useCallback((imageSrcUrl: string, width: number, height: number) => {
-    const id = `image-${nextImageIdRef.current}`;
-    const maxWidth = Math.min(width, previewBounds.width * 0.5);
-    const scaleRatio = maxWidth / width;
-    const scaledWidth = width * scaleRatio;
-    const scaledHeight = height * scaleRatio;
-
-    const newOverlay: ImageOverlay = {
-      id,
-      type: "image",
-      label: `Image ${nextImageIdRef.current}`,
-      src: imageSrcUrl,
-      position: { x: 20, y: 20 },
-      width: scaledWidth,
-      height: scaledHeight,
-      isPermanent: false,
-    };
-
-    nextImageIdRef.current += 1;
-    setOverlays((prevOverlays) => [...prevOverlays, newOverlay]);
-    pushHistory();
-  }, [previewBounds.width, pushHistory]);
-
-  const deleteImageOverlay = useCallback((id: string) => {
-    setOverlays((prev) => {
-      const overlay = prev.find((o) => o.id === id);
-      if (overlay && overlay.type === "image" && overlay.src.startsWith("blob:")) {
-        URL.revokeObjectURL(overlay.src);
-      }
-      return prev.filter((o) => o.id !== id || o.isPermanent);
-    });
-    imageOverlayRefsMap.current.delete(id);
-    pushHistory();
-  }, [pushHistory]);
+  const deleteImageOverlay = useCallback(
+    (id: string) => {
+      setOverlays((prev) => {
+        const overlay = prev.find((o) => o.id === id);
+        if (overlay && overlay.type === "image" && overlay.src.startsWith("blob:")) {
+          URL.revokeObjectURL(overlay.src);
+        }
+        return prev.filter((o) => o.id !== id || o.isPermanent);
+      });
+      imageOverlayRefsMap.current.delete(id);
+      pushHistory();
+    },
+    [pushHistory],
+  );
 
   const handleAddImageOverlay = useCallback(() => {
     const input = document.createElement("input");
@@ -445,35 +490,60 @@ export default function TimestampScreen({ onBack }: TimestampScreenProps) {
           const ref = getImageOverlayRef(overlay.id);
           if (ref) {
             const size = ref.getSize();
-            return { ...overlay, position: ref.getRelativePosition(), width: size.width, height: size.height };
+            return {
+              ...overlay,
+              position: ref.getRelativePosition(),
+              width: size.width,
+              height: size.height,
+            };
           }
         }
         return overlay;
-      })
+      }),
     );
   }, [getOverlayRef, getImageOverlayRef]);
 
-  const handleSavePreset = useCallback((name: string) => {
-    syncOverlayPositionsFromRefs();
+  const handleSavePreset = useCallback(
+    (name: string) => {
+      syncOverlayPositionsFromRefs();
 
-    const currentOverlays = overlays.map((overlay) => {
-      if (overlay.type === "text") {
-        const ref = getOverlayRef(overlay.id);
-        if (ref) {
-          return { ...overlay, position: { ...ref.getRelativePosition() } };
+      const currentOverlays = overlays.map((overlay) => {
+        if (overlay.type === "text") {
+          const ref = getOverlayRef(overlay.id);
+          if (ref) {
+            return { ...overlay, position: { ...ref.getRelativePosition() } };
+          }
+        } else if (overlay.type === "image") {
+          const ref = getImageOverlayRef(overlay.id);
+          if (ref) {
+            const size = ref.getSize();
+            return {
+              ...overlay,
+              position: { ...ref.getRelativePosition() },
+              width: size.width,
+              height: size.height,
+            };
+          }
         }
-      } else if (overlay.type === "image") {
-        const ref = getImageOverlayRef(overlay.id);
-        if (ref) {
-          const size = ref.getSize();
-          return { ...overlay, position: { ...ref.getRelativePosition() }, width: size.width, height: size.height };
-        }
-      }
-      return { ...overlay, position: { ...overlay.position } };
-    });
+        return { ...overlay, position: { ...overlay.position } };
+      });
 
-    addPreset({
-      name,
+      addPreset({
+        name,
+        scale,
+        translateX,
+        translateY,
+        rotation,
+        textColor,
+        shadowColor,
+        shadowBlur,
+        shadowOffsetX,
+        shadowOffsetY,
+        customFonts,
+        overlays: currentOverlays,
+      });
+    },
+    [
       scale,
       translateX,
       translateY,
@@ -484,63 +554,69 @@ export default function TimestampScreen({ onBack }: TimestampScreenProps) {
       shadowOffsetX,
       shadowOffsetY,
       customFonts,
-      overlays: currentOverlays,
-    });
-  }, [scale, translateX, translateY, rotation, textColor, shadowColor, shadowBlur, shadowOffsetX, shadowOffsetY, customFonts, overlays, getOverlayRef, getImageOverlayRef, syncOverlayPositionsFromRefs]);
+      overlays,
+      getOverlayRef,
+      getImageOverlayRef,
+      syncOverlayPositionsFromRefs,
+    ],
+  );
 
-  const handleLoadPreset = useCallback((preset: TimestampPreset) => {
-    setScale(preset.scale);
-    setTranslateX(preset.translateX);
-    setTranslateY(preset.translateY);
-    setRotation(preset.rotation);
-    setTextColor(preset.textColor);
-    setShadowColor(preset.shadowColor);
-    setShadowBlur(preset.shadowBlur);
-    setShadowOffsetX(preset.shadowOffsetX);
-    setShadowOffsetY(preset.shadowOffsetY);
-    setCustomFonts([...preset.customFonts]);
+  const handleLoadPreset = useCallback(
+    (preset: TimestampPreset) => {
+      setScale(preset.scale);
+      setTranslateX(preset.translateX);
+      setTranslateY(preset.translateY);
+      setRotation(preset.rotation);
+      setTextColor(preset.textColor);
+      setShadowColor(preset.shadowColor);
+      setShadowBlur(preset.shadowBlur);
+      setShadowOffsetX(preset.shadowOffsetX);
+      setShadowOffsetY(preset.shadowOffsetY);
+      setCustomFonts([...preset.customFonts]);
 
-    setOverlays((prevOverlays) => {
-      prevOverlays.forEach((o) => {
-        if (o.type === "image" && o.src.startsWith("blob:")) {
-          URL.revokeObjectURL(o.src);
-        }
+      setOverlays((prevOverlays) => {
+        prevOverlays.forEach((o) => {
+          if (o.type === "image" && o.src.startsWith("blob:")) {
+            URL.revokeObjectURL(o.src);
+          }
+        });
+        return prevOverlays;
       });
-      return prevOverlays;
-    });
 
-    imageOverlayRefsMap.current.clear();
+      imageOverlayRefsMap.current.clear();
 
-    const restoredOverlays = preset.overlays.map((o) => ({
-      ...o,
-      position: { ...o.position },
-    }));
+      const restoredOverlays = preset.overlays.map((o) => ({
+        ...o,
+        position: { ...o.position },
+      }));
 
-    setOverlays(restoredOverlays);
+      setOverlays(restoredOverlays);
 
-    let maxImageId = 0;
-    restoredOverlays.forEach((o) => {
-      if (o.type === "image") {
-        const numPart = parseInt(o.id.replace("image-", ""), 10);
-        if (!isNaN(numPart) && numPart >= maxImageId) {
-          maxImageId = numPart + 1;
-        }
-      }
-    });
-    nextImageIdRef.current = maxImageId;
-
-    setTimeout(() => {
+      let maxImageId = 0;
       restoredOverlays.forEach((o) => {
-        if (o.type === "text") {
-          getOverlayRef(o.id)?.setRelativePosition(o.position);
-        } else if (o.type === "image") {
-          getImageOverlayRef(o.id)?.setRelativePosition(o.position);
+        if (o.type === "image") {
+          const numPart = parseInt(o.id.replace("image-", ""), 10);
+          if (!isNaN(numPart) && numPart >= maxImageId) {
+            maxImageId = numPart + 1;
+          }
         }
       });
-    }, 0);
+      nextImageIdRef.current = maxImageId;
 
-    pushHistory();
-  }, [pushHistory, getOverlayRef, getImageOverlayRef]);
+      setTimeout(() => {
+        restoredOverlays.forEach((o) => {
+          if (o.type === "text") {
+            getOverlayRef(o.id)?.setRelativePosition(o.position);
+          } else if (o.type === "image") {
+            getImageOverlayRef(o.id)?.setRelativePosition(o.position);
+          }
+        });
+      }, 0);
+
+      pushHistory();
+    },
+    [pushHistory, getOverlayRef, getImageOverlayRef],
+  );
 
   const handleSave = useCallback(async () => {
     if (!imageSrc) return;
@@ -565,7 +641,13 @@ export default function TimestampScreen({ onBack }: TimestampScreenProps) {
     ctx.drawImage(img, -img.width / 2, -img.height / 2);
     ctx.restore();
 
-    type ImageLoadResult = { img: HTMLImageElement; x: number; y: number; w: number; h: number } | null;
+    type ImageLoadResult = {
+      img: HTMLImageElement;
+      x: number;
+      y: number;
+      w: number;
+      h: number;
+    } | null;
     const imageLoadPromises: Promise<ImageLoadResult>[] = [];
 
     overlays.forEach((overlay) => {
@@ -606,7 +688,13 @@ export default function TimestampScreen({ onBack }: TimestampScreenProps) {
           const relPos = ref.getRelativePosition();
           const size = ref.getSize();
           const imgSrc = overlay.src;
-          const loadPromise = new Promise<{ img: HTMLImageElement; x: number; y: number; w: number; h: number } | null>((resolve) => {
+          const loadPromise = new Promise<{
+            img: HTMLImageElement;
+            x: number;
+            y: number;
+            w: number;
+            h: number;
+          } | null>((resolve) => {
             const overlayImg = new Image();
             overlayImg.crossOrigin = "anonymous";
             overlayImg.onload = () => {
@@ -636,7 +724,23 @@ export default function TimestampScreen({ onBack }: TimestampScreenProps) {
       a.click();
       URL.revokeObjectURL(url);
     }, "image/png");
-  }, [imageSrc, widthPx, heightPx, translateX, translateY, rotation, scale, textColor, shadowColor, shadowBlur, shadowOffsetX, shadowOffsetY, overlays, getOverlayRef, getImageOverlayRef]);
+  }, [
+    imageSrc,
+    widthPx,
+    heightPx,
+    translateX,
+    translateY,
+    rotation,
+    scale,
+    textColor,
+    shadowColor,
+    shadowBlur,
+    shadowOffsetX,
+    shadowOffsetY,
+    overlays,
+    getOverlayRef,
+    getImageOverlayRef,
+  ]);
 
   const handleSettingsChange = useCallback(() => {
     pushHistory();
@@ -644,49 +748,55 @@ export default function TimestampScreen({ onBack }: TimestampScreenProps) {
 
   const MARGIN = 20;
 
-  const handleAlignmentChange = useCallback((overlayId: string, textAlign: TextAlign) => {
-    const ref = getOverlayRef(overlayId);
-    if (!ref || previewBounds.width === 0) return;
+  const handleAlignmentChange = useCallback(
+    (overlayId: string, textAlign: TextAlign) => {
+      const ref = getOverlayRef(overlayId);
+      if (!ref || previewBounds.width === 0) return;
 
-    const size = ref.getSize();
-    const currentPos = ref.getRelativePosition();
-    let newX: number;
+      const size = ref.getSize();
+      const currentPos = ref.getRelativePosition();
+      let newX: number;
 
-    if (size.width === 0) {
-      newX = currentPos.x;
-    } else if (textAlign === "left") {
-      newX = MARGIN;
-    } else if (textAlign === "center") {
-      newX = (previewBounds.width - size.width) / 2;
-    } else {
-      newX = previewBounds.width - size.width - MARGIN;
-    }
+      if (size.width === 0) {
+        newX = currentPos.x;
+      } else if (textAlign === "left") {
+        newX = MARGIN;
+      } else if (textAlign === "center") {
+        newX = (previewBounds.width - size.width) / 2;
+      } else {
+        newX = previewBounds.width - size.width - MARGIN;
+      }
 
-    const newPos = { x: newX, y: currentPos.y };
-    ref.setRelativePosition(newPos);
+      const newPos = { x: newX, y: currentPos.y };
+      ref.setRelativePosition(newPos);
 
-    setOverlays((prev) =>
-      prev.map((overlay) =>
-        overlay.id === overlayId && overlay.type === "text"
-          ? { ...overlay, textAlign, position: newPos }
-          : overlay
-      )
-    );
+      setOverlays((prev) =>
+        prev.map((overlay) =>
+          overlay.id === overlayId && overlay.type === "text"
+            ? { ...overlay, textAlign, position: newPos }
+            : overlay,
+        ),
+      );
 
-    pushHistory();
-  }, [previewBounds.width, pushHistory, getOverlayRef]);
+      pushHistory();
+    },
+    [previewBounds.width, pushHistory, getOverlayRef],
+  );
 
-  const handleOverlaySettingsChange = useCallback((overlayId: string, updates: Partial<TextOverlay>) => {
-    syncOverlayPositionsFromRefs();
-    setOverlays((prev) =>
-      prev.map((overlay) =>
-        overlay.id === overlayId && overlay.type === "text"
-          ? { ...overlay, ...updates }
-          : overlay
-      )
-    );
-    handleSettingsChange();
-  }, [handleSettingsChange, syncOverlayPositionsFromRefs]);
+  const handleOverlaySettingsChange = useCallback(
+    (overlayId: string, updates: Partial<TextOverlay>) => {
+      syncOverlayPositionsFromRefs();
+      setOverlays((prev) =>
+        prev.map((overlay) =>
+          overlay.id === overlayId && overlay.type === "text"
+            ? { ...overlay, ...updates }
+            : overlay,
+        ),
+      );
+      handleSettingsChange();
+    },
+    [handleSettingsChange, syncOverlayPositionsFromRefs],
+  );
 
   const timeOverlay = overlays.find((o) => o.id === "time") as TextOverlay | undefined;
   const dateOverlay = overlays.find((o) => o.id === "date") as TextOverlay | undefined;
@@ -713,38 +823,44 @@ export default function TimestampScreen({ onBack }: TimestampScreenProps) {
     };
   };
 
-  const getOtherOverlayBounds = useCallback((currentId: string) => {
-    return overlays
-      .filter((o) => o.id !== currentId)
-      .map((o) => {
-        const bounds = getAnyOverlayBounds(o.id);
-        if (bounds) {
-          return bounds;
-        }
-        if (o.type === "image") {
+  const getOtherOverlayBounds = useCallback(
+    (currentId: string) => {
+      return overlays
+        .filter((o) => o.id !== currentId)
+        .map((o) => {
+          const bounds = getAnyOverlayBounds(o.id);
+          if (bounds) {
+            return bounds;
+          }
+          if (o.type === "image") {
+            return {
+              id: o.id,
+              x: o.position.x,
+              y: o.position.y,
+              width: o.width,
+              height: o.height,
+            };
+          }
+          const textOverlay = o as TextOverlay;
+          const estimatedCharWidth = textOverlay.fontSize * 0.6;
+          const shadowActive = textOverlay.shadowEnabled === true;
+          const shadowBuffer = shadowActive ? shadowBlur * 2 : 0;
+          const estimatedWidth = Math.max(
+            100,
+            textOverlay.text.length * estimatedCharWidth + 4 + shadowBuffer,
+          );
+          const estimatedHeight = textOverlay.fontSize + 2 + shadowBuffer;
           return {
             id: o.id,
             x: o.position.x,
             y: o.position.y,
-            width: o.width,
-            height: o.height,
+            width: estimatedWidth,
+            height: estimatedHeight,
           };
-        }
-        const textOverlay = o as TextOverlay;
-        const estimatedCharWidth = textOverlay.fontSize * 0.6;
-        const shadowActive = textOverlay.shadowEnabled === true;
-        const shadowBuffer = shadowActive ? shadowBlur * 2 : 0;
-        const estimatedWidth = Math.max(100, textOverlay.text.length * estimatedCharWidth + 4 + shadowBuffer);
-        const estimatedHeight = textOverlay.fontSize + 2 + shadowBuffer;
-        return {
-          id: o.id,
-          x: o.position.x,
-          y: o.position.y,
-          width: estimatedWidth,
-          height: estimatedHeight,
-        };
-      });
-  }, [overlays, getAnyOverlayBounds, shadowBlur]);
+        });
+    },
+    [overlays, getAnyOverlayBounds, shadowBlur],
+  );
 
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-slate-950 text-white">
@@ -837,23 +953,50 @@ export default function TimestampScreen({ onBack }: TimestampScreenProps) {
         <div ref={settingsRef}>
           <TimestampSettings
             textColor={textColor}
-            onTextColorChange={(v) => { setTextColor(v); handleSettingsChange(); }}
+            onTextColorChange={(v) => {
+              setTextColor(v);
+              handleSettingsChange();
+            }}
             shadowColor={shadowColor}
-            onShadowColorChange={(v) => { setShadowColor(v); handleSettingsChange(); }}
+            onShadowColorChange={(v) => {
+              setShadowColor(v);
+              handleSettingsChange();
+            }}
             shadowBlur={shadowBlur}
-            onShadowBlurChange={(v) => { setShadowBlur(v); handleSettingsChange(); }}
+            onShadowBlurChange={(v) => {
+              setShadowBlur(v);
+              handleSettingsChange();
+            }}
             shadowOffsetX={shadowOffsetX}
-            onShadowOffsetXChange={(v) => { setShadowOffsetX(v); handleSettingsChange(); }}
+            onShadowOffsetXChange={(v) => {
+              setShadowOffsetX(v);
+              handleSettingsChange();
+            }}
             shadowOffsetY={shadowOffsetY}
-            onShadowOffsetYChange={(v) => { setShadowOffsetY(v); handleSettingsChange(); }}
+            onShadowOffsetYChange={(v) => {
+              setShadowOffsetY(v);
+              handleSettingsChange();
+            }}
             scale={scale}
-            onScaleChange={(v) => { setScale(v); handleSettingsChange(); }}
+            onScaleChange={(v) => {
+              setScale(v);
+              handleSettingsChange();
+            }}
             translateX={translateX}
-            onTranslateXChange={(v) => { setTranslateX(v); handleSettingsChange(); }}
+            onTranslateXChange={(v) => {
+              setTranslateX(v);
+              handleSettingsChange();
+            }}
             translateY={translateY}
-            onTranslateYChange={(v) => { setTranslateY(v); handleSettingsChange(); }}
+            onTranslateYChange={(v) => {
+              setTranslateY(v);
+              handleSettingsChange();
+            }}
             rotation={rotation}
-            onRotationChange={(v) => { setRotation(v); handleSettingsChange(); }}
+            onRotationChange={(v) => {
+              setRotation(v);
+              handleSettingsChange();
+            }}
             onResetPosition={handleResetPosition}
             customFonts={customFonts}
             onAddCustomFont={handleAddCustomFont}

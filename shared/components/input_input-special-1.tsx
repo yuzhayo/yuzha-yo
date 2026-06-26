@@ -36,10 +36,7 @@ const Example = () => {
       {files.length > 0 && (
         <div className="space-y-2">
           {files.map((file, index) => (
-            <div
-              className="flex items-center justify-between rounded-md border p-2"
-              key={index}
-            >
+            <div className="flex items-center justify-between rounded-md border p-2" key={index}>
               <div className="flex items-center gap-2">
                 <FileText className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm">{file.name}</span>

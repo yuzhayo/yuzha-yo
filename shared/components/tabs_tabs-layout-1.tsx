@@ -23,8 +23,8 @@ const Example = () => (
         <div className="rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
           <h3 className="mb-2 font-semibold text-lg">Profile Settings</h3>
           <p className="text-muted-foreground text-sm">
-            Update your profile information including your name, email, and
-            profile picture. These details will be visible to other users.
+            Update your profile information including your name, email, and profile picture. These
+            details will be visible to other users.
           </p>
         </div>
       </TabsContent>
@@ -32,8 +32,8 @@ const Example = () => (
         <div className="rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
           <h3 className="mb-2 font-semibold text-lg">Security Settings</h3>
           <p className="text-muted-foreground text-sm">
-            Manage your password, two-factor authentication, and active sessions
-            to keep your account secure.
+            Manage your password, two-factor authentication, and active sessions to keep your
+            account secure.
           </p>
         </div>
       </TabsContent>
@@ -41,8 +41,8 @@ const Example = () => (
         <div className="rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
           <h3 className="mb-2 font-semibold text-lg">Preferences</h3>
           <p className="text-muted-foreground text-sm">
-            Customize your experience with theme options, language settings, and
-            notification preferences.
+            Customize your experience with theme options, language settings, and notification
+            preferences.
           </p>
         </div>
       </TabsContent>
@@ -50,8 +50,8 @@ const Example = () => (
         <div className="rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
           <h3 className="mb-2 font-semibold text-lg">Team Settings</h3>
           <p className="text-muted-foreground text-sm">
-            Invite team members, manage permissions, and configure team-wide
-            settings and integrations.
+            Invite team members, manage permissions, and configure team-wide settings and
+            integrations.
           </p>
         </div>
       </TabsContent>

@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  FileText,
-  HelpCircle,
-  Home,
-  Menu,
-  Settings,
-  Users,
-} from "lucide-react";
+import { FileText, HelpCircle, Home, Menu, Settings, Users } from "lucide-react";
 
 import { Button } from "@shared/components/ui/button";
 import { Drawer, DrawerContent, DrawerTrigger } from "@shared/components/ui/drawer";

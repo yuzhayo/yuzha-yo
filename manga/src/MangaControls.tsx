@@ -38,8 +38,7 @@ export default function MangaControls({
   prevChapterLabel,
   nextChapterLabel,
 }: Props) {
-  const btnBase =
-    "text-xs px-3 py-2 rounded-lg text-white border transition-colors select-none";
+  const btnBase = "text-xs px-3 py-2 rounded-lg text-white border transition-colors select-none";
   const btnNormal = `${btnBase} bg-neutral-800 hover:bg-neutral-700 active:bg-neutral-600 border-neutral-700`;
   const btnActive = `${btnBase} bg-blue-700 hover:bg-blue-600 active:bg-blue-800 border-blue-600`;
   const btnDisabled = `${btnBase} bg-neutral-900 border-neutral-800 text-neutral-600 cursor-not-allowed`;

@@ -51,10 +51,20 @@ export type TimestampSettingsProps = {
 
 function parseDateFromText(text: string): Date | undefined {
   if (!text) return undefined;
-  
+
   const monthNames: Record<string, number> = {
-    jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
-    jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11
+    jan: 0,
+    feb: 1,
+    mar: 2,
+    apr: 3,
+    may: 4,
+    jun: 5,
+    jul: 6,
+    aug: 7,
+    sep: 8,
+    oct: 9,
+    nov: 10,
+    dec: 11,
   };
 
   let match = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -121,15 +131,12 @@ function OverlaySection({
   formatType?: "time" | "date";
   onAlignmentChange?: (textAlign: TextAlign) => void;
 }) {
-  const allFonts = [
-    ...FONT_FAMILIES,
-    ...customFonts.map((f) => ({ label: f, value: f })),
-  ];
+  const allFonts = [...FONT_FAMILIES, ...customFonts.map((f) => ({ label: f, value: f }))];
 
   const formats = formatType === "time" ? TIME_FORMATS : formatType === "date" ? DATE_FORMATS : [];
 
-  const [currentFormat, setCurrentFormat] = useState(() => 
-    formatType === "date" ? detectDateFormat(settings.text) : "YYYY-MM-DD"
+  const [currentFormat, setCurrentFormat] = useState(() =>
+    formatType === "date" ? detectDateFormat(settings.text) : "YYYY-MM-DD",
   );
 
   const parsedDate = useMemo(() => {
@@ -313,9 +320,12 @@ export default function TimestampSettings({
   onAddImageOverlay,
   onClose,
 }: TimestampSettingsProps) {
-  const [viewport, setViewport] = useState({ width: window.innerWidth, height: window.innerHeight });
+  const [viewport, setViewport] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
   const [rotationInput, setRotationInput] = useState(String(rotation));
-  
+
   useEffect(() => {
     const handleResize = () => {
       setViewport({ width: window.innerWidth, height: window.innerHeight });
@@ -414,7 +424,9 @@ export default function TimestampSettings({
             />
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-xs text-slate-600 mb-1">Offset X: {shadowOffsetX}px</label>
+                <label className="block text-xs text-slate-600 mb-1">
+                  Offset X: {shadowOffsetX}px
+                </label>
                 <input
                   type="range"
                   min={-10}
@@ -425,7 +437,9 @@ export default function TimestampSettings({
                 />
               </div>
               <div>
-                <label className="block text-xs text-slate-600 mb-1">Offset Y: {shadowOffsetY}px</label>
+                <label className="block text-xs text-slate-600 mb-1">
+                  Offset Y: {shadowOffsetY}px
+                </label>
                 <input
                   type="range"
                   min={-10}
@@ -465,7 +479,9 @@ export default function TimestampSettings({
                 +
               </button>
             </div>
-            <div className="mt-1 text-xs text-slate-600 text-center">{Math.round(scale * 100)}%</div>
+            <div className="mt-1 text-xs text-slate-600 text-center">
+              {Math.round(scale * 100)}%
+            </div>
           </div>
 
           <div className="border-t border-slate-200 pt-3">
@@ -537,9 +553,7 @@ export default function TimestampSettings({
               Upload Font (.ttf, .otf, .woff)
             </button>
             {customFonts.length > 0 && (
-              <div className="mt-2 text-xs text-slate-600">
-                Loaded: {customFonts.join(", ")}
-              </div>
+              <div className="mt-2 text-xs text-slate-600">Loaded: {customFonts.join(", ")}</div>
             )}
           </div>
 

@@ -63,8 +63,7 @@ export function useCbzLoader() {
 
         const imageEntries = Object.entries(files)
           .filter(
-            ([name]) =>
-              isImageFile(name) && !name.startsWith("__MACOSX") && !name.startsWith("."),
+            ([name]) => isImageFile(name) && !name.startsWith("__MACOSX") && !name.startsWith("."),
           )
           .sort(([a], [b]) => naturalSort(a, b));
 

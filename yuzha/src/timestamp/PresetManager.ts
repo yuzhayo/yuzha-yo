@@ -129,15 +129,27 @@ function migrateV2toV3(v2: TimestampPresetV2): TimestampPresetV3 {
 }
 
 function isV1Preset(preset: unknown): preset is TimestampPresetV1 {
-  return typeof preset === "object" && preset !== null && !("version" in preset) && "timeText" in preset;
+  return (
+    typeof preset === "object" && preset !== null && !("version" in preset) && "timeText" in preset
+  );
 }
 
 function isV2Preset(preset: unknown): preset is TimestampPresetV2 {
-  return typeof preset === "object" && preset !== null && "version" in preset && (preset as { version: number }).version === 2;
+  return (
+    typeof preset === "object" &&
+    preset !== null &&
+    "version" in preset &&
+    (preset as { version: number }).version === 2
+  );
 }
 
 function isV3Preset(preset: unknown): preset is TimestampPresetV3 {
-  return typeof preset === "object" && preset !== null && "version" in preset && (preset as { version: number }).version === 3;
+  return (
+    typeof preset === "object" &&
+    preset !== null &&
+    "version" in preset &&
+    (preset as { version: number }).version === 3
+  );
 }
 
 function migratePreset(preset: unknown): TimestampPresetV3 {
@@ -167,8 +179,7 @@ export function loadPresets(): TimestampPreset[] {
 export function savePresets(presets: TimestampPreset[]): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(presets));
-  } catch {
-  }
+  } catch {}
 }
 
 export type PresetInputV3 = {

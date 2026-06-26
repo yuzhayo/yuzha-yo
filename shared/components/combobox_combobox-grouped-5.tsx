@@ -14,11 +14,7 @@ import {
   CommandItem,
   CommandList,
 } from "@shared/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@shared/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@shared/components/ui/popover";
 
 export const title = "Collapsible Groups";
 
@@ -101,7 +97,7 @@ const Example = () => {
                         <Check
                           className={cn(
                             "mr-2 size-4",
-                            value === item.value ? "opacity-100" : "opacity-0"
+                            value === item.value ? "opacity-100" : "opacity-0",
                           )}
                         />
                         {item.label}

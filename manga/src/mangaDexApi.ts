@@ -26,28 +26,16 @@ export async function searchManga(query: string): Promise<MangaDexManga[]> {
   return data.data;
 }
 
-export async function getMangaChapters(
-  mangaId: string,
-  lang = "en",
-): Promise<MangaDexChapter[]> {
-  const parts = [
-    `limit=100`,
-    `order[chapter]=desc`,
-    `includes[]=scanlation_group`,
-  ];
+export async function getMangaChapters(mangaId: string, lang = "en"): Promise<MangaDexChapter[]> {
+  const parts = [`limit=100`, `order[chapter]=desc`, `includes[]=scanlation_group`];
   if (lang) parts.push(`translatedLanguage[]=${encodeURIComponent(lang)}`);
   const qs = parts.join("&");
 
-  const data = await apiFetch<{ data: MangaDexChapter[] }>(
-    `/manga/${mangaId}/feed?${qs}`,
-  );
+  const data = await apiFetch<{ data: MangaDexChapter[] }>(`/manga/${mangaId}/feed?${qs}`);
   return data.data;
 }
 
-export async function getChapterPages(
-  chapterId: string,
-  dataSaver = false,
-): Promise<string[]> {
+export async function getChapterPages(chapterId: string, dataSaver = false): Promise<string[]> {
   const data = await apiFetch<MangaDexPageData>(`/at-home/server/${chapterId}`);
   const { chapter } = data;
   const filenames = dataSaver ? chapter.dataSaver : chapter.data;
@@ -56,10 +44,7 @@ export async function getChapterPages(
   return filenames.map((f) => `/api/mangadex-cdn/${quality}/${chapter.hash}/${f}`);
 }
 
-export function getCoverUrl(
-  manga: MangaDexManga,
-  size: 256 | 512 | null = 256,
-): string | null {
+export function getCoverUrl(manga: MangaDexManga, size: 256 | 512 | null = 256): string | null {
   const rel = manga.relationships.find((r) => r.type === "cover_art");
   if (!rel?.attributes?.fileName) return null;
   const base = `https://uploads.mangadex.org/covers/${manga.id}/${rel.attributes.fileName}`;

@@ -60,8 +60,11 @@ export default function MainScreen({
     setThreeJsFailed(true);
   }, []);
 
-  const activeRenderer: RendererType =
-    threeJsFailed ? "canvas" : rendererMode === "auto" ? autoDetectedRenderer : rendererMode;
+  const activeRenderer: RendererType = threeJsFailed
+    ? "canvas"
+    : rendererMode === "auto"
+      ? autoDetectedRenderer
+      : rendererMode;
 
   const rendererLabel = React.useMemo(() => {
     const baseLabel = activeRenderer === "three" ? "Three.js WebGL Renderer" : "Canvas 2D Renderer";

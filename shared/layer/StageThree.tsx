@@ -240,8 +240,7 @@ async function mountThreeLayers(
     const { item, texture } = result;
     const { data, processors, metadata } = item;
     const { isStatic, hasAnimation, baseBounds, visibleByDefault } = metadata;
-    const blendMode =
-      data.blendMode === "additive" ? THREE.AdditiveBlending : THREE.NormalBlending;
+    const blendMode = data.blendMode === "additive" ? THREE.AdditiveBlending : THREE.NormalBlending;
     const opacity = data.opacity ?? 1;
     const useLuminanceAlpha = data.blendMode === "additive";
     const alphaTestValue = useLuminanceAlpha ? 0.1 : 0;

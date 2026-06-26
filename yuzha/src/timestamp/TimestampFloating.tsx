@@ -1,4 +1,12 @@
-import React, { forwardRef, useImperativeHandle, useRef, useState, useEffect, useLayoutEffect, useCallback } from "react";
+import React, {
+  forwardRef,
+  useImperativeHandle,
+  useRef,
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useCallback,
+} from "react";
 import FloatingBorderless from "@shared/floating/FloatingBorderless";
 import type { BoundingRect } from "@shared/floating/FloatingBorderless";
 import type { TextAlign, OverlayBounds } from "./types";
@@ -57,7 +65,7 @@ const TimestampFloating = forwardRef<TimestampFloatingRef, TimestampFloatingProp
       onSizeChange,
       showDebugBounds = false,
     },
-    ref
+    ref,
   ) => {
     const [relativePos, setRelativePos] = useState(initialRelativePos);
     const [size, setSize] = useState({ width: 100, height: 40 });
@@ -75,8 +83,12 @@ const TimestampFloating = forwardRef<TimestampFloatingRef, TimestampFloatingProp
       if (textRef.current) {
         const rect = textRef.current.getBoundingClientRect();
         const shadowActive = shadowEnabled === true;
-        const shadowBufferX = shadowActive ? Math.max(0, shadowBlur * 2 + Math.abs(shadowOffsetX) * 2) : 0;
-        const shadowBufferY = shadowActive ? Math.max(0, shadowBlur * 2 + Math.abs(shadowOffsetY) * 2) : 0;
+        const shadowBufferX = shadowActive
+          ? Math.max(0, shadowBlur * 2 + Math.abs(shadowOffsetX) * 2)
+          : 0;
+        const shadowBufferY = shadowActive
+          ? Math.max(0, shadowBlur * 2 + Math.abs(shadowOffsetY) * 2)
+          : 0;
         const newWidth = Math.ceil(rect.width) + shadowBufferX;
         const newHeight = Math.ceil(rect.height) + shadowBufferY;
         if (newWidth !== measuredWidth || newHeight !== size.height) {
@@ -97,7 +109,11 @@ const TimestampFloating = forwardRef<TimestampFloatingRef, TimestampFloatingProp
               width: newWidth,
               height: newHeight,
             };
-            const result = resolveAllCollisions(myBounds, otherOverlayBounds, prevRelativePosRef.current);
+            const result = resolveAllCollisions(
+              myBounds,
+              otherOverlayBounds,
+              prevRelativePosRef.current,
+            );
             if (result.hasCollision) {
               clampedRelX = Math.max(0, Math.min(result.x, maxX));
               clampedRelY = Math.max(0, Math.min(result.y, maxY));
@@ -110,19 +126,37 @@ const TimestampFloating = forwardRef<TimestampFloatingRef, TimestampFloatingProp
           }
         }
       }
-    }, [value, label, fontFamily, fontSize, boundingRect, relativePos, measuredWidth, size.height, shadowBlur, shadowOffsetX, shadowOffsetY, shadowEnabled, otherOverlayBounds, onSizeChange]);
+    }, [
+      value,
+      label,
+      fontFamily,
+      fontSize,
+      boundingRect,
+      relativePos,
+      measuredWidth,
+      size.height,
+      shadowBlur,
+      shadowOffsetX,
+      shadowOffsetY,
+      shadowEnabled,
+      otherOverlayBounds,
+      onSizeChange,
+    ]);
 
     useEffect(() => {
       prevBoundsRef.current = boundingRect;
     }, [boundingRect]);
 
-    const getBounds = useCallback((): OverlayBounds => ({
-      id,
-      x: relativePos.x,
-      y: relativePos.y,
-      width: size.width,
-      height: size.height,
-    }), [id, relativePos, size]);
+    const getBounds = useCallback(
+      (): OverlayBounds => ({
+        id,
+        x: relativePos.x,
+        y: relativePos.y,
+        width: size.width,
+        height: size.height,
+      }),
+      [id, relativePos, size],
+    );
 
     useImperativeHandle(ref, () => ({
       getRelativePosition: () => relativePos,
@@ -131,49 +165,63 @@ const TimestampFloating = forwardRef<TimestampFloatingRef, TimestampFloatingProp
       getBounds,
     }));
 
-    const handleChange = useCallback((absPos: { x: number; y: number }, _newSize: { width: number; height: number }) => {
-      let newRelativeX = absPos.x - boundingRect.x;
-      let newRelativeY = absPos.y - boundingRect.y;
+    const handleChange = useCallback(
+      (absPos: { x: number; y: number }, _newSize: { width: number; height: number }) => {
+        let newRelativeX = absPos.x - boundingRect.x;
+        let newRelativeY = absPos.y - boundingRect.y;
 
-      const myBounds = {
-        x: newRelativeX,
-        y: newRelativeY,
-        width: size.width,
-        height: size.height,
-      };
+        const myBounds = {
+          x: newRelativeX,
+          y: newRelativeY,
+          width: size.width,
+          height: size.height,
+        };
 
-      const result = resolveAllCollisions(myBounds, otherOverlayBounds, prevRelativePosRef.current);
-      newRelativeX = result.x;
-      newRelativeY = result.y;
+        const result = resolveAllCollisions(
+          myBounds,
+          otherOverlayBounds,
+          prevRelativePosRef.current,
+        );
+        newRelativeX = result.x;
+        newRelativeY = result.y;
 
-      if (result.hasCollision) {
-        otherOverlayBounds.forEach((other) => {
-          if (checkAABBCollision({ x: newRelativeX, y: newRelativeY, width: size.width, height: size.height }, other)) {
-            onCollision?.(other.id);
-          }
-        });
-      }
+        if (result.hasCollision) {
+          otherOverlayBounds.forEach((other) => {
+            if (
+              checkAABBCollision(
+                { x: newRelativeX, y: newRelativeY, width: size.width, height: size.height },
+                other,
+              )
+            ) {
+              onCollision?.(other.id);
+            }
+          });
+        }
 
-      const maxX = Math.max(0, boundingRect.width - size.width);
-      const maxY = Math.max(0, boundingRect.height - size.height);
-      newRelativeX = Math.max(0, Math.min(newRelativeX, maxX));
-      newRelativeY = Math.max(0, Math.min(newRelativeY, maxY));
+        const maxX = Math.max(0, boundingRect.width - size.width);
+        const maxY = Math.max(0, boundingRect.height - size.height);
+        newRelativeX = Math.max(0, Math.min(newRelativeX, maxX));
+        newRelativeY = Math.max(0, Math.min(newRelativeY, maxY));
 
-      const finalBounds = {
-        x: newRelativeX,
-        y: newRelativeY,
-        width: size.width,
-        height: size.height,
-      };
-      const stillColliding = otherOverlayBounds.some((other) => checkAABBCollision(finalBounds, other));
-      if (stillColliding) {
-        newRelativeX = prevRelativePosRef.current.x;
-        newRelativeY = prevRelativePosRef.current.y;
-      }
+        const finalBounds = {
+          x: newRelativeX,
+          y: newRelativeY,
+          width: size.width,
+          height: size.height,
+        };
+        const stillColliding = otherOverlayBounds.some((other) =>
+          checkAABBCollision(finalBounds, other),
+        );
+        if (stillColliding) {
+          newRelativeX = prevRelativePosRef.current.x;
+          newRelativeY = prevRelativePosRef.current.y;
+        }
 
-      setIsColliding(result.hasCollision || stillColliding);
-      setRelativePos({ x: newRelativeX, y: newRelativeY });
-    }, [boundingRect, size, otherOverlayBounds, onCollision]);
+        setIsColliding(result.hasCollision || stillColliding);
+        setRelativePos({ x: newRelativeX, y: newRelativeY });
+      },
+      [boundingRect, size, otherOverlayBounds, onCollision],
+    );
 
     const absolutePos = {
       x: boundingRect.x + relativePos.x,
@@ -203,15 +251,19 @@ const TimestampFloating = forwardRef<TimestampFloatingRef, TimestampFloatingProp
 
     const containerStyle: React.CSSProperties = {
       transition: "outline 0.15s ease-out",
-      ...(isColliding ? {
-        outline: "2px solid rgba(255, 100, 100, 0.8)",
-        outlineOffset: "-2px",
-        borderRadius: "2px",
-      } : {}),
-      ...(showDebugBounds && !isColliding ? {
-        outline: "1px dashed rgba(0, 255, 255, 0.6)",
-        outlineOffset: "0px",
-      } : {}),
+      ...(isColliding
+        ? {
+            outline: "2px solid rgba(255, 100, 100, 0.8)",
+            outlineOffset: "-2px",
+            borderRadius: "2px",
+          }
+        : {}),
+      ...(showDebugBounds && !isColliding
+        ? {
+            outline: "1px dashed rgba(0, 255, 255, 0.6)",
+            outlineOffset: "0px",
+          }
+        : {}),
     };
 
     return (
@@ -232,7 +284,7 @@ const TimestampFloating = forwardRef<TimestampFloatingRef, TimestampFloatingProp
         </div>
       </FloatingBorderless>
     );
-  }
+  },
 );
 
 TimestampFloating.displayName = "TimestampFloating";

@@ -1,5 +1,15 @@
 import React, { useState, useMemo, useEffect, Suspense, Component, type ReactNode } from "react";
-import { CheckIcon, CopyIcon, ChevronLeftIcon, ChevronRightIcon, SearchIcon, AlertCircleIcon, SunIcon, MoonIcon, RefreshCwIcon } from "lucide-react";
+import {
+  CheckIcon,
+  CopyIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  SearchIcon,
+  AlertCircleIcon,
+  SunIcon,
+  MoonIcon,
+  RefreshCwIcon,
+} from "lucide-react";
 import { TooltipProvider } from "@shared/components/ui/tooltip";
 import "./componentViewer.css";
 
@@ -17,7 +27,9 @@ type ComponentInfo = {
 };
 
 // Path fixed for standalone: componentViewer/src/ is 2 levels from project root
-const componentModules = import.meta.glob("../../shared/components/*.tsx", { eager: false }) as Record<string, () => Promise<{ default: React.ComponentType; title?: string }>>;
+const componentModules = import.meta.glob("../../shared/components/*.tsx", {
+  eager: false,
+}) as Record<string, () => Promise<{ default: React.ComponentType; title?: string }>>;
 
 function parseComponentInfo(path: string): ComponentInfo {
   const fileName = path.split("/").pop() || "";
@@ -202,12 +214,17 @@ export default function ComponentViewerScreen({ onBack }: ComponentViewerScreenP
   useEffect(() => {
     if (!selectedComponent && filteredComponents.length > 0) {
       setSelectedComponent(filteredComponents[0]!);
-    } else if (selectedComponent && !filteredComponents.find((c) => c.file === selectedComponent.file)) {
+    } else if (
+      selectedComponent &&
+      !filteredComponents.find((c) => c.file === selectedComponent.file)
+    ) {
       setSelectedComponent(filteredComponents[0] || null);
     }
   }, [filteredComponents, selectedComponent]);
 
-  const filePath = selectedComponent ? `@shared/components/${selectedComponent.file.replace('.tsx', '')}` : '';
+  const filePath = selectedComponent
+    ? `@shared/components/${selectedComponent.file.replace(".tsx", "")}`
+    : "";
 
   return (
     <div className="flex h-screen bg-slate-900">

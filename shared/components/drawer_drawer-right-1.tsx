@@ -22,14 +22,11 @@ const Example = () => (
     <DrawerContent>
       <DrawerHeader>
         <DrawerTitle>Drawer Title</DrawerTitle>
-        <DrawerDescription>
-          This drawer slides in from the right side.
-        </DrawerDescription>
+        <DrawerDescription>This drawer slides in from the right side.</DrawerDescription>
       </DrawerHeader>
       <div className="p-4">
         <p className="text-muted-foreground text-sm">
-          Right-side drawers are great for supplementary content, settings, or
-          detail views.
+          Right-side drawers are great for supplementary content, settings, or detail views.
         </p>
       </div>
       <DrawerFooter>

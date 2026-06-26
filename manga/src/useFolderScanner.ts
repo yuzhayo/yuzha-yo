@@ -54,10 +54,7 @@ export function useFolderScanner() {
           const chapters: ScannedChapter[] = [];
           for await (const [chName, chHandle] of (handle as any).entries()) {
             if (chName.startsWith(".")) continue;
-            if (
-              (chHandle as FileSystemHandle).kind === "file" &&
-              isCbzFile(chName)
-            ) {
+            if ((chHandle as FileSystemHandle).kind === "file" && isCbzFile(chName)) {
               const histKey = `folder::${name}::${chName}`;
               const historyEntry = history.find((e) => e.key === histKey);
               chapters.push({
@@ -76,10 +73,7 @@ export function useFolderScanner() {
               coverHandle: chapters[0]?.fileHandle,
             });
           }
-        } else if (
-          (handle as FileSystemHandle).kind === "file" &&
-          isCbzFile(name)
-        ) {
+        } else if ((handle as FileSystemHandle).kind === "file" && isCbzFile(name)) {
           const histKey = `folder::__root__::${name}`;
           const historyEntry = history.find((e) => e.key === histKey);
           rootCbzFiles.push({

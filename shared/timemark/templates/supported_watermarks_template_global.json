@@ -114,7 +114,8 @@
         "title": "Notes",
         "switchStatus": false,
         "userCustom": true
-      },{
+      },
+      {
         "content": "",
         "editType": 0,
         "id": 640,
@@ -261,7 +262,8 @@
         "title": "Notes",
         "switchStatus": false,
         "userCustom": true
-      },{
+      },
+      {
         "content": "",
         "editType": 0,
         "id": 640,
@@ -458,7 +460,8 @@
         "title": "☎️",
         "switchStatus": true,
         "userCustom": true
-      },{
+      },
+      {
         "content": "",
         "editType": 0,
         "id": 640,
@@ -804,7 +807,8 @@
         "title": "Notes",
         "switchStatus": false,
         "userCustom": false
-      },{
+      },
+      {
         "content": "",
         "editType": 0,
         "id": 640,
@@ -1414,7 +1418,8 @@
         "title": "Notes",
         "switchStatus": false,
         "userCustom": true
-      },{
+      },
+      {
         "content": "",
         "editType": 0,
         "id": 640,
@@ -1589,7 +1594,8 @@
         "title": "Notes",
         "switchStatus": false,
         "userCustom": true
-      },{
+      },
+      {
         "content": "",
         "editType": 0,
         "id": 640,
@@ -2241,8 +2247,7 @@
       "fontScale": "1.0",
       "widthScale": "1.0"
     },
-    "logoList": [
-    ],
+    "logoList": [],
     "logo": {
       "id": 120,
       "switchStatus": false,
