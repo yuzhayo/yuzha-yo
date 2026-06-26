@@ -1,0 +1,429 @@
+ROLE: You are a precise code migration agent. Do exactly what is listed.
+Do not add files, packages, or features not explicitly listed here.
+Do not run npm install. Do not start any dev server.
+Work inside manga/ only.
+
+You are on Phase 5. Phases 1–4 are complete. Do not touch any Phase 1–4 files.
+
+═══ TASK 1 of 5: Create manga/src/downloader/DownloaderApp.tsx ═══
+
+Create the folder manga/src/downloader/ and create this file:
+
+import React, { useState, useEffect, useRef } from "react";
+import type { Direction, Phase, Chapter } from "../types";
+import JobCard from "./JobCard";
+
+interface Job {
+  id: string;
+  startUrl: string;
+  direction: Direction;
+  phase: Phase;
+  discoverCurrent?: number;
+  discoverTotal?: number;
+  chapters: Map<string, Chapter>;
+  chapterOrder: string[];
+  done: number;
+  total: number;
+  message?: string;
+  outputDir: string;
+}
+
+export default function DownloaderApp() {
+  const [url, setUrl] = useState("");
+  const [direction, setDirection] = useState<Direction>("next");
+  const [count, setCount] = useState(1);
+  const [outputDir, setOutputDir] = useState("");
+  const [jobs, setJobs] = useState<Map<string, Job>>(new Map());
+  const subscribedRef = useRef(false);
+
+  useEffect(() => {
+    if (subscribedRef.current) return;
+    subscribedRef.current = true;
+    window.api.onJobEvent((event) => {
+      setJobs((prev) => {
+        const next = new Map(prev);
+        const job = next.get(event.jobId);
+        if (!job) return prev;
+        if (event.type === "phase") {
+          job.phase = event.phase;
+          if (event.chapters) {
+            job.chapterOrder = event.chapters.map((c) => c.url);
+            for (const c of event.chapters) {
+              job.chapters.set(c.url, { ...c, status: "pending" });
+            }
+          }
+        } else if (event.type === "discover") {
+          job.discoverCurrent = event.current;
+          job.discoverTotal = event.total;
+        } else if (event.type === "chapter") {
+          job.chapters.set(event.chapter.url, event.chapter);
+          if (!job.chapterOrder.includes(event.chapter.url)) {
+            job.chapterOrder.push(event.chapter.url);
+          }
+        } else if (event.type === "progress") {
+          job.done = event.done;
+          job.total = event.total;
+        } else if (event.type === "done") {
+          job.phase = "done";
+          job.message = event.message;
+        } else if (event.type === "error") {
+          job.phase = "error";
+          job.message = event.message;
+        }
+        next.set(event.jobId, { ...job });
+        return next;
+      });
+    });
+  }, []);
+
+  async function handlePickFolder() {
+    const dir = await window.api.pickFolder();
+    if (dir) setOutputDir(dir);
+  }
+
+  async function handleStart() {
+    if (!url.trim() || !outputDir) return;
+    const jobId = await window.api.startJob({
+      startUrl: url.trim(),
+      direction,
+      count,
+      outputDir,
+    });
+    setJobs((prev) => {
+      const next = new Map(prev);
+      next.set(jobId, {
+        id: jobId,
+        startUrl: url.trim(),
+        direction,
+        phase: "discovering",
+        chapters: new Map(),
+        chapterOrder: [],
+        done: 0,
+        total: count,
+        outputDir,
+      });
+      return next;
+    });
+    setUrl("");
+  }
+
+  const jobList = Array.from(jobs.values()).reverse();
+
+  return (
+    <div className="h-full flex flex-col bg-neutral-950 text-white overflow-hidden">
+      {/* Input form */}
+      <div className="flex-shrink-0 p-4 border-b border-neutral-800 bg-neutral-900 space-y-3">
+        <div className="flex gap-2">
+          <input
+            type="url"
+            placeholder="Chapter URL to start from..."
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            className="flex-1 bg-neutral-800 border border-neutral-700 rounded px-3 py-2 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-blue-500"
+          />
+          <select
+            value={direction}
+            onChange={(e) => setDirection(e.target.value as Direction)}
+            className="bg-neutral-800 border border-neutral-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+          >
+            <option value="next">→ Next</option>
+            <option value="prev">← Prev</option>
+          </select>
+          <input
+            type="number"
+            min={1}
+            max={100}
+            value={count}
+            onChange={(e) => setCount(Math.max(1, parseInt(e.target.value) || 1))}
+            className="w-20 bg-neutral-800 border border-neutral-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+          />
+        </div>
+        <div className="flex gap-2 items-center">
+          <button
+            type="button"
+            onClick={handlePickFolder}
+            className="px-3 py-2 bg-neutral-700 hover:bg-neutral-600 rounded text-sm text-white transition-colors"
+          >
+            📁 Choose Folder
+          </button>
+          <span className="flex-1 text-sm text-neutral-400 truncate">
+            {outputDir || "No folder selected"}
+          </span>
+          <button
+            type="button"
+            onClick={handleStart}
+            disabled={!url.trim() || !outputDir}
+            className="px-4 py-2 bg-rose-600 hover:bg-rose-500 disabled:opacity-40 disabled:cursor-not-allowed rounded text-sm font-medium text-white transition-colors"
+          >
+            ⬇ Start
+          </button>
+        </div>
+      </div>
+
+      {/* Job list */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        {jobList.length === 0 && (
+          <p className="text-neutral-500 text-sm text-center mt-8">
+            No jobs yet. Enter a chapter URL above to start downloading.
+          </p>
+        )}
+        {jobList.map((job) => (
+          <JobCard
+            key={job.id}
+            job={job}
+            onCancel={() => window.api.cancelJob(job.id)}
+            onOpenFolder={() => window.api.openFolder(job.outputDir)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+═══ TASK 2 of 5: Create manga/src/downloader/JobCard.tsx ═══
+
+Create manga/src/downloader/JobCard.tsx:
+
+import React, { useState } from "react";
+import type { Chapter, Phase } from "../types";
+
+interface Job {
+  id: string;
+  startUrl: string;
+  phase: Phase;
+  discoverCurrent?: number;
+  discoverTotal?: number;
+  chapters: Map<string, Chapter>;
+  chapterOrder: string[];
+  done: number;
+  total: number;
+  message?: string;
+  outputDir: string;
+}
+
+interface Props {
+  job: Job;
+  onCancel: () => void;
+  onOpenFolder: () => void;
+}
+
+const STATUS_ICON: Record<string, string> = {
+  pending: "⏳",
+  loading: "🌐",
+  scrolling: "📜",
+  fetching: "⬇️",
+  packaging: "📦",
+  done: "✅",
+  error: "❌",
+};
+
+const STATUS_COLOR: Record<string, string> = {
+  pending: "text-slate-500",
+  loading: "text-slate-400",
+  scrolling: "text-amber-400",
+  fetching: "text-blue-400",
+  packaging: "text-violet-400",
+  done: "text-emerald-400",
+  error: "text-red-400",
+};
+
+const PHASE_BADGE: Record<Phase, string> = {
+  discovering: "bg-amber-600 text-white",
+  downloading: "bg-blue-600 text-white",
+  done: "bg-emerald-600 text-white",
+  error: "bg-red-700 text-white",
+};
+
+export default function JobCard({ job, onCancel, onOpenFolder }: Props) {
+  const [expanded, setExpanded] = useState(true);
+  const pct = job.total > 0 ? Math.round((job.done / job.total) * 100) : 0;
+  const isActive = job.phase === "discovering" || job.phase === "downloading";
+
+  return (
+    <div className="bg-neutral-900 border border-neutral-800 rounded-lg overflow-hidden">
+      {/* Progress bar */}
+      <div className="h-1 bg-neutral-800">
+        <div
+          className="h-full bg-rose-500 transition-all duration-300"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+
+      {/* Header */}
+      <div className="flex items-center gap-2 px-4 py-3">
+        <span className={`text-xs px-2 py-0.5 rounded font-medium ${PHASE_BADGE[job.phase]}`}>
+          {job.phase === "discovering"
+            ? `Discovering${job.discoverTotal ? ` ${job.discoverCurrent}/${job.discoverTotal}` : "…"}`
+            : job.phase.charAt(0).toUpperCase() + job.phase.slice(1)}
+        </span>
+        <span className="flex-1 text-sm text-neutral-300 truncate">{job.startUrl}</span>
+        <span className="text-xs text-neutral-500">{job.done}/{job.total}</span>
+        {isActive && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="text-xs px-2 py-1 bg-neutral-700 hover:bg-neutral-600 rounded text-neutral-300 transition-colors"
+          >
+            Cancel
+          </button>
+        )}
+        {!isActive && (
+          <button
+            type="button"
+            onClick={onOpenFolder}
+            className="text-xs px-2 py-1 bg-neutral-700 hover:bg-neutral-600 rounded text-neutral-300 transition-colors"
+          >
+            📂 Open
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="text-neutral-500 hover:text-white transition-colors text-xs"
+        >
+          {expanded ? "▲" : "▼"}
+        </button>
+      </div>
+
+      {/* Chapter list */}
+      {expanded && job.chapterOrder.length > 0 && (
+        <div className="border-t border-neutral-800 max-h-64 overflow-y-auto">
+          {job.chapterOrder.map((url) => {
+            const ch = job.chapters.get(url);
+            if (!ch) return null;
+            return (
+              <div key={url} className="flex items-center gap-2 px-4 py-1.5 border-b border-neutral-800/50">
+                <span className={`text-sm ${STATUS_COLOR[ch.status] ?? "text-slate-500"}`}>
+                  {STATUS_ICON[ch.status] ?? "⏳"}
+                </span>
+                <span className="flex-1 text-xs text-neutral-300 truncate">{ch.title || url}</span>
+                {ch.pages != null && (
+                  <span className="text-xs text-neutral-500">{ch.pages}p</span>
+                )}
+                {ch.fetchTotal != null && ch.fetchDone != null && ch.status === "fetching" && (
+                  <span className="text-xs text-neutral-500">
+                    {ch.fetchDone}/{ch.fetchTotal}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Message (done/error) */}
+      {job.message && (
+        <div className={`px-4 py-2 text-xs border-t border-neutral-800 ${job.phase === "error" ? "text-red-400" : "text-emerald-400"}`}>
+          {job.message}
+        </div>
+      )}
+    </div>
+  );
+}
+
+═══ TASK 3 of 5: Create manga/src/App.tsx ═══
+
+Create manga/src/App.tsx with this EXACT content:
+
+import React, { useState } from "react";
+import ReaderScreen from "./reader/ReaderScreen";
+import DownloaderApp from "./downloader/DownloaderApp";
+
+type Tab = "reader" | "downloader";
+
+export default function App() {
+  const [tab, setTab] = useState<Tab>("reader");
+
+  return (
+    <div className="flex flex-col w-screen h-screen bg-neutral-950 text-white overflow-hidden">
+      <div className="flex border-b border-neutral-800 bg-neutral-900 flex-shrink-0">
+        <button
+          type="button"
+          onClick={() => setTab("reader")}
+          className={`px-5 py-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
+            tab === "reader"
+              ? "border-blue-500 text-white"
+              : "border-transparent text-neutral-400 hover:text-white"
+          }`}
+        >
+          📖 Reader
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab("downloader")}
+          className={`px-5 py-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
+            tab === "downloader"
+              ? "border-rose-500 text-white"
+              : "border-transparent text-neutral-400 hover:text-white"
+          }`}
+        >
+          ⬇ Downloader
+        </button>
+      </div>
+      <div className={`flex-1 overflow-hidden ${tab === "reader" ? "block" : "hidden"}`}>
+        <ReaderScreen />
+      </div>
+      <div className={`flex-1 overflow-hidden ${tab === "downloader" ? "block" : "hidden"}`}>
+        <DownloaderApp />
+      </div>
+    </div>
+  );
+}
+
+═══ TASK 4 of 5: Replace manga/src/main.tsx ═══
+
+Replace the ENTIRE content of manga/src/main.tsx with:
+
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import "./index.css";
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+═══ TASK 5 of 5: Replace manga/src/index.css ═══
+
+Replace the ENTIRE content of manga/src/index.css with:
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #0f0f1a;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+═══ BUG PREVENTION NOTES ═══
+
+BUG-09: window.api undefined — The preload path in electron/main/index.ts must use
+__dirname from fileURLToPath. Do NOT change any Phase 2 files. Do NOT add console.log
+or any other debugging to downloader files.
+
+BUG-10: Double scrollbars — App.tsx tab panels use "overflow-hidden". The inner
+components (ReaderScreen, DownloaderApp) manage their own scroll. Do NOT add
+overflow-y-auto to the tab panel divs in App.tsx.
+
+Do NOT import window.api anywhere except inside manga/src/downloader/. The Reader
+files must have zero window.api references.
+
+═══ VERIFICATION — Run these shell commands and show the output ═══
+
+1.  ls manga/src/
+2.  ls manga/src/downloader/
+3.  cat manga/src/main.tsx
+4.  grep -n "window.api" manga/src/App.tsx || echo "CLEAN"
+5.  grep -n "window.api" manga/src/reader/ReaderScreen.tsx || echo "CLEAN"
+6.  grep -rn "window.api" manga/src/downloader/
+7.  grep -n "onJobEvent" manga/src/downloader/DownloaderApp.tsx
+8.  grep -n "subscribedRef" manga/src/downloader/DownloaderApp.tsx
+9.  grep -n "hidden" manga/src/App.tsx
+10. cd manga && npx tsc -p tsconfig.web.json --noEmit 2>&1 | head -40
+
+Stop here. Do not proceed to Phase 6. Report the output of all 10 commands.
