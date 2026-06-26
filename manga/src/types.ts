@@ -6,74 +6,65 @@ export type CbzLoadResult =
   | { status: "ready"; pages: string[]; fileName: string }
   | { status: "error"; message: string };
 
-export type HistoryEntry = {
+export interface HistoryEntry {
   key: string;
+  source: "file" | "folder";
+  identifier: string;
   displayTitle: string;
   seriesName?: string;
   page: number;
   totalPages: number;
-  lastRead: number;
-  source: "file" | "folder" | "mangadex";
-};
+  savedAt: number;
+}
 
-export type ScannedChapter = {
+export interface ScannedChapter {
   name: string;
   fileName: string;
   fileHandle: FileSystemFileHandle;
   historyEntry?: HistoryEntry;
-};
+}
 
-export type ScannedSeries = {
+export interface ScannedSeries {
   name: string;
   chapters: ScannedChapter[];
   coverHandle?: FileSystemFileHandle;
-};
+}
 
-export type MangaDexManga = {
-  id: string;
-  type: "manga";
-  attributes: {
-    title: Record<string, string>;
-    description: Record<string, string>;
-    status: "ongoing" | "completed" | "hiatus" | "cancelled";
-    contentRating: "safe" | "suggestive" | "erotica" | "pornographic";
-    tags: Array<{
-      id: string;
-      attributes: { name: Record<string, string>; group: string };
-    }>;
-    lastVolume: string | null;
-    lastChapter: string | null;
-  };
-  relationships: Array<{
-    id: string;
-    type: string;
-    attributes?: { fileName?: string; name?: string };
-  }>;
-};
+export type Direction = "next" | "prev";
 
-export type MangaDexChapter = {
-  id: string;
-  type: "chapter";
-  attributes: {
-    title: string | null;
-    volume: string | null;
-    chapter: string | null;
-    translatedLanguage: string;
-    publishAt: string;
-    pages: number;
-  };
-  relationships: Array<{
-    id: string;
-    type: string;
-    attributes?: { name?: string };
-  }>;
-};
+export type Phase = "discovering" | "downloading" | "done" | "error";
 
-export type MangaDexPageData = {
-  baseUrl: string;
-  chapter: {
-    hash: string;
-    data: string[];
-    dataSaver: string[];
-  };
-};
+export type ChapterStatus =
+  | "pending"
+  | "loading"
+  | "scrolling"
+  | "fetching"
+  | "packaging"
+  | "done"
+  | "error";
+
+export interface Chapter {
+  url: string;
+  title: string;
+  status: ChapterStatus;
+  fetchDone?: number;
+  fetchTotal?: number;
+  pages?: number;
+  file?: string;
+  error?: string;
+}
+
+export interface StartJobOpts {
+  startUrl: string;
+  direction: Direction;
+  count: number;
+  outputDir: string;
+}
+
+export type JobEvent =
+  | { type: "phase"; jobId: string; phase: Phase; chapters?: Pick<Chapter, "url" | "title">[] }
+  | { type: "discover"; jobId: string; current: number; total: number; url: string }
+  | { type: "chapter"; jobId: string; chapter: Chapter }
+  | { type: "progress"; jobId: string; done: number; total: number }
+  | { type: "done"; jobId: string; message: string; outputDir: string }
+  | { type: "error"; jobId: string; message: string };
