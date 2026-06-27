@@ -2,7 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import type { Direction, Phase, Chapter } from "../types";
 import JobCard from "./JobCard";
 
-interface Job {
+const SHOW_WINDOW_KEY = "downloader.showScraperWindow";
+const OVERWRITE_KEY = "downloader.overwriteExisting";
+
+export interface Job {
   id: string;
   startUrl: string;
   direction: Direction;
@@ -15,6 +18,8 @@ interface Job {
   total: number;
   message?: string;
   outputDir: string;
+  succeeded?: number;
+  failed?: number;
 }
 
 export default function DownloaderApp() {
@@ -22,8 +27,38 @@ export default function DownloaderApp() {
   const [direction, setDirection] = useState<Direction>("next");
   const [count, setCount] = useState(1);
   const [outputDir, setOutputDir] = useState("");
+  const [showScraperWindow, setShowScraperWindow] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(SHOW_WINDOW_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
+  const [overwrite, setOverwrite] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(OVERWRITE_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
   const [jobs, setJobs] = useState<Map<string, Job>>(new Map());
   const subscribedRef = useRef(false);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(SHOW_WINDOW_KEY, showScraperWindow ? "1" : "0");
+    } catch {
+      // ignore
+    }
+  }, [showScraperWindow]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(OVERWRITE_KEY, overwrite ? "1" : "0");
+    } catch {
+      // ignore
+    }
+  }, [overwrite]);
 
   useEffect(() => {
     if (subscribedRef.current) return;
@@ -55,6 +90,8 @@ export default function DownloaderApp() {
         } else if (event.type === "done") {
           job.phase = "done";
           job.message = event.message;
+          job.succeeded = event.succeeded;
+          job.failed = event.failed;
         } else if (event.type === "error") {
           job.phase = "error";
           job.message = event.message;
@@ -77,6 +114,8 @@ export default function DownloaderApp() {
       direction,
       count,
       outputDir,
+      showScraperWindow,
+      onConflict: overwrite ? "overwrite" : "rename",
     });
     setJobs((prev) => {
       const next = new Map(prev);
@@ -138,6 +177,34 @@ export default function DownloaderApp() {
           <span className="flex-1 text-sm text-neutral-400 truncate">
             {outputDir || "No folder selected"}
           </span>
+          <label
+            className="flex items-center gap-1.5 text-xs text-neutral-300 cursor-pointer select-none px-2 py-1 rounded hover:bg-neutral-800"
+            title="Show the hidden browser window that scrapes the site (useful for debugging or solving Cloudflare challenges)"
+          >
+            <input
+              type="checkbox"
+              checked={showScraperWindow}
+              onChange={(e) => setShowScraperWindow(e.target.checked)}
+              className="accent-rose-500"
+            />
+            🔍 Show scraper
+          </label>
+          <label
+            className="flex items-center gap-1.5 text-xs text-neutral-300 cursor-pointer select-none px-2 py-1 rounded hover:bg-neutral-800"
+            title={
+              overwrite
+                ? "Existing .cbz files will be REPLACED."
+                : "Existing .cbz files are kept; new file gets a numbered suffix like ' (2).cbz'."
+            }
+          >
+            <input
+              type="checkbox"
+              checked={overwrite}
+              onChange={(e) => setOverwrite(e.target.checked)}
+              className="accent-rose-500"
+            />
+            {overwrite ? "💾 Overwrite" : "📝 Rename (N)"}
+          </label>
           <button
             type="button"
             onClick={handleStart}

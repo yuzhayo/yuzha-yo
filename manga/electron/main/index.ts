@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, shell } from "electron";
+import { app, BrowserWindow, ipcMain, dialog, shell, Menu, MenuItem } from "electron";
 import path from "path";
 import { fileURLToPath } from "node:url";
 import { runJob } from "./downloader";
@@ -41,6 +41,27 @@ function createMainWindow(): void {
 
   mainWindow.on("closed", () => {
     mainWindow = null;
+  });
+
+  // Native context menu (right-click → cut/copy/paste/select-all).
+  // Electron renderers do NOT have a default context menu, so paste, copy,
+  // etc. are silently ignored on right-click unless this handler is attached.
+  mainWindow.webContents.on("context-menu", (_e, params) => {
+    const menu = new Menu();
+    if (params.isEditable) {
+      menu.append(new MenuItem({ role: "undo" }));
+      menu.append(new MenuItem({ role: "redo" }));
+      menu.append(new MenuItem({ type: "separator" }));
+      menu.append(new MenuItem({ role: "cut" }));
+      menu.append(new MenuItem({ role: "copy" }));
+      menu.append(new MenuItem({ role: "paste" }));
+      menu.append(new MenuItem({ role: "selectAll" }));
+    } else if (params.selectionText && params.selectionText.trim().length > 0) {
+      menu.append(new MenuItem({ role: "copy" }));
+    }
+    if (menu.items.length > 0 && mainWindow) {
+      menu.popup({ window: mainWindow });
+    }
   });
 }
 

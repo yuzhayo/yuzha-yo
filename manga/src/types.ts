@@ -59,6 +59,8 @@ export interface StartJobOpts {
   direction: Direction;
   count: number;
   outputDir: string;
+  showScraperWindow?: boolean;
+  onConflict?: "rename" | "overwrite";
 }
 
 export type JobEvent =
@@ -66,5 +68,5 @@ export type JobEvent =
   | { type: "discover"; jobId: string; current: number; total: number; url: string }
   | { type: "chapter"; jobId: string; chapter: Chapter }
   | { type: "progress"; jobId: string; done: number; total: number }
-  | { type: "done"; jobId: string; message: string; outputDir: string }
+  | { type: "done"; jobId: string; message: string; outputDir: string; succeeded: number; failed: number }
   | { type: "error"; jobId: string; message: string };
