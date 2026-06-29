@@ -1,6 +1,6 @@
 import { BrowserWindow } from "electron";
 import JSZip from "jszip";
-import { writeFileSync, mkdirSync, existsSync } from "fs";
+import { writeFileSync, mkdirSync, existsSync, constants } from "fs";
 import path from "path";
 import type { Chapter, StartJobOpts, JobEvent } from "../../src/types";
 

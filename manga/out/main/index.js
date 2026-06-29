@@ -2,7 +2,7 @@ import { BrowserWindow, app, ipcMain, dialog, shell, Menu, MenuItem } from "elec
 import path from "path";
 import { fileURLToPath } from "node:url";
 import JSZip from "jszip";
-import { mkdirSync, writeFileSync, existsSync } from "fs";
+import { mkdirSync, writeFileSync, existsSync, constants } from "fs";
 import __cjs_mod__ from "node:module";
 const __filename = import.meta.filename;
 const __dirname = import.meta.dirname;
