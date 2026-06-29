@@ -60,7 +60,6 @@ async function loadPage(win, url) {
 }
 async function scrollAndCollect(win) {
   log("scroll: reset to top");
-  await win.webContents.executeJavaScript(`window.scrollTo(0, 0)`);
   await win.webContents.executeJavaScript(`
     (function () {
       try {
@@ -71,6 +70,45 @@ async function scrollAndCollect(win) {
     })();
     undefined;
   `);
+  await win.webContents.executeJavaScript(`
+    (function () {
+      try {
+        const all = document.querySelectorAll('*');
+        let best = document.scrollingElement || document.documentElement;
+        let bestScore = best.scrollHeight - best.clientHeight;
+        for (const el of all) {
+          const style = getComputedStyle(el);
+          const overflowY = style.overflowY;
+          if ((overflowY === 'auto' || overflowY === 'scroll') &&
+              el.scrollHeight - el.clientHeight > bestScore &&
+              el.clientHeight > 200) {
+            best = el;
+            bestScore = el.scrollHeight - el.clientHeight;
+          }
+        }
+        window.__scrapeScroller = best;
+        window.__scrapeIsWindowScroll = (best === document.scrollingElement || best === document.documentElement);
+      } catch (e) {
+        window.__scrapeScroller = document.scrollingElement || document.documentElement;
+        window.__scrapeIsWindowScroll = true;
+      }
+    })();
+    undefined;
+  `);
+  const scrollerInfo = await win.webContents.executeJavaScript(`
+    ({ isWindowScroll: !!window.__scrapeIsWindowScroll })
+  `);
+  log(`scroll: target = ${scrollerInfo.isWindowScroll ? "window/document" : "inner scrollable element"}`);
+  await win.webContents.executeJavaScript(`
+    (function () {
+      if (window.__scrapeIsWindowScroll) {
+        window.scrollTo(0, 0);
+      } else if (window.__scrapeScroller) {
+        window.__scrapeScroller.scrollTop = 0;
+      }
+    })();
+    undefined;
+  `);
   await sleep(800);
   let lastHeight = 0;
   let lastImgCount = 0;
@@ -78,22 +116,37 @@ async function scrollAndCollect(win) {
   let iteration = 0;
   while (stableRuns < CFG.STABLE_NEED && iteration < CFG.SCROLL_MAX_ITERATIONS) {
     iteration++;
-    await win.webContents.executeJavaScript(
-      `window.scrollBy(0, Math.max(400, Math.floor(window.innerHeight * 0.8)));`
-    );
+    await win.webContents.executeJavaScript(`
+      (function () {
+        const step = Math.max(400, Math.floor(window.innerHeight * 0.8));
+        if (window.__scrapeIsWindowScroll) {
+          window.scrollBy(0, step);
+        } else if (window.__scrapeScroller) {
+          window.__scrapeScroller.scrollTop += step;
+        }
+      })();
+      undefined;
+    `);
     await sleep(CFG.SCROLL_DELAY_MS);
     const sample = await win.webContents.executeJavaScript(`
-      ({
-        height: document.documentElement.scrollHeight,
-        imgs: Array.from(document.querySelectorAll('img')).filter(function(img) {
-          return img.currentSrc || img.src ||
-            img.getAttribute('data-src') ||
-            img.getAttribute('data-lazy-src') ||
-            img.getAttribute('data-original') ||
-            img.getAttribute('srcset');
-        }).length,
-        atBottom: (window.scrollY + window.innerHeight) >= (document.documentElement.scrollHeight - 100)
-      })
+      (function () {
+        const el = window.__scrapeIsWindowScroll
+          ? document.documentElement
+          : window.__scrapeScroller;
+        const scrollTop = window.__scrapeIsWindowScroll ? window.scrollY : el.scrollTop;
+        const clientHeight = window.__scrapeIsWindowScroll ? window.innerHeight : el.clientHeight;
+        return {
+          height: el.scrollHeight,
+          imgs: Array.from(document.querySelectorAll('img')).filter(function(img) {
+            return img.currentSrc || img.src ||
+              img.getAttribute('data-src') ||
+              img.getAttribute('data-lazy-src') ||
+              img.getAttribute('data-original') ||
+              img.getAttribute('srcset');
+          }).length,
+          atBottom: (scrollTop + clientHeight) >= (el.scrollHeight - 100)
+        };
+      })()
     `);
     if (sample.atBottom && sample.height === lastHeight && sample.imgs === lastImgCount) {
       stableRuns++;
@@ -121,6 +174,16 @@ async function scrollAndCollect(win) {
     })()
   `);
   await sleep(1e3);
+  await win.webContents.executeJavaScript(`
+    (function () {
+      if (window.__scrapeIsWindowScroll) {
+        window.scrollTo(0, 0);
+      } else if (window.__scrapeScroller) {
+        window.__scrapeScroller.scrollTop = 0;
+      }
+    })();
+    undefined;
+  `);
   const images = await win.webContents.executeJavaScript(`
     (() => {
       const pickSrcsetFirst = (s) => {
