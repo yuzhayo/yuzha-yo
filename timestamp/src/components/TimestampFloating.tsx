@@ -9,9 +9,9 @@ import React, {
 } from "react";
 import FloatingBorderless from "@shared/floating/FloatingBorderless";
 import type { BoundingRect } from "@shared/floating/FloatingBorderless";
-import type { TextAlign, OverlayBounds } from "./types";
-import { checkAABBCollision, resolveAllCollisions } from "./types";
-export type { TextAlign } from "./types";
+import type { TextAlign, OverlayBounds } from "../utils/types";
+import { checkAABBCollision, resolveAllCollisions } from "../utils/types";
+export type { TextAlign } from "../utils/types";
 
 export type TimestampFloatingRef = {
   getRelativePosition: () => { x: number; y: number };

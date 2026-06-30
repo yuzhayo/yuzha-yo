@@ -4,7 +4,7 @@ import TimestampPreview from "./TimestampPreview";
 import TimestampFloating, { type TimestampFloatingRef } from "./TimestampFloating";
 import ImageFloating, { type ImageFloatingRef } from "./ImageFloating";
 import TimestampSettings from "./TimestampSettings";
-import { addPreset, type TimestampPreset } from "./PresetManager";
+import { addPreset, type TimestampPreset } from "../utils/PresetManager";
 import {
   type Overlay,
   type TextOverlay,
@@ -15,7 +15,7 @@ import {
   checkAABBCollision,
   resolveAllCollisions,
   type OverlayBounds,
-} from "./types";
+} from "../utils/types";
 
 export type TimestampScreenProps = {
   onBack?: () => void;

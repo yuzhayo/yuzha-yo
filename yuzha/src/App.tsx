@@ -1,6 +1,6 @@
 import React from "react";
 import MainScreen from "./MainScreen";
-import TimestampScreen from "./timestamp/timestampScreen";
+import TimestampScreen from "@yuzha/timestamp";
 import FloatingScreen from "@shared/floating/FloatingScreen";
 
 type AppView = "main" | "timestamp" | "floating";

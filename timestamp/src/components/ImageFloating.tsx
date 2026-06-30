@@ -8,8 +8,8 @@ import React, {
 } from "react";
 import FloatingBorderless from "@shared/floating/FloatingBorderless";
 import type { BoundingRect } from "@shared/floating/FloatingBorderless";
-import type { OverlayBounds } from "./types";
-import { checkAABBCollision, resolveAllCollisions } from "./types";
+import type { OverlayBounds } from "../utils/types";
+import { checkAABBCollision, resolveAllCollisions } from "../utils/types";
 
 export type ImageFloatingRef = {
   getRelativePosition: () => { x: number; y: number };

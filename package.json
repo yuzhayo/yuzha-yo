@@ -13,7 +13,8 @@
     "counter2",
     "manga",
     "alphaRemove",
-    "componentViewer"
+    "componentViewer",
+    "timestamp"
   ],
   "scripts": {
     "dev": "npm run dev:yuzha",

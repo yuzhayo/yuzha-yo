@@ -1,6 +1,6 @@
 import React, { forwardRef, useState, useEffect } from "react";
 import { requireAssetUrl } from "@shared/asset/assetResolver";
-import { loadPresets, deletePreset, type TimestampPreset } from "./PresetManager";
+import { loadPresets, deletePreset, type TimestampPreset } from "../utils/PresetManager";
 
 const lobbyBack = requireAssetUrl("lobby_cust_44");
 const diplo = requireAssetUrl("diplo1");
@@ -196,14 +196,14 @@ const TimestampHeader = forwardRef<HTMLDivElement, TimestampHeaderProps>(
                   onClick={onHIncrement}
                   className="flex h-5 w-5 items-center justify-center bg-slate-700/80 hover:bg-slate-600 text-white text-xs rounded-sm"
                 >
-                  ƒ-ı
+                  ▲
                 </button>
                 <button
                   type="button"
                   onClick={onHDecrement}
                   className="flex h-5 w-5 items-center justify-center bg-slate-700/80 hover:bg-slate-600 text-white text-xs rounded-sm"
                 >
-                  ƒ-¬
+                  ▼
                 </button>
               </div>
             </div>
@@ -246,14 +246,14 @@ const TimestampHeader = forwardRef<HTMLDivElement, TimestampHeaderProps>(
                   onClick={onWIncrement}
                   className="flex h-5 w-5 items-center justify-center bg-slate-700/80 hover:bg-slate-600 text-white text-xs rounded-sm"
                 >
-                  ƒ-ı
+                  ▲
                 </button>
                 <button
                   type="button"
                   onClick={onWDecrement}
                   className="flex h-5 w-5 items-center justify-center bg-slate-700/80 hover:bg-slate-600 text-white text-xs rounded-sm"
                 >
-                  ƒ-¬
+                  ▼
                 </button>
               </div>
             </div>

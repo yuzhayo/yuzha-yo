@@ -11,7 +11,7 @@ import {
   TIME_FORMATS,
   formatDate,
   formatTime,
-} from "./types";
+} from "../utils/types";
 
 export type TimestampSettingsProps = {
   textColor: string;
