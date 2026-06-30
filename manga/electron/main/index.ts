@@ -1,18 +1,17 @@
 import { app, BrowserWindow, ipcMain, dialog, shell, Menu, MenuItem } from "electron";
 import path from "path";
 import { fileURLToPath } from "node:url";
-import { runJob } from "./downloader";
-import type { StartJobOpts, JobEvent } from "../../src/types";
+import { openScraper, runScroll, runHarvest, compileCbz } from "./downloader";
+import type { PhaseEvent, HarvestedImage } from "../../src/types";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 let mainWindow: BrowserWindow | null = null;
+let scraperWin: BrowserWindow | null = null;
 
-const cancelFlags = new Map<string, boolean>();
-
-function emit(event: JobEvent): void {
+function emitPhase(event: PhaseEvent): void {
   if (mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents) {
-    mainWindow.webContents.send("job-event", event);
+    mainWindow.webContents.send("phase-event", event);
   }
 }
 
@@ -40,12 +39,11 @@ function createMainWindow(): void {
   }
 
   mainWindow.on("closed", () => {
+    if (scraperWin && !scraperWin.isDestroyed()) scraperWin.destroy();
+    scraperWin = null;
     mainWindow = null;
   });
 
-  // Native context menu (right-click → cut/copy/paste/select-all).
-  // Electron renderers do NOT have a default context menu, so paste, copy,
-  // etc. are silently ignored on right-click unless this handler is attached.
   mainWindow.webContents.on("context-menu", (_e, params) => {
     const menu = new Menu();
     if (params.isEditable) {
@@ -56,12 +54,10 @@ function createMainWindow(): void {
       menu.append(new MenuItem({ role: "copy" }));
       menu.append(new MenuItem({ role: "paste" }));
       menu.append(new MenuItem({ role: "selectAll" }));
-    } else if (params.selectionText && params.selectionText.trim().length > 0) {
+    } else if (params.selectionText?.trim().length > 0) {
       menu.append(new MenuItem({ role: "copy" }));
     }
-    if (menu.items.length > 0 && mainWindow) {
-      menu.popup({ window: mainWindow });
-    }
+    if (menu.items.length > 0 && mainWindow) menu.popup({ window: mainWindow });
   });
 }
 
@@ -76,6 +72,8 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
 
+// ─── Utility handlers ─────────────────────────────────────────────────────────
+
 ipcMain.handle("pick-folder", async () => {
   if (!mainWindow) return null;
   const { filePaths } = await dialog.showOpenDialog(mainWindow, {
@@ -89,24 +87,50 @@ ipcMain.handle("open-folder", async (_e, dir: string) => {
   await shell.openPath(dir);
 });
 
-ipcMain.handle("cancel-job", (_e, jobId: string) => {
-  cancelFlags.set(jobId, true);
+// ─── Phase handlers ───────────────────────────────────────────────────────────
+
+ipcMain.handle("phase-open", async (_e, url: string): Promise<void> => {
+  if (scraperWin && !scraperWin.isDestroyed()) scraperWin.destroy();
+
+  scraperWin = new BrowserWindow({
+    show: true,
+    width: 850,
+    height: 700,
+    title: "Manga Scraper",
+    webPreferences: {
+      contextIsolation: false,
+      nodeIntegration: false,
+      offscreen: false,
+    },
+  });
+
+  // Place scraper to the right of the main window; fall back to OS default if off-screen
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    const b = mainWindow.getBounds();
+    scraperWin.setBounds({ x: b.x + b.width + 4, y: b.y, width: 850, height: b.height });
+  }
+
+  scraperWin.on("closed", () => { scraperWin = null; });
+
+  await openScraper(url, scraperWin);
 });
 
-ipcMain.handle("start-job", async (_e, opts: StartJobOpts): Promise<string> => {
-  const jobId = `job_${Date.now()}`;
-  cancelFlags.set(jobId, false);
-  const isCancelled = () => cancelFlags.get(jobId) === true;
+ipcMain.handle("phase-scroll", async () => {
+  if (!scraperWin || scraperWin.isDestroyed()) throw new Error("No scraper window open. Run Phase 1 first.");
+  return runScroll(scraperWin, emitPhase);
+});
 
-  (async () => {
-    try {
-      await runJob(jobId, opts, isCancelled, emit);
-    } catch (err) {
-      emit({ type: "error", jobId, message: String(err) });
-    } finally {
-      cancelFlags.delete(jobId);
-    }
-  })();
+ipcMain.handle("phase-harvest", async () => {
+  if (!scraperWin || scraperWin.isDestroyed()) throw new Error("No scraper window open. Run Phase 1 first.");
+  return runHarvest(scraperWin);
+});
 
-  return jobId;
+ipcMain.handle("phase-compile", async (_e, images: HarvestedImage[], outputDir: string) => {
+  if (!scraperWin || scraperWin.isDestroyed()) throw new Error("No scraper window open. Run Phase 1 first.");
+  return compileCbz(images, outputDir, scraperWin, emitPhase);
+});
+
+ipcMain.handle("phase-close", () => {
+  if (scraperWin && !scraperWin.isDestroyed()) scraperWin.destroy();
+  scraperWin = null;
 });

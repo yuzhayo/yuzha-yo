@@ -1,13 +1,16 @@
-import type { StartJobOpts, JobEvent } from "./types";
+import type { PhaseEvent, HarvestedImage, ScrollResult, HarvestResult, CompileResult } from "./types";
 
 declare global {
   interface Window {
     api: {
-      startJob: (opts: StartJobOpts) => Promise<string>;
-      cancelJob: (jobId: string) => Promise<void>;
       pickFolder: () => Promise<string | null>;
       openFolder: (dir: string) => Promise<void>;
-      onJobEvent: (cb: (event: JobEvent) => void) => void;
+      phaseOpen: (url: string) => Promise<void>;
+      phaseScroll: () => Promise<ScrollResult>;
+      phaseHarvest: () => Promise<HarvestResult>;
+      phaseCompile: (images: HarvestedImage[], outputDir: string) => Promise<CompileResult>;
+      phaseClose: () => Promise<void>;
+      onPhaseEvent: (cb: (event: PhaseEvent) => void) => void;
     };
   }
 }

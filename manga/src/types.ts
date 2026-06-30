@@ -1,3 +1,5 @@
+// ─── Reader types (unchanged) ────────────────────────────────────────────────
+
 export type ReadingMode = "single" | "webtoon";
 
 export type CbzLoadResult =
@@ -30,43 +32,37 @@ export interface ScannedSeries {
   coverHandle?: FileSystemFileHandle;
 }
 
-export type Direction = "next" | "prev";
+// ─── Downloader — phase-based types ─────────────────────────────────────────
 
-export type Phase = "discovering" | "downloading" | "done" | "error";
+export type PhaseStatus = "idle" | "running" | "done" | "error";
 
-export type ChapterStatus =
-  | "pending"
-  | "loading"
-  | "scrolling"
-  | "fetching"
-  | "packaging"
-  | "done"
-  | "error";
-
-export interface Chapter {
-  url: string;
-  title: string;
-  status: ChapterStatus;
-  fetchDone?: number;
-  fetchTotal?: number;
-  pages?: number;
-  file?: string;
-  error?: string;
+export interface PhaseState {
+  status: PhaseStatus;
+  message?: string;
 }
 
-export interface StartJobOpts {
-  startUrl: string;
-  direction: Direction;
-  count: number;
-  outputDir: string;
-  showScraperWindow?: boolean;
-  onConflict?: "rename" | "overwrite";
+export interface HarvestedImage {
+  src: string;
+  top: number;
 }
 
-export type JobEvent =
-  | { type: "phase"; jobId: string; phase: Phase; chapters?: Pick<Chapter, "url" | "title">[] }
-  | { type: "discover"; jobId: string; current: number; total: number; url: string }
-  | { type: "chapter"; jobId: string; chapter: Chapter }
-  | { type: "progress"; jobId: string; done: number; total: number }
-  | { type: "done"; jobId: string; message: string; outputDir: string; succeeded: number; failed: number }
-  | { type: "error"; jobId: string; message: string };
+// Events pushed main → renderer during phase execution
+export type PhaseEvent =
+  | { type: "scroll-progress"; height: number; images: number; stable: number }
+  | { type: "fetch-progress"; done: number; total: number }
+  | { type: "compile-done"; file: string; pages: number; skipped: number }
+  | { type: "phase-error"; message: string };
+
+export interface ScrollResult {
+  imageCount: number;
+}
+
+export interface HarvestResult {
+  images: HarvestedImage[];
+}
+
+export interface CompileResult {
+  file: string;
+  pages: number;
+  skipped: number;
+}

@@ -1,10 +1,13 @@
 import { contextBridge, ipcRenderer } from "electron";
 contextBridge.exposeInMainWorld("api", {
-  startJob: (opts) => ipcRenderer.invoke("start-job", opts),
-  cancelJob: (jobId) => ipcRenderer.invoke("cancel-job", jobId),
   pickFolder: () => ipcRenderer.invoke("pick-folder"),
   openFolder: (dir) => ipcRenderer.invoke("open-folder", dir),
-  onJobEvent: (cb) => {
-    ipcRenderer.on("job-event", (_e, data) => cb(data));
+  phaseOpen: (url) => ipcRenderer.invoke("phase-open", url),
+  phaseScroll: () => ipcRenderer.invoke("phase-scroll"),
+  phaseHarvest: () => ipcRenderer.invoke("phase-harvest"),
+  phaseCompile: (images, outputDir) => ipcRenderer.invoke("phase-compile", images, outputDir),
+  phaseClose: () => ipcRenderer.invoke("phase-close"),
+  onPhaseEvent: (cb) => {
+    ipcRenderer.on("phase-event", (_e, data) => cb(data));
   }
 });

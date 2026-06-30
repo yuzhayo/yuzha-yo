@@ -9,11 +9,13 @@
     "paths": {
       "@/*": ["src/*"],
       "@shared/*": ["../shared/*"],
-      "@yuzha/timestamp": ["../timestamp/src/components/TimestampScreen.tsx"]
+      "@yuzha/timestamp": ["../timestamp/src/components/TimestampScreen.tsx"],
+      "@yuzha/manga-reader": ["../manga/src/App.tsx"]
     }
   },
   "references": [
-    { "path": "../timestamp" }
+    { "path": "../timestamp" },
+    { "path": "../manga" }
   ],
   "include": ["src", "env.d.ts", "index.html", "../shared"]
 }

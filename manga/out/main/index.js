@@ -1,43 +1,22 @@
-import { BrowserWindow, app, ipcMain, dialog, shell, Menu, MenuItem } from "electron";
+import { app, BrowserWindow, ipcMain, dialog, shell, Menu, MenuItem } from "electron";
 import path from "path";
 import { fileURLToPath } from "node:url";
 import JSZip from "jszip";
-import { mkdirSync, writeFileSync, existsSync, constants } from "fs";
+import { mkdirSync, writeFileSync, existsSync } from "fs";
 import __cjs_mod__ from "node:module";
 const __filename = import.meta.filename;
 const __dirname = import.meta.dirname;
 const require2 = __cjs_mod__.createRequire(import.meta.url);
-const CFG = {
-  SCROLL_STEP_PX: 2e3,
-  SCROLL_DELAY_MS: 400,
-  STABLE_NEED: 10,
-  SCROLL_MAX_ITERATIONS: 60,
-  // safety net: never loop forever
-  PAGE_TIMEOUT_MS: 2e4,
-  IMG_TIMEOUT_MS: 15e3,
-  IMG_RETRIES: 3,
-  IMG_RETRY_DELAYS_MS: [500, 1e3, 2e3],
-  CONCURRENCY: 3,
-  UA: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-};
+const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+const PAGE_TIMEOUT_MS = 2e4;
+const IMG_TIMEOUT_MS = 15e3;
+const IMG_RETRIES = 3;
+const IMG_RETRY_DELAYS_MS = [500, 1e3, 2e3];
+const STABLE_NEED = 8;
+const SCROLL_MAX_ITER = 80;
+const SCROLL_DELAY_MS = 300;
 function log(...args) {
   console.log("[downloader]", ...args);
-}
-function createHiddenWindow(visible) {
-  const win = new BrowserWindow({
-    show: visible,
-    width: visible ? 1100 : 800,
-    height: visible ? 800 : 600,
-    title: "Manga Downloader — scraper",
-    webPreferences: {
-      contextIsolation: false,
-      nodeIntegration: false,
-      offscreen: false
-    }
-  });
-  win.webContents.setUserAgent(CFG.UA);
-  win.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
-  return win;
 }
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -50,7 +29,7 @@ async function loadPage(win, url) {
       new Promise((_, reject) => {
         timeoutId = setTimeout(
           () => reject(new Error(`Timeout loading ${url}`)),
-          CFG.PAGE_TIMEOUT_MS
+          PAGE_TIMEOUT_MS
         );
       })
     ]);
@@ -58,228 +37,34 @@ async function loadPage(win, url) {
     if (timeoutId) clearTimeout(timeoutId);
   }
 }
-async function scrollAndCollect(win) {
-  log("scroll: reset to top");
-  await win.webContents.executeJavaScript(`
-    (function () {
-      try {
-        window.alert   = function () {};
-        window.confirm = function () { return true; };
-        window.prompt  = function () { return null; };
-      } catch (e) {}
-    })();
-    undefined;
-  `);
-  await win.webContents.executeJavaScript(`
-    (function () {
-      try {
-        const all = document.querySelectorAll('*');
-        let best = document.scrollingElement || document.documentElement;
-        let bestScore = best.scrollHeight - best.clientHeight;
-        for (const el of all) {
-          const style = getComputedStyle(el);
-          const overflowY = style.overflowY;
-          if ((overflowY === 'auto' || overflowY === 'scroll') &&
-              el.scrollHeight - el.clientHeight > bestScore &&
-              el.clientHeight > 200) {
-            best = el;
-            bestScore = el.scrollHeight - el.clientHeight;
-          }
-        }
-        window.__scrapeScroller = best;
-        window.__scrapeIsWindowScroll = (best === document.scrollingElement || best === document.documentElement);
-      } catch (e) {
-        window.__scrapeScroller = document.scrollingElement || document.documentElement;
-        window.__scrapeIsWindowScroll = true;
-      }
-    })();
-    undefined;
-  `);
-  const scrollerInfo = await win.webContents.executeJavaScript(`
-    ({ isWindowScroll: !!window.__scrapeIsWindowScroll })
-  `);
-  log(`scroll: target = ${scrollerInfo.isWindowScroll ? "window/document" : "inner scrollable element"}`);
-  await win.webContents.executeJavaScript(`
-    (function () {
-      if (window.__scrapeIsWindowScroll) {
-        window.scrollTo(0, 0);
-      } else if (window.__scrapeScroller) {
-        window.__scrapeScroller.scrollTop = 0;
-      }
-    })();
-    undefined;
-  `);
-  await sleep(800);
-  let lastHeight = 0;
-  let lastImgCount = 0;
-  let stableRuns = 0;
-  let iteration = 0;
-  while (stableRuns < CFG.STABLE_NEED && iteration < CFG.SCROLL_MAX_ITERATIONS) {
-    iteration++;
-    await win.webContents.executeJavaScript(`
-      (function () {
-        const step = Math.max(400, Math.floor(window.innerHeight * 0.8));
-        if (window.__scrapeIsWindowScroll) {
-          window.scrollBy(0, step);
-        } else if (window.__scrapeScroller) {
-          window.__scrapeScroller.scrollTop += step;
-        }
-      })();
-      undefined;
-    `);
-    await sleep(CFG.SCROLL_DELAY_MS);
-    const sample = await win.webContents.executeJavaScript(`
-      (function () {
-        const el = window.__scrapeIsWindowScroll
-          ? document.documentElement
-          : window.__scrapeScroller;
-        const scrollTop = window.__scrapeIsWindowScroll ? window.scrollY : el.scrollTop;
-        const clientHeight = window.__scrapeIsWindowScroll ? window.innerHeight : el.clientHeight;
-        return {
-          height: el.scrollHeight,
-          imgs: Array.from(document.querySelectorAll('img')).filter(function(img) {
-            return img.currentSrc || img.src ||
-              img.getAttribute('data-src') ||
-              img.getAttribute('data-lazy-src') ||
-              img.getAttribute('data-original') ||
-              img.getAttribute('srcset');
-          }).length,
-          atBottom: (scrollTop + clientHeight) >= (el.scrollHeight - 100)
-        };
-      })()
-    `);
-    if (sample.atBottom && sample.height === lastHeight && sample.imgs === lastImgCount) {
-      stableRuns++;
-    } else {
-      stableRuns = 0;
-      lastHeight = sample.height;
-      lastImgCount = sample.imgs;
-    }
-  }
-  if (iteration >= CFG.SCROLL_MAX_ITERATIONS) {
-    log(`scroll: iteration cap (${iteration}) reached at ${lastImgCount} candidates, height=${lastHeight}px`);
-  } else {
-    log(`scroll: stable at iter ${iteration}, ${lastImgCount} candidates, height=${lastHeight}px`);
-  }
-  log("scroll: final pass — scrollIntoView on each image");
-  await win.webContents.executeJavaScript(`
-    (async () => {
-      const imgs = Array.from(document.querySelectorAll('img'));
-      for (let i = 0; i < imgs.length; i++) {
-        try {
-          imgs[i].scrollIntoView({ block: 'center' });
-          await new Promise(function(r) { setTimeout(r, 60); });
-        } catch (e) {}
-      }
-    })()
-  `);
-  await sleep(1e3);
-  await win.webContents.executeJavaScript(`
-    (function () {
-      if (window.__scrapeIsWindowScroll) {
-        window.scrollTo(0, 0);
-      } else if (window.__scrapeScroller) {
-        window.__scrapeScroller.scrollTop = 0;
-      }
-    })();
-    undefined;
-  `);
-  const images = await win.webContents.executeJavaScript(`
-    (() => {
-      const pickSrcsetFirst = (s) => {
-        if (!s) return '';
-        const first = s.split(',')[0] || '';
-        return first.trim().split(/\\s+/)[0] || '';
-      };
-      const seen = new Set();
-      const out = [];
-      for (const img of Array.from(document.querySelectorAll('img'))) {
-        const candidate =
-          img.getAttribute('data-src') ||
-          img.getAttribute('data-lazy-src') ||
-          img.getAttribute('data-original') ||
-          img.getAttribute('data-url') ||
-          pickSrcsetFirst(img.getAttribute('srcset')) ||
-          img.currentSrc ||
-          img.src ||
-          '';
-        if (!candidate || !/^https?:/i.test(candidate)) continue;
-        if (seen.has(candidate)) continue;
-        const w = img.naturalWidth || img.width || 0;
-        const h = img.naturalHeight || img.height || 0;
-        if (w > 0 && h > 0 && w <= 150 && h <= 150) continue;
-        seen.add(candidate);
-        const rect = img.getBoundingClientRect();
-        out.push({ src: candidate, top: rect.top + window.scrollY });
-      }
-      return out.sort((a, b) => a.top - b.top);
-    })()
-  `);
-  log(`harvest: ${images.length} images after filtering`);
-  return images;
-}
-async function findChapterLink(win, direction) {
-  const keyword = direction;
-  const result = await win.webContents.executeJavaScript(`
-    (() => {
-      const selectors = [
-        'a[rel="${keyword}"]',
-        '.${keyword}-chapter a',
-        'a.${keyword}',
-        'a[class*="${keyword}"]',
-      ];
-      for (const s of selectors) {
-        const el = document.querySelector(s);
-        if (el && el.href) return el.href;
-      }
-      const links = Array.from(document.querySelectorAll('a'));
-      const match = links.find(a =>
-        a.textContent && a.textContent.toLowerCase().includes('${keyword}') && a.href
-      );
-      return match ? match.href : null;
-    })()
-  `);
-  return result;
-}
-async function getPageTitle(win) {
-  return win.webContents.executeJavaScript(`document.title`);
-}
-function cleanTitle(raw) {
-  return raw.replace(/[<>:"/\\|?*]/g, "").replace(/\s+/g, " ").trim().slice(0, 100);
-}
-function extractSeries(title) {
-  const parts = title.split(/[-–|]/);
-  return cleanTitle(parts[0] ?? title);
-}
 async function fetchImageOnce(url, referer) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), CFG.IMG_TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), IMG_TIMEOUT_MS);
   try {
     const res = await fetch(url, {
       headers: {
         Referer: referer,
-        "User-Agent": CFG.UA,
+        "User-Agent": UA,
         Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8"
       },
       signal: controller.signal
     });
     if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-    const buf = await res.arrayBuffer();
-    return Buffer.from(buf);
+    return Buffer.from(await res.arrayBuffer());
   } finally {
     clearTimeout(timer);
   }
 }
 async function downloadImage(url, referer) {
   let lastErr;
-  for (let attempt = 0; attempt < CFG.IMG_RETRIES; attempt++) {
+  for (let attempt = 0; attempt < IMG_RETRIES; attempt++) {
     try {
       return await fetchImageOnce(url, referer);
     } catch (err) {
       lastErr = err;
-      if (attempt < CFG.IMG_RETRIES - 1) {
-        const delay = CFG.IMG_RETRY_DELAYS_MS[attempt] ?? 2e3;
-        log(`fetch retry ${attempt + 1}/${CFG.IMG_RETRIES - 1} in ${delay}ms for ${url} :: ${String(err)}`);
+      if (attempt < IMG_RETRIES - 1) {
+        const delay = IMG_RETRY_DELAYS_MS[attempt] ?? 2e3;
+        log(`fetch retry ${attempt + 1}/${IMG_RETRIES - 1} in ${delay}ms :: ${String(err)}`);
         await sleep(delay);
       }
     }
@@ -293,9 +78,19 @@ function guessExt(buf) {
   if (buf[0] === 82 && buf[1] === 73) return "webp";
   return "jpg";
 }
-function resolveTargetPath(seriesDir, baseName, onConflict) {
+function cleanTitle(raw) {
+  return raw.replace(/[<>:"/\\|?*]/g, "").replace(/\s+/g, " ").trim().slice(0, 100);
+}
+function extractSeries(title) {
+  const parts = title.split(/\s*[-–|·•\/]\s*/);
+  return cleanTitle(parts[0] ?? title);
+}
+function chapterFromUrl(url) {
+  const m = url.match(/[/\-_]chapter[-_](\d+(?:\.\d+)?)/i) ?? url.match(/[/\-_]ch[-_]?(\d+(?:\.\d+)?)/i) ?? url.match(/\/(\d+(?:\.\d+)?)-chapter/i);
+  return m ? `Ch.${m[1]}` : "";
+}
+function resolveTargetPath(seriesDir, baseName) {
   const primary = path.join(seriesDir, baseName + ".cbz");
-  if (onConflict === "overwrite") return primary;
   if (!existsSync(primary)) return primary;
   let i = 2;
   while (i < 1e4) {
@@ -305,221 +100,200 @@ function resolveTargetPath(seriesDir, baseName, onConflict) {
   }
   return path.join(seriesDir, `${baseName} (${Date.now()}).cbz`);
 }
-async function packageCBZ(pages, title, series, outputDir, onConflict) {
+async function packageCBZ(pages, title, series, outputDir) {
   const zip = new JSZip();
   pages.forEach((buf, i) => {
     const ext = guessExt(buf);
-    const name = String(i + 1).padStart(3, "0") + "." + ext;
-    zip.file(name, buf);
+    zip.file(String(i + 1).padStart(3, "0") + "." + ext, buf);
   });
-  const content = await zip.generateAsync({
-    type: "nodebuffer",
-    compression: "STORE"
-  });
+  const content = await zip.generateAsync({ type: "nodebuffer", compression: "STORE" });
   const seriesDir = path.join(outputDir, cleanTitle(series));
   mkdirSync(seriesDir, { recursive: true });
-  const filepath = resolveTargetPath(seriesDir, cleanTitle(title), onConflict);
+  const filepath = resolveTargetPath(seriesDir, cleanTitle(title));
   writeFileSync(filepath, content);
   return filepath;
 }
-async function downloadChapter(chapter, outputDir, showScraperWindow, onConflict, onUpdate, isCancelled) {
-  const win = createHiddenWindow(showScraperWindow);
-  try {
-    log(`chapter: loading ${chapter.url}`);
-    onUpdate({ ...chapter, status: "loading" });
-    await loadPage(win, chapter.url);
-    if (isCancelled()) return { ...chapter, status: "error", error: "Cancelled" };
-    onUpdate({ ...chapter, status: "scrolling" });
-    const images = await scrollAndCollect(win);
-    if (isCancelled()) return { ...chapter, status: "error", error: "Cancelled" };
-    if (images.length === 0) {
-      return {
-        ...chapter,
-        status: "error",
-        error: "No images found — site may require login or use a canvas reader."
-      };
-    }
-    const title = await getPageTitle(win);
-    const series = extractSeries(title);
-    onUpdate({
-      ...chapter,
-      status: "fetching",
-      fetchDone: 0,
-      fetchTotal: images.length
-    });
-    const pages = [];
-    let failures = 0;
-    for (let i = 0; i < images.length; i++) {
-      if (isCancelled()) return { ...chapter, status: "error", error: "Cancelled" };
+async function openScraper(url, win) {
+  win.webContents.setUserAgent(UA);
+  win.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
+  log(`phase-open: loading ${url}`);
+  await loadPage(win, url);
+  log(`phase-open: ready`);
+}
+async function runScroll(win, emit) {
+  log("phase-scroll: start");
+  await win.webContents.executeJavaScript(`window.scrollTo(0, 0); undefined;`);
+  await win.webContents.executeJavaScript(`
+    (function() {
       try {
-        const buf = await downloadImage(images[i].src, chapter.url);
-        pages.push(buf);
-      } catch (err) {
-        failures++;
-        log(`fetch FAIL ${i + 1}/${images.length}: ${String(err)}`);
+        window.alert   = function() {};
+        window.confirm = function() { return true; };
+        window.prompt  = function() { return null; };
+      } catch(e) {}
+    })();
+    undefined;
+  `);
+  await sleep(800);
+  await win.webContents.executeJavaScript(`
+    (function() {
+      var best = document.scrollingElement || document.documentElement;
+      var bestScore = best.scrollHeight - best.clientHeight;
+      var all = document.querySelectorAll('*');
+      for (var i = 0; i < all.length; i++) {
+        var el = all[i];
+        var s = getComputedStyle(el);
+        var score = el.scrollHeight - el.clientHeight;
+        if ((s.overflowY === 'auto' || s.overflowY === 'scroll') &&
+            score > bestScore && el.clientHeight > 200) {
+          best = el;
+          bestScore = score;
+        }
       }
-      onUpdate({
-        ...chapter,
-        status: "fetching",
-        fetchDone: i + 1,
-        fetchTotal: images.length
-      });
+      window.__scroller = (best === document.scrollingElement || best === document.documentElement)
+        ? null : best;
+      return window.__scroller ? 'inner' : 'window';
+    })()
+  `);
+  let stableRuns = 0;
+  let lastHeight = 0;
+  let lastImgCount = 0;
+  let iteration = 0;
+  while (stableRuns < STABLE_NEED && iteration < SCROLL_MAX_ITER) {
+    iteration++;
+    await win.webContents.executeJavaScript(`
+      (function() {
+        var el = window.__scroller;
+        var step = Math.max(400, Math.floor((el ? el.clientHeight : window.innerHeight) * 0.8));
+        if (el) el.scrollTop += step;
+        else window.scrollBy(0, step);
+      })();
+      undefined;
+    `);
+    await sleep(SCROLL_DELAY_MS);
+    const sample = await win.webContents.executeJavaScript(`
+      (function() {
+        var el = window.__scroller;
+        var height     = el ? el.scrollHeight : document.documentElement.scrollHeight;
+        var scrollTop  = el ? el.scrollTop    : window.scrollY;
+        var clientH    = el ? el.clientHeight  : window.innerHeight;
+        var atBottom   = scrollTop + clientH >= height - 10;
+        var imgs = Array.from(document.querySelectorAll('img')).filter(function(img) {
+          return img.currentSrc || img.src ||
+            img.getAttribute('data-src') || img.getAttribute('data-lazy-src');
+        }).length;
+        return { height: height, imgs: imgs, atBottom: atBottom };
+      })()
+    `);
+    emit({ type: "scroll-progress", height: sample.height, images: sample.imgs, stable: stableRuns });
+    if (sample.atBottom && sample.height === lastHeight && sample.imgs === lastImgCount) {
+      stableRuns++;
+    } else {
+      stableRuns = 0;
+      lastHeight = sample.height;
+      lastImgCount = sample.imgs;
     }
-    if (pages.length === 0) {
-      return {
-        ...chapter,
-        status: "error",
-        error: `All ${images.length} image downloads failed.`
-      };
-    }
-    onUpdate({ ...chapter, status: "packaging" });
-    const file = await packageCBZ(
-      pages,
-      chapter.title || cleanTitle(title),
-      series,
-      outputDir,
-      onConflict
-    );
-    log(`chapter done: ${file} (${pages.length}/${images.length} pages, ${failures} failed)`);
-    return {
-      ...chapter,
-      status: "done",
-      pages: pages.length,
-      fetchTotal: images.length,
-      fetchDone: pages.length,
-      file,
-      error: failures > 0 ? `${failures} of ${images.length} images failed.` : void 0
-    };
-  } catch (err) {
-    log(`chapter ERROR: ${String(err)}`);
-    return { ...chapter, status: "error", error: String(err) };
-  } finally {
-    if (!win.isDestroyed()) win.destroy();
   }
+  log(`phase-scroll: done at iter=${iteration} stable=${stableRuns} imgs=${lastImgCount}`);
+  return { imageCount: lastImgCount };
 }
-async function discoverChapters(startUrl, direction, count, showScraperWindow, onDiscover, isCancelled) {
-  const chapters = [];
-  const win = createHiddenWindow(showScraperWindow);
-  try {
-    let url = startUrl;
-    for (let i = 0; i < count; i++) {
-      if (!url || isCancelled()) break;
-      log(`discover ${i + 1}/${count}: ${url}`);
-      onDiscover(i + 1, count, url);
-      await loadPage(win, url);
-      const title = await getPageTitle(win);
-      chapters.push({
-        url,
-        title: cleanTitle(title),
-        status: "pending"
-      });
-      if (i < count - 1) {
-        url = await findChapterLink(win, direction);
-        if (!url) log(`discover: no ${direction} chapter link found, stopping`);
+async function runHarvest(win) {
+  log("phase-harvest: start");
+  const images = await win.webContents.executeJavaScript(`
+    (function() {
+      function pickSrcsetFirst(s) {
+        if (!s) return '';
+        var first = s.split(',')[0] || '';
+        return first.trim().split(/\\s+/)[0] || '';
       }
-    }
-  } finally {
-    if (!win.isDestroyed()) win.destroy();
-  }
-  return chapters;
-}
-async function runParallel(chapters, outputDir, showScraperWindow, onConflict, onChapter, onProgress, isCancelled) {
-  const results = [];
-  let done = 0;
-  const total = chapters.length;
-  const queue = [...chapters];
-  const inFlight = /* @__PURE__ */ new Set();
-  const runOne = async (chapter) => {
-    const result = await downloadChapter(
-      chapter,
-      outputDir,
-      showScraperWindow,
-      onConflict,
-      onChapter,
-      isCancelled
-    );
-    onChapter(result);
-    results.push(result);
-    done++;
-    onProgress(done, total);
-  };
-  while (queue.length > 0 || inFlight.size > 0) {
-    while (queue.length > 0 && inFlight.size < CFG.CONCURRENCY) {
-      const chapter = queue.shift();
-      const p = runOne(chapter).then(() => {
-        inFlight.delete(p);
+      function extractBg(el) {
+        try {
+          var bg = window.getComputedStyle(el).backgroundImage;
+          if (!bg || bg === 'none') return '';
+          var m = bg.match(/url\\(['"]?(.*?)['"]?\\)/);
+          return m ? m[1] : '';
+        } catch(e) { return ''; }
+      }
+
+      var seen = new Set();
+      var out = [];
+
+      // img tags
+      Array.from(document.querySelectorAll('img')).forEach(function(img) {
+        var src = img.getAttribute('data-src') ||
+                  img.getAttribute('data-lazy-src') ||
+                  img.getAttribute('data-original') ||
+                  img.getAttribute('data-url') ||
+                  pickSrcsetFirst(img.getAttribute('srcset')) ||
+                  img.currentSrc || img.src || '';
+        if (!src || !/^https?:/i.test(src)) return;
+        if (/logo|banner|avatar|icon|emoji|button|spinner/i.test(src)) return;
+        // Use rendered rect — more reliable than naturalWidth which is 0 for lazy images
+        var rect = img.getBoundingClientRect();
+        var rw = rect.width; var rh = rect.height;
+        // Skip tiny images (avatars, icons)
+        if (rw > 0 && rw < 200) return;
+        // Skip near-square images smaller than 300px (profile pics, thumbnails)
+        if (rw > 0 && rh > 0 && rw < 300 && (rw / rh) > 0.7 && (rw / rh) < 1.4) return;
+        if (seen.has(src)) return;
+        seen.add(src);
+        out.push({ src: src, top: rect.top + window.scrollY });
       });
-      inFlight.add(p);
-    }
-    if (inFlight.size > 0) {
-      await Promise.race(inFlight);
-    }
-  }
-  return results;
+
+      // CSS background-image elements
+      Array.from(document.querySelectorAll('div,section,span,figure')).forEach(function(el) {
+        var src = extractBg(el);
+        if (!src || !/^https?:/i.test(src)) return;
+        if (/logo|banner|avatar|icon|emoji/i.test(src)) return;
+        if (seen.has(src)) return;
+        var w = el.clientWidth || 0;
+        var h = el.clientHeight || 0;
+        if (w > 0 && w < 200) return;
+        if (w > 0 && h > 0 && w < 300 && (w / h) > 0.7 && (w / h) < 1.4) return;
+        seen.add(src);
+        var rect = el.getBoundingClientRect();
+        out.push({ src: src, top: rect.top + window.scrollY });
+      });
+
+      return out.sort(function(a, b) { return a.top - b.top; });
+    })()
+  `);
+  log(`phase-harvest: ${images.length} images found`);
+  return { images };
 }
-async function runJob(jobId, opts, isCancelled, emit2) {
-  const showScraperWindow = !!opts.showScraperWindow;
-  const onConflict = opts.onConflict === "overwrite" ? "overwrite" : "rename";
-  log(`job ${jobId} start: url=${opts.startUrl} dir=${opts.direction} count=${opts.count} showWindow=${showScraperWindow} onConflict=${onConflict}`);
-  emit2({ type: "phase", jobId, phase: "discovering" });
-  const chapters = await discoverChapters(
-    opts.startUrl,
-    opts.direction,
-    opts.count,
-    showScraperWindow,
-    (current, total, url) => {
-      emit2({ type: "discover", jobId, current, total, url });
-    },
-    isCancelled
-  );
-  if (isCancelled() || chapters.length === 0) {
-    emit2({
-      type: "done",
-      jobId,
-      message: isCancelled() ? "Cancelled." : "No chapters found.",
-      outputDir: opts.outputDir,
-      succeeded: 0,
-      failed: 0
-    });
-    return;
+async function compileCbz(images, outputDir, win, emit) {
+  log(`phase-compile: ${images.length} images, outputDir=${outputDir}`);
+  const rawTitle = await win.webContents.executeJavaScript(`document.title`);
+  const referer = await win.webContents.executeJavaScript(`location.href`);
+  const series = extractSeries(rawTitle);
+  const chapTag = chapterFromUrl(referer);
+  const title = chapTag ? cleanTitle(`${series} · ${chapTag}`) : cleanTitle(rawTitle);
+  const pages = [];
+  let skipped = 0;
+  for (let i = 0; i < images.length; i++) {
+    try {
+      const buf = await downloadImage(images[i].src, referer);
+      pages.push(buf);
+    } catch (err) {
+      skipped++;
+      log(`image ${i + 1}/${images.length} failed: ${String(err)}`);
+    }
+    emit({ type: "fetch-progress", done: i + 1, total: images.length });
   }
-  emit2({
-    type: "phase",
-    jobId,
-    phase: "downloading",
-    chapters: chapters.map((c) => ({ url: c.url, title: c.title }))
-  });
-  const results = await runParallel(
-    chapters,
-    opts.outputDir,
-    showScraperWindow,
-    onConflict,
-    (chapter) => emit2({ type: "chapter", jobId, chapter }),
-    (done, total) => emit2({ type: "progress", jobId, done, total }),
-    isCancelled
-  );
-  const succeeded = results.filter((c) => c.status === "done").length;
-  const failed = results.length - succeeded;
-  log(`job ${jobId} done: ${succeeded} succeeded, ${failed} failed`);
-  let message;
-  if (failed === 0) message = `Downloaded ${succeeded} chapter(s).`;
-  else if (succeeded === 0) message = `Failed: ${failed} chapter(s) failed to download.`;
-  else message = `Partial: ${succeeded} succeeded, ${failed} failed.`;
-  emit2({
-    type: "done",
-    jobId,
-    message,
-    outputDir: opts.outputDir,
-    succeeded,
-    failed
-  });
+  if (pages.length === 0) {
+    throw new Error(`All ${images.length} images failed to download.`);
+  }
+  const file = await packageCBZ(pages, title, series, outputDir);
+  log(`phase-compile: done → ${file} (${pages.length} pages, ${skipped} skipped)`);
+  const result = { file, pages: pages.length, skipped };
+  emit({ type: "compile-done", ...result });
+  return result;
 }
 const __dirname$1 = path.dirname(fileURLToPath(import.meta.url));
 let mainWindow = null;
-const cancelFlags = /* @__PURE__ */ new Map();
-function emit(event) {
+let scraperWin = null;
+function emitPhase(event) {
   if (mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents) {
-    mainWindow.webContents.send("job-event", event);
+    mainWindow.webContents.send("phase-event", event);
   }
 }
 function createMainWindow() {
@@ -544,6 +318,8 @@ function createMainWindow() {
     mainWindow.loadFile(path.join(__dirname$1, "../renderer/index.html"));
   }
   mainWindow.on("closed", () => {
+    if (scraperWin && !scraperWin.isDestroyed()) scraperWin.destroy();
+    scraperWin = null;
     mainWindow = null;
   });
   mainWindow.webContents.on("context-menu", (_e, params) => {
@@ -556,12 +332,10 @@ function createMainWindow() {
       menu.append(new MenuItem({ role: "copy" }));
       menu.append(new MenuItem({ role: "paste" }));
       menu.append(new MenuItem({ role: "selectAll" }));
-    } else if (params.selectionText && params.selectionText.trim().length > 0) {
+    } else if (params.selectionText?.trim().length > 0) {
       menu.append(new MenuItem({ role: "copy" }));
     }
-    if (menu.items.length > 0 && mainWindow) {
-      menu.popup({ window: mainWindow });
-    }
+    if (menu.items.length > 0 && mainWindow) menu.popup({ window: mainWindow });
   });
 }
 app.whenReady().then(() => {
@@ -584,21 +358,41 @@ ipcMain.handle("pick-folder", async () => {
 ipcMain.handle("open-folder", async (_e, dir) => {
   await shell.openPath(dir);
 });
-ipcMain.handle("cancel-job", (_e, jobId) => {
-  cancelFlags.set(jobId, true);
-});
-ipcMain.handle("start-job", async (_e, opts) => {
-  const jobId = `job_${Date.now()}`;
-  cancelFlags.set(jobId, false);
-  const isCancelled = () => cancelFlags.get(jobId) === true;
-  (async () => {
-    try {
-      await runJob(jobId, opts, isCancelled, emit);
-    } catch (err) {
-      emit({ type: "error", jobId, message: String(err) });
-    } finally {
-      cancelFlags.delete(jobId);
+ipcMain.handle("phase-open", async (_e, url) => {
+  if (scraperWin && !scraperWin.isDestroyed()) scraperWin.destroy();
+  scraperWin = new BrowserWindow({
+    show: true,
+    width: 850,
+    height: 700,
+    title: "Manga Scraper",
+    webPreferences: {
+      contextIsolation: false,
+      nodeIntegration: false,
+      offscreen: false
     }
-  })();
-  return jobId;
+  });
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    const b = mainWindow.getBounds();
+    scraperWin.setBounds({ x: b.x + b.width + 4, y: b.y, width: 850, height: b.height });
+  }
+  scraperWin.on("closed", () => {
+    scraperWin = null;
+  });
+  await openScraper(url, scraperWin);
+});
+ipcMain.handle("phase-scroll", async () => {
+  if (!scraperWin || scraperWin.isDestroyed()) throw new Error("No scraper window open. Run Phase 1 first.");
+  return runScroll(scraperWin, emitPhase);
+});
+ipcMain.handle("phase-harvest", async () => {
+  if (!scraperWin || scraperWin.isDestroyed()) throw new Error("No scraper window open. Run Phase 1 first.");
+  return runHarvest(scraperWin);
+});
+ipcMain.handle("phase-compile", async (_e, images, outputDir) => {
+  if (!scraperWin || scraperWin.isDestroyed()) throw new Error("No scraper window open. Run Phase 1 first.");
+  return compileCbz(images, outputDir, scraperWin, emitPhase);
+});
+ipcMain.handle("phase-close", () => {
+  if (scraperWin && !scraperWin.isDestroyed()) scraperWin.destroy();
+  scraperWin = null;
 });
