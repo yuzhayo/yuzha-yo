@@ -55,6 +55,7 @@ export default defineConfig({
     alias: {
       "@": resolveFromConfig("./src"),
       "@shared": resolveFromConfig("../shared"),
+      "@yuzha/timestamp": resolveFromConfig("../timestamp/src/components/TimestampScreen.tsx"),
     },
     // Prevent multiple instances of three.js when using HMR or monorepo linking
     dedupe: ["react", "react-dom", "three"],

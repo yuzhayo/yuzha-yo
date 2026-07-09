@@ -88,7 +88,6 @@ export type MainScreenUpdaterProps = {
   onRendererModeChange?: (mode: "auto" | "canvas" | "three") => void;
   onOpenTimestampScreen?: () => void;
   onOpenFloatingScreen?: () => void;
-  onOpenMangaScreen?: () => void;
   rendererLabel?: string;
 };
 
@@ -405,15 +404,14 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
             Floating Window
           </button>
         )}
-        {props.onOpenMangaScreen && (
-          <button
-            type="button"
-            onClick={props.onOpenMangaScreen}
-            className="text-xs px-3 py-2 rounded bg-rose-600/80 hover:bg-rose-500/80 active:bg-rose-600 text-white shadow-sm border border-white/10 text-center whitespace-normal break-words leading-tight"
-          >
-            📖 Manga
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => window.open(getStandaloneUrl(3006), "_blank")}
+          className="text-xs px-3 py-2 rounded bg-rose-600/80 hover:bg-rose-500/80 active:bg-rose-600 text-white shadow-sm border border-white/10 text-center whitespace-normal break-words leading-tight"
+          title="Open Manga Reader standalone (port 3006)"
+        >
+          📖 Manga ↗
+        </button>
         <button
           type="button"
           onClick={() => window.open(getStandaloneUrl(3004), "_blank")}

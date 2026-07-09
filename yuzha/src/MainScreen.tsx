@@ -11,7 +11,6 @@ export type MainScreenProps = {
   children?: React.ReactNode;
   onOpenTimestampScreen?: () => void;
   onOpenFloatingScreen?: () => void;
-  onOpenMangaScreen?: () => void;
 };
 
 function MainScreenOverlay({
@@ -20,14 +19,12 @@ function MainScreenOverlay({
   onRendererModeChange,
   onOpenTimestampScreen,
   onOpenFloatingScreen,
-  onOpenMangaScreen,
 }: {
   rendererLabel: string;
   rendererMode: RendererMode;
   onRendererModeChange: (mode: RendererMode) => void;
   onOpenTimestampScreen?: () => void;
   onOpenFloatingScreen?: () => void;
-  onOpenMangaScreen?: () => void;
 }) {
   const gesture = useMainScreenBtnGesture();
 
@@ -41,7 +38,6 @@ function MainScreenOverlay({
         onRendererModeChange={onRendererModeChange}
         onOpenTimestampScreen={onOpenTimestampScreen}
         onOpenFloatingScreen={onOpenFloatingScreen}
-        onOpenMangaScreen={onOpenMangaScreen}
       />
     </>
   );
@@ -54,7 +50,6 @@ export default function MainScreen({
   children,
   onOpenTimestampScreen,
   onOpenFloatingScreen,
-  onOpenMangaScreen,
 }: MainScreenProps) {
   const autoDetectedRenderer = useMemo(() => getRendererType(), []);
   const [rendererMode, setRendererMode] = useState<RendererMode>("auto");
@@ -87,7 +82,6 @@ export default function MainScreen({
           onRendererModeChange={setRendererMode}
           onOpenTimestampScreen={onOpenTimestampScreen}
           onOpenFloatingScreen={onOpenFloatingScreen}
-          onOpenMangaScreen={onOpenMangaScreen}
         />
       )}
     </div>
