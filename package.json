@@ -9,7 +9,6 @@
   },
   "workspaces": [
     "yuzha",
-    "meng",
     "counter2",
     "alphaRemove"
   ],

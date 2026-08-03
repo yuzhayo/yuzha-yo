@@ -6,5 +6,5 @@
     }
   },
   "include": ["shared"],
-  "references": [{ "path": "./yuzha" }, { "path": "./meng" }]
+  "references": [{ "path": "./yuzha" }]
 }
