@@ -386,15 +386,6 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
         >
           Counter2 ↗
         </button>
-        {props.onOpenTimestampScreen && (
-          <button
-            type="button"
-            onClick={props.onOpenTimestampScreen}
-            className="text-xs px-3 py-2 rounded bg-emerald-600/80 hover:bg-emerald-500/80 active:bg-emerald-600 text-white shadow-sm border border-white/10 text-center whitespace-normal break-words leading-tight"
-          >
-            Timestamp
-          </button>
-        )}
         {props.onOpenFloatingScreen && (
           <button
             type="button"

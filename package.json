@@ -11,8 +11,7 @@
     "yuzha",
     "meng",
     "counter2",
-    "alphaRemove",
-    "timestamp"
+    "alphaRemove"
   ],
   "scripts": {
     "dev": "npm run dev:yuzha",

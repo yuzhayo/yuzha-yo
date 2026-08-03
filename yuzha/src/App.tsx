@@ -1,20 +1,14 @@
 import React from "react";
 import MainScreen from "./MainScreen";
-import TimestampScreen from "@yuzha/timestamp";
 import FloatingScreen from "@shared/floating/FloatingScreen";
 
-type AppView = "main" | "timestamp" | "floating";
+type AppView = "main" | "floating";
 
 export default function App() {
   const [view, setView] = React.useState<AppView>("main");
 
-  const handleOpenTimestamp = React.useCallback(() => setView("timestamp"), []);
   const handleOpenFloating = React.useCallback(() => setView("floating"), []);
   const handleReturnToMain = React.useCallback(() => setView("main"), []);
-
-  if (view === "timestamp") {
-    return <TimestampScreen onBack={handleReturnToMain} />;
-  }
 
   if (view === "floating") {
     return <FloatingScreen onBack={handleReturnToMain} />;
@@ -22,7 +16,6 @@ export default function App() {
 
   return (
     <MainScreen
-      onOpenTimestampScreen={handleOpenTimestamp}
       onOpenFloatingScreen={handleOpenFloating}
     />
   );
