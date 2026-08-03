@@ -25,10 +25,6 @@ export default defineConfig({
     react({
       // Optimize JSX runtime
       jsxRuntime: "automatic",
-      babel: {
-        plugins: isProd ? [] : [],
-        compact: isProd,
-      },
     }),
     // Add compression plugin for production builds
     isProd &&
