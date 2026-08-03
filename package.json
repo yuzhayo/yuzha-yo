@@ -11,9 +11,7 @@
     "yuzha",
     "meng",
     "counter2",
-    "manga",
     "alphaRemove",
-    "componentViewer",
     "timestamp"
   ],
   "scripts": {
@@ -66,22 +64,10 @@
     "build:counter2": "npm run build --workspace counter2",
     "preview:counter2": "npm run preview --workspace counter2",
     "typecheck:counter2": "npm run typecheck --workspace counter2",
-    "dev:manga": "npm run dev --workspace manga",
-    "build:manga": "npm run build --workspace manga",
-    "dist:manga": "npm run dist --workspace manga",
-    "dist:manga:win": "npm run dist:win --workspace manga",
-    "dist:manga:mac": "npm run dist:mac --workspace manga",
-    "dist:manga:linux": "npm run dist:linux --workspace manga",
-    "typecheck:manga": "npm run typecheck --workspace manga",
-    "preview:manga": "npm run preview --workspace manga",
     "dev:alphaRemove": "npm run dev --workspace alphaRemove",
     "build:alphaRemove": "npm run build --workspace alphaRemove",
     "preview:alphaRemove": "npm run preview --workspace alphaRemove",
-    "typecheck:alphaRemove": "npm run typecheck --workspace alphaRemove",
-    "dev:componentViewer": "npm run dev --workspace componentViewer",
-    "build:componentViewer": "npm run build --workspace componentViewer",
-    "preview:componentViewer": "npm run preview --workspace componentViewer",
-    "typecheck:componentViewer": "npm run typecheck --workspace componentViewer"
+    "typecheck:alphaRemove": "npm run typecheck --workspace alphaRemove"
   },
   "devDependencies": {
     "@tailwindcss/aspect-ratio": "^0.4.2",

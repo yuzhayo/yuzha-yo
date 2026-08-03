@@ -1,6 +1,7 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
+    "ignoreDeprecations": "6.0",
     "composite": true,
     "incremental": true,
     "tsBuildInfoFile": "./.tsbuildinfo",
@@ -9,13 +10,11 @@
     "paths": {
       "@/*": ["src/*"],
       "@shared/*": ["../shared/*"],
-      "@yuzha/timestamp": ["../timestamp/src/components/TimestampScreen.tsx"],
-      "@yuzha/manga-reader": ["../manga/src/App.tsx"]
+      "@yuzha/timestamp": ["../timestamp/src/components/TimestampScreen.tsx"]
     }
   },
   "references": [
-    { "path": "../timestamp" },
-    { "path": "../manga" }
+    { "path": "../timestamp" }
   ],
   "include": ["src", "env.d.ts", "index.html", "../shared"]
 }
