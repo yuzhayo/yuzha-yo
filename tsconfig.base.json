@@ -12,9 +12,8 @@
     "allowSyntheticDefaultImports": true,
     "jsx": "react-jsx",
     "types": ["vitest/globals", "vite/client"],
-    "baseUrl": ".",
     "paths": {
-      "@shared/*": ["shared/*"]
+      "@shared/*": ["./shared/*"]
     },
     "incremental": true,
     "composite": true,
