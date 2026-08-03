@@ -78,7 +78,7 @@
     "@types/three": "^0.180.0",
     "@typescript-eslint/eslint-plugin": "^8.65.0",
     "@typescript-eslint/parser": "^8.65.0",
-    "@vitejs/plugin-react": "^4.3.1",
+    "@vitejs/plugin-react": "^6.0.5",
     "autoprefixer": "^10.4.20",
     "baseline-browser-mapping": "^2.8.29",
     "cross-env": "^10.0.0",
@@ -94,7 +94,7 @@
     "tailwindcss": "^3.4.17",
     "ts-node": "^10.9.2",
     "typescript": "^7.0.2",
-    "vite": "^7.0.4",
+    "vite": "^8.2.0",
     "vite-plugin-compression": "^0.5.1",
     "vitest": "^4.1.10"
   },
@@ -128,7 +128,9 @@
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
     "lucide-react": "^0.556.0",
+    "react": "^19.2.8",
     "react-day-picker": "^9.12.0",
+    "react-dom": "^19.2.8",
     "tailwind-merge": "^3.4.0",
     "three": "^0.180.0",
     "vaul": "^1.1.2"
