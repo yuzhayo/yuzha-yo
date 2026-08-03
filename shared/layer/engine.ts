@@ -35,7 +35,7 @@ import {
   calculatePositionForPivot,
 } from "./math";
 
-import registryData from "../asset/ImageRegistry.json" assert { type: "json" };
+import registryData from "../asset/ImageRegistry.json" with { type: "json" };
 
 export type {
   LayerMotionMarker,
