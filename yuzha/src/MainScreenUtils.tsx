@@ -20,23 +20,6 @@ export const STAGE_HEIGHT = 2048;
 export const STAGE_CENTER_X = 1024;
 export const STAGE_CENTER_Y = 1024;
 
-/** Stage quadrants for positioning reference */
-export const STAGE_QUADRANTS = {
-  TOP_LEFT: { x: 0, y: 0, width: 1024, height: 1024 },
-  TOP_RIGHT: { x: 1024, y: 0, width: 1024, height: 1024 },
-  BOTTOM_LEFT: { x: 0, y: 1024, width: 1024, height: 1024 },
-  BOTTOM_RIGHT: { x: 1024, y: 1024, width: 1024, height: 1024 },
-} as const;
-
-/** Common positioning zones within 2048×2048 stage */
-export const STAGE_ZONES = {
-  CENTER: { x: 1024, y: 1024 },
-  TOP_CENTER: { x: 1024, y: 256 },
-  BOTTOM_CENTER: { x: 1024, y: 1792 },
-  LEFT_CENTER: { x: 256, y: 1024 },
-  RIGHT_CENTER: { x: 1792, y: 1024 },
-} as const;
-
 // ===================================================================
 // 🔴 BLOCK 2: TYPE DEFINITIONS
 // ===================================================================
@@ -77,25 +60,12 @@ export type MainScreenBtnProps = {
   title?: string;
 };
 
-export type MainScreenRendererBadgeProps = {
-  visible: boolean;
-  label: string;
-};
-
 export type MainScreenUpdaterProps = {
   visible: boolean;
   rendererMode?: "auto" | "canvas" | "three";
   onRendererModeChange?: (mode: "auto" | "canvas" | "three") => void;
   onOpenTimestampScreen?: () => void;
   rendererLabel?: string;
-};
-
-export type MainScreenBtnGestureAreaProps = {
-  className?: string;
-  style?: React.CSSProperties;
-  children?: React.ReactNode;
-  options?: MainScreenBtnGestureOptions;
-  onOpenChange?: (open: boolean) => void;
 };
 
 // ===================================================================
@@ -292,23 +262,7 @@ export function useMainScreenBtnEffect(
 }
 
 // ===================================================================
-// 🟡 BLOCK 6: RENDERER BADGE COMPONENT
-// ===================================================================
-
-export function MainScreenRendererBadge(props: MainScreenRendererBadgeProps) {
-  if (!props.visible) return null;
-  return (
-    <div
-      className="pointer-events-none select-none fixed top-3 right-3 z-[9998] text-[10px] px-2 py-0.5 rounded bg-black/60 border border-white/10 text-white/80"
-      aria-live="polite"
-    >
-      {props.label}
-    </div>
-  );
-}
-
-// ===================================================================
-// 🟡 BLOCK 7: UPDATER COMPONENT
+// 🟡 BLOCK 6: UPDATER COMPONENT
 // ===================================================================
 
 export function MainScreenUpdater(props: MainScreenUpdaterProps) {
@@ -399,7 +353,7 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
 }
 
 // ===================================================================
-// 🔴 BLOCK 8: BUTTON PANEL COMPONENT (SIMPLIFIED)
+// 🔴 BLOCK 7: BUTTON PANEL COMPONENT (SIMPLIFIED)
 // ===================================================================
 
 export function MainScreenBtnPanel(props: MainScreenBtnProps) {
@@ -427,57 +381,6 @@ export function MainScreenBtnPanel(props: MainScreenBtnProps) {
         </button>
       </div>
     </div>
-  );
-}
-
-// ===================================================================
-// 🟡 BLOCK 9: GESTURE AREA COMPONENT
-// ===================================================================
-
-export function MainScreenBtnGestureArea(props: MainScreenBtnGestureAreaProps) {
-  const g = useMainScreenBtnGesture(props.options);
-
-  React.useEffect(() => {
-    props.onOpenChange?.(g.open);
-  }, [g.open, props]);
-
-  return (
-    <div
-      {...g.bindTargetProps()}
-      className={props.className ?? "absolute inset-0 pointer-events-auto"}
-      style={props.style}
-    >
-      {typeof props.children === "function"
-        ? (props.children as (arg: { open: boolean; toggle: () => void }) => React.ReactNode)({
-            open: g.open,
-            toggle: g.toggle,
-          })
-        : props.children}
-    </div>
-  );
-}
-
-// ===================================================================
-// 🟡 BLOCK 10: BUTTON DOCK (SIMPLIFIED)
-// ===================================================================
-
-export function MainScreenBtnDock(
-  props: Omit<MainScreenBtnProps, "open" | "onToggle"> & { overlayClassName?: string },
-) {
-  const gesture = useMainScreenBtnGesture();
-  return (
-    <>
-      <div
-        {...gesture.bindTargetProps()}
-        className={props.overlayClassName ?? "absolute inset-0 pointer-events-auto"}
-      />
-      <MainScreenBtnPanel
-        open={gesture.open}
-        onToggle={gesture.toggle}
-        effect={props.effect}
-        title={props.title}
-      />
-    </>
   );
 }
 
