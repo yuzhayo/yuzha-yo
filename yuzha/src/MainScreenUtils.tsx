@@ -87,7 +87,6 @@ export type MainScreenUpdaterProps = {
   rendererMode?: "auto" | "canvas" | "three";
   onRendererModeChange?: (mode: "auto" | "canvas" | "three") => void;
   onOpenTimestampScreen?: () => void;
-  onOpenFloatingScreen?: () => void;
   rendererLabel?: string;
 };
 
@@ -386,15 +385,6 @@ export function MainScreenUpdater(props: MainScreenUpdaterProps) {
         >
           Counter2 ↗
         </button>
-        {props.onOpenFloatingScreen && (
-          <button
-            type="button"
-            onClick={props.onOpenFloatingScreen}
-            className="text-xs px-3 py-2 rounded bg-violet-600/80 hover:bg-violet-500/80 active:bg-violet-600 text-white shadow-sm border border-white/10 text-center whitespace-normal break-words leading-tight"
-          >
-            Floating Window
-          </button>
-        )}
         <button
           type="button"
           onClick={() => window.open(getStandaloneUrl(3004), "_blank")}

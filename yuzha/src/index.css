@@ -1,8 +1,5 @@
 @import "../../shared/fonts/taimingda.css";
-/* Tailwind entry for Launcher (minimal, global-safe) */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 /* Baseline reset tweaks */
 html,

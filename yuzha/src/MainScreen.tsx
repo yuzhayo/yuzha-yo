@@ -9,19 +9,16 @@ export type RendererType = "canvas" | "three";
 
 export type MainScreenProps = {
   children?: React.ReactNode;
-  onOpenFloatingScreen?: () => void;
 };
 
 function MainScreenOverlay({
   rendererLabel,
   rendererMode,
   onRendererModeChange,
-  onOpenFloatingScreen,
 }: {
   rendererLabel: string;
   rendererMode: RendererMode;
   onRendererModeChange: (mode: RendererMode) => void;
-  onOpenFloatingScreen?: () => void;
 }) {
   const gesture = useMainScreenBtnGesture();
 
@@ -33,7 +30,6 @@ function MainScreenOverlay({
         rendererLabel={rendererLabel}
         rendererMode={rendererMode}
         onRendererModeChange={onRendererModeChange}
-        onOpenFloatingScreen={onOpenFloatingScreen}
       />
     </>
   );
@@ -44,7 +40,6 @@ function MainScreenOverlay({
  */
 export default function MainScreen({
   children,
-  onOpenFloatingScreen,
 }: MainScreenProps) {
   const autoDetectedRenderer = useMemo(() => getRendererType(), []);
   const [rendererMode, setRendererMode] = useState<RendererMode>("auto");
@@ -75,7 +70,6 @@ export default function MainScreen({
           rendererLabel={rendererLabel}
           rendererMode={rendererMode}
           onRendererModeChange={setRendererMode}
-          onOpenFloatingScreen={onOpenFloatingScreen}
         />
       )}
     </div>
